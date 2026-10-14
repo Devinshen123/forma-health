@@ -1,10 +1,21 @@
 # qa 状态
 
-更新：2026-10-14（America/Los_Angeles）。Owner：native_architecture / AI-04。
+更新：2026-10-14（America/Los_Angeles）。Owner：native_architecture / T-04，AI-04 为已完成历史。
 
 ## 当前状态
 
-AI-04：独立验收通过，等待 lead 集成/浏览器终验。仅测试注入，不宣称真实 AI 效果。
+T-04：原创领域与 CSV/JSON 导入已实现，22 项独立测试通过。正在继续多设备同步与离线队列独立 QA。
+
+## T-04 已完成与验证
+
+- 已读最新 TASKS 所有权与 ADR-training-sync；拥有 src/training/、tests/、docs/reviews/、本状态文件，不碰 server/rules/catalog/sync。
+- agent-reach gh 核实官方文字源固定 SHA/Unlicense/876 项完整度与未知字段；lead 批准纯文字，catalog 导入由 lead 完成。
+- src/training/domain.ts：完成证据/旧摘要区分、负重训练量、1–10 rep 有界 e1RM、PR/主肌群记录完整度、两次达标的进阶候选、无 DST 漂移的星期/循环排程。
+- src/training/import.ts：Strict CSV 预览、明确单位/时区、DST 歧义错误、缺值 null、duration=0 等待人工校正、整份错误不跳行、Forma 白名单与重新生成身份、稳定防重。
+- 独立 tests/training-domain.test.ts 和 tests/training-import.test.ts 22/22 通过，0 fail/skip/cancel（约 0.18s）；npx tsc --noEmit 通过。
+- lead 通知串行完整 npm run build 成功（8.4s / 1598 modules）；qa 未并行清理 dist。最终产物仍以 lead 集成后构建为准。
+- 来源和限制见 docs/reviews/2026-10-14-training-domain-review.md。官方 CSV 帮助页未公开完整样例；本轮验证合成的明确英文格式，不宣称所有导出版本兼容。
+- 当前 backend 已通知同步路由就绪；后续独立测试实体 CAS、原子/墓碑/幂等、旧 PUT 互操作、离线队列与账户边界。没有改固定端口/生产账号。
 
 ## 工作范围
 
