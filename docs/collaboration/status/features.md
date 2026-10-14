@@ -2,7 +2,33 @@
 
 ## 正在做
 
-AI-03 初次交付已提交 526ecbd，完整构建和 IAB 夹具交互通过。当前完成“新草稿出现后定位审核区”的聚焦修复，待 lead 串行构建并重拍响应式截图；未将真实 OpenAI 推理质量写成已验证。
+T-03 完整训练五组 UI 已实现并通过 TypeScript 与双语 SSR smoke，正在交给 lead 串行构建、真实浏览器与同步验收。AI-03 已交付并由 lead 验收，历史记录保留在下文；未将真实 OpenAI 推理质量写成已验证。
+
+## T-03 已实现
+
+- 已读当前 AGENTS、TASKS、status、ADR-training-sync、共享类型、catalog/domain/import 和设计系统，遵守 Training.tsx / features/training/ 独占所有权。没有复制外部训练 UI、代码、schema 或图片。
+- 训练页按动作库、计划、训练中、进步、导入拆分可执行组件。动作库覆盖 lead 提供的 884 个文字动作，搜索/器械/主要肌群/原创教学筛选、12 项分页、说明与教学播放入口；未知器械单列为未注明，英文来源文本明确标识。
+- 计划创建/复制/编辑成追加版本、默认展示叶版本、历史版本只读；星期/循环日程可编辑、起始日期与休息槽、今天的计划可以启动。编辑与进阶生成新 UUID 并更新指向原版本的日程引用，不改变训练历史。
+- 训练保存实际 nullable 组数据，目标与实际分离；工作/热身/递减、父组关系、超级组、RPE/RIR、时长和距离可填。完成必须有实际次数+明确重量（自重填 0），或实际时长；递减父组先完成，撤销父组需先撤销已完成的子组。
+- 休息使用持久 deadline；暂停存剩余秒数、续计重建 deadline。同超级组本轮和递减链还有未完成组时，提示下一动作/组且不启动自动休息，全部完成后再休息。
+- 结束前展示完成组、可校正总时长及明确确认 checkbox；只保存实际完成组，Workout UUID 沿用进行中会话身份以稳定重试；动作备注合并到训练备注并校验总字符上限。热身保留事实，但不进入工作组进步。旧快速汇总独立保留编辑/删除，不生成逐组事实或覆盖详细记录；RPE未知允许 null。
+- 进步接 QA 原创纯函数，显示完成组、已知负重×次数/未知完整度、主要肌群、独立 PR 指标及限定范围的 e1RM；两次达标仅提供可编辑草稿，展示两次依据和前后目标，确认后追加计划新版本。
+- 导入 Strong / Hevy / FitNotes CSV、Forma JSON：浏览器本地解析、来源单位/时区、阻塞错误、重复排除、逐条选择、缺时长人工补齐、逐组数值与完成状态校正；确认后只追加训练 UUID，保留导入指纹。未确认不保存。
+- mounted / operation locks 防卸载后的成功 toast；训练与日程/历史草稿检测远端变化；训练离开有未保存改动时需明确放弃，保存期间禁导航。onUnsavedChange 通过稳定 ref 向 App 上报活动状态并在卸载回 false，接入 lead 主导航提醒；beforeunload 仅在 dirty 时提醒。真实同步和离线状态由 lead 的账户绑定 App/SyncEngine 负责。
+
+## T-03 验证与边界
+
+- `node node_modules/typescript/bin/tsc --noEmit`：通过。首次只见 qa 测试的 triceps 推导类型错误，由 qa 按所有权修复；随后完整 tsc 通过。
+- `node --import tsx --input-type=module` 双语 SSR smoke：10 次渲染通过（Training 导航、Library 884 数量、Progress 缺失 —、Import 四格式、Session 用户原文/实际 null 空输入）。不把 SSR 视作浏览器、离线或教学动画验证。
+- 完整 Vite build、响应式/键盘/真实保存/刷新恢复/多设备冲突由 lead 统一串行验收；features 未并发清理 dist、未启动或结束共享端口服务。
+- QA 的 22 项 domain/import 纯函数测试已通过（QA 执行结果）；随后 helper 的 3 项独立边界测试通过，覆盖目标不冒充实际、超级组/drop 后休息、稳定结束身份/notes/Timed null 与实际 server workoutSchema。
+- QA 随后交付新版本进阶限制与同步边界验证：新增独立 39/39、当时全仓 155/155、tsc 通过。末次 sibling drop 分支补充在既有测试内，提交 c0ce4da，独立 helper 3/3 与 tsc 再次通过；没有把这次单测冒充全仓重跑。
+- 请求 1450（计时/兼容摘要）与 1600（跨页未保存）已获 lead 回复并接入；进阶新版本避免复用旧两次依据的规则已交 qa/lead 核查，不在 UI 假设领域规则。
+- lead 真实 UI 已验证 884 库数量、二头肌/哑铃/教学筛选 1 项、示意播放、1+1 组超级计划、星期与循环日程、A 工作组后提示 B 且不休息、A 递减组及 B 末组后休息。计时初值发现 90 秒显示 91 秒，Session 已用 Math.max(clock, Date.now()) 修复；暂停继续读 stored seconds，待 lead 复验（1630 请求记录）。
+- lead 已运行完整训练构建成功（Training chunk 约883 KB / gzip187 KB，主 chunk约396 KB / gzip124 KB、4 静态离线文件），随后最后计时修复/导航回调由 tsc 验证，最终构建由 lead 接续；不把旧构建当作后续浏览器修复的复验。
+- 必要失败重试修复由 lead 明确纳入：routine 候选 id/createdAt/updatedAt 在建草稿时固定，submit 不重新生成；若 view 已有候选 ID，提示顶部同步重试或关闭后编辑新版本。日程引用更新时间独立于旧草稿时间，保持不早于已有日程时间。QuickSummary 新记录在 open 时固定 UUID/createdAt，用 existing 区分编辑，submit 按 state 是否含同 ID 替换或新增，防重复创建。
+- 最后 `node node_modules/typescript/bin/tsc --noEmit` 通过；补充中英 SSR 回归 4 次渲染通过，核对旧摘要原文/RPE未知为 —、详细记录不进入旧编辑入口、计划创建入口。低影响身份/时间字段修复未写实现镜像测试；网络队列幂等由 QA 的实际 engine/API 测试覆盖，浏览器由 lead 实测。
+- 未公开部署或开通付费服务；导入覆盖明确受支持的英文导出格式，未声称兼容所有应用版本或地区格式。没有设备/iPhone/HealthKit/Apple 登录实现声明。
 
 ## 已完成
 
