@@ -28,6 +28,30 @@ export function ageEligibility(birthYear: number | null | undefined, today: stri
   return "needs_birth_date";
 }
 
+const parseLocalDate = (date: string): [number, number, number] | null => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const ms = Date.parse(`${date}T00:00:00Z`);
+  if (Number.isNaN(ms) || new Date(ms).toISOString().slice(0, 10) !== date) return null;
+  const [y, m, d] = date.split("-").map(Number);
+  return [y, m, d];
+};
+
+/** Completed years on `today`. A 29 February birthday counts from 1 March in non-leap years. */
+export function ageOnDate(birthDate: string, today: string): number | null {
+  const birth = parseLocalDate(birthDate);
+  const now = parseLocalDate(today);
+  if (!birth || !now || birthDate > today) return null;
+  const beforeBirthday = now[1] < birth[1] || (now[1] === birth[1] && now[2] < birth[2]);
+  return now[0] - birth[0] - (beforeBirthday ? 1 : 0);
+}
+
+/** Exact adult check from a full birth date (preferred over `ageEligibility` with a year only). */
+export function adultStatus(birthDate: string | null | undefined, today: string): "eligible" | "ineligible" | "invalid" {
+  const age = birthDate ? ageOnDate(birthDate, today) : null;
+  if (age === null) return "invalid";
+  return age >= MIN_AGE_YEARS ? "eligible" : "ineligible";
+}
+
 export const CONSERVATIVE_REASONS = [
   "pregnancy_or_breastfeeding",
   "eating_disorder_history",

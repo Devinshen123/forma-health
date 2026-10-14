@@ -33,6 +33,30 @@ export const RULE_MESSAGES: Record<string, Record<RuleLanguage, string>> = {
     zh: "最近 {totalDays} 天记录了 {nights} 晚睡眠，平均 {average} 小时，目标是 {target} 小时。今晚可以试着提前 30 分钟准备休息。",
     en: "You logged {nights} nights in the last {totalDays} days, averaging {average} h against a target of {target} h. Tonight, try starting to wind down 30 minutes earlier.",
   },
+  "weekly.data_completeness": {
+    zh: "这 {totalDays} 天中：饮食记录 {nutritionDays} 天，训练记录 {trainingDays} 天，睡眠记录 {sleepNights} 晚。没记录的日子不计入平均值。",
+    en: "Over these {totalDays} days: meals logged on {nutritionDays} days, workouts on {trainingDays} days, sleep on {sleepNights} nights. Unlogged days are left out of the averages.",
+  },
+  "weekly.training_adherence": {
+    zh: "计划每周训练 {planned} 天，这周记录到 {done} 天。",
+    en: "Your plan has {planned} training days a week; you logged {done} this week.",
+  },
+  "weekly.actions_completed": {
+    zh: "{totalDays} 天中有 {days} 天完成了至少一项今日行动。",
+    en: "You completed at least one daily action on {days} of {totalDays} days.",
+  },
+  "weekly.sleep_trend": {
+    zh: "已记录夜晚的平均睡眠为 {current} 小时，上周为 {previous} 小时。",
+    en: "Average sleep on logged nights was {current} h, compared with {previous} h the week before.",
+  },
+  "weekly.protein_trend": {
+    zh: "记录较完整的日子里，平均蛋白质为 {current} 克，上周为 {previous} 克。",
+    en: "On well-logged days, protein averaged {current} g, compared with {previous} g the week before.",
+  },
+  "weekly.comparison_limited": {
+    zh: "这周或上周记录的天数较少，部分指标暂不做对比。",
+    en: "Some metrics are not compared because one of the two weeks has too few logged days.",
+  },
   "rule.logging.meals_insufficient": {
     zh: "最近 {totalDays} 天中有 {loggedDays} 天记录了饮食。至少记录 3 天后，才能给出饮食方面的建议。",
     en: "You logged meals on {loggedDays} of the last {totalDays} days. Log at least 3 days to get nutrition suggestions.",

@@ -28,6 +28,21 @@
   | `npx tsc --noEmit`（全项目） | 退出码 0 |
   | `npm test` | 57/57 通过 |
 
+### 2026-10-14 13:20 PDT 增量
+
+- lead 已确认 Claude Code 为 rules 所有者，并把 rules 测试加入 `npm test`。
+- 新增：
+  - `safety.ts`：`ageOnDate()` 和 `adultStatus()`，按完整出生日期精确判断，回应 lead 对“只有出生年份”的质疑；
+  - `weekly.ts`：`weeklyReview()`；
+  - `messages.ts`：周回顾的 6 个中英文模板。
+- 已把用户对 Q6–Q9 的回答和对 M1 审查三点的答复写入 `requests/20261014-1300-rules-to-lead-user-decisions-q6-q9.md`。
+- 验证：
+
+  | 命令 | 结果 |
+  |---|---|
+  | `npx tsc --noEmit`（全项目） | 退出码 0 |
+  | `npm test` | **106/106 通过**（其中 rules 49 项） |
+
 ## 阻塞与请求
 
 - `requests/20261014-1240-rules-to-lead-integration-and-contract.md`：测试脚本、Suggestion 和 Profile 的扩展、`GET /api/today`。
@@ -42,6 +57,11 @@
 
 ## 待用户决定
 
-- 是否有公司（决定 Apple Developer 用组织还是个人身份）。
-- 托管区域：美国还是欧盟。
-- 营养师审核的人选和时间。在此之前，引擎不自动改动任何营养目标。
+- 已决定（用户 2026-10-14 在 Claude 会话中回答）：
+  - 个人账号做内部测试；
+  - 托管区域选美国；
+  - 拍照识别用 OpenAI；
+  - 域名等部署时再买。
+- 仍未决定：
+  - 营养师审核（Q10，用户还没回答）。在此之前，引擎不自动改动任何营养目标。
+  - 提交信息格式：用户本机的钩子要求 conventional 格式，与 AGENTS.md 要求的 `[角色]` 开头冲突。lead 的意见是以项目规范为准，但钩子会直接拦截 `[rules]` 开头的提交，所以本次仍用 `feat(rules): …`，由用户定夺。

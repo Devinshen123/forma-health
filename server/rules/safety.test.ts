@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  adultStatus,
   ageEligibility,
+  ageOnDate,
   allergenWarnings,
   conservativeMode,
   guardEnginePatch,
@@ -17,6 +19,18 @@ test("age gate only admits users who are certainly 18+, and asks for a date in t
   assert.equal(ageEligibility(2010, "2026-10-14"), "ineligible");
   assert.equal(ageEligibility(null, "2026-10-14"), "needs_birth_date");
   assert.equal(ageEligibility(2030, "2026-10-14"), "needs_birth_date");
+});
+
+test("a full birth date gives an exact age, including the day before an 18th birthday and leap days", () => {
+  assert.equal(ageOnDate("2008-10-14", "2026-10-14"), 18);
+  assert.equal(ageOnDate("2008-10-15", "2026-10-14"), 17);
+  assert.equal(adultStatus("2008-10-14", "2026-10-14"), "eligible");
+  assert.equal(adultStatus("2008-10-15", "2026-10-14"), "ineligible");
+  assert.equal(ageOnDate("2008-02-29", "2026-02-28"), 17);
+  assert.equal(ageOnDate("2008-02-29", "2026-03-01"), 18);
+  assert.equal(adultStatus("2008-02-30", "2026-10-14"), "invalid");
+  assert.equal(adultStatus("2030-01-01", "2026-10-14"), "invalid");
+  assert.equal(adultStatus(null, "2026-10-14"), "invalid");
 });
 
 test("conservative mode lists every reason that triggered it", () => {
