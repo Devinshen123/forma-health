@@ -4,7 +4,7 @@
 
 ## 正在做
 
-AI-02：实现和测试已完成，等待 lead 最终串行构建/网页验收后归档。仅拥有 server/（不含 rules）、.env.example 和本状态文件；不改 frontend、根契约/依赖或其他文档。
+AI-02：本次接入实现、测试及集成验收已完成。仅拥有 server/（不含 rules）、.env.example 和本状态文件；不改 frontend、根契约/依赖或其他文档。
 
 ## 已完成
 
@@ -16,7 +16,9 @@ AI-02：实现和测试已完成，等待 lead 最终串行构建/网页验收�
 - `npx tsc --noEmit`：通过（本轮代码完成后的实际执行）。
 - `npm test`：57测试通过、0失败；包含自己的13项HTTP/存储测试（原11＋原始响应上限＋跨账户并发全局预留）及独立QA 44项。真实fetch adapter由原始 Responses HTTP fixture验证，未联系供应商。
 - 已处理请求1210（日请求=AI_BUDGET_LIMIT、Sharp10秒与持久lease）和1220（独立全局UTC账不随删账号退还、同意凭证、拒控制字符）。
-- Lead报告已执行 `npm run build` 成功；最终 Vite 构建仅由 lead 串行进行，backend没有并发清理dist。待最终构建通知补上最终记录。
+- Lead最终串行执行 `npm run build`：完整通过；再次 `npm test`：57/57通过。backend没有并发清理dist。
+- Lead实际浏览器夹具链路：识别草稿→逐项审核→保存一项260kcal、source=ai_estimate成功。该数据由临时原始HTTP夹具供应，不能当真实模型识别质量验证。
+- 实现提交：`e9d4a6c [backend] add private AI food-photo drafts and budget guards`，仅10个自身所有权文件，排除 server/rules；请求回复由lead随其文档提交。
 
 ## 阻塞项 / 请求
 
