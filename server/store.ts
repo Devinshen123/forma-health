@@ -2,9 +2,10 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
-import type { AppState, User, FoodPhotoDraft } from "../src/types";
+import type { AppState, User, FoodPhotoDraft, SyncMutation, SyncSnapshot } from "../src/types";
 import { emptyState } from "../src/types";
 import { AiError } from './ai-errors';
+import { normalizedState, entityValues, changedEntityKeys, mutationHash, entityKey, applySyncChanges, SyncConflict } from './sync';
 
 export interface Account extends User {
   password_hash: string;
@@ -43,7 +44,9 @@ export class Store {
       CREATE INDEX IF NOT EXISTS ai_requests_owner_time ON ai_requests(owner_id,created_ms);
       CREATE TABLE IF NOT EXISTS ai_locks(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,request_id TEXT NOT NULL REFERENCES ai_requests(id) ON DELETE CASCADE,expires_ms INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS ai_reservations(id TEXT PRIMARY KEY,request_id TEXT NOT NULL REFERENCES ai_requests(id) ON DELETE CASCADE,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,utc_day TEXT NOT NULL,reserved_micro_usd INTEGER NOT NULL,model TEXT NOT NULL,created_at TEXT NOT NULL,outcome TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS ai_global_usage(utc_day TEXT PRIMARY KEY,reserved_micro_usd INTEGER NOT NULL DEFAULT 0);`);
+      CREATE TABLE IF NOT EXISTS ai_global_usage(utc_day TEXT PRIMARY KEY,reserved_micro_usd INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS sync_entities(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,entity_key TEXT NOT NULL,version INTEGER NOT NULL,deleted INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(owner_id,entity_key));
+      CREATE TABLE IF NOT EXISTS sync_mutations(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,payload_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id));`);
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -109,18 +112,58 @@ export class Store {
       .get(ownerId) as { state_json: string; revision: number } | undefined;
     if (!row) throw new Error("Account state missing");
     return {
-      state: JSON.parse(row.state_json) as AppState,
+      state: normalizedState(JSON.parse(row.state_json) as AppState),
       revision: row.revision,
     };
   }
   save(ownerId: string, state: AppState, revision: number): boolean {
-    return (
-      this.db
+    return this.transaction(() => {
+      const previous = this.snapshot(ownerId);
+      if (previous.revision !== revision) return false;
+      this.ensureEntityVersions(ownerId, previous.state);
+      const saved = this.db
         .prepare(
           "UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=? AND revision=?",
         )
-        .run(JSON.stringify(state), ownerId, revision).changes === 1
-    );
+        .run(JSON.stringify(state), ownerId, revision).changes === 1;
+      if (saved) this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+      return saved;
+    });
+  }
+  private ensureEntityVersions(ownerId: string, state: AppState) {
+    const insert = this.db.prepare('INSERT OR IGNORE INTO sync_entities(owner_id,entity_key,version,deleted) VALUES (?,?,?,0)');
+    for (const [key, value] of entityValues(state)) insert.run(ownerId, key, value === null ? 0 : 1);
+  }
+  private touchEntities(ownerId: string, keys: string[], state: AppState) {
+    const values = entityValues(state);
+    const update = this.db.prepare('INSERT INTO sync_entities(owner_id,entity_key,version,deleted) VALUES (?,?,1,?) ON CONFLICT(owner_id,entity_key) DO UPDATE SET version=version+1,deleted=excluded.deleted');
+    for (const key of keys) update.run(ownerId, key, values.has(key) && values.get(key) !== null ? 0 : 1);
+  }
+  private readSyncSnapshot(ownerId: string): SyncSnapshot {
+    const snapshot = this.snapshot(ownerId);
+    this.ensureEntityVersions(ownerId, snapshot.state);
+    const rows = this.db.prepare('SELECT entity_key,version FROM sync_entities WHERE owner_id=?').all(ownerId) as { entity_key: string; version: number }[];
+    return { ...snapshot, entityVersions: Object.fromEntries(rows.map(row => [row.entity_key, row.version])) };
+  }
+  syncSnapshot(ownerId: string): SyncSnapshot {
+    return this.transaction(() => this.readSyncSnapshot(ownerId));
+  }
+  sync(ownerId: string, mutation: SyncMutation, validate: (previous: AppState, candidate: AppState) => AppState): { snapshot: SyncSnapshot; previous?: AppState } {
+    return this.transaction(() => {
+      const snapshot = this.readSyncSnapshot(ownerId), hash = mutationHash(mutation);
+      const receipt = this.db.prepare('SELECT payload_hash FROM sync_mutations WHERE owner_id=? AND mutation_id=?').get(ownerId, mutation.mutationId) as { payload_hash: string } | undefined;
+      if (receipt) {
+        if (receipt.payload_hash !== hash) throw new SyncConflict(snapshot, [`mutation:${mutation.mutationId}`], 'This mutation ID was already used for different changes.');
+        return { snapshot };
+      }
+      const conflicts = mutation.changes.filter(change => (snapshot.entityVersions[entityKey(change)] ?? 0) !== change.baseVersion).map(entityKey);
+      if (conflicts.length) throw new SyncConflict(snapshot, conflicts);
+      const state = validate(snapshot.state, applySyncChanges(snapshot.state, mutation.changes));
+      this.db.prepare('UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=?').run(JSON.stringify(state), ownerId);
+      this.touchEntities(ownerId, mutation.changes.map(entityKey), state);
+      this.db.prepare('INSERT INTO sync_mutations VALUES (?,?,?,?)').run(ownerId, mutation.mutationId, hash, new Date().toISOString());
+      return { snapshot: this.readSyncSnapshot(ownerId), previous: snapshot.state };
+    });
   }
   asset(ownerId: string, assetId: string) {
     return this.db

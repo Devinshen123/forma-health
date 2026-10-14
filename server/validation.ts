@@ -1,19 +1,11 @@
 import { z } from "zod";
 import type { AppState, Suggestion } from "../src/types";
+import { idSchema, dateSchema } from './validation-primitives';
+import { workoutSchema, activeWorkoutSchema, routineSchema, scheduleSchema } from './training-validation';
+export { idSchema, dateSchema } from './validation-primitives';
 
 const text = (max = 2000) => z.string().max(max);
 const title = z.string().trim().min(1).max(160);
-export const idSchema = z.string().uuid();
-export const dateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((value) => {
-    const parsed = new Date(`${value}T00:00:00.000Z`);
-    return (
-      Number.isFinite(parsed.getTime()) &&
-      parsed.toISOString().slice(0, 10) === value
-    );
-  }, "Use a valid calendar date");
 const instant = z.string().datetime({ offset: true });
 const timezone = z
   .string()
@@ -164,34 +156,10 @@ export const stateSchema = z
       .strict()
       .nullable(),
     meals: z.array(mealSchema).max(10000),
-    workouts: z
-      .array(
-        z
-          .object({
-            id: idSchema,
-            date: dateSchema,
-            name: title,
-            duration: minutes,
-            rpe: z.number().min(1).max(10),
-            exercises: z
-              .array(
-                z
-                  .object({
-                    name: title,
-                    sets: z.number().int().min(1).max(100),
-                    reps: z.number().int().min(1).max(1000),
-                    weight: z.number().min(0).max(2000),
-                  })
-                  .strict(),
-              )
-              .min(1)
-              .max(100),
-            notes: text(10000),
-            createdAt: instant,
-          })
-          .strict(),
-      )
-      .max(10000),
+    workouts: z.array(workoutSchema).max(10000),
+    routines: z.array(routineSchema).max(10000).default([]),
+    schedules: z.array(scheduleSchema).max(1000).default([]),
+    activeWorkouts: z.array(activeWorkoutSchema).max(100).default([]),
     sleeps: z.array(sleepSchema).max(10000),
     reports: z
       .array(
@@ -248,6 +216,9 @@ export const stateSchema = z
       "reports",
       "planVersions",
       "suggestions",
+      "routines",
+      "schedules",
+      "activeWorkouts",
     ] as const) {
       for (const [index, entity] of state[collection].entries()) {
         if (ids.has(entity.id))
@@ -262,6 +233,19 @@ export const stateSchema = z
     const plans = new Map(
       state.planVersions.map((version) => [version.id, version]),
     );
+    const routines = new Map(state.routines.map(routine => [routine.id, routine]));
+    const earlierRoutines = new Set<string>();
+    for (const [index, routine] of state.routines.entries()) {
+      if (routine.supersedesId && !earlierRoutines.has(routine.supersedesId))
+        ctx.addIssue({ code: 'custom', path: ['routines', index, 'supersedesId'], message: 'A routine version must reference an earlier routine' });
+      earlierRoutines.add(routine.id);
+    }
+    for (const [index, schedule] of state.schedules.entries())
+      for (const [slotIndex, slot] of schedule.slots.entries())
+        if (slot.routineId && !routines.has(slot.routineId)) ctx.addIssue({ code: 'custom', path: ['schedules', index, 'slots', slotIndex, 'routineId'], message: 'Scheduled routine does not exist' });
+    for (const collection of ['workouts', 'activeWorkouts'] as const)
+      for (const [index, workout] of state[collection].entries())
+        if (workout.routineId && !routines.has(workout.routineId)) ctx.addIssue({ code: 'custom', path: [collection, index, 'routineId'], message: 'Workout routine does not exist' });
     const sleepsByStart = [...state.sleeps].sort(
       (a, b) => Date.parse(a.start) - Date.parse(b.start),
     );
@@ -376,6 +360,25 @@ export function validateTransition(
   previous: AppState,
   next: AppState,
 ): string | null {
+  const oldWorkouts = new Map(previous.workouts.map(workout => [workout.id, workout]));
+  for (const workout of next.workouts) {
+    const old = oldWorkouts.get(workout.id);
+    if (!old) continue;
+    if (old.exercises.some(exercise => exercise.setLogs !== undefined) && workout.exercises.every(exercise => exercise.setLogs === undefined))
+      return 'A detailed workout cannot silently lose its recorded set data';
+    for (const [index, oldExercise] of old.exercises.entries()) {
+      if (oldExercise.setLogs === undefined) continue;
+      const exercise = oldExercise.id ? workout.exercises.find(item => item.id === oldExercise.id) : workout.exercises[index]?.name === oldExercise.name ? workout.exercises[index] : undefined;
+      if (exercise && exercise.setLogs === undefined) return 'An existing detailed exercise must retain an explicit set log';
+    }
+  }
+  const nextRoutines = new Map((next.routines ?? []).map(routine => [routine.id, routine]));
+  for (const old of previous.routines ?? [])
+    if (!equal(old, nextRoutines.get(old.id))) return 'Existing routine versions cannot be edited or deleted';
+  const previousRoutineIds = new Set((previous.routines ?? []).map(routine => routine.id));
+  for (const routine of next.routines ?? [])
+    if (!previousRoutineIds.has(routine.id) && routine.supersedesId && !previousRoutineIds.has(routine.supersedesId))
+      return 'A new routine version must supersede an existing routine';
   if (next.planVersions.length < previous.planVersions.length)
     return "Plan history cannot be deleted";
   for (let i = 0; i < previous.planVersions.length; i++)

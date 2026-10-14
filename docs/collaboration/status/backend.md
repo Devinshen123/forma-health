@@ -4,7 +4,7 @@
 
 ## 正在做
 
-AI-02：本次接入实现、测试及集成验收已完成。仅拥有 server/（不含 rules）、.env.example 和本状态文件；不改 frontend、根契约/依赖或其他文档。
+T-02 训练与同步后端已实现并通过验证；等待 lead 独立浏览器集成验收。AI-02 保持完成。仅拥有 server/（不含 rules）、.env.example 和本状态文件；不改 frontend、根契约/依赖。
 
 ## 已完成
 
@@ -22,7 +22,21 @@ AI-02：本次接入实现、测试及集成验收已完成。仅拥有 server/�
 
 ## 阻塞项 / 请求
 
-无实现阻塞。用户将稍后配置密钥，所以不做真实供应商请求，不开通付费服务；缺配置本身须作为正常错误场景验证。
+- 请求：`20261014-1424-backend-to-lead-training-sync-contract.md` 已由 lead 通过消息及 ADR-training-sync 批准。
+- 无后端实现阻塞。没有启动/重启固定端口服务；lead 将加载新代码做浏览器离线与多客户端验证。
+- 用户将稍后配置密钥，所以不做真实供应商请求，不开通付费服务；缺配置本身须作为正常错误场景验证。
+
+## T-02 实现与验证
+
+- GET/POST /api/sync：所有者header、实体 CAS / tombstone /1000项原子batch、SHA256-only幂等、原 PUT 同版本账，未重写原 snapshot。
+- 旧库默认空新集合，旧PUT省略集合保留服务端值；详细组不能同ID剥离。训练 SetLog / Routine追加版本 / Schedule引用 / active暂停严格Zod。
+- 全部写入统一走完整state、plan transition、ownedassets和真实AI provenance；保存后取消并清理被移除附件。账户删除cascade同步表，独立全局AI账保持。
+- `node --import tsx --test server/sync.test.ts server/api.test.ts`：21/21通过。
+- `npm test`：116/116通过，0失败（包含原AI/账户/规则和新10项sync HTTP）。
+- `npx tsc --noEmit`：全仓通过；早期root模块暂未落盘的两轮错误已消失。
+- lead串行 `npm run build`：成功，包含tsc/Vite与3个静态文件的离线壳。
+- `git diff --check` own paths：通过。
+- 未复制外部 schema/code/media，未调用外部供应商，未操作真实用户数据。
 
 ## 待用户决定
 

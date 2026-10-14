@@ -16,6 +16,8 @@
 | `POST /auth/logout`   | `{}`；废止当前会话并清除 cookie                                           |
 | `GET /state`          | 当前账户的 `{state,revision}`                                             |
 | `PUT /state`          | `{state,revision}`；校验后 compare-and-swap；过期 revision 返回 409       |
+| `GET /sync`           | 当前账户 `{state,revision,entityVersions}`；包含删除墓碑版本              |
+| `POST /sync`          | `{mutationId,changes}`；最多1000项实体CAS；原子提交、SHA256幂等，冲突返回409 |
 | `POST /assets`        | `{name,mime,base64}`；最多 10 MB；PNG/JPEG/WebP/GIF/PDF 及对应文件头      |
 | `GET /assets/:id`     | 当前账户附件；其他账户返回 404；PDF 作为附件下载                          |
 | `DELETE /assets/:id`  | 删除尚未被记录引用的附件；被引用时返回 409                                |
@@ -26,7 +28,7 @@
 
 写入只接受 JSON 及可信 Origin（本机 localhost/127.0.0.1 的 5173/3001 端口）。跨站请求被拒绝。API 不提供宽松 CORS；生产 Secure cookie 模式仅供配置了真正 HTTPS 的环境。生产托管、反向代理信任与域名 allowlist 不属于此次本机版本。
 
-状态读写、导出、删除账号、附件 POST/DELETE、照片草稿接口必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
+状态与同步读写、导出、删除账号、附件 POST/DELETE、照片草稿接口必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
 
 会话 token 是随机 32 字节，数据库只保存 SHA-256 token hash；cookie 为 HttpOnly、SameSite Strict。密码使用独立随机盐和异步 scrypt（N=32768、r=8、p=1）。认证有地址限流，普通 JSON 2 MB、附件 JSON 14 MB 上限。SQL 使用绑定参数。请求正文、健康值、密码与 token 不进入日志。
 
@@ -36,7 +38,19 @@
 
 餐、训练、睡眠和报告可修改删除。删除记录时移除其不再被任何记录引用的附件。计划与建议历史保持不可改写：accept 添加一条与 patch 一致的子版本；undo 添加一条补偿版本，其 parent 是已接受的当前版本、所有目标恢复到建议的 baseVersion。只有最新的已接受调整能被撤销。不能移除旧版本、改写旧目标或直接移动 currentPlanId 到旧版本。
 
-`/export` 包含真实记录、附件元数据、独立 aiDrafts、账户 aiUsage 和 aiReservations，不含图片/PDF bytes；附件需单独下载，当前没有完整备份导入流程。全局预算只保留无账户信息的 UTC 日金额，不导出其他账户数据。网页断网时没有 outbox，失败保存不在后台排队。HTTP 409 后客户端重载服务端状态，供用户确认后重新保存，不自动用新 revision 覆盖另一窗口的更改。
+`/export` 包含真实记录、实体版本/删除墓碑、附件元数据、独立 aiDrafts、账户 aiUsage 和 aiReservations，不含图片/PDF bytes；附件需单独下载，当前没有完整附件备份导入流程。全局预算只保留无账户信息的 UTC 日金额，不导出其他账户数据。训练导入在客户端审核后走相同同步校验，不信任外部身份或附件来源。
+
+## 训练记录与实体同步
+
+原 Workout 摘要仍可读，服务端不会把组数摘要伪造成逐组完成。新 setLogs 明确保存 work/warmup/drop、未知 null、完成状态及时间；完成证据是正次数加已记录重量（显式0允许），或正时长，只有距离不能算完成。drop 引用同动作前置组，可比较时递减重量不高于父组。详细 Workout 至少一组真实完成；旧摘要没有 setLogs 时次数仍必须正数。ActiveWorkout 可保存未完成组、ISO 休息截止时间和暂停剩余秒数。重量固定 kg。
+
+Routine 只追加版本，supersedesId 指已存在版本，允许分支；已有版本不可编辑或删除。Schedule 可编辑，星期为0=Sunday到6=Saturday且不重复，循环模式仅按槽顺序，不含 weekday。所有 routine 引用必须在该账户状态中存在。
+
+同步变化是 `{collection,id,baseVersion,kind:'upsert'|'delete',value?}`，版本键为 `collection:id`，未知为0。所有原集合及 routines/schedules/activeWorkouts 均可同步；profile/currentPlanId 的 id 必须等于字段名，completedActions 的 id 为有效日期。不同实体可在当前状态上合并；任一 baseVersion 不一致返回 `409 {code:'SYNC_CONFLICT',snapshot,conflicts}`，整批零提交。删除提升并保留墓碑版本，旧设备不能复活记录。每项成功触及实体版本加1；相同 mutationId 同内容重放返回当前 snapshot，不再次加账，同ID不同内容409。SQLite只保存幂等内容哈希，不保存被删除记录的历史响应。
+
+旧 PUT/state 仍使用整份 revision CAS，并更新同一实体版本账；确实省略新集合时保留服务端值，显式空集合按删除规则处理。既有详细组不能被旧编辑器同ID默默剥离。同步保存仍执行完整 state、历史版本、所有权及真实AI草稿校验；接受/撤销计划须同批追加版本并修改指针，不能绕过原约束。
+
+服务端持久化协议支持同一实例的多个客户端；网页 outbox/账户私有离线缓存由 src/sync 实现并由 lead 验收。当前服务仅绑定本机，不据此宣称已实现公网跨设备部署。409必须由用户审核冲突，不能静默覆写；401禁止跨账户重放。退出/删除的离线缓存清理由客户端负责，服务器删除账户会清除同步版本/幂等账及其他私有数据。
 
 ## 照片分析与配置
 
@@ -54,7 +68,7 @@
 
 ## 验证
 
-本轮 `npm test` 57项通过，包含原11项本机 API 测试、供应商原始 HTTP/超长响应/全局并发预留，以及独立 QA 的同意、未知值、来源、EXIF剥离、失败重试、重启限额、删建账号全局限额、在途取消等。测试使用临时目录和随机本机端口，不写真实账户的数据目录，不联系供应商。Vite最终构建由 lead 串行执行，避免并发清理 dist。
+训练增量验证：`npm test` 116项通过，包含原账户/AI/领域规则以及10项新增同步HTTP测试；覆盖不同记录合并、同记录原子冲突、墓碑、跨重启幂等、旧PUT互操作、旧库兼容、逐组/递减/暂停、Routine不变性、原计划/AI来源和删账户隔离。测试使用临时目录和随机本机端口，不写真实账户的数据目录，不联系供应商。Vite最终构建由 lead 串行执行，避免并发清理 dist。
 
 框架参考：[Node SQLite 官方 API](https://nodejs.org/api/sqlite.html)、[Zod API](https://zod.dev/api)、[Express 5 API](https://expressjs.com/en/5x/api/)。
 

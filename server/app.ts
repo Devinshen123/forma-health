@@ -16,8 +16,10 @@ import {
   putStateSchema,
   registerSchema,
   validateTransition,
+  parseState,
 } from "./validation";
-import type { AppState, User } from "../src/types";
+import type { AppState, User, SyncMutation } from "../src/types";
+import { syncMutationSchema, SyncConflict } from './sync';
 import { FoodPhotoService, type FoodPhotoAiConfig } from './food-photo';
 import { AiError } from './ai-errors';
 
@@ -120,6 +122,7 @@ const referencedAssets = (state: AppState) =>
       item.assetId ? [item.assetId] : [],
     ),
   );
+class StateInputError extends Error {}
 
 export interface AppOptions {
   dataDir: string;
@@ -209,7 +212,7 @@ export function createApp(options: AppOptions) {
     if (!account)
       return res.status(401).json({ error: "Sign in to access your data" });
     const accountBound =
-      ["/api/state", "/api/export", "/api/account", '/api/food-photo-drafts'].includes(req.path) ||
+      ["/api/state", "/api/sync", "/api/export", "/api/account", '/api/food-photo-drafts'].includes(req.path) ||
       (req.path.startsWith("/api/assets") &&
         ["POST", "DELETE"].includes(req.method));
     if (accountBound && req.get("X-Forma-Account") !== account.id)
@@ -282,11 +285,52 @@ export function createApp(options: AppOptions) {
   app.get("/api/state", auth, (_req, res) =>
     res.json(store.snapshot(res.locals.account.id)),
   );
+  const validateOwnedState = (ownerId: string, previous: AppState, candidate: AppState): AppState => {
+    const state = parseState(candidate);
+    const transitionError = validateTransition(previous, state);
+    if (transitionError) throw new StateInputError(transitionError);
+    for (const meal of state.meals) if (meal.source === 'ai_estimate') {
+      const draft = meal.aiDraftId && store.aiDraft(ownerId, meal.aiDraftId);
+      if (!draft || !draft.isFood || draft.assetId !== meal.assetId || meal.aiItemIndex === undefined || !draft.items[meal.aiItemIndex]) {
+        throw new StateInputError('The AI meal must reference its genuine reviewed draft and photo');
+      }
+    }
+    for (const assetId of referencedAssets(state)) {
+      const asset = store.asset(ownerId, assetId);
+      if (!asset || (state.meals.some(meal => meal.assetId === assetId) && !asset.mime.startsWith('image/'))) {
+        throw new StateInputError('An attachment is unavailable or invalid for this account');
+      }
+    }
+    return state;
+  };
+  const cleanRemovedAssets = (ownerId: string, previous: AppState, next: AppState) => {
+    const kept = referencedAssets(next);
+    for (const assetId of referencedAssets(previous)) if (!kept.has(assetId)) {
+      foodPhoto.cancelAsset(ownerId, assetId);
+      store.deleteAsset(ownerId, assetId);
+    }
+  };
+  app.get('/api/sync', auth, (_req, res) => res.json(store.syncSnapshot(res.locals.account.id)));
+  app.post('/api/sync', auth, (req, res) => {
+    const mutation = syncMutationSchema.parse(req.body) as SyncMutation;
+    const ownerId: string = res.locals.account.id;
+    const result = store.sync(ownerId, mutation, (previous, next) => validateOwnedState(ownerId, previous, next));
+    if (result.previous) cleanRemovedAssets(ownerId, result.previous, result.snapshot.state);
+    res.json(result.snapshot);
+  });
   app.put("/api/state", auth, (req, res) => {
-    const { state: parsed, revision } = putStateSchema.parse(req.body);
-    const state = parsed as AppState,
-      ownerId: string = res.locals.account.id;
+    const ownerId: string = res.locals.account.id;
     const snapshot = store.snapshot(ownerId);
+    let body = req.body;
+    if (body?.state && typeof body.state === 'object' && !Array.isArray(body.state)) {
+      const compatible = { ...body.state };
+      // An older snapshot writer does not know these collections; absence is not deletion.
+      for (const collection of ['routines', 'schedules', 'activeWorkouts'] as const)
+        if (!Object.hasOwn(compatible, collection)) compatible[collection] = snapshot.state[collection] ?? [];
+      body = { ...body, state: compatible };
+    }
+    const { state: parsed, revision } = putStateSchema.parse(body);
+    const state = parsed as AppState;
     if (snapshot.revision !== revision)
       return res
         .status(409)
@@ -294,36 +338,12 @@ export function createApp(options: AppOptions) {
           error: "Your data changed in another window. Reload before saving.",
           revision: snapshot.revision,
         });
-    const transitionError = validateTransition(snapshot.state, state);
-    if (transitionError)
-      return res.status(400).json({ error: transitionError });
-    for (const meal of state.meals) if (meal.source === 'ai_estimate') {
-      const draft = meal.aiDraftId && store.aiDraft(ownerId, meal.aiDraftId);
-      if (!draft || !draft.isFood || draft.assetId !== meal.assetId || meal.aiItemIndex === undefined || !draft.items[meal.aiItemIndex])
-        return res.status(400).json({ error: 'The AI meal must reference its genuine reviewed draft and photo' });
-    }
-    for (const assetId of referencedAssets(state)) {
-      const asset = store.asset(ownerId, assetId);
-      if (!asset)
-        return res
-          .status(400)
-          .json({ error: "An attachment is unavailable for this account" });
-      if (
-        state.meals.some((meal) => meal.assetId === assetId) &&
-        !asset.mime.startsWith("image/")
-      )
-        return res
-          .status(400)
-          .json({ error: "Meal attachments must be images" });
-    }
+    validateOwnedState(ownerId, snapshot.state, state);
     if (!store.save(ownerId, state, revision))
       return res
         .status(409)
         .json({ error: "Your data changed. Reload before saving." });
-    // A removed log/report should also remove its previously referenced private file.
-    for (const assetId of referencedAssets(snapshot.state))
-      if (!referencedAssets(state).has(assetId))
-        store.deleteAsset(ownerId, assetId);
+    cleanRemovedAssets(ownerId, snapshot.state, state);
     res.json({ state, revision: revision + 1 });
   });
   app.post("/api/assets", auth, (req, res) => {
@@ -374,7 +394,7 @@ export function createApp(options: AppOptions) {
   });
   app.get("/api/export", auth, (_req, res) => {
     const account: Account = res.locals.account,
-      snapshot = store.snapshot(account.id);
+      snapshot = store.syncSnapshot(account.id);
     res.setHeader(
       "Content-Disposition",
       'attachment; filename="forma-export.json"',
@@ -419,6 +439,8 @@ export function createApp(options: AppOptions) {
   }
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
+      if (error instanceof StateInputError) return res.status(400).json({ error: error.message });
       if (error instanceof AiError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof ZodError)
         return res
