@@ -231,6 +231,13 @@ test("a stale tab cannot read, save, upload, export or delete with another accou
   const h = await harness(t),
     a = await h.register(),
     b = await h.register();
+  for (const accountHint of [a.user.id, null]) {
+    const staleLogout = await h.request('/auth/logout', { method: 'POST', body: {}, cookie: b.cookie, accountHint });
+    assert.equal(staleLogout.status, 401);
+    assert.equal(staleLogout.data.code, 'ACCOUNT_CHANGED');
+    const stillSignedIn = await h.request('/auth/me', { cookie: b.cookie });
+    assert.equal(stillSignedIn.data.user.id, b.user.id);
+  }
   const stateA = emptyState();
   stateA.meals = [meal()];
   // Both start at revision 0: a revision check alone would not catch this account switch.

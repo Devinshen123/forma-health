@@ -13,7 +13,7 @@
 | `POST /auth/register` | `{email,password,name}`；密码 10–128 字符；email 大小写归一；创建随机会话 |
 | `POST /auth/login`    | `{email,password}`；更新随机会话并废止当前浏览器旧会话                    |
 | `GET /auth/me`        | `{user:null}` 或公开的 `{id,email,name}`                                  |
-| `POST /auth/logout`   | `{}`；废止当前会话并清除 cookie                                           |
+| `POST /auth/logout`   | `{}`；有效会话须账户hint匹配；废止会话并清cookie，无会话仍幂等            |
 | `GET /state`          | 当前账户的 `{state,revision}`                                             |
 | `PUT /state`          | `{state,revision}`；校验后 compare-and-swap；过期 revision 返回 409       |
 | `GET /sync`           | 当前账户 `{state,revision,entityVersions}`；包含删除墓碑版本              |
@@ -28,7 +28,7 @@
 
 写入只接受 JSON 及可信 Origin（本机 localhost/127.0.0.1 的 5173/3001 端口）。跨站请求被拒绝。API 不提供宽松 CORS；生产 Secure cookie 模式仅供配置了真正 HTTPS 的环境。生产托管、反向代理信任与域名 allowlist 不属于此次本机版本。
 
-状态与同步读写、导出、删除账号、附件 POST/DELETE、照片草稿接口必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
+状态与同步读写、导出、删除账号、附件 POST/DELETE、照片草稿接口，以及有有效会话的退出必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存或误注销新账户。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
 
 会话 token 是随机 32 字节，数据库只保存 SHA-256 token hash；cookie 为 HttpOnly、SameSite Strict。密码使用独立随机盐和异步 scrypt（N=32768、r=8、p=1）。认证有地址限流，普通 JSON 2 MB、附件 JSON 14 MB 上限。SQL 使用绑定参数。请求正文、健康值、密码与 token 不进入日志。
 
@@ -52,6 +52,8 @@ Routine 只追加版本，supersedesId 指已存在版本，允许分支；已�
 
 服务端持久化协议支持同一实例的多个客户端；网页 outbox/账户私有离线缓存由 src/sync 实现并由 lead 验收。当前服务仅绑定本机，不据此宣称已实现公网跨设备部署。409必须由用户审核冲突，不能静默覆写；401禁止跨账户重放。退出/删除的离线缓存清理由客户端负责，服务器删除账户会清除同步版本/幂等账及其他私有数据。
 
+离线私有缓存使用 IndexedDB 事务合并稳定mutation IDs，incoming队列依赖顺序优先，settled账防旧标签恢复已确认/已放弃项。每账户同意epoch是随机generation；撤回/清除轮换epoch，旧标签的迟到写入被拒绝。普通关闭离线存储会在同一事务检查最新pending，不能误删另一标签待同步记录。明确重新开启才授予新epoch；仅保存无健康内容的撤回标记以拦截旧writer。
+
 ## 照片分析与配置
 
 每张照片的 API 请求都要显式 `consent:true`，不自动开启 profile.aiConsent。只发送照片重编码内容与请求语言，不发送账户、训练、睡眠、过敏偏好或其他健康资料。成功草稿有服务端开始时间的 `consent:{acceptedAt,version:'food-photo-v1',language}`。原始照片保持本机私有；分析图仅接受 JPEG/PNG/WebP、5 MiB、20MP，Sharp 旋转、最长1024、JPEG 重编码去元数据、处理上限10秒。图片中的可见信息仍会发送给供应商。
@@ -69,6 +71,8 @@ Routine 只追加版本，supersedesId 指已存在版本，允许分支；已�
 ## 验证
 
 训练增量验证：`npm test` 116项通过，包含原账户/AI/领域规则以及10项新增同步HTTP测试；覆盖不同记录合并、同记录原子冲突、墓碑、跨重启幂等、旧PUT互操作、旧库兼容、逐组/递减/暂停、Routine不变性、原计划/AI来源和删账户隔离。测试使用临时目录和随机本机端口，不写真实账户的数据目录，不联系供应商。Vite最终构建由 lead 串行执行，避免并发清理 dist。
+
+客户端审查修复后最终 `npm test` 155/155通过，`npx tsc --noEmit`通过；包含独立真实engine/HTTP/原子IDB夹具测试，对失联响应重试、多标签队列合并、冲突审核、缓存失败、账户换切、撤回保护和超时有验证。服务端额外证明cookie B+hint A或缺hint退出不会注销B。此证据不替代lead的真实浏览器离线壳验收。
 
 框架参考：[Node SQLite 官方 API](https://nodejs.org/api/sqlite.html)、[Zod API](https://zod.dev/api)、[Express 5 API](https://expressjs.com/en/5x/api/)。
 

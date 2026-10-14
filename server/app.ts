@@ -278,6 +278,11 @@ export function createApp(options: AppOptions) {
   app.post("/api/auth/logout", (req, res) => {
     z.object({}).strict().parse(req.body);
     const session = sessionOf(req);
+    if (session?.account && req.get('X-Forma-Account') !== session.account.id)
+      return res.status(401).json({
+        error: 'Account changed. Sign in again before saving.',
+        code: 'ACCOUNT_CHANGED',
+      });
     if (session) store.deleteSession(session.token);
     res.clearCookie(COOKIE, cookieOptions);
     res.json({ ok: true });

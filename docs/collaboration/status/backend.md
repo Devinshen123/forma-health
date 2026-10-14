@@ -4,7 +4,7 @@
 
 ## 正在做
 
-T-02 训练与同步后端已实现并通过验证；等待 lead 独立浏览器集成验收。AI-02 保持完成。仅拥有 server/（不含 rules）、.env.example 和本状态文件；不改 frontend、根契约/依赖。
+T-02 已完成并提交13b3bbd。客户端独立审查后，lead新增分配src/sync/storage.ts独占写权限，存储consent epoch与队列事务保护已实现并验证；engine/App/api仍由root修改。AI-02 保持完成。
 
 ## 已完成
 
@@ -37,6 +37,18 @@ T-02 训练与同步后端已实现并通过验证；等待 lead 独立浏览器
 - lead串行 `npm run build`：成功，包含tsc/Vite与3个静态文件的离线壳。
 - `git diff --check` own paths：通过。
 - 未复制外部 schema/code/media，未调用外部供应商，未操作真实用户数据。
+
+## 客户端同步只读审查
+
+- 已读engine/storage/App/api并立即向lead报告401清pending、多标签blind覆盖、logout失败epoch失效、无timeout以及resolve缓存失败状态。请求 `20261014-1435-backend-to-lead-client-sync-races.md` 记录触发路径与验收。
+- Lead接受并实现修复；独立QA负责客户端测试。没有改客户端、启动新端口或重复后端满测试。
+- boot明确user:null不会fallback缓存，已核实并向lead澄清，避免误报。
+- 二次指出auth失败提前切hint/epoch、resolve无关batch稳定ID、disable错删其他标签pending及撤回缓存被旧writer重建；lead接受。
+- storage实现：meta consent.enabled/generation、私有写入generation CAS、atomic requireEmpty clear、incoming队列顺序和settled ID账、同ID不同payload拒绝、较新snapshot、readLast排除撤回。缓存清除只留无健康内容的撤回generation记录。
+- `npx tsc --noEmit`：通过；`node --import tsx --test tests/sync-client.test.ts`：11/11通过；`npm test`：153/153通过、0失败。
+- 最后logout账户绑定修复由lead批准：有效session必须hint匹配；无session幂等。真实HTTP证明stale A或缺hint不能注销cookie B。
+- 最终 `node --import tsx --test server/api.test.ts tests/sync-client.test.ts`：24/24通过；`npm test`：155/155通过；`npx tsc --noEmit`：通过。较先前153新增的独立用例都纳入最终全仓结果。
+- storage/logout最后修复后的Vite构建及真实浏览器等待lead串行验收；backend没有启动服务或操作真实本机账户。
 
 ## 待用户决定
 
