@@ -148,6 +148,8 @@ export default function Nutrition({
   const analysisController = useRef<AbortController | null>(null);
   const stagedAsset = useRef<string | null>(null);
   const capabilitySequence = useRef(0);
+  const reviewHeading = useRef<HTMLHeadingElement>(null);
+  const focusedDraftId = useRef<string | null>(null);
   const working = busy || analyzing;
   const rememberUpload = (id: string | null) => { stagedAsset.current = id; setUploadedId(id); };
   const refreshCapabilities = async () => {
@@ -175,6 +177,14 @@ export default function Nutrition({
       if (pendingAsset && !demo) void request("/assets/" + encodeURIComponent(pendingAsset), { method: "DELETE", body: "{}" }).catch(() => {});
     };
   }, []);
+  useEffect(() => {
+    if (!aiDraft || analyzing || focusedDraftId.current === aiDraft.id) return;
+    const heading = reviewHeading.current;
+    if (!heading) return;
+    focusedDraftId.current = aiDraft.id;
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ block: "start", behavior: "auto" });
+  }, [aiDraft?.id, analyzing]);
   const invalidateAnalysis = () => {
     analysisSequence.current++;
     analysisController.current?.abort();
@@ -764,7 +774,7 @@ export default function Nutrition({
             </fieldset>
             {analyzing ? <div className="ai-photo-summary" role="status" aria-live="polite"><RefreshCw size={20} /><div><strong>{analysisStage === "uploading" ? zh ? "正在私有上传照片…" : "Uploading the photo privately…" : zh ? "正在生成食物草稿…" : "Preparing a food draft…"}</strong><p className="muted">{zh ? "尚未保存饮食记录。识别完成后请逐项核对。" : "No meal has been saved. Review each candidate when analysis finishes."}</p></div><button className="btn btn-secondary" type="button" onClick={cancelAnalysis}><Square size={15} />{zh ? "停止等待" : "Stop waiting"}</button></div> : null}
             {aiDraft && !analyzing ? <fieldset disabled={busy} className="stack" style={{ border: 0, padding: 0, margin: 0 }}>
-              <div className="section-title"><h3>{zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
+              <div className="section-title"><h3 ref={reviewHeading} tabIndex={-1}>{zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
               <p className="hint">{zh ? "仅凭照片无法确定所有过敏原、隐藏食材、烹调油和准确重量。请核对名称、份量与营养；不确定的数值留空，不能直接保存。" : "A photo cannot determine every allergen, hidden ingredient, cooking oil or exact weight. Check names, portions and nutrition. Unknown values stay blank and must be completed before saving."}</p>
               {aiDraft.warnings.length ? <ul className="ai-warning-list">{aiDraft.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul> : null}
               {!aiDraft.isFood || !reviewItems.length ? <p className="hint">{aiDraft.isFood ? zh ? "没有保留食物候选。你可以重新识别或改用手动填写。" : "No food candidates remain. Analyze again or continue manually." : zh ? "这张照片没有识别为食物，未添加任何记录。" : "This photo was not identified as food. No records were added."}</p> : null}
