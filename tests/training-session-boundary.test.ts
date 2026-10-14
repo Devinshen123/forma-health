@@ -28,6 +28,15 @@ test('rest follows the actual drop chain and whole superset round, without jumpi
   dropB.completed = true; assert.equal(nextSetBeforeRest(active, second.id, dropB.id), null);
   const warmup = { ...completed(), kind: 'warmup' as const }; first.setLogs.unshift(warmup);
   assert.equal(nextSetBeforeRest(active, first.id, warmup.id), null);
+  const branched = exercise('Two drops from one work set'), root = completed();
+  branched.supersetGroup = null;
+  const firstBranch = { ...completed(), kind: 'drop' as const, weight: 30, dropParentId: root.id };
+  const secondBranch = { ...actualSet('drop'), reps: 8, weight: 20, dropParentId: root.id };
+  branched.setLogs = [root, firstBranch, secondBranch];
+  const branchSession = session([branched]);
+  assert.equal(nextSetBeforeRest(branchSession, branched.id, firstBranch.id)!.setId, secondBranch.id, 'a completed drop branch cannot skip a pending sibling');
+  secondBranch.completed = true;
+  assert.equal(nextSetBeforeRest(branchSession, branched.id, secondBranch.id), null, 'rest starts only after both recorded branches complete');
 });
 
 test('finish preserves actual completed facts, timed null values, valid drops and notes with stable retry identity', () => {

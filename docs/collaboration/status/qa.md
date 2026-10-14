@@ -28,6 +28,7 @@ T-04：原创领域/导入、完成链路及多标签离线同步独立 QA 已�
 - `npm test`：全仓155/155通过，0 fail/skip/cancel，约4.87s；`npx tsc --noEmit`通过。
 - 未并行 Vite清dist；root先前完整build成功，最终训练集成构建/浏览器由其复核。没有调用真实 AI或固定服务，没有采购/部署。
 - 核查与限制已写 docs/reviews/2026-10-14-training-domain-review.md。官方导出样例/真实浏览器IDB/服务地区公开使用仍需后续验证；这些不是本轮运行事实。
+- features 最后跟进：在既有 session rest 测试补同一父工作组的两个 drop 分支；完成分支一仍提示分支二，两者完成才休息。仅改该测试和 qa 状态；`node --import tsx --test tests/training-session-boundary.test.ts` 3/3通过（约0.21s），`npx tsc --noEmit`通过。未扩展其他功能或重新运行固定服务。
 
 ## 工作范围
 
