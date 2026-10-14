@@ -31,6 +31,8 @@
 ## 阻塞与请求
 
 - `requests/20261014-1240-rules-to-lead-integration-and-contract.md`：测试脚本、Suggestion 和 Profile 的扩展、`GET /api/today`。
+- **提交信息约定冲突（请 lead 定夺）**：用户本机有 Claude Code 的提交钩子，要求 conventional commit 格式（`feat:`、`docs:` 等），会拦截以 `[角色]` 开头的提交信息。因此我用 `feat(rules): …` 格式，角色写在 scope 里，正文中也注明 `Role: [rules]`。建议把 AGENTS.md §5 的约定改为 `type(角色): …`。
+- 提交作者用一次性身份 `Claude Code <claude-code@local.invalid>`，与 Codex 的做法一致，没有修改 git 配置。
 
 ## 下一步（等确认后）
 
