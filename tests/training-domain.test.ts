@@ -25,7 +25,7 @@ test('stats distinguish legacy summaries from real performed sets without invent
   const stats = trainingStats([legacy, detailed], catalog);
   assert.equal(stats.loggedWorkouts, 2); assert.equal(stats.legacyWorkouts, 1); assert.equal(stats.detailedWorkouts, 1);
   assert.equal(stats.completedSets, 3); assert.equal(stats.volumeKg, 480); assert.equal(stats.unknownLoadSets, 1);
-  assert.deepEqual(stats.muscleSets, { chest: 3 }); assert.equal(stats.muscleSets.triceps, undefined);
+  assert.deepEqual(stats.muscleSets, { chest: 3 }); assert.equal(Object.hasOwn(stats.muscleSets, 'triceps'), false);
   assert.equal(stats.personalRecords[0].bestWeightKg, 60); assert.equal(stats.personalRecords[0].bestReps, 12);
   assert.equal(stats.personalRecords[0].bestEstimated1RMKg, 76);
   assert.equal(JSON.stringify([legacy, detailed]), before);
@@ -85,6 +85,21 @@ test('progression excludes warmups and drops from the prescribed work-set count 
   assert.equal(progressionSuggestions(plan, [rirOnly('2026-10-10'), rirOnly('2026-10-14')]).length, 1);
   plan.exercises[0].weight = 0;
   assert.equal(progressionSuggestions(plan, [rirOnly('2026-10-10'), rirOnly('2026-10-14')]).length, 0);
+});
+
+test('a new routine version cannot reuse old qualifying sessions to repeatedly increase its target', () => {
+  const original = routine(), newer = { ...structuredClone(original), id: randomUUID(), supersedesId: original.id };
+  const highLoad = (date: string, routineId?: string) => achieved(date, { routineId, exercises: [exercise([set({ weight: 100 }), set({ weight: 100 })], { exerciseId: 'bench' })] });
+  const previous = [highLoad('2026-10-10', original.id), highLoad('2026-10-11', original.id)];
+  const before = JSON.stringify(previous);
+  assert.equal(progressionSuggestions(original, previous).length, 1);
+  assert.equal(progressionSuggestions(newer, previous).length, 0);
+  const oneNew = highLoad('2026-10-12', newer.id);
+  assert.equal(progressionSuggestions(newer, [...previous, oneNew]).length, 0);
+  assert.equal(progressionSuggestions(newer, [...previous, oneNew, highLoad('2026-10-14', newer.id)]).length, 1);
+  const next = { ...newer, id: randomUUID(), supersedesId: newer.id };
+  assert.equal(progressionSuggestions(next, [...previous, oneNew, highLoad('2026-10-14', newer.id)]).length, 0);
+  assert.equal(JSON.stringify(previous), before);
 });
 
 test('civil dates validate actual leap days, rotation advances by date across DST and weekly uses Sunday zero', () => {

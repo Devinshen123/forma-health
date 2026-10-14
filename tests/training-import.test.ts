@@ -128,6 +128,8 @@ test('Forma refuses forged permissions/provenance fields at each imported nestin
     const preview = parseTrainingImport(JSON.stringify({ workouts: [workout] }), 'forma', options);
     assert.equal(preview.workouts.length, 0); assert.ok(preview.issues.length);
   }
+  const unsupported = { ...saved(), source: 'ai_estimate' };
+  assert.ok(parseTrainingImport(JSON.stringify({ workouts: [unsupported] }), 'forma', options).issues.length);
 });
 
 test('Forma rejects impossible completion and drop relationships and preserves null unknown logs', () => {

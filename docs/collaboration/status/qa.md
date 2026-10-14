@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-T-04：原创领域与 CSV/JSON 导入已实现，22 项独立测试通过。正在继续多设备同步与离线队列独立 QA。
+T-04：原创领域/导入、完成链路及多标签离线同步独立 QA 已通过。39 项新增独立测试与全仓155项通过；等待 lead 浏览器/原生 IndexedDB 最终验收。
 
 ## T-04 已完成与验证
 
@@ -16,6 +16,18 @@ T-04：原创领域与 CSV/JSON 导入已实现，22 项独立测试通过。正
 - lead 通知串行完整 npm run build 成功（8.4s / 1598 modules）；qa 未并行清理 dist。最终产物仍以 lead 集成后构建为准。
 - 来源和限制见 docs/reviews/2026-10-14-training-domain-review.md。官方 CSV 帮助页未公开完整样例；本轮验证合成的明确英文格式，不宣称所有导出版本兼容。
 - 当前 backend 已通知同步路由就绪；后续独立测试实体 CAS、原子/墓碑/幂等、旧 PUT 互操作、离线队列与账户边界。没有改固定端口/生产账号。
+
+## T-04 最终独立验证
+
+- 首批精确提交 e633a21，仅原创 domain/import、两个测试、review和状态文件。
+- 新 routine 版本只采用该 routineId 的两次完成证据，避免旧高负重历史反复加重；原事实保持原 routineId。
+- 独立 UI helper → 实际 backend schema：3/3，通过目标/actual隔离、超级组/递减组休息、稳定重试 UUID、timed null与动作备注保留。
+- 独立客户端同步13/13：真实 engine/API、临时 SQLite随机端口、公共 IDB fixture；基线捕获、丢失响应幂等、账户切换、双标签合并/同时重连、settled/generation、重认证、审核 CAS 和存储失败等通过。
+- 初次复现队列顺序、stale标签误删pending、迟到写复活三项失败；lead/backend修复后全部通过。只读 UI 的 drop parent/备注/自写状态问题由 features修复。
+- `node --import tsx --test tests/training-domain.test.ts tests/training-import.test.ts tests/training-session-boundary.test.ts tests/sync-client.test.ts`：39/39通过，0 fail/skip/cancel，约1.62s。
+- `npm test`：全仓155/155通过，0 fail/skip/cancel，约4.87s；`npx tsc --noEmit`通过。
+- 未并行 Vite清dist；root先前完整build成功，最终训练集成构建/浏览器由其复核。没有调用真实 AI或固定服务，没有采购/部署。
+- 核查与限制已写 docs/reviews/2026-10-14-training-domain-review.md。官方导出样例/真实浏览器IDB/服务地区公开使用仍需后续验证；这些不是本轮运行事实。
 
 ## 工作范围
 

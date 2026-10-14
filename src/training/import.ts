@@ -177,12 +177,19 @@ function importForma(text: string, options: ImportOptions): ImportPreview {
   const workouts = raw.map((value): Workout => {
     const entry = object(value);
     keysOnly(entry, ['id', 'date', 'name', 'duration', 'rpe', 'exercises', 'notes', 'createdAt', 'routineId', 'source', 'importFingerprint']);
+    if (entry.source !== undefined && !['manual', 'strong', 'hevy', 'fitnotes', 'forma'].includes(String(entry.source))) invalid('训练来源不受支持 / Unsupported workout source');
+    if (entry.importFingerprint !== undefined) textField(entry.importFingerprint, 160);
     const date = textField(entry.date, 10); if (civilDay(date) === null) invalid('日期无效 / Invalid date');
     const createdAt = readTimestamp(textField(entry.createdAt, 50)).iso;
     if (!Array.isArray(entry.exercises) || entry.exercises.length > 100) invalid('动作数组无效 / Invalid exercises array');
     const exercises = entry.exercises.map((value): Exercise => {
       const exercise = object(value);
       keysOnly(exercise, ['id', 'exerciseId', 'name', 'sets', 'reps', 'weight', 'primaryMuscles', 'setLogs', 'supersetGroup', 'restSeconds']);
+      if (exercise.exerciseId !== undefined) textField(exercise.exerciseId, 160);
+      if (exercise.primaryMuscles !== undefined) {
+        if (!Array.isArray(exercise.primaryMuscles) || exercise.primaryMuscles.length > 30) invalid('肌群字段无效 / Invalid muscle field');
+        for (const muscle of exercise.primaryMuscles) textField(muscle, 160);
+      }
       const name = textField(exercise.name), identified = (typeof exercise.exerciseId === 'string' ? options.catalog.find(item => item.id === exercise.exerciseId) : undefined) ?? catalogMatch(name, options.catalog);
       const parsed: Exercise = { id: uuid(), name, sets: jsonNumber(exercise.sets, 1, 100, true)!, reps: jsonNumber(exercise.reps, 0, 1000, true)!, weight: jsonNumber(exercise.weight, 0, 2000)!, ...(identified ? { exerciseId: identified.id, primaryMuscles: [...identified.primaryMuscles] } : {}) };
       if (exercise.supersetGroup !== undefined) parsed.supersetGroup = exercise.supersetGroup === null ? null : textField(exercise.supersetGroup, 50);
@@ -235,6 +242,9 @@ function importCsv(text: string, format: Exclude<ImportFormat, 'forma'>, options
   const headers = rows[0].map(cell => cell.trim().toLowerCase());
   if (new Set(headers).size !== headers.length) invalid('CSV 列名重复 / Duplicate CSV headers');
   if (headers.some(header => !headerSets[format].includes(header))) invalid('CSV 列不受支持，请核对所选来源与版本 / Unsupported CSV columns; check source and version');
+  for (const alternatives of [['weight', 'weight (kg)', 'weight (lb)', 'weight (lbs)', 'weight_kg', 'weight_lbs'], ['duration', 'duration (sec)', 'workout duration'], ['distance', 'distance (km)', 'distance (m)', 'distance (miles)', 'distance_meters', 'distance (meters)'], ['time', 'time (s)']]) {
+    if (headers.filter(header => alternatives.includes(header)).length > 1) invalid('同一数值有多个候选列，请保留一个明确单位列 / Multiple columns for the same value; keep one explicit-unit column');
+  }
   const required = format === 'strong' ? ['date', 'workout name', 'exercise name', 'set order'] : format === 'hevy' ? ['title', 'start_time', 'exercise_title', 'set_index', 'set_type'] : ['date', 'exercise'];
   if (required.some(header => !headers.includes(header))) invalid('CSV 缺少必需列 / Missing required CSV headers');
   const readTimestamp = timestampReader(options.timezone);

@@ -15,7 +15,7 @@ lead 已批准文字复用，并负责全文字库导入及来源日志。产品
 - 完成证据为实际 reps>0 且负重非 null（显式自重 0 允许），或实际 durationSeconds>0。仅距离或重量不能证明完成。热身与未完成组排除，递减组有真实证据才计数。
 - 旧摘要只计 legacyWorkouts，不生成逐组事实/PR。训练量为已知负重×实际次数；没有可计算组为 null，有明确自重组可为 0，并显示 unknownLoadSets。
 - e1RM 使用有界 Epley 算术：1 次为原负重，2–10 次为 weight×(1+reps/30)，未知、自重 0、非整数或范围外返回 null。它是产品估算，不是实测最大能力或测试最大重量的建议。
-- 进阶仅生成候选：两次不同日期的最近同动作训练满足完整工作组数/目标最高次数/至少目标负重，且有已记录的低 RPE 或足够 RIR。最新未达标、未知、未完成、高强度不会从更旧成功中挑选证据。返回理由码和两次训练 id，不修改 routine 或事实。
+- 进阶仅生成候选：两次不同日期的最近同动作训练满足完整工作组数/目标最高次数/至少目标负重，且有已记录的低 RPE 或足够 RIR。最新未达标、未知、未完成、高强度不会从更旧成功中挑选证据。返回理由码和两次训练 id，不修改 routine 或事实。带 supersedesId 的新版本仅能使用 workout.routineId===routine.id 的两次新证据；首版可用同动作历史。不能反复用旧两次事实接受多个加重版本。
 - 排程采用公历日期，不依赖浏览器时区或 DST。星期 0 为 Sunday；循环按 anchor 起的民用日期步进，null 槽为休息；无效/冲突槽返回 null。
 
 ## 导入边界
@@ -34,3 +34,21 @@ Forma 读取正常原生导出中的 state.workouts 或训练专用 {workouts}�
 - `npx tsc --noEmit`：通过。
 - lead 通知完整 `npm run build` 成功（8.4 秒、1598 modules、离线静态壳）；为避免并发清理 dist，qa 未重复执行 Vite。
 - 本轮测试验证确定性计算、导入结构和边界；不是健身建议有效性试验，不是官方导出版本认证。网页最终流程/浏览器与同步独立验收仍在下一步。
+
+## 后续独立同步与完成链路复审
+
+新增 tests/sync-client.test.ts 使用真实 SyncEngine、API 请求和实际临时 SQLite/Express 随机端口；只在测试中替浏览器 cookie transport/localStorage，并通过最小公共 IndexedDB API fixture 执行串行、原子、多 object store 事务。没有改服务器生产实现，没有连接固定端口或真实用户账号。
+
+13 项客户端测试覆盖：旧 render baseline 不删远端新记录；已提交但响应丢失的稳定 mutationId 幂等；延迟 me 期间换账户固定原请求身份；共享待同步队列合并；两标签同时重连只生成两次实际变更；settled receipt 拒旧标签复活；重认证保留 pending；清理自己的账户不删另一账户的 last pointer；审核只重基明确实体，其它未来批次保留原 CAS 与 mutationId；冲突写盘失败仍可审核重试；保存写盘失败不伪报成功；stale 标签禁用前原子检查持久 pending；清理后 generation 拒绝迟到重写；同 mutationId 改内容原子拒绝；超时释放 busy 且保留 pending。超时测试核查生产 15,000 ms 配置，将测试时钟压缩至 25 ms，不声称等候了真实 15 秒。
+
+初次实测复现三个失败，由 lead/backend 修复并重跑通过：审核 replacement 批次被追加到未审核批次之后；stale 标签凭 RAM 空队列关闭并清掉另一标签的持久队列；退出后的旧标签重建私有缓存。相关请求为 20261014-1520-qa-to-lead-sync-account-binding.md。未替别人修改修复代码。
+
+tests/training-session-boundary.test.ts 的 3 项跨模块测试同时调用真实 UI helper 和后端 workoutSchema：目标绝不冒充 actual；drop 链/超级组整轮完成后才休息；确认完成保留稳定身份、真实父组、timed null、动作备注，并符合实际服务端校验。只读检查发现的已完成 drop 引用未完成 parent、完成后动作备注丢失、自写 timer 被当成远端变化，均交 features 修复。
+
+最后实际命令：
+
+- `node --import tsx --test tests/training-domain.test.ts tests/training-import.test.ts tests/training-session-boundary.test.ts tests/sync-client.test.ts`：39/39，0 fail/skip/cancel，约 1.62s。
+- `npm test`：全仓 155/155，0 fail/skip/cancel，约 4.87s。
+- `npx tsc --noEmit`：通过。
+
+原生浏览器 IndexedDB/Service Worker/响应式与跨主导航未保存提醒由 lead 最终验收；测试 fixture 不能代替 Safari/iPhone/真实多设备公网验证。未运行真实 AI、未部署收费服务。

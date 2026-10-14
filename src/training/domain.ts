@@ -115,7 +115,7 @@ export function progressionSuggestions(routine: TrainingRoutine, workouts: Worko
   for (const target of routine.exercises) {
     if (!target.progression.enabled || !finite(target.weight) || target.weight <= 0 || !finite(target.progression.incrementKg) || target.progression.incrementKg <= 0) continue;
     if (!Number.isInteger(target.setCount) || target.setCount < 1 || !Number.isInteger(target.repsMax) || target.repsMax < target.repsMin) continue;
-    const recent = ordered.filter(workout => workout.exercises.some(exercise => matchesRoutine(exercise, target))).slice(0, 2);
+    const recent = ordered.filter(workout => (!routine.supersedesId || workout.routineId === routine.id) && workout.exercises.some(exercise => matchesRoutine(exercise, target))).slice(0, 2);
     if (recent.length !== 2 || recent[0].id === recent[1].id || recent[0].date === recent[1].date) continue;
     if (!recent.every(workout => {
       const exercises = workout.exercises.filter(exercise => matchesRoutine(exercise, target));
