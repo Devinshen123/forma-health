@@ -77,12 +77,20 @@ const mealSchema = z
     protein: z.number().min(0).max(10000),
     carbs: z.number().min(0).max(10000),
     fat: z.number().min(0).max(10000),
-    source: z.enum(["manual", "label"]),
+    source: z.enum(["manual", "label", "ai_estimate"]),
     assetId: idSchema.optional(),
+    aiDraftId: idSchema.optional(),
+    aiItemIndex: z.number().int().min(0).max(7).optional(),
     createdAt: instant,
   })
   .strict()
   .superRefine((meal, ctx) => {
+    if (meal.source === 'ai_estimate') {
+      if (!meal.aiDraftId || meal.aiItemIndex === undefined || !meal.assetId || meal.referenceGrams !== 100)
+        ctx.addIssue({ code: 'custom', message: 'AI meals must identify their reviewed draft item, photo and 100 g reference' });
+    } else if (meal.aiDraftId !== undefined || meal.aiItemIndex !== undefined) {
+      ctx.addIssue({ code: 'custom', message: 'Manual and label meals cannot claim AI draft provenance' });
+    }
     if (meal.protein + meal.carbs + meal.fat > meal.referenceGrams * 1.1 + 1)
       ctx.addIssue({
         code: "custom",

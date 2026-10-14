@@ -57,7 +57,7 @@ const sleep = (): Sleep => ({
 });
 async function harness(t: TestContext) {
   const dir = mkdtempSync(join(tmpdir(), "forma-api-test-"));
-  const service = createApp({ dataDir: dir, secureCookies: false });
+  const service = createApp({ dataDir: dir, secureCookies: false, ai: {} });
   const server = service.app.listen(0, "127.0.0.1");
   await new Promise<void>((resolveReady) =>
     server.once("listening", resolveReady),
@@ -647,7 +647,7 @@ test("SQLite reload preserves the account, revision, state and hashed session", 
     200,
   );
   h.service.close();
-  const recovered = createApp({ dataDir: h.dir, secureCookies: false });
+  const recovered = createApp({ dataDir: h.dir, secureCookies: false, ai: {} });
   try {
     assert.deepEqual(recovered.store.snapshot(a.user.id), {
       state,
@@ -729,6 +729,7 @@ test("CSRF origin and content type are enforced and disconnected capabilities re
     apple: false,
     healthkit: false,
     mode: "local",
+    foodPhoto: { available: false, provider: 'openai', reason: 'not_configured' },
   });
   const body = {
     email: "attack@example.com",

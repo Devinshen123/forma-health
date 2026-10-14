@@ -18,6 +18,8 @@ import {
   validateTransition,
 } from "./validation";
 import type { AppState, User } from "../src/types";
+import { FoodPhotoService, type FoodPhotoAiConfig } from './food-photo';
+import { AiError } from './ai-errors';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -123,10 +125,14 @@ export interface AppOptions {
   dataDir: string;
   distDir?: string;
   secureCookies?: boolean;
+  ai?: FoodPhotoAiConfig;
+  aiFetch?: typeof fetch;
+  aiNow?: () => number;
 }
 export function createApp(options: AppOptions) {
   const store = new Store(options.dataDir),
     app = express();
+  const foodPhoto = new FoodPhotoService(store, options.ai, options.aiFetch, options.aiNow);
   const secureCookies =
     options.secureCookies ?? process.env.NODE_ENV === "production";
   const cookieOptions = {
@@ -203,7 +209,7 @@ export function createApp(options: AppOptions) {
     if (!account)
       return res.status(401).json({ error: "Sign in to access your data" });
     const accountBound =
-      ["/api/state", "/api/export", "/api/account"].includes(req.path) ||
+      ["/api/state", "/api/export", "/api/account", '/api/food-photo-drafts'].includes(req.path) ||
       (req.path.startsWith("/api/assets") &&
         ["POST", "DELETE"].includes(req.method));
     if (accountBound && req.get("X-Forma-Account") !== account.id)
@@ -224,8 +230,16 @@ export function createApp(options: AppOptions) {
     res.cookie(COOKIE, token, { ...cookieOptions, maxAge: SESSION_MS });
   };
   app.get("/api/capabilities", (_req, res) =>
-    res.json({ ai: false, apple: false, healthkit: false, mode: "local" }),
+    res.json(foodPhoto.capabilities()),
   );
+  app.post('/api/food-photo-drafts', auth, async (req, res) => {
+    if (req.body?.consent !== true) throw new AiError('AI_CONSENT_REQUIRED');
+    const { assetId, language } = z.object({ assetId: idSchema, consent: z.literal(true), language: z.enum(['zh', 'en']) }).strict().parse(req.body);
+    const asset = store.asset(res.locals.account.id, assetId);
+    if (!asset) return res.status(404).json({ error: 'Attachment not found' });
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(asset.mime) || asset.size > 5 * 1024 * 1024) throw new AiError('AI_IMAGE_INVALID');
+    res.status(201).json(await foodPhoto.analyze(res.locals.account.id, asset, language));
+  });
   app.get("/api/auth/me", (req, res) => {
     const account = sessionOf(req)?.account;
     res.json({ user: account ? publicUser(account) : null });
@@ -283,6 +297,11 @@ export function createApp(options: AppOptions) {
     const transitionError = validateTransition(snapshot.state, state);
     if (transitionError)
       return res.status(400).json({ error: transitionError });
+    for (const meal of state.meals) if (meal.source === 'ai_estimate') {
+      const draft = meal.aiDraftId && store.aiDraft(ownerId, meal.aiDraftId);
+      if (!draft || !draft.isFood || draft.assetId !== meal.assetId || meal.aiItemIndex === undefined || !draft.items[meal.aiItemIndex])
+        return res.status(400).json({ error: 'The AI meal must reference its genuine reviewed draft and photo' });
+    }
     for (const assetId of referencedAssets(state)) {
       const asset = store.asset(ownerId, assetId);
       if (!asset)
@@ -349,6 +368,7 @@ export function createApp(options: AppOptions) {
       return res
         .status(409)
         .json({ error: "Remove this attachment from its record first" });
+    foodPhoto.cancelAsset(res.locals.account.id, parsed.data);
     store.deleteAsset(res.locals.account.id, parsed.data);
     res.json({ ok: true });
   });
@@ -374,6 +394,9 @@ export function createApp(options: AppOptions) {
           size: asset.size,
           createdAt: asset.created_at,
         })),
+      aiDrafts: store.aiDrafts(account.id),
+      aiUsage: store.aiUsage(account.id),
+      aiReservations: store.aiReservations(account.id),
     });
   });
   app.delete("/api/account", auth, rateLimit, async (req, res) => {
@@ -381,6 +404,7 @@ export function createApp(options: AppOptions) {
       account: Account = res.locals.account;
     if (!(await verifyPassword(password, account)))
       return res.status(401).json({ error: "Password is incorrect" });
+    foodPhoto.cancelAccount(account.id);
     store.deleteAccount(account.id);
     res.clearCookie(COOKIE, cookieOptions);
     res.json({ ok: true });
@@ -395,6 +419,7 @@ export function createApp(options: AppOptions) {
   }
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      if (error instanceof AiError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof ZodError)
         return res
           .status(400)

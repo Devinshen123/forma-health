@@ -1,6 +1,6 @@
 # 本机 API
 
-`npm run dev` 由项目启动器同时启动前端和 API。`npm start` 直接运行 `server/index.ts`，绑定 `127.0.0.1:3001`；已有 `dist/index.html` 时同时提供网站文件。SQLite 和私有附件保存在工作区 `data/`，该目录已被 Git 忽略。不会读取 AI、Apple、邮箱服务商凭据或连接第三方健康服务。
+`npm run dev` 由项目启动器同时启动前端和 API。`npm start` 直接运行 `server/index.ts`，绑定 `127.0.0.1:3001`；已有 `dist/index.html` 时同时提供网站文件。SQLite 和私有附件保存在工作区 `data/`，该目录已被 Git 忽略。照片分析仅在服务端读取已配置的 OpenAI 环境变量，不读取用户端凭据；不连接 Apple/HealthKit/邮箱服务。
 
 这是本机测试服务，未生产发布。SQLite 与附件未做应用层静态加密，依赖本机操作系统权限和磁盘保护。本机邮箱账号尚未验证邮箱所有权，不发验证邮件，没有密码找回。
 
@@ -21,24 +21,41 @@
 | `DELETE /assets/:id`  | 删除尚未被记录引用的附件；被引用时返回 409                                |
 | `GET /export`         | 真实账户公开信息、完整 AppState/revision、附件元数据；不含密码或会话      |
 | `DELETE /account`     | `{password}`；确认后移除账户、状态、全部会话和附件目录                    |
-| `GET /capabilities`   | `{ai:false,apple:false,healthkit:false,mode:'local'}`                     |
+| `GET /capabilities`   | 增加 foodPhoto 配置状态；ai/available 仅表示有效配置存在，不证明供应商连通 |
+| `POST /food-photo-drafts` | `{assetId,consent:true,language:'zh'或'en'}`；返回独立 FoodPhotoDraft，不自动保存 Meal |
 
 写入只接受 JSON 及可信 Origin（本机 localhost/127.0.0.1 的 5173/3001 端口）。跨站请求被拒绝。API 不提供宽松 CORS；生产 Secure cookie 模式仅供配置了真正 HTTPS 的环境。生产托管、反向代理信任与域名 allowlist 不属于此次本机版本。
 
-状态读写、导出、删除账号、附件 POST/DELETE 必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
+状态读写、导出、删除账号、附件 POST/DELETE、照片草稿接口必须携带 `X-Forma-Account`，与 cookie 会话的 account UUID 一致；缺失/不匹配为 401 `ACCOUNT_CHANGED`，避免另一个标签换账号后误保存。图片/PDF 的 GET 可不带自定义 header，但继续检查账户所有权。
 
 会话 token 是随机 32 字节，数据库只保存 SHA-256 token hash；cookie 为 HttpOnly、SameSite Strict。密码使用独立随机盐和异步 scrypt（N=32768、r=8、p=1）。认证有地址限流，普通 JSON 2 MB、附件 JSON 14 MB 上限。SQL 使用绑定参数。请求正文、健康值、密码与 token 不进入日志。
 
 ## 状态边界
 
-每个状态都经过 Zod strict schema：真实日期、带 Z/offset 的时间、有效 IANA timezone、有限的数值及字符串、全局唯一实体 UUID、存在的附件 owner 和计划引用。睡眠归属于结束时间在记录时区的日期；跨度须大于 0 且不超过 24 小时，记录之间不可重叠。营养是基于 referenceGrams 的值；未知/AI 估计来源在此版本不能保存。报告必须有附件或至少一个具备名称和值的手动指标。
+每个状态都经过 Zod strict schema：真实日期、带 Z/offset 的时间、有效 IANA timezone、有限的数值及字符串、全局唯一实体 UUID、存在的附件 owner 和计划引用。睡眠归属于结束时间在记录时区的日期；跨度须大于 0 且不超过 24 小时，记录之间不可重叠。营养是基于 referenceGrams 的值；未知营养值须由用户补充，不能将 null 当作零保存。AI 来源只接受本账户真实草稿的 aiDraftId/aiItemIndex/assetId 且 referenceGrams=100；手工/标签来源不得附 AI provenance。报告必须有附件或至少一个具备名称和值的手动指标。
 
 餐、训练、睡眠和报告可修改删除。删除记录时移除其不再被任何记录引用的附件。计划与建议历史保持不可改写：accept 添加一条与 patch 一致的子版本；undo 添加一条补偿版本，其 parent 是已接受的当前版本、所有目标恢复到建议的 baseVersion。只有最新的已接受调整能被撤销。不能移除旧版本、改写旧目标或直接移动 currentPlanId 到旧版本。
 
-`/export` 包含真实记录与附件元数据，不含图片/PDF bytes；附件需单独下载，当前没有完整备份导入流程。网页断网时没有 outbox，失败保存不在后台排队。HTTP 409 后客户端重载服务端状态，供用户确认后重新保存，不自动用新 revision 覆盖另一窗口的更改。
+`/export` 包含真实记录、附件元数据、独立 aiDrafts、账户 aiUsage 和 aiReservations，不含图片/PDF bytes；附件需单独下载，当前没有完整备份导入流程。全局预算只保留无账户信息的 UTC 日金额，不导出其他账户数据。网页断网时没有 outbox，失败保存不在后台排队。HTTP 409 后客户端重载服务端状态，供用户确认后重新保存，不自动用新 revision 覆盖另一窗口的更改。
+
+## 照片分析与配置
+
+每张照片的 API 请求都要显式 `consent:true`，不自动开启 profile.aiConsent。只发送照片重编码内容与请求语言，不发送账户、训练、睡眠、过敏偏好或其他健康资料。成功草稿有服务端开始时间的 `consent:{acceptedAt,version:'food-photo-v1',language}`。原始照片保持本机私有；分析图仅接受 JPEG/PNG/WebP、5 MiB、20MP，Sharp 旋转、最长1024、JPEG 重编码去元数据、处理上限10秒。图片中的可见信息仍会发送给供应商。
+
+固定 OpenAI Responses 模型 `gpt-5.4-mini-2026-03-17`，`store:false`、reasoning none、image high、最多2000输出 tokens。请求 JSON Schema structured text.format；原始 HTTP envelope、JSON和营养边界全部验证后才能持久化不可变草稿。最多8项；未知为 null，非食物没有候选。只有用户审核的 Meal 才进入 AppState。
+
+按 `.env.example` 在服务端环境配置。缺 key 为 `AI_NOT_CONFIGURED`，无效限额配置为 `AI_CONFIG_INVALID`；服务不会崩溃或伪造结果。Key 不进入 VITE 环境、响应、数据库或日志。`store:false` 不是供应商零保留承诺，应查看其政策。
+
+默认每账户1个在途、每分钟5次、UTC日10次。每次真实供应商尝试先在同一 SQLite 事务预留 US$0.02；账户每日 US$0.40、项目全局每日 US$2。重启不清账，失败/超时不退款；删账户也不退无身份信息的全局金额。单用户请求可配1–100、每尝试 US$0.02–1、账户每日 US$0.02–10、全局每日 US$0.02–100，后两者须至少覆盖一次预留。金额是整数 microUSD 的保守应用账，不是供应商实收或已获批准的运营预算。
+
+默认每尝试20秒，超时/网络/429/5xx最多重试一次；认证、拒绝、无效输出不重试。供应商错误正文不会回显或记录。stable code包括 AI_NOT_CONFIGURED、AI_CONFIG_INVALID、AI_CONSENT_REQUIRED、AI_RATE_LIMIT、AI_BUDGET_LIMIT、AI_TIMEOUT、AI_UNAVAILABLE、AI_INVALID_OUTPUT、AI_REFUSED、AI_IMAGE_INVALID。取消私有附件或删除账户会终止本进程在途分析，且在新尝试和保存前重新检查文件，防止复活孤儿草稿。
+
+测试可使用 `createApp({ai,aiFetch,aiNow})`；ai:{}完全覆盖环境配置，aiFetch 只注入原始 Response，仍走实际解析、Sharp和Zod。此版本实现未运行真实密钥或真实供应商调用。
 
 ## 验证
 
-`npm test` 运行 11 项 node:test HTTP/SQLite 集成测试，覆盖盐化密码和会话轮换、大小写重复邮箱、账户隔离、跨标签页账号标记、revision 冲突、非法日期/营养/睡眠/AI 来源、附件伪装/私有权限/10 MB 大小/PDF、删除记录与账户、数据库重新加载、计划接受与补偿撤销、CSRF 和限流。测试使用临时目录和随机本机端口，不写真实账户的数据目录。
+本轮 `npm test` 57项通过，包含原11项本机 API 测试、供应商原始 HTTP/超长响应/全局并发预留，以及独立 QA 的同意、未知值、来源、EXIF剥离、失败重试、重启限额、删建账号全局限额、在途取消等。测试使用临时目录和随机本机端口，不写真实账户的数据目录，不联系供应商。Vite最终构建由 lead 串行执行，避免并发清理 dist。
 
 框架参考：[Node SQLite 官方 API](https://nodejs.org/api/sqlite.html)、[Zod API](https://zod.dev/api)、[Express 5 API](https://expressjs.com/en/5x/api/)。
+
+供应商参考：[Responses Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses)、[图像输入](https://developers.openai.com/api/docs/guides/images-vision)、[固定模型官方说明](https://developers.openai.com/api/docs/models/gpt-5.4-mini)。

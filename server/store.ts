@@ -2,8 +2,9 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
-import type { AppState, User } from "../src/types";
+import type { AppState, User, FoodPhotoDraft } from "../src/types";
 import { emptyState } from "../src/types";
+import { AiError } from './ai-errors';
 
 export interface Account extends User {
   password_hash: string;
@@ -33,7 +34,16 @@ export class Store {
       CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,name TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,created_at TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS sessions_owner ON sessions(owner_id);
-      CREATE INDEX IF NOT EXISTS assets_owner ON assets(owner_id);`);
+      CREATE INDEX IF NOT EXISTS assets_owner ON assets(owner_id);
+      CREATE TABLE IF NOT EXISTS food_photo_drafts(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,asset_id TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,payload_json TEXT NOT NULL,created_at TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS drafts_owner ON food_photo_drafts(owner_id);
+      CREATE TRIGGER IF NOT EXISTS immutable_food_photo_drafts BEFORE UPDATE ON food_photo_drafts BEGIN SELECT RAISE(ABORT,'Drafts are immutable'); END;
+      CREATE TABLE IF NOT EXISTS ai_daily_usage(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,utc_day TEXT NOT NULL,requests INTEGER NOT NULL DEFAULT 0,attempts INTEGER NOT NULL DEFAULT 0,reserved_micro_usd INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(owner_id,utc_day));
+      CREATE TABLE IF NOT EXISTS ai_requests(id TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,utc_day TEXT NOT NULL,created_ms INTEGER NOT NULL,outcome TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS ai_requests_owner_time ON ai_requests(owner_id,created_ms);
+      CREATE TABLE IF NOT EXISTS ai_locks(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,request_id TEXT NOT NULL REFERENCES ai_requests(id) ON DELETE CASCADE,expires_ms INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS ai_reservations(id TEXT PRIMARY KEY,request_id TEXT NOT NULL REFERENCES ai_requests(id) ON DELETE CASCADE,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,utc_day TEXT NOT NULL,reserved_micro_usd INTEGER NOT NULL,model TEXT NOT NULL,created_at TEXT NOT NULL,outcome TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS ai_global_usage(utc_day TEXT PRIMARY KEY,reserved_micro_usd INTEGER NOT NULL DEFAULT 0);`);
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -121,6 +131,71 @@ export class Store {
     return this.db
       .prepare("SELECT * FROM assets WHERE owner_id=?")
       .all(ownerId) as unknown as Asset[];
+  }
+  private transaction<T>(operation: () => T): T {
+    this.db.exec('BEGIN IMMEDIATE');
+    try { const result = operation(); this.db.exec('COMMIT'); return result; }
+    catch (error) { this.db.exec('ROLLBACK'); throw error; }
+  }
+  beginAiRequest(ownerId: string, now: number, dailyLimit: number, leaseMs: number): string {
+    return this.transaction(() => {
+      const lock = this.db.prepare('SELECT expires_ms FROM ai_locks WHERE owner_id=?').get(ownerId) as { expires_ms: number } | undefined;
+      if (lock && lock.expires_ms > now) throw new AiError('AI_RATE_LIMIT');
+      const recent = this.db.prepare('SELECT COUNT(*) AS count FROM ai_requests WHERE owner_id=? AND created_ms>?').get(ownerId, now - 60000) as { count: number };
+      if (recent.count >= 5) throw new AiError('AI_RATE_LIMIT');
+      const day = new Date(now).toISOString().slice(0, 10);
+      const usage = this.db.prepare('SELECT requests FROM ai_daily_usage WHERE owner_id=? AND utc_day=?').get(ownerId, day) as { requests: number } | undefined;
+      if ((usage?.requests ?? 0) >= dailyLimit) throw new AiError('AI_BUDGET_LIMIT');
+      const id = randomUUID();
+      this.db.prepare('INSERT INTO ai_daily_usage(owner_id,utc_day,requests) VALUES (?,?,1) ON CONFLICT(owner_id,utc_day) DO UPDATE SET requests=requests+1').run(ownerId, day);
+      this.db.prepare('INSERT INTO ai_requests VALUES (?,?,?,?,?)').run(id, ownerId, day, now, 'in_progress');
+      this.db.prepare('INSERT INTO ai_locks VALUES (?,?,?) ON CONFLICT(owner_id) DO UPDATE SET request_id=excluded.request_id,expires_ms=excluded.expires_ms').run(ownerId, id, now + leaseMs);
+      return id;
+    });
+  }
+  reserveAiAttempt(ownerId: string, requestId: string, now: number, microUsd: number, dailyBudget: number, globalBudget: number, model: string): string {
+    return this.transaction(() => {
+      if (!this.db.prepare('SELECT id FROM ai_requests WHERE id=? AND owner_id=?').get(requestId, ownerId)) throw new AiError('AI_UNAVAILABLE');
+      const day = new Date(now).toISOString().slice(0, 10);
+      const row = this.db.prepare('SELECT reserved_micro_usd FROM ai_daily_usage WHERE owner_id=? AND utc_day=?').get(ownerId, day) as { reserved_micro_usd: number } | undefined;
+      if ((row?.reserved_micro_usd ?? 0) + microUsd > dailyBudget) throw new AiError('AI_BUDGET_LIMIT');
+      const global = this.db.prepare('SELECT reserved_micro_usd FROM ai_global_usage WHERE utc_day=?').get(day) as { reserved_micro_usd: number } | undefined;
+      if ((global?.reserved_micro_usd ?? 0) + microUsd > globalBudget) throw new AiError('AI_BUDGET_LIMIT');
+      const id = randomUUID();
+      this.db.prepare('INSERT INTO ai_global_usage VALUES (?,?) ON CONFLICT(utc_day) DO UPDATE SET reserved_micro_usd=reserved_micro_usd+excluded.reserved_micro_usd').run(day, microUsd);
+      this.db.prepare('INSERT INTO ai_daily_usage(owner_id,utc_day,attempts,reserved_micro_usd) VALUES (?,?,1,?) ON CONFLICT(owner_id,utc_day) DO UPDATE SET attempts=attempts+1,reserved_micro_usd=reserved_micro_usd+excluded.reserved_micro_usd').run(ownerId, day, microUsd);
+      this.db.prepare('INSERT INTO ai_reservations VALUES (?,?,?,?,?,?,?,?)').run(id, requestId, ownerId, day, microUsd, model, new Date(now).toISOString(), 'reserved');
+      return id;
+    });
+  }
+  finishAiAttempt(ownerId: string, id: string, outcome: string) {
+    this.db.prepare('UPDATE ai_reservations SET outcome=? WHERE id=? AND owner_id=?').run(outcome, id, ownerId);
+  }
+  finishAiRequest(ownerId: string, id: string, outcome: string) {
+    this.transaction(() => {
+      this.db.prepare('UPDATE ai_requests SET outcome=? WHERE id=? AND owner_id=?').run(outcome, id, ownerId);
+      this.db.prepare('DELETE FROM ai_locks WHERE owner_id=? AND request_id=?').run(ownerId, id);
+    });
+  }
+  addAiDraft(ownerId: string, draft: FoodPhotoDraft) {
+    if (!this.asset(ownerId, draft.assetId)) throw new AiError('AI_IMAGE_INVALID');
+    this.db.prepare('INSERT INTO food_photo_drafts VALUES (?,?,?,?,?)').run(draft.id, ownerId, draft.assetId, JSON.stringify(draft), draft.createdAt);
+  }
+  aiDraft(ownerId: string, draftId: string): FoodPhotoDraft | undefined {
+    const row = this.db.prepare('SELECT payload_json FROM food_photo_drafts WHERE id=? AND owner_id=?').get(draftId, ownerId) as { payload_json: string } | undefined;
+    return row && JSON.parse(row.payload_json) as FoodPhotoDraft;
+  }
+  aiDrafts(ownerId: string): FoodPhotoDraft[] {
+    const rows = this.db.prepare('SELECT payload_json FROM food_photo_drafts WHERE owner_id=? ORDER BY created_at,id').all(ownerId) as { payload_json: string }[];
+    return rows.map(row => JSON.parse(row.payload_json) as FoodPhotoDraft);
+  }
+  aiUsage(ownerId: string) {
+    const rows = this.db.prepare('SELECT utc_day,requests,attempts,reserved_micro_usd FROM ai_daily_usage WHERE owner_id=? ORDER BY utc_day').all(ownerId) as { utc_day: string; requests: number; attempts: number; reserved_micro_usd: number }[];
+    return rows.map(row => ({ utcDay: row.utc_day, requests: row.requests, attempts: row.attempts, reservedUsd: row.reserved_micro_usd / 1000000 }));
+  }
+  aiReservations(ownerId: string) {
+    const rows = this.db.prepare('SELECT id,request_id,utc_day,reserved_micro_usd,model,created_at,outcome FROM ai_reservations WHERE owner_id=? ORDER BY created_at,id').all(ownerId) as { id: string; request_id: string; utc_day: string; reserved_micro_usd: number; model: string; created_at: string; outcome: string }[];
+    return rows.map(row => ({ id: row.id, requestId: row.request_id, utcDay: row.utc_day, reservedUsd: row.reserved_micro_usd / 1000000, model: row.model, createdAt: row.created_at, outcome: row.outcome }));
   }
   private assetPath(ownerId: string, assetId: string) {
     if (!/^[a-f0-9-]{36}$/i.test(ownerId) || !/^[a-f0-9-]{36}$/i.test(assetId))
