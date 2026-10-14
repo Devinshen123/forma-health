@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Download,
   LogOut,
@@ -6,9 +6,11 @@ import {
   ShieldCheck,
   Globe,
   Smartphone,
+  Camera,
+  RefreshCw,
 } from "lucide-react";
-import type { FeatureProps, User } from "../types";
-import { request } from "../api";
+import type { Capabilities, FeatureProps, User } from "../types";
+import { getCapabilities, request } from "../api";
 import { Modal } from "../components/Modal";
 export default function Settings({
   state,
@@ -30,6 +32,35 @@ export default function Settings({
   const [deleting, setDeleting] = useState(false);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
+  const [capabilityLoading, setCapabilityLoading] = useState(true);
+  const [capabilityError, setCapabilityError] = useState(false);
+  const capabilitySequence = useRef(0);
+  const mounted = useRef(true);
+  const refreshCapabilities = async () => {
+    const sequence = ++capabilitySequence.current;
+    setCapabilityLoading(true); setCapabilityError(false);
+    try {
+      const result = await getCapabilities();
+      if (mounted.current && sequence === capabilitySequence.current) setCapabilities(result);
+    } catch {
+      if (mounted.current && sequence === capabilitySequence.current) {
+        setCapabilities(null); setCapabilityError(true);
+      }
+    } finally {
+      if (mounted.current && sequence === capabilitySequence.current) setCapabilityLoading(false);
+    }
+  };
+  useEffect(() => {
+    mounted.current = true;
+    void refreshCapabilities();
+    return () => { mounted.current = false; capabilitySequence.current++; };
+  }, [user?.id, demo]);
+  const photoStatus = capabilityLoading ? zh ? "读取状态中…" : "Checking status…"
+    : capabilityError ? zh ? "状态暂不可用" : "Status unavailable"
+    : capabilities?.foodPhoto.available ? zh ? "识图已配置" : "Photo analysis configured"
+    : capabilities?.foodPhoto.reason === "invalid_config" ? zh ? "配置无效" : "Invalid configuration"
+    : zh ? "待配置 OpenAI 密钥" : "Waiting for OpenAI key";
   async function exportData() {
     try {
       const data = demo ? state : await request("/export");
@@ -152,33 +183,44 @@ export default function Settings({
         </div>
         <div className="record-row">
           <div className="row-main">
-            <strong>Apple Health</strong>
+            <strong>{zh ? "食物照片识别" : "Food photo analysis"}</strong>
             <p className="muted">
               {zh
-                ? "需要 iPhone App 授权连接。网页可查看之后同步的记录。"
-                : "Requires permission in the iPhone app. Web will show synced records."}
+                ? "处理方为 OpenAI。每次发送前单独同意，识别结果经你逐项校正后才保存。配置存在不代表已验证真实照片效果。"
+                : "Processed by OpenAI. Each send requires consent; results are saved only after your review. Configuration does not verify real-photo quality."}
             </p>
           </div>
-          <span className="badge">{zh ? "尚未接入" : "Not connected"}</span>
+          <Camera size={20} />
+          <span className="badge" role="status">{photoStatus}</span>
         </div>
+        <div className="row-actions"><button className="btn btn-ghost" type="button" disabled={capabilityLoading} onClick={() => void refreshCapabilities()}><RefreshCw size={16} />{zh ? "刷新识图状态" : "Refresh photo-analysis status"}</button></div>
+        {!capabilityLoading && !capabilities?.foodPhoto.available ? <p className="hint">{capabilityError
+          ? zh ? "无法读取配置状态。你仍可使用手动饮食记录，不会在这里请求识别。" : "Could not read the configuration. Manual food logging is still available; this page does not request analysis."
+          : capabilities?.foodPhoto.reason === "invalid_config"
+            ? zh ? "请联系本机管理员核对配置。现在仍可手动填写。" : "Ask the local administrator to check configuration. Manual entry is still available."
+            : zh ? "尚未配置识图服务。你可以先手动记录，密钥由本机管理员在服务端配置。" : "Photo analysis is not configured. Log manually for now; the local administrator configures the key on the server."}</p> : null}
+        {demo ? <p className="hint">{zh ? "演示模式不会调用 AI，也不会生成假识别结果。创建账户后再使用照片识别。" : "Demo mode does not call AI or generate simulated results. Create an account before using photo analysis."}</p> : null}
         <div className="record-row">
           <div className="row-main">
             <strong>
-              {zh ? "照片识别与报告 OCR" : "Photo analysis & report OCR"}
+              {zh ? "报告 OCR" : "Report OCR"}
             </strong>
             <p className="muted">
               {zh
-                ? "目前使用手动记录与校正。启用 AI 前将说明处理方与数据用途。"
-                : "Manual entry and correction are available. AI data use will be explained before activation."}
+                ? "尚未接入。报告图片与 PDF 可以私有保存，指标仍需手动填写与校正。"
+                : "Not connected. Report images and PDFs can be saved privately; markers are entered and corrected manually."}
             </p>
           </div>
           <span className="badge">{zh ? "尚未接入" : "Not connected"}</span>
         </div>
+        <div className="record-row"><div className="row-main"><strong>{zh ? "Apple 登录" : "Sign in with Apple"}</strong><p className="muted">{zh ? "尚未实现。当前本机测试使用邮箱账户。" : "Not implemented. Local testing currently uses email accounts."}</p></div><span className="badge">{zh ? "尚未接入" : "Not connected"}</span></div>
+        <div className="record-row"><div className="row-main"><strong>Apple Health / HealthKit</strong><p className="muted">{zh ? "需要未来的 iPhone App 授权接入。网页目前使用手动睡眠与训练记录。" : "Requires permission in the future iPhone app. The website currently uses manual sleep and training records."}</p></div><span className="badge">{zh ? "待 iPhone App" : "iPhone app pending"}</span></div>
         <p className="hint">
           {zh
-            ? "本机版不向 AI 服务上传健康记录。云同步和 AI 处理将分别征求同意。"
-            : "This local version sends no health records to AI services. Cloud sync and AI processing will request separate consent."}
+            ? "只有你本次同意的照片副本及输出语言会发送给 OpenAI，其它账户资料和记录不会随请求发送。原图与记录保存在本机实例；供应商的数据保留按其政策执行。"
+            : "Only the photo copy and output language you consent to for that request go to OpenAI. Other account details and records are not sent with it. Originals and records remain in this local instance; provider retention follows its policies."}
         </p>
+        <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">{zh ? "查看 OpenAI 数据政策" : "View OpenAI data policy"}</a>
       </section>
       <section className="panel">
         <h2 className="section-title">{zh ? "我的数据" : "My data"}</h2>
