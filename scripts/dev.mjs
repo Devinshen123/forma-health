@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 const processes = [
-  spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
+  spawn(process.execPath, ["--env-file-if-exists=.env", "--import", "tsx", "server/index.ts"], {
     stdio: "inherit",
   }),
   spawn(process.execPath, ["node_modules/vite/bin/vite.js"], {

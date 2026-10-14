@@ -10,9 +10,9 @@
 - 真实账户：SQLite `data/forma.sqlite`；WAL/SHM 是 SQLite 的伴随文件。
 - 私有附件：`data/uploads/<account UUID>/<asset UUID>`；原文件名不是磁盘路径，上传目录不作为静态资源提供。
 - `data/` 不纳入 Git。本机 SQLite 未做应用层磁盘加密；备份、操作系统账户权限和磁盘保护由本机环境负责。
-- 账号、记录和附件保存在运行服务的这台电脑。此版本没有云端同步、邮件发送、Apple 登录、AI 请求或 HealthKit 采集。
+- 账号、记录和附件保存在运行服务的这台电脑。没有云同步、发信、Apple登录或HealthKit；配置密钥后可逐张同意调用 AI 食物识图。
 
-运行抽查：`GET http://127.0.0.1:3001/api/capabilities` 返回 200 及全部连接能力 false；无会话的 `GET /api/state` 返回 401；以外部 Origin 请求 `POST /api/auth/logout` 返回 403。抽查未读取任何真实账户的健康数据。
+`GET /api/capabilities` 返回 ai/apple/healthkit/mode 与 foodPhoto 配置状态；未配置时 ai=false、foodPhoto.available=false、reason=not_configured。没有暴露密钥或验证供应商账户。无会话 `/api/state` 返回401，不可信Origin写入返回403。
 
 ## 通用请求与错误
 
@@ -81,14 +81,14 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 | 全部实体 | UUID；各数组实体 ID 全局唯一；`createdAt` 为带 Z/offset 的 ISO 时间 |
 | 日历日期 | 真实 `YYYY-MM-DD`，例如 2 月 30 日被拒绝 |
 | Profile | 非空名字、固定 enum、trainingDays 1–7、timeMinutes 1–1440、sleepGoal 1–16、有效 IANA timezone、明确 boolean consent flags |
-| Meal | `grams/referenceGrams` 均 >0 且 ≤10000；能量/宏量非负；宏量和 ≤ referenceGrams×1.1＋1，能量 ≤ referenceGrams×12；数值基于 referenceGrams；source 只允许 manual/label |
+| Meal | `grams/referenceGrams` 均 >0 且 ≤10000；能量/宏量非负；宏量和 ≤ referenceGrams×1.1＋1，能量 ≤ referenceGrams×12；source为manual/label，或具有已验证草稿来源的ai_estimate |
 | Workout | duration 整数 1–1440，RPE 1–10；至少一项 exercise；sets 1–100、reps 1–1000、weight 0–2000（canonical kg） |
 | Sleep | 手动来源；quality/energy 整数 1–5；起止为带 offset/Z 的 ISO；跨度 (0,24h]；各段不重叠；date 必须等于 end 在其 timezone 中的醒来日期 |
 | Report | 手动 extractionStatus；附件或至少一个 marker；marker 名称和值非空，unit/range/notes 可空；不做 OCR 或医学解释 |
 | completedActions | 真实日期 key；当天 action 字符串唯一；只表示用户勾选，不冒充训练完成记录 |
 | 附件引用 | 引用 UUID 必须属于当前账户；Meal 附件须为图片；Report 可为图片或 PDF |
 
-服务端允许的数值范围是结构和资源边界，不是个人健康建议。UI 可采用更窄的输入范围。当前不存在 `ai_estimate` 保存通路，即使前端 TypeScript 为将来预留了此 enum 值。
+服务端允许的数值范围是结构和资源边界，不是个人健康建议。UI可采用更窄范围。AI来源另受下方草稿provenance验证约束，不接受凭空声明的`ai_estimate`。
 
 餐、训练、睡眠和报告可以通过 PUT 编辑或删除。移除旧状态中已被记录引用、且在新状态中已无任何引用的附件时，服务端同时删除该附件。上传完成但尚未被记录引用的文件不会随普通 PUT 自动删除；用户取消草稿时客户端应调用附件 DELETE，删账号也会清理它们。
 
@@ -140,7 +140,7 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 
 ## 本机验证与云端迁移差异
 
-已有 11 项 HTTP/SQLite 集成测试覆盖实际接口、身份隔离、跨标签页账号标记、修订冲突、非法数据、私有附件及大小、文件删除、数据库重新加载、版本化接受/撤销、CSRF 与限流。跨标签测试使用 B 的真实 cookie 与 A 的页面标记，在两账户 revision 都为 0 时验证 401 拒绝且 B 状态保持空白；不是只检查通用 Origin 拒绝。测试成功不等于生产发布、Apple 登录或 iPhone HealthKit 已运行。
+2026-10-14全仓99项测试通过，包括原11项HTTP/SQLite、AI46项安全与失败/预算/上传测试、独立rules42项。跨标签使用B真实cookie和A页面标记，在两账户revision=0时验证401且B状态空白。规则层尚未接入网页API；测试不等于真实模型识别质量、生产发布、Apple登录或HealthKit运行。
 
 生产前必须完成以下与实际差距对应的工作：
 
@@ -150,7 +150,19 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 4. 云账号和设备数据模型、分页/增量接口及冲突合并；当前单份 AppState JSON 与 2 MB 请求限制不是大规模历史同步协议。
 5. 独立的云同步和 AI 处理同意流程、地区存储与保留政策、删除与备份过期机制；profile 的 consent boolean 在本机只保存用户偏好，不会触发实际云传输。
 6. iPhone HealthKit 按数据来源、UUID/anchor、修改/删除、权限缺失及睡眠重叠聚合接入；本机 Sleep 只是手动时间区间。
-7. AI/OCR供应商、数据最小化、用量成本、服务器权益校验、错误和审核流程；当前 capabilities 全 false，尚无此类服务凭据或网络调用。
+7. AI供应商真实凭据、可用性和识别质量评估、价格复核、服务地区与保留政策；现有食物照片接口未做真实在线推理验收。OCR仍未实现。
 8. 订阅/支付与 US$20/月权益策略；当前没有收费、试用扣款、收据验证或支付接口。
 
 不得把数据从本机移到云端而仍称“只在这台电脑”，也不得因为提前存了 consent flag 而认为用户已同意尚未说明的第三方健康处理。
+
+## AI 食物照片草稿
+
+`POST /food-photo-drafts` 请求 `{assetId,consent:true,language:'zh'|'en'}`，需要当前会话、匹配的`X-Forma-Account`、可信Origin；assetId必须为当前账户私有JPEG/PNG/WebP（原图≤5MiB、20MP）。拒绝外部URL、user_id等额外字段。服务端解码、去EXIF、旋转并缩到最长1024像素，送OpenAI固定模型，不发送用户健康资料。
+
+返回独立`FoodPhotoDraft`：`{id,assetId,provider:'openai',model,createdAt,isFood,consent:{acceptedAt,version:'food-photo-v1',language},items:[{name,grams,per100g:{kcal,protein,carbs,fat}}],warnings}`。同意时间由服务端记，最多8项，未知=null，非食物items=[]。不写meals或改变state revision。Zod与营养边界检查不能替代用户审核。
+
+用户审核后通过现有PUT /state保存：每项Meal.source=ai_estimate、referenceGrams=100，并附aiDraftId、aiItemIndex、同一assetId；服务器验证草稿owner与item索引。用户能改名称/份量/营养，但原始草稿不改。普通manual/label不允许AI字段。任何缺失数字需手动补全，不能把未知当零。
+
+安全错误码及资源限制见 [ADR-AI-food-photo](collaboration/decisions/ADR-AI-food-photo.md)。超时/网络/429/5xx最多重试一次，最多2000输出token。每次调用前SQLite原子检查账户/项目预算，失败不退，重启不重置。一账户一次在途、5次/分钟、10次/UTC日；账户US$0.40/日、项目US$2/日、每尝试US$0.02。全局只有匿名日聚合，删除账户不退款；不是供应商实际账单。客户端中止不保证供应商停止计费。
+
+JSON导出新增独立`aiDrafts`、AI预算预留记录；不含凭据。取消未保存照片可DELETE assets清理其草稿；被Meal引用的附件不删除。账户删除级联清理草稿和预算。

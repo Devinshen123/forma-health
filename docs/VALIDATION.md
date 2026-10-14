@@ -1,5 +1,25 @@
 # 网站M0验收记录
 
+## 2026-10-14 AI 食物照片增量验收
+
+识图流程已实现；密钥按人类选择稍后配置，没有真实供应商调用。此前M0未接AI的描述是2026-10-13历史快照。
+
+| 检查 | 结果与证据 |
+|---|---|
+| API与类型 | Responses raw HTTP→生产Zod→独立草稿→确认Meal；未配置503清晰、无调用、应用不崩溃 |
+| 全仓测试 | `npm test`99/99（原11、AI46、Claude独立rules42；含子测试），0失败。规则纯函数尚未运行对接 |
+| 私有与预算 | 跨账户、同意、原图格式/20MP/EXIF、2000输出/128KiB响应、最多一次重试、取消在途/删除、两级原子预留与重启/删除不退款通过 |
+| 浏览器身份/非空/覆盖层 | IAB显示Forma页面及真实审核流程，固定构建无Vite错误遮罩；仅隔离临时SQLite合成账户与本项目示例图 |
+| 交互闭环 | IAB空账户→六步计划→照片→单张同意→原始夹具草稿→未知空值保存禁用→改名和200g份量/补100g及fat3.6→425kcal合计→移除一项→核对→保存260kcal及AI估算标注 |
+| 原始草稿独立 | Edge实际确认保存200g，export仍保留草稿原150g与另一项null；不把编辑写回原始草稿 |
+| 错误与手动 | Edge明确测试用浏览器API错误夹具触发AI_UNAVAILABLE；出现人工填写提示，切手工后成功保存。真实provider失败另由完整HTTP接口测试覆盖 |
+| 桌面/移动 | Edge1440×1000、390×844，dialog无横向溢出，pageerror=0；修复并复测新草稿焦点、可见审核区、固定标题和18px复选框。再次校正/移除/确认与失败手动保存通过 |
+| 截图方式 | IAB getScreenshot及Tab.screenshot均返回Unable to capture screenshot；使用已安装Playwright/Edge，仅访问隔离localhost:5173；没有绕过外部站点权限 |
+
+测试脚本、JSON验证与截图位于本次Codex可视化输出目录，未进入产品源代码。页面截图包含Fixture/夹具名称，不能当真实AI质量证明。供应商key/可用性/实际费用/真实菜品准确度尚未验证；Safari、真iPhone、VoiceOver仍未实测。
+
+最终构建`npm run build`通过（TypeScript/Vite，386.05KB、gzip119.59KB）。临时fixture服务只在localhost:5173，结束时核验进程命令行后关闭；删除前核验临时目录位于系统tmp且只含@example.test合成测试账户。实际应用随后以`npm start`运行127.0.0.1:3001，IAB页面和识图入口可见、控制台error/warn空；真实capabilities未配置，foodPhoto.reason=not_configured。未编辑或删除人类记录，真实应用未使用fakeprovider。
+
 2026-10-13，America/Los_Angeles。地址 [本机网站](http://127.0.0.1:3001/)。构建后的静态前端和真实API在同一个本机服务中运行，只绑定127.0.0.1；不是公开邀请测试部署。
 
 | 项目 | 结果与证据 |

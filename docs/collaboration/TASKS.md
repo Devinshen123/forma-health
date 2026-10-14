@@ -1,16 +1,16 @@
 # Forma 协作任务板
 
-更新：2026-10-13，America/Los_Angeles。当前人类明确授权是“我暂时还不知道你先把网做出来”，同时确认 US$20/月和已有 Mac/iPhone。网站本机实现已获授权；付费、生产发布和 iPhone/TestFlight未据此自动获准。早期 predevelopment 的 C08/G01 是旧阶段快照，不能覆盖这条后续人类指令。当前运行与需求事实以根 README、docs/PRODUCT-PLAN.md 和用户最新指令为准。
+更新：2026-10-14，America/Los_Angeles。当前人类授权先做网站并添加AI识图，密钥稍后配置；已确认 US$20/月和已有Mac/iPhone。付费开通、生产发布和iPhone/TestFlight未据此自动获准。早期predevelopment的C08/G01是旧阶段快照，不能覆盖后续人类指令。运行事实以根README、实际API和用户最新指令为准。
 
 ## 本里程碑所有权（优先于 AGENTS 默认角色表）
 
 | 参与者 | 当前可写范围 | 状态 |
 |---|---|---|
-| Codex root / lead（当前集成者） | 本轮已创建的 src/、server/、scripts/、public/、根构建配置、README、docs/PRODUCT-PLAN.md、API-CONTRACT.md、COSTS.md、RESEARCH-AND-TOOLS.md、design/、本轮research审计、collaboration任务/决定/状态/给lead请求的回复 | 实现代理已交还文件所有权，root收尾集成与验收 |
-| source_audit（本轮后端代理） | server/、API-CONTRACT.md、README | 已实现和审查，所有权交还root，11项测试通过 |
-| fitness_recipes_audit（本轮页面代理） | Nutrition、Training、Sleep、Reports | 已交还root，编译通过，root完成主流程验收 |
-| native_architecture（本轮计划代理） | Onboarding、Plan、Trends、PRODUCT-PLAN.md | 已交还root，编译与双语键验证通过 |
-| 本机独立 Claude Code | 自己的 docs/reviews 与本次请求；后续 rules/qa候选 | 已收到并读取真实共享文件评审；未向它假装派发新实现任务 |
+| Codex root / lead（当前集成者） | src/types.ts、src/api.ts、src/App.tsx、src/styles.css、scripts/、根构建配置/依赖、README、docs/PRODUCT-PLAN.md、API-CONTRACT.md、COSTS.md、VALIDATION.md、architecture/、collaboration任务/决定/lead状态；独立浏览器验收 | AI-01 done；集成与本机终验完成 |
+| source_audit（backend） | server/（含现有*.test.ts，不含rules/）、.env.example、status/backend.md | AI-02 done：e9d4a6c/f6fe3fc，真实adapter/存储/校验/安全测试 |
+| fitness_recipes_audit（features） | src/features/Nutrition.tsx、src/features/Settings.tsx、status/features.md | AI-03 done：526ecbd/14e69db，审核/双语/焦点修复 |
+| native_architecture（qa） | tests/、docs/reviews/2026-10-14-ai-photo-review.md、status/qa.md | AI-04 done：6bd31d8，独立44测试/审查 |
+| 本机独立 Claude Code（rules） | server/rules/、docs/rules/、docs/safety/、status/rules.md及自己的请求/评审 | 已交付独立纯函数与42项测试并提交；lead纳入测试，运行对接留M1 |
 
 外部新建的 docs/predevelopment、handoff、agent-prompts、AGENTS.md、.agents/.claude Skills 等保持其原所有者；root不整体覆盖或删除。接下来重新分工必须先更新本表，不让两个工作会话同时改同一产品文件。
 
@@ -30,3 +30,16 @@
 | I1-01 | SwiftUI角色候选，尚未派发 | todo | Mac连接、Apple会员/签名确认 | HealthKit原生真机与TestFlight，不能用Web替代 |
 
 M1不是已经完成的后台任务，未创建自动化或偷偷启用账单。当前本机网站有真实功能，但并非完整AI/双端MVP。
+
+## 2026-10-14 AI 识图增量
+
+用户明确要求添加识图；密钥“稍后配置”。契约为 decisions/ADR-AI-food-photo.md，src/types.ts；不阻塞代码实现，不伪称真实推理完成。各角色先读 AGENTS、任务板、自己状态和请求。所有新依赖由 lead 安装。
+
+| ID | owner | 状态 | 依赖 / 路径 | 验收 |
+|---|---|---|---|---|
+| AI-01 | lead | done | types/api、配置/Sharp、样式、说明 | .env安全加载；最终build成功，IAB与Edge1440/390交互/焦点/失败手动保存通过，实际3001已运行 |
+| AI-02 | backend | done | AI-01契约；server/、.env.example | Responses/Zod、私有不可变草稿、provenance、同意、超时重试、两级持久额度；46AI测试通过，未live调用 |
+| AI-03 | features | done | AI-01契约；Nutrition/Settings；1300审核焦点 | 逐图同意→校正/移除→确认保存，未知空值、失败手动、取消/账户隔离、双语/审核焦点，已实际验收 |
+| AI-04 | qa | done | AI-02；tests/、review | 独立44项全部通过，真实HTTPparser而非已解析结果注入；全仓加rules后99/99，build通过 |
+
+终验记录见docs/VALIDATION.md。未配置真实密钥，capabilities.reason=not_configured；live质量/供应商账户可用性待用户配置。临时fixture服务/账号已核验清理，真实3001服务不含fakeprovider。

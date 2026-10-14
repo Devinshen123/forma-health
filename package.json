@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "tsc --noEmit && vite build",
-    "start": "node --import tsx server/index.ts",
-    "test": "node --import tsx --test server/*.test.ts"
+    "start": "node --env-file-if-exists=.env --import tsx server/index.ts",
+    "test": "node --import tsx --test server/*.test.ts server/rules/*.test.ts tests/*.test.ts"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
@@ -15,6 +15,7 @@
     "lucide-react": "^0.468.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "sharp": "^0.35.5",
     "zod": "^4.1.0"
   },
   "devDependencies": {

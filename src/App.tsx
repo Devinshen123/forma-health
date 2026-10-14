@@ -332,7 +332,7 @@ export default function App() {
               )}
             </div>
             {page === "nutrition" ? (
-              <Nutrition {...props} />
+              <Nutrition key={user?.id ?? "demo"} {...props} onCreate={() => setAuth(true)} />
             ) : page === "training" ? (
               <Training {...props} />
             ) : page === "sleep" ? (

@@ -37,7 +37,32 @@ export interface Meal {
   fat: number;
   source: "manual" | "label" | "ai_estimate";
   assetId?: string;
+  aiDraftId?: string;
+  aiItemIndex?: number;
   createdAt: string;
+}
+export interface FoodPhotoItem {
+  name: string;
+  grams: number | null;
+  per100g: { kcal: number | null; protein: number | null; carbs: number | null; fat: number | null };
+}
+export interface FoodPhotoDraft {
+  id: string;
+  assetId: string;
+  provider: "openai";
+  model: string;
+  createdAt: string;
+  isFood: boolean;
+  consent: { acceptedAt: string; version: "food-photo-v1"; language: Language };
+  items: FoodPhotoItem[];
+  warnings: string[];
+}
+export interface Capabilities {
+  ai: boolean;
+  apple: boolean;
+  healthkit: boolean;
+  mode: "local";
+  foodPhoto: { available: boolean; provider: "openai"; reason: "ready" | "not_configured" | "invalid_config" };
 }
 export interface Exercise {
   name: string;

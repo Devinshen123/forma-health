@@ -916,12 +916,19 @@ textarea.input {
   box-shadow: 0 24px 100px #171b2033;
   margin: auto;
   overflow-y: auto;
+  scroll-padding-top: 150px;
+  scroll-padding-bottom: 85px;
 }
 .dialog::backdrop {
   background: #151b2559;
   backdrop-filter: blur(4px);
 }
 .dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
   padding: 27px 28px 18px;
   display: flex;
   align-items: flex-start;
@@ -941,6 +948,7 @@ textarea.input {
   padding: 0 28px 27px;
 }
 .dialog-footer {
+  z-index: 3;
   padding: 17px 28px;
   display: flex;
   justify-content: flex-end;
@@ -1100,6 +1108,10 @@ th {
 }
 .checkbox-label input {
   margin-top: 5px;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  accent-color: #6b9734;
 }
 .inline-fields {
   display: flex;
@@ -1814,6 +1826,32 @@ th {
   box-shadow: 0 1px 4px #18223210;
   color: #171b20;
   font-weight: 600;
+}
+.ai-photo-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #dce8db;
+  border-radius: 16px;
+  background: #f6faf2;
+}
+.ai-photo-summary > :last-child { flex: 1; min-width: 180px; }
+.ai-item-card {
+  padding: 16px;
+  border: 1px solid #e5e8eb;
+  border-radius: 16px;
+  background: #fff;
+}
+.ai-item-card .form-grid { margin-top: 12px; }
+.ai-warning-list {
+  margin: 8px 0;
+  padding-left: 20px;
+  color: #6c5c36;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 @media (max-width: 760px) {
   .page-heading:not(h1) {
