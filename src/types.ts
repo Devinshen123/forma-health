@@ -69,16 +69,103 @@ export interface Exercise {
   sets: number;
   reps: number;
   weight: number;
+  id?: string;
+  exerciseId?: string;
+  primaryMuscles?: string[];
+  setLogs?: SetLog[];
+  supersetGroup?: string | null;
+  restSeconds?: number;
 }
 export interface Workout {
   id: string;
   date: string;
   name: string;
   duration: number;
-  rpe: number;
+  rpe: number | null;
   exercises: Exercise[];
   notes: string;
   createdAt: string;
+  routineId?: string;
+  source?: "manual" | "strong" | "hevy" | "fitnotes" | "forma";
+  importFingerprint?: string;
+}
+export interface SetLog {
+  id: string;
+  kind: "work" | "warmup" | "drop";
+  reps: number | null;
+  weight: number | null; // kg, null means unrecorded, 0 means explicitly unweighted
+  durationSeconds: number | null;
+  distanceMeters: number | null;
+  rpe: number | null;
+  rir: number | null;
+  completed: boolean;
+  completedAt?: string;
+  dropParentId?: string;
+}
+export interface SessionExercise {
+  id: string;
+  exerciseId?: string;
+  name: string;
+  primaryMuscles: string[];
+  setLogs: SetLog[];
+  supersetGroup: string | null;
+  restSeconds: number;
+  notes: string;
+}
+export interface ActiveWorkout {
+  id: string;
+  date: string;
+  name: string;
+  startedAt: string;
+  routineId?: string;
+  exercises: SessionExercise[];
+  restEndsAt: string | null;
+  restRemainingSeconds?: number | null;
+  notes: string;
+  rpe: number | null;
+}
+export interface RoutineExercise {
+  id: string;
+  exerciseId?: string;
+  name: string;
+  primaryMuscles: string[];
+  setCount: number;
+  repsMin: number;
+  repsMax: number;
+  weight: number | null;
+  restSeconds: number;
+  supersetGroup: string | null;
+  progression: { enabled: boolean; incrementKg: number };
+}
+export interface TrainingRoutine {
+  id: string;
+  supersedesId?: string;
+  name: string;
+  exercises: RoutineExercise[];
+  createdAt: string;
+  updatedAt: string;
+}
+export interface TrainingSchedule {
+  id: string;
+  name: string;
+  mode: "weekly" | "rotation";
+  anchorDate: string;
+  slots: { id: string; routineId: string | null; weekday?: number }[];
+  createdAt: string;
+  updatedAt: string;
+}
+export interface CatalogExercise {
+  id: string;
+  name: string;
+  nameZh?: string;
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  equipment: string | null;
+  category: string;
+  level: string;
+  instructions: string[];
+  instructionsZh?: string[];
+  animation?: "squat" | "pushup" | "row" | "press" | "curl" | "hinge" | "lunge" | "plank";
 }
 export interface Sleep {
   id: string;
@@ -139,6 +226,9 @@ export interface AppState {
   currentPlanId: string | null;
   suggestions: Suggestion[];
   completedActions: Record<string, string[]>;
+  routines?: TrainingRoutine[];
+  schedules?: TrainingSchedule[];
+  activeWorkouts?: ActiveWorkout[];
 }
 export interface User {
   id: string;
@@ -151,7 +241,13 @@ export interface FeatureProps {
   save: (next: AppState) => Promise<void>;
   notify: (zh: string, en?: string) => void;
   demo: boolean;
+  accountId?: string;
+  onUnsavedChange?: (dirty:boolean,busy:boolean) => void;
 }
+export type SyncCollection = "meals" | "workouts" | "sleeps" | "reports" | "planVersions" | "suggestions" | "routines" | "schedules" | "activeWorkouts" | "profile" | "currentPlanId" | "completedActions";
+export interface SyncChange { collection: SyncCollection; id: string; baseVersion: number; kind: "upsert" | "delete"; value?: unknown }
+export interface SyncSnapshot { state: AppState; revision: number; entityVersions: Record<string, number> }
+export interface SyncMutation { mutationId: string; changes: SyncChange[] }
 export const emptyState = (): AppState => ({
   profile: null,
   meals: [],
@@ -162,13 +258,17 @@ export const emptyState = (): AppState => ({
   currentPlanId: null,
   suggestions: [],
   completedActions: {},
+  routines: [],
+  schedules: [],
+  activeWorkouts: [],
 });
 export const localDate = (date = new Date()) =>
-  new Intl.DateTimeFormat("en-CA", {
+  (() => { const parts=new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(date);
+    calendar: "gregory", numberingSystem: "latn",
+  }).formatToParts(date); const get=(key:string)=>parts.find(p=>p.type===key)?.value;return `${get('year')}-${get('month')}-${get('day')}`; })();
 export const mealTotals = (m: Meal) => {
   const factor = m.grams / m.referenceGrams;
   return {

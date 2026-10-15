@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Home,
   Utensils,
@@ -17,7 +17,7 @@ import { demoState } from "./demo";
 import * as api from "./api";
 import Dashboard from "./features/Dashboard";
 import Nutrition from "./features/Nutrition";
-import Training from "./features/Training";
+const Training = lazy(() => import("./features/Training"));
 import Sleep from "./features/Sleep";
 import Reports from "./features/Reports";
 import Trends from "./features/Trends";
@@ -25,6 +25,10 @@ import Plan from "./features/Plan";
 import Onboarding from "./features/Onboarding";
 import Settings from "./features/Settings";
 import { Auth } from "./components/Auth";
+import SyncPanel from "./components/SyncPanel";
+import { SyncEngine, type SyncStatus } from "./sync/engine";
+import { readCached } from "./sync/storage";
+import { Modal } from "./components/Modal";
 const navigation = [
   { page: "today", zh: "今日", en: "Today", Icon: Home },
   { page: "nutrition", zh: "饮食", en: "Nutrition", Icon: Utensils },
@@ -61,7 +65,12 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
   const [menu, setMenu] = useState(false);
+  const [unsaved,setUnsaved] = useState({dirty:false,busy:false});
+  const [leavePage,setLeavePage] = useState<Page|null>(null);
   const revision = useRef(0);
+  const sync = useRef<SyncEngine | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const writeContext = sync.current?.context();
   const saving = useRef(false);
   const sessionEpoch = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -79,20 +88,32 @@ export default function App() {
     let active = true;
     async function boot() {
       const epoch = sessionEpoch.current;
+      let verifiedId: string | undefined;
       try {
         const { user: current } = await api.getMe();
+        verifiedId=current?.id;
         if (!active || epoch !== sessionEpoch.current) return;
         if (current) {
           api.setAccountHint(current.id);
-          const snap = await api.getState();
+          const snap = await api.getSync();
           if (!active || epoch !== sessionEpoch.current) return;
           setUser(current);
           setState(snap.state);
           revision.current = snap.revision;
           setDemo(false);
           setOnboarding(!snap.state.profile);
-        }
-      } catch {
+          localStorage.setItem('forma-active-account',current.id);
+          await startSync(current, snap, epoch);
+        } else localStorage.removeItem('forma-active-account');
+      } catch (cause) {
+        const transportFailure=cause instanceof TypeError || cause instanceof DOMException && cause.name==='TimeoutError';
+        const activeAccount=localStorage.getItem('forma-active-account');
+        const cached = transportFailure&&activeAccount ? await readCached(activeAccount).catch(()=>undefined) : undefined;
+        if(transportFailure && active && epoch === sessionEpoch.current && cached && (!verifiedId||verifiedId===cached.user.id) && localStorage.getItem(`forma-offline-${cached.user.id}`)==='enabled') {
+          api.setAccountHint(cached.user.id);setUser(cached.user);setDemo(false);setOnboarding(false);
+          await startSync(cached.user,cached.snapshot,epoch);
+          setToast(lang==='zh'?'已打开本机离线记录；联网后会重新验证账户。':'Opened offline records. Your account will be verified when connected.');
+        } else
         if (active && epoch === sessionEpoch.current)
           setToast(
             lang === "zh"
@@ -108,6 +129,14 @@ export default function App() {
       active = false;
     };
   }, []);
+  async function startSync(current:User,snapshot:import('./types').SyncSnapshot,epoch:number) {
+    await sync.current?.stop();
+    if(epoch!==sessionEpoch.current)return;
+    const engine = new SyncEngine(current,snapshot,(next,status)=>{if(epoch===sessionEpoch.current){setState(next);setSyncStatus(status);}});
+    sync.current=engine;await engine.restore();if(epoch!==sessionEpoch.current){await engine.stop();return;}void engine.refresh();
+  }
+  useEffect(()=>{const refresh=()=>void sync.current?.refresh();window.addEventListener('online',refresh);window.addEventListener('offline',refresh);const timer=setInterval(refresh,15000);return()=>{clearInterval(timer);window.removeEventListener('online',refresh);window.removeEventListener('offline',refresh);};},[]);
+  useEffect(()=>{const preventLoss=(event:BeforeUnloadEvent)=>{if(syncStatus?.pending&&!syncStatus.enabled){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',preventLoss);return()=>window.removeEventListener('beforeunload',preventLoss);},[syncStatus?.pending,syncStatus?.enabled]);
   async function save(next: AppState) {
     if (demo) {
       setState(next);
@@ -122,6 +151,7 @@ export default function App() {
     saving.current = true;
     const epoch = sessionEpoch.current;
     try {
+      if(sync.current) {await sync.current.save(next,writeContext);return;}
       const snapshot = await api.putState(next, revision.current);
       if (epoch !== sessionEpoch.current) return;
       revision.current = snapshot.revision;
@@ -129,10 +159,10 @@ export default function App() {
     } catch (err) {
       if (epoch !== sessionEpoch.current) return;
       if (err instanceof api.ApiError && err.status === 401) {
-        resetSession();
+        if(!sync.current)resetSession();
         setAuth(true);
       }
-      if (err instanceof api.ApiError && err.status === 409) {
+      if (err instanceof api.ApiError && err.status === 409 && !sync.current) {
         const snapshot = await api.getState();
         if (epoch !== sessionEpoch.current) return;
         setState(snapshot.state);
@@ -144,22 +174,28 @@ export default function App() {
     }
   }
   async function authenticated(current: User) {
+    const startingEpoch = sessionEpoch.current;
+    const snapshot = await api.getSync(current.id);
+    if (startingEpoch !== sessionEpoch.current) return;
     const epoch = ++sessionEpoch.current;
     api.setAccountHint(current.id);
-    const snapshot = await api.getState();
-    if (epoch !== sessionEpoch.current) return;
+    localStorage.setItem('forma-active-account',current.id);
+    if(sync.current&&sync.current.user.id!==current.id){await sync.current.stop(false);sync.current=null;}
     setUser(current);
     setState(snapshot.state);
     revision.current = snapshot.revision;
     setDemo(false);
     setAuth(false);
     setOnboarding(!snapshot.state.profile);
-    setPage("today");
+    if(user?.id!==current.id)setPage("today");
+    await startSync(current,snapshot,epoch);
     localStorage.setItem("forma-session-change", crypto.randomUUID());
     notify("账户已准备好。", "Your account is ready.");
   }
-  function resetSession() {
+  function resetSession(clearCache=true,force=false) {
     sessionEpoch.current++;
+    if(clearCache&&localStorage.getItem('forma-active-account')===user?.id)localStorage.removeItem('forma-active-account');
+    void sync.current?.stop(clearCache,force).catch(()=>notify('待同步记录已保留，请登录原账户后恢复。','Pending records preserved. Sign in to the original account to restore them.'));sync.current=null;setSyncStatus(null);
     api.setAccountHint(null);
     if (user) localStorage.removeItem(`Forma-onboarding-${user.id}`);
     setUser(null);
@@ -170,34 +206,37 @@ export default function App() {
     setAuth(false);
   }
   async function signOut() {
-    sessionEpoch.current++;
-    await api.logout();
+    if(sync.current?.status.pending)throw Error(zh?'请先同步或导出并放弃待同步更改，再退出。':'Sync, or export and discard pending changes before signing out.');
+    try {await api.logout();}catch(e){if(navigator.onLine)throw e;}
     resetSession();
     localStorage.setItem("forma-session-change", crypto.randomUUID());
   }
   function accountDeleted() {
-    resetSession();
+    resetSession(true,true);
     localStorage.setItem("forma-session-change", crypto.randomUUID());
   }
   useEffect(() => {
     const changed = (event: StorageEvent) => {
       if (event.key === "forma-session-change") {
-        resetSession();
+        resetSession(false);
         notify(
-          "另一窗口更新了账户，请重新登录。",
-          "Your account changed in another tab. Sign in again.",
+          "另一窗口更新了账户。待同步记录已保留，请登录原账户后恢复。",
+          "Account changed in another tab. Pending records are preserved; sign in to the original account to restore them.",
         );
       }
+      if(user&&[ `forma-cache-update-${user.id}`, `forma-offline-${user.id}` ].includes(event.key??''))void sync.current?.reconcileCache();
     };
     window.addEventListener("storage", changed);
     return () => window.removeEventListener("storage", changed);
   }, [user, lang]);
-  function navigate(p: Page) {
+  function navigate(p: Page,force=false) {
+    if(page==='training'&&p!=='training'&&!force){if(unsaved.busy)return;if(unsaved.dirty){setLeavePage(p);return;}}
+    if(force)setUnsaved({dirty:false,busy:false});
     setPage(p);
     setMenu(false);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
-  const props = { state, lang, save, notify, demo };
+  const props = { state, lang, save, notify, demo, accountId:user?.id, onUnsavedChange:(dirty:boolean,busy:boolean)=>setUnsaved(current=>current.dirty===dirty&&current.busy===busy?current:{dirty,busy}) };
   if (loading)
     return (
       <div className="loading-screen">
@@ -299,6 +338,7 @@ export default function App() {
             </button>
           </div>
         </header>
+        {!demo&&sync.current&&syncStatus&&<SyncPanel engine={sync.current} status={syncStatus} lang={lang} expanded={page==='settings'} onReauthenticate={()=>setAuth(true)}/>}
         {onboarding ? (
           <Onboarding
             {...props}
@@ -334,7 +374,7 @@ export default function App() {
             {page === "nutrition" ? (
               <Nutrition key={user?.id ?? "demo"} {...props} onCreate={() => setAuth(true)} />
             ) : page === "training" ? (
-              <Training {...props} />
+              <Suspense fallback={<div className="panel">{zh?'载入训练工具…':'Loading training tools…'}</div>}><Training key={user?.id ?? "demo"} {...props} /></Suspense>
             ) : page === "sleep" ? (
               <Sleep {...props} />
             ) : page === "trends" ? (
@@ -382,6 +422,7 @@ export default function App() {
           onAuthenticated={authenticated}
         />
       )}{" "}
+      {leavePage&&<Modal title={zh?'训练还有未保存输入':'Unsaved training entries'} onClose={()=>setLeavePage(null)} footer={<><button className="btn btn-primary" onClick={()=>setLeavePage(null)}>{zh?'返回训练':'Return to training'}</button><button className="btn btn-secondary" onClick={()=>{navigate(leavePage,true);setLeavePage(null);}}>{zh?'放弃未保存输入并离开':'Discard unsaved entries and leave'}</button></>}><p>{zh?'已保存的进度会保留。当前尚未点击保存的输入将丢失；可以返回训练点击“保存进度”。':'Saved progress is retained. Entries you have not saved will be lost. Return to the session and choose Save progress.'}</p></Modal>}
       {toast && (
         <div className="toast" role="status">
           <span>{toast}</span>

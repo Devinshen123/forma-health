@@ -1,4 +1,4 @@
-import type { AppState, User, Capabilities, FoodPhotoDraft, Language } from "./types";
+import type { AppState, User, Capabilities, FoodPhotoDraft, Language, SyncSnapshot, SyncMutation } from "./types";
 export interface Snapshot {
   state: AppState;
   revision: number;
@@ -8,6 +8,7 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public code?: string,
+    public details?: { snapshot?: SyncSnapshot; conflicts?: string[] },
   ) {
     super(message);
   }
@@ -19,6 +20,8 @@ export function setAccountHint(id: string | null) {
 function errorMessage(message: string, status: number, code?: string) {
   if (localStorage.getItem("forma-language") === "en") return message;
   const aiMessages: Record<string, string> = {
+    SYNC_CONFLICT: "这条记录在两个设备上都发生了变化，请选择要保留的版本。",
+    SYNC_MUTATION_REUSED: "同步请求编号不一致，请重新审核待同步记录。",
     AI_NOT_CONFIGURED: "识图服务尚未配置密钥，可先手动记录。",
     AI_CONFIG_INVALID: "识图服务配置需要检查，可先手动记录。",
     AI_CONSENT_REQUIRED: "请先同意将这张照片发送给 OpenAI 进行识别。",
@@ -53,6 +56,7 @@ export async function request<T>(
   const response = await fetch(`/api${path}`, {
     credentials: "same-origin",
     ...options,
+    signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(path === '/food-photo-drafts' ? 90000 : 15000)]) : AbortSignal.timeout(path === '/food-photo-drafts' ? 90000 : 15000),
     headers: {
       "Content-Type": "application/json",
       ...(accountHint ? { "X-Forma-Account": accountHint } : {}),
@@ -69,6 +73,7 @@ export async function request<T>(
       ),
       response.status,
       data.code,
+      data,
     );
   return data;
 }
@@ -86,6 +91,8 @@ export const register = (email: string, password: string, name: string) =>
 export const logout = () =>
   request("/auth/logout", { method: "POST", body: "{}" });
 export const getState = () => request<Snapshot>("/state");
+export const getSync = (expectedAccount?:string) => request<SyncSnapshot>("/sync", {headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
+export const syncMutation = (mutation: SyncMutation, expectedAccount?:string) => request<SyncSnapshot>("/sync", {method:"POST",body:JSON.stringify(mutation),headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
 export const putState = (state: AppState, revision: number) =>
   request<Snapshot>("/state", {
     method: "PUT",

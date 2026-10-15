@@ -1,0 +1,12 @@
+import type {Language} from '../types';
+const labels:Record<string,[string,string]>={name:['名称','Name'],date:['日期','Date'],duration:['时长（分钟）','Duration (min)'],rpe:['主观强度 RPE','Effort RPE'],notes:['备注','Notes'],exercises:['动作与组数据','Exercises and sets'],setLogs:['逐组数据','Individual sets'],grams:['份量（克）','Portion (g)'],referenceGrams:['营养参考份量（克）','Nutrition reference (g)'],kcal:['参考份量热量','Reference calories'],protein:['蛋白质（参考份量）','Protein (reference)'],carbs:['碳水（参考份量）','Carbs (reference)'],fat:['脂肪（参考份量）','Fat (reference)'],start:['开始时间','Start'],end:['结束时间','End'],quality:['睡眠质量','Sleep quality'],energy:['状态','Energy'],trainingMinutes:['训练分钟','Training minutes'],trainingDays:['训练天数','Training days'],sleepHours:['睡眠小时','Sleep hours'],slots:['训练与休息安排','Training and rest schedule'],mode:['排程模式','Schedule mode'],anchorDate:['起始日期','Start date'],markers:['报告指标','Report markers'],restEndsAt:['休息截止时间','Rest deadline'],restRemainingSeconds:['暂停剩余秒数','Paused seconds']};
+const record=(value:unknown):Record<string,unknown>|null=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:null;
+const valueText=(value:unknown,zh:boolean):string=>value===undefined?(zh?'已删除':'Deleted'):value===null?'—':typeof value==='object'?JSON.stringify(value,null,2):String(value);
+export default function ConflictRecord({local,remote,lang}:{local:unknown;remote:unknown;lang:Language}) {
+  const zh=lang==='zh',a=record(local),b=record(remote);
+  const keys=[...new Set([...Object.keys(a??{}),...Object.keys(b??{})])].filter(key=>!['id','createdAt','updatedAt','importFingerprint','assetId','aiDraftId'].includes(key)&&JSON.stringify(a?.[key])!==JSON.stringify(b?.[key]));
+  return <div className="stack"><h3>{String(a?.name??b?.name??a?.date??b?.date??(zh?'记录变化':'Record change'))}</h3>
+    {a&&b&&keys.length?<div className="conflict-diff">{keys.map(key=><div key={key}><strong>{labels[key]?.[zh?0:1]??key}</strong><div className="sync-conflict-grid">{[a[key],b[key]].map((value,i)=><div key={i}><span className="muted">{zh?(i===0?'本机':'服务端'):(i===0?'Local':'Server')}</span><pre>{valueText(value,zh)}</pre></div>)}</div></div>)}</div>:<div className="sync-conflict-grid">{[local,remote].map((value,i)=><div key={i}><strong>{zh?(i===0?'本机':'服务端'):(i===0?'Local':'Server')}</strong><pre>{valueText(value,zh)}</pre></div>)}</div>}
+    <details><summary>{zh?'查看完整记录':'View complete records'}</summary><div className="sync-conflict-grid"><pre>{valueText(local,zh)}</pre><pre>{valueText(remote,zh)}</pre></div></details>
+  </div>;
+}

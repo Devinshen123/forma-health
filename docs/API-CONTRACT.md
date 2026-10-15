@@ -10,7 +10,7 @@
 - 真实账户：SQLite `data/forma.sqlite`；WAL/SHM 是 SQLite 的伴随文件。
 - 私有附件：`data/uploads/<account UUID>/<asset UUID>`；原文件名不是磁盘路径，上传目录不作为静态资源提供。
 - `data/` 不纳入 Git。本机 SQLite 未做应用层磁盘加密；备份、操作系统账户权限和磁盘保护由本机环境负责。
-- 账号、记录和附件保存在运行服务的这台电脑。没有云同步、发信、Apple登录或HealthKit；配置密钥后可逐张同意调用 AI 食物识图。
+- 账号、记录和附件保存在运行服务的这台电脑。已有同一服务的多客户端实体同步与浏览器离线队列，当前未托管公用云服务。没有发信、Apple登录或HealthKit；配置密钥后可逐张同意调用 AI 食物识图。
 
 `GET /api/capabilities` 返回 ai/apple/healthkit/mode 与 foodPhoto 配置状态；未配置时 ai=false、foodPhoto.available=false、reason=not_configured。没有暴露密钥或验证供应商账户。无会话 `/api/state` 返回401，不可信Origin写入返回403。
 
@@ -20,7 +20,7 @@
 
 GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需会话。API 响应设置 `Cache-Control: no-store`、`X-Content-Type-Options: nosniff`、`Referrer-Policy: no-referrer`。JSON 请求普通上限为 2 MB，附件 JSON 上限为 14 MB，解码后的单附件上限为 10 MiB。
 
-`/state`（GET/PUT）、`/export`、`/account` 和附件 POST/DELETE 还必须带 `X-Forma-Account:<当前页面所持 User.id>`。服务器将该标记与 cookie 会话的账户 ID 比对；缺失或不匹配返回 401 `{error:"Account changed. Sign in again before saving.",code:"ACCOUNT_CHANGED"}`。这防止另一个标签页换账号后，旧页面的健康状态落到新 cookie 所属账号。该标记不替代 cookie 认证。`GET /assets/:id` 用于图片和下载导航，可不带此 header，但仍以会话账户检查文件 owner，其他账户返回 404。
+`/sync`（GET/POST）、`/state`（GET/PUT）、`/export`、`/account`、有效会话的 `/auth/logout` 和附件 POST/DELETE 还必须带 `X-Forma-Account:<当前页面所持 User.id>`。服务器将该标记与 cookie 会话的账户 ID 比对；缺失或不匹配返回 401 `{error:"Account changed. Sign in again before saving.",code:"ACCOUNT_CHANGED"}`。这防止另一个标签页换账号后，旧页面的健康状态落到新 cookie 所属账号。该标记不替代 cookie 认证。`GET /assets/:id` 用于图片和下载导航，可不带此 header，但仍以会话账户检查文件 owner，其他账户返回 404。
 
 失败响应都是 JSON，主体至少包含 `error:string`。字段校验错误还可包含 `issues:[{path:string,message:string}]`；路径与描述不回显健康值、密码或 token。
 
@@ -30,13 +30,25 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 | 401 | 需要登录、登录凭据错误、删账号确认密码错误，或页面账户标记与会话账户不匹配（`ACCOUNT_CHANGED`） |
 | 403 | Origin 缺失/不可信，或跨站请求 |
 | 404 | API 路径不存在；附件不存在、ID 非法或属于别的账户 |
-| 409 | 邮箱重复、状态 revision 过期、附件仍被记录引用 |
+| 409 | 邮箱重复、状态 revision 过期、附件仍被记录引用，或实体同步冲突 |
 | 413 | JSON 请求或解码后的文件超过相应大小上限；编码字段本身超出 schema 上限也可能是 400 |
 | 415 | 写入没有采用 JSON 内容类型 |
 | 429 | 认证地址限流（60 次 / 15 分钟），响应带 `Retry-After` 秒数 |
 | 500 | 本机服务未能完成请求；不返回内部 SQL、堆栈或请求内容 |
 
-客户端处理依据 HTTP 状态。`src/api.ts` 的 `ApiError` 保留 status；App 遇 409 重新 `GET /state`，通知用户并让用户重新确认操作，不直接用新的 revision 重发旧的完整状态，以免覆盖另一窗口的更改。断网没有 outbox 或自动重试队列；失败草稿不是已持久化记录。
+客户端处理依据 HTTP 状态。`ApiError` 保留status/code和受保护冲突snapshot。网站使用下述实体同步；同一记录409必须审核，不能静默覆写。旧PUT调用方仍使用整份revision CAS。离线outbox只在用户明确启用后持久化，关闭离线时未确认写仅留在页面并提示导出。请求15秒超时（识图90秒）保留稳定mutationId重试，不把丢响应当作未提交。
+
+## 训练与实体同步（2026-10-14）
+
+`GET /sync` 返回 `{state,revision,entityVersions}`；`POST /sync` 请求 `{mutationId:UUID,changes:[{collection,id,baseVersion,kind:'upsert'|'delete',value?}]}`，最多1000项，仍受JSON大小限制（客户端提前检查1.8MB）。版本键 `collection:id`，未知=0，触及+1，删除保留墓碑。成功重放同ID同内容无二次写入，返回当前snapshot；同ID异内容拒绝。不同实体合并，相同实体baseVersion不符返回409 `{code:'SYNC_CONFLICT',snapshot,conflicts:string[]}`，整批无部分提交。会话决定owner，固定 `X-Forma-Account` 仅用于匹配当前页面账户。所有合并执行原计划transition、真实AI草稿和资产归属校验。
+
+collections：meals/workouts/sleeps/reports/planVersions/suggestions/routines/schedules/activeWorkouts；profile id=`profile`，currentPlanId id=`currentPlanId`，completedActions id=日期。旧PUT同步更新同一版本账，真缺新集合时保留服务器新集合，不能剥离已存在详细组。Routine追加版本supersedesId，不编辑/删除旧版本；Schedule可编辑、weekday为0周日–6周六、rotation按anchorDate连续日循环。时区/缺失/单位由代码校验。
+
+Workout保留旧summary兼容，新setLogs包含UUID、work/warmup/drop、nullable reps/weightKg/durationSeconds/distanceMeters/RPE/RIR、completed与可选完成时间/dropParentId。完成证据要求次数+明确负重（可0）或正时长。drop引用前置已完成父组且负重不增加；详细记录至少一真实完成组。旧summary不得伪造成详细事实。ActiveWorkout保存restEndsAt和restRemainingSeconds，完成训练沿用稳定ID、移除草稿并添加事实原子保存。全部字段以src/types.ts及server/training-validation.ts为准。
+
+客户端IndexedDB按账户分区，同意generation约束写入/原子清理；稳定队列事务合并及已处理ID防旧标签复活；账号失效保留待同步记录，重新登录原账号恢复。离线启动仅恢复上次明确激活账户的缓存，不跟随其它标签更新的lastAccount指针。Service Worker只缓存公开静态壳/动作数据，API/私有附件不缓存；新worker等待旧客户端关闭，避免中断未保存会话。
+
+导入是浏览器预览，不存在任意账户或完整数据库恢复接口。Strong/Hevy/FitNotes CSV及Forma训练切片仅经审核转成workouts变更；日期/DST歧义、单位、缺失、未知header、重复、大小与行数限制有独立测试。供应商真实文件版本未全部验证。
 
 ## 身份和会话
 
@@ -49,7 +61,7 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 | `POST /auth/register` | `{email,password,name}` | 201 `{user:User}`，设置 cookie；初始状态为 `emptyState()`、revision 0 |
 | `POST /auth/login` | `{email,password}` | 200 `{user:User}`，设置新 cookie |
 | `GET /auth/me` | 无 | 200 `{user:User|null}`；未登录也是 200 |
-| `POST /auth/logout` | `{}` | 200 `{ok:true}`；废止会话并清 cookie；已退出也可调用 |
+| `POST /auth/logout` | `{}` | 200 `{ok:true}`；账户标记匹配后废止会话并清 cookie；已退出可幂等调用，错配不能注销另一个账户 |
 | `DELETE /account` | `{password}` | 200 `{ok:true}`；移除账户、state、全部 session、附件元数据及本账户附件目录，并清 cookie |
 
 本机邮箱只是账号标识，没有验证邮件、邮箱所有权证明、找回密码或密码重置。确认删除账号使用其现有密码，不调用外部身份服务。
@@ -70,7 +82,10 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
   "planVersions": [],
   "currentPlanId": null,
   "suggestions": [],
-  "completedActions": {}
+  "completedActions": {},
+  "routines": [],
+  "schedules": [],
+  "activeWorkouts": []
 }
 ```
 
@@ -82,7 +97,7 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 | 日历日期 | 真实 `YYYY-MM-DD`，例如 2 月 30 日被拒绝 |
 | Profile | 非空名字、固定 enum、trainingDays 1–7、timeMinutes 1–1440、sleepGoal 1–16、有效 IANA timezone、明确 boolean consent flags |
 | Meal | `grams/referenceGrams` 均 >0 且 ≤10000；能量/宏量非负；宏量和 ≤ referenceGrams×1.1＋1，能量 ≤ referenceGrams×12；source为manual/label，或具有已验证草稿来源的ai_estimate |
-| Workout | duration 整数 1–1440，RPE 1–10；至少一项 exercise；sets 1–100、reps 1–1000、weight 0–2000（canonical kg） |
+| Workout | duration 整数 1–1440，RPE null或1–10；至少一项 exercise；旧摘要sets 1–100、reps 1–1000、weight 0–2000（kg）。新setLogs按上方真实完成证据校验，兼容占位不作统计 |
 | Sleep | 手动来源；quality/energy 整数 1–5；起止为带 offset/Z 的 ISO；跨度 (0,24h]；各段不重叠；date 必须等于 end 在其 timezone 中的醒来日期 |
 | Report | 手动 extractionStatus；附件或至少一个 marker；marker 名称和值非空，unit/range/notes 可空；不做 OCR 或医学解释 |
 | completedActions | 真实日期 key；当天 action 字符串唯一；只表示用户勾选，不冒充训练完成记录 |
@@ -136,18 +151,18 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 }
 ```
 
-内容来自真实 SQLite 状态，不含 password hash、盐、session 或演示记录。**此 JSON 包含附件元数据，尚不包含图片/PDF bytes**；它不是完整可离线恢复的附件备份，也没有 import 接口。附件当前应通过受保护 GET 单独下载。演示模式由前端直接导出演示 state，而不访问账户 export。
+内容来自真实 SQLite 状态，不含 password hash、盐、session 或演示记录。**此 JSON 包含附件元数据，尚不包含图片/PDF bytes**；它不是完整可离线恢复的附件备份，没有完整数据库恢复接口；新增训练切片在浏览器预览后导入。附件当前应通过受保护 GET 单独下载。演示模式由前端直接导出演示 state，而不访问账户 export。
 
 ## 本机验证与云端迁移差异
 
-2026-10-14全仓99项测试通过，包括原11项HTTP/SQLite、AI46项安全与失败/预算/上传测试、独立rules42项。跨标签使用B真实cookie和A页面标记，在两账户revision=0时验证401且B状态空白。规则层尚未接入网页API；测试不等于真实模型识别质量、生产发布、Apple登录或HealthKit运行。
+2026-10-14全仓155项测试通过，包含HTTP/SQLite、AI安全与预算、独立rules、训练领域/导入与真实同步客户端测试。跨标签使用B真实cookie和A页面标记，在两账户revision=0时验证401且B状态空白。规则层尚未接入网页API；测试不等于真实模型识别质量、生产发布、Apple登录或HealthKit运行。
 
 生产前必须完成以下与实际差距对应的工作：
 
 1. 固定云端域名、HTTPS、Secure cookie、明确反向代理信任及 Origin allowlist；当前 index 是本机 HTTP，并未配置生产代理或 TLS。
 2. 邮箱验证/恢复、Apple identity 验证和账号合并策略；多用户监控、分布式限流与会话生命周期策略。
 3. 数据库迁移版本、备份/恢复演练、文件与数据库一致性、容量配额、上传扫描/媒体解码，以及可包含附件的完整导出/迁移格式。
-4. 云账号和设备数据模型、分页/增量接口及冲突合并；当前单份 AppState JSON 与 2 MB 请求限制不是大规模历史同步协议。
+4. 共享HTTPS部署、云账号和设备接入、分页/增量下载与长期容量方案；当前已实现实体版本/幂等/冲突审核，但仍以整份snapshot下载及2MB请求为界，不是大规模历史同步协议。
 5. 独立的云同步和 AI 处理同意流程、地区存储与保留政策、删除与备份过期机制；profile 的 consent boolean 在本机只保存用户偏好，不会触发实际云传输。
 6. iPhone HealthKit 按数据来源、UUID/anchor、修改/删除、权限缺失及睡眠重叠聚合接入；本机 Sleep 只是手动时间区间。
 7. AI供应商真实凭据、可用性和识别质量评估、价格复核、服务地区与保留政策；现有食物照片接口未做真实在线推理验收。OCR仍未实现。
@@ -161,7 +176,7 @@ GET 可以没有 Origin，以便本机只读工具使用；受保护接口仍需
 
 返回独立`FoodPhotoDraft`：`{id,assetId,provider:'openai',model,createdAt,isFood,consent:{acceptedAt,version:'food-photo-v1',language},items:[{name,grams,per100g:{kcal,protein,carbs,fat}}],warnings}`。同意时间由服务端记，最多8项，未知=null，非食物items=[]。不写meals或改变state revision。Zod与营养边界检查不能替代用户审核。
 
-用户审核后通过现有PUT /state保存：每项Meal.source=ai_estimate、referenceGrams=100，并附aiDraftId、aiItemIndex、同一assetId；服务器验证草稿owner与item索引。用户能改名称/份量/营养，但原始草稿不改。普通manual/label不允许AI字段。任何缺失数字需手动补全，不能把未知当零。
+用户审核后通过实体同步保存（兼容旧PUT /state）：每项Meal.source=ai_estimate、referenceGrams=100，并附aiDraftId、aiItemIndex、同一assetId；服务器验证草稿owner与item索引。用户能改名称/份量/营养，但原始草稿不改。普通manual/label不允许AI字段。任何缺失数字需手动补全，不能把未知当零。
 
 安全错误码及资源限制见 [ADR-AI-food-photo](collaboration/decisions/ADR-AI-food-photo.md)。超时/网络/429/5xx最多重试一次，最多2000输出token。每次调用前SQLite原子检查账户/项目预算，失败不退，重启不重置。一账户一次在途、5次/分钟、10次/UTC日；账户US$0.40/日、项目US$2/日、每尝试US$0.02。全局只有匿名日聚合，删除账户不退款；不是供应商实际账单。客户端中止不保证供应商停止计费。
 

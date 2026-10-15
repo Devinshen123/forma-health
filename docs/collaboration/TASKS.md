@@ -6,15 +6,26 @@
 
 | 参与者 | 当前可写范围 | 状态 |
 |---|---|---|
-| Codex root / lead（当前集成者） | src/types.ts、src/api.ts、src/App.tsx、src/styles.css、scripts/、根构建配置/依赖、README、docs/PRODUCT-PLAN.md、API-CONTRACT.md、COSTS.md、VALIDATION.md、architecture/、collaboration任务/决定/lead状态；独立浏览器验收 | AI-01 done；集成与本机终验完成 |
-| source_audit（backend） | server/（含现有*.test.ts，不含rules/）、.env.example、status/backend.md | AI-02 done：e9d4a6c/f6fe3fc，真实adapter/存储/校验/安全测试 |
-| fitness_recipes_audit（features） | src/features/Nutrition.tsx、src/features/Settings.tsx、status/features.md | AI-03 done：526ecbd/14e69db，审核/双语/焦点修复 |
-| native_architecture（qa） | tests/、docs/reviews/2026-10-14-ai-photo-review.md、status/qa.md | AI-04 done：6bd31d8，独立44测试/审查 |
+| Codex root / lead（当前集成者） | src/types.ts、src/api.ts、src/App.tsx、src/main.tsx、src/styles.css、src/sync/、src/catalog/、src/components/、public/、scripts/、根构建配置/依赖、README、docs/PRODUCT-PLAN.md、API-CONTRACT.md、COSTS.md、VALIDATION.md、architecture/、collaboration任务/决定/lead状态；独立浏览器验收 | T-01 done |
+| source_audit（backend） | server/（含现有*.test.ts，不含rules/）、.env.example、status/backend.md | T-02 done：13b3bbd/6f58349，训练同步、严格schema、离线同意与身份隔离 |
+| fitness_recipes_audit（features） | src/features/Training.tsx、src/features/training/、src/features/Nutrition.tsx、src/features/Settings.tsx、status/features.md | T-03 done |
+| native_architecture（qa/domain） | src/training/（原创新纯函数，不含 catalog/sync）、tests/、docs/reviews/、status/qa.md | T-04 done |
 | 本机独立 Claude Code（rules） | server/rules/、docs/rules/、docs/safety/、status/rules.md及自己的请求/评审 | 已交付独立纯函数与42项测试并提交；lead纳入测试，运行对接留M1 |
 
 外部新建的 docs/predevelopment、handoff、agent-prompts、AGENTS.md、.agents/.claude Skills 等保持其原所有者；root不整体覆盖或删除。接下来重新分工必须先更新本表，不让两个工作会话同时改同一产品文件。
 
 ## 任务
+
+## 2026-10-14 完整训练增量（人类直接授权）
+
+契约：decisions/ADR-training-sync.md 和 src/types.ts。所有旧训练保留摘要，不能编造逐组事实。完整指完整引入所选获准文字数据库，不声称覆盖世界所有动作或包含 openGym 的 5,632 项。教学示意原创，有可用性标识。外部收费/公网上线未启用。
+
+| ID | owner | 状态 | 依赖 / 路径 | 验收 |
+|---|---|---|---|---|
+| T-01 | lead | done | types/api、sync、App/CSS、catalog、原创教学组件、docs | 账户隔离的 IndexedDB/outbox、静态离线壳、重连/冲突审核；合法全文字库和原创播放/暂停；桌面/手机实际验证 |
+| T-02 | backend | done | T-01、server/ | 训练严格校验、实体版本/墓碑/幂等同步、旧PUT互操作、原子冲突、原计划/AI隔离安全测试 |
+| T-03 | features | done | T-01契约、T-04函数、Training/training | 库筛选→星期/循环模板→逐组/超级/递减/倒计时→确认完成→PR/进阶/肌群→CSV预览确认，双语/空状态/编辑 |
+| T-04 | qa/domain | done | types、src/training/、tests/ | 完成组统计、e1RM适用范围/进阶草稿、时间/单位/缺失/重复CSV、计划日期纯函数；独立同步与流程审查 |
 
 | ID | owner | 状态 | 依赖 / 路径 | 验收 |
 |---|---|---|---|---|
@@ -30,6 +41,8 @@
 | I1-01 | SwiftUI角色候选，尚未派发 | todo | Mac连接、Apple会员/签名确认 | HealthKit原生真机与TestFlight，不能用Web替代 |
 
 M1不是已经完成的后台任务，未创建自动化或偷偷启用账单。当前本机网站有真实功能，但并非完整AI/双端MVP。
+
+训练终验：T-01至T-04已交付。npm test155/155、npm run build通过；实际IAB完成模板/逐组/超级递减/暂停刷新/PR/导入去重/进阶版本/离线刷新/重连合并/冲突审核，1440与390px双语通过。前端a94dffc，领域e633a21，QA8f3a6a3/c0ce4da；root整合记录见VALIDATION。M1-01中的实体同步部分已由本轮交付，其余服务端建议、正式身份和云部署仍未交付。
 
 ## 2026-10-14 AI 识图增量
 
@@ -51,3 +64,5 @@ M1不是已经完成的后台任务，未创建自动化或偷偷启用账单。
 | ID | owner | 状态 | 依赖 / 路径 | 验收 |
 |---|---|---|---|---|
 | B-01 | lead | done | 用户直接答复；decisions、TASKS、lead状态、COSTS、Claude请求回复 | 文档一致、程序配置维持、diff检查通过 |
+
+T-02补充分工：自现在起 src/sync/storage.ts 唯一写入者为source_audit/backend（增加离线同意generation、原子clear与有序merge）；root只读此文件，继续engine/API/App。tests仍qa单写。
