@@ -95,7 +95,7 @@ export default function App() {
         if (!active || epoch !== sessionEpoch.current) return;
         if (current) {
           api.setAccountHint(current.id);
-          const snap = await api.getSync();
+          const snap = await api.getSync(current.id);
           if (!active || epoch !== sessionEpoch.current) return;
           setUser(current);
           setState(snap.state);
@@ -109,7 +109,7 @@ export default function App() {
         const transportFailure=cause instanceof TypeError || cause instanceof DOMException && cause.name==='TimeoutError';
         const activeAccount=localStorage.getItem('forma-active-account');
         const cached = transportFailure&&activeAccount ? await readCached(activeAccount).catch(()=>undefined) : undefined;
-        if(transportFailure && active && epoch === sessionEpoch.current && cached && (!verifiedId||verifiedId===cached.user.id) && localStorage.getItem(`forma-offline-${cached.user.id}`)==='enabled') {
+        if(transportFailure && active && epoch === sessionEpoch.current && activeAccount===localStorage.getItem('forma-active-account') && cached && (!verifiedId||verifiedId===cached.user.id) && localStorage.getItem(`forma-offline-${cached.user.id}`)==='enabled') {
           api.setAccountHint(cached.user.id);setUser(cached.user);setDemo(false);setOnboarding(false);
           await startSync(cached.user,cached.snapshot,epoch);
           setToast(lang==='zh'?'已打开本机离线记录；联网后会重新验证账户。':'Opened offline records. Your account will be verified when connected.');
