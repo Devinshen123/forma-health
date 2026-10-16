@@ -70,6 +70,8 @@ npm start
 
 ## 验证与文档
 
+2026-10-16 本地隔离安全修复：测试 186/186、构建通过，独立 Windows Edge 的账号切换、离线刷新、重新登录、附件不确定保存与重试等 15 项真实浏览器场景全部通过。详见[本轮验证与边界](docs/collaboration/decisions/ADR-local-safety-20261016.md)。本轮仅保存在本地分支，未上传 GitHub、合并或部署。
+
 ```powershell
 npm test
 npm run build

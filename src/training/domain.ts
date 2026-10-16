@@ -32,6 +32,9 @@ export interface ProgressionSuggestion {
 }
 
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
+// Manual load entry stores six decimal places in kg. Match imported loads at
+// that same precision for eligibility, without changing the recorded values.
+const loadAtInputPrecision = (weight: number) => Math.round(weight * 1e6);
 export const normalizedExerciseName = (name: string) => name.normalize('NFKC').trim().toLocaleLowerCase('en').replace(/\s+/g, ' ');
 export const kilograms = (weight: number, unit: 'kg' | 'lb') => weight * (unit === 'lb' ? 0.45359237 : 1);
 
@@ -121,9 +124,11 @@ export function progressionSuggestions(routine: TrainingRoutine, workouts: Worko
       const exercises = workout.exercises.filter(exercise => matchesRoutine(exercise, target));
       if (exercises.length !== 1) return false; // Duplicated exercise blocks need human interpretation.
       const sets = (exercises[0].setLogs ?? []).filter(set => set.kind === 'work');
-      return sets.length >= target.setCount && sets.every(set => hasCompletedEvidence(set) && finite(set.reps) && set.reps >= target.repsMax && finite(set.weight) && set.weight >= target.weight! && manageableEffort(set, workout.rpe));
+      return sets.length >= target.setCount && sets.every(set => hasCompletedEvidence(set) && finite(set.reps) && set.reps >= target.repsMax && finite(set.weight) && loadAtInputPrecision(set.weight) >= loadAtInputPrecision(target.weight!) && manageableEffort(set, workout.rpe));
     })) continue;
-    proposals.push({ exerciseId: target.id, name: target.name, fromWeight: target.weight, toWeight: Math.round((target.weight + target.progression.incrementKg) * 1e6) / 1e6, incrementKg: target.progression.incrementKg, evidenceWorkoutIds: [recent[1].id, recent[0].id], reasonCode: 'two_sessions_top_range' });
+    const toWeight = Math.round((target.weight + target.progression.incrementKg) * 1e6) / 1e6;
+    if (!finite(toWeight) || toWeight <= target.weight || toWeight > 2000) continue;
+    proposals.push({ exerciseId: target.id, name: target.name, fromWeight: target.weight, toWeight, incrementKg: target.progression.incrementKg, evidenceWorkoutIds: [recent[1].id, recent[0].id], reasonCode: 'two_sessions_top_range' });
   }
   return proposals;
 }

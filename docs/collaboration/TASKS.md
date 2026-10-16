@@ -1,5 +1,20 @@
 # Forma 协作任务板
 
+## 2026-10-16 隔离本地安全修复（本 worktree 当前所有权）
+
+用户要求在独立本地分支核对 eb6b559 的云端问题并补真实浏览器验证。仅使用合成数据；禁止 push、远程分支、PR、部署、真实健康接入及付费 AI。原主目录所有未跟踪文件保持不动。以下分工仅适用于 `codex/forma-local-safety-20261016`，优先于历史所有权表。
+
+| ID | owner | 状态 | 路径 / 依赖 | 验收 |
+|---|---|---|---|---|
+| L-01 | root / lead | done | src/App.tsx、src/api.ts、src/types.ts、src/components/SyncPanel.tsx、src/sync/、tests/sync-client.test.ts、tests/account-lifecycle.test.ts、根配置、scripts/、README、docs/collaboration/、集成和独立测试服务 | npm test 186/186、build、独立 Edge 15/15；所有实现由 lead 本地集成提交，禁止上传 |
+| L-02 | backend agent | done | server/（不含 rules/）及其现有 *.test.ts、status/backend.md | 路由绑定账号头，含大小写/尾斜杠真实 HTTP 回归 |
+| L-03 | features agent | done | src/features/、tests/editor-lifecycle.test.ts、status/features.md | 编辑器账号绑定、附件保留、睡眠 DST 与稳定重试身份；12 项专项通过 |
+| L-04 | domain agent | done | src/training/、tests/training-import.test.ts、tests/training-domain.test.ts、status/qa.md | 早晚训练去重、距离单位冲突、输入精度；28 项专项通过 |
+| L-05 | backend agent 兼 rules | done | server/rules/nutrition.ts、server/rules/nutrition.test.ts、status/rules.md | 十进制/0.25 步长/有限值舍入回归；规则 52 项通过 |
+| L-06 | browser_qa | done | worktree 外 `../browser-evidence/`，只读产品代码 | 最终构建独立 Edge 15/15，1440/390截图；仅注入预期断网/401错误，pageerror 0；fixture已关闭 |
+
+临时截图、浏览器脚本及隔离数据库置于 worktree 外的本任务目录。未改动生产数据、未读取原 data/ 内容。
+
 更新：2026-10-15，America/Los_Angeles。当前人类授权先做网站并添加AI识图，密钥稍后配置；已确认 US$20/月和已有Mac/iPhone。付费开通、生产发布和iPhone/TestFlight未据此自动获准。早期predevelopment的C08/G01是旧阶段快照，不能覆盖后续人类指令。运行事实以根README、实际API和用户最新指令为准。
 
 ## 本里程碑所有权（优先于 AGENTS 默认角色表）

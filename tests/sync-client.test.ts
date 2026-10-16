@@ -18,6 +18,7 @@ const deferred = <T,>() => { let resolve!: (value: T | PromiseLike<T>) => void; 
 function memoryIdb() {
   const stores = new Map<string, Map<string, unknown>>();
   let created = false, chain: Promise<void> = Promise.resolve(), failWrites = 0;
+  let nextOpenGate: { seen: ReturnType<typeof deferred<void>>; release: ReturnType<typeof deferred<void>> } | null = null;
   const factory = {
     open() {
       const request: any = {};
@@ -60,11 +61,12 @@ function memoryIdb() {
         },
       };
       request.result = db;
-      queueMicrotask(() => { if (!created) { created = true; request.onupgradeneeded?.(); } request.onsuccess?.(); });
+      const gate=nextOpenGate;nextOpenGate=null;
+      queueMicrotask(async () => { if(gate){gate.seen.resolve();await gate.release.promise;}if (!created) { created = true; request.onupgradeneeded?.(); } request.onsuccess?.(); });
       return request;
     },
   };
-  return { factory: factory as unknown as IDBFactory, failNextWrite: () => { failWrites++; } };
+  return { factory: factory as unknown as IDBFactory, failNextWrite: () => { failWrites++; }, gateNextOpen: () => {const gate={seen:deferred<void>(),release:deferred<void>()};nextOpenGate=gate;return gate;} };
 }
 
 async function harness(t: TestContext) {
@@ -141,6 +143,19 @@ test('render-time baseline captures only the local edit and preserves a newer re
   assert.equal(post.body!.changes.length, 1); assert.equal(post.body!.changes[0].id, first.id); assert.equal(post.body!.changes[0].baseVersion, 1);
 });
 
+test('a retry with only object key order differences creates no mutation or new revision', async t => {
+  const h=await harness(t), account=await h.register();h.choose(account);
+  const workout=savedWorkout('Same saved values');
+  await h.direct(account,'/sync',{mutationId:randomUUID(),changes:[{collection:'workouts',id:workout.id,baseVersion:0,kind:'upsert',value:workout}]});
+  const client=await h.engine(account), baseline=client.context().state;
+  const reverseKeys=(value:unknown):unknown=>Array.isArray(value)?value.map(reverseKeys):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).reverse().map(([key,item])=>[key,reverseKeys(item)])):value;
+  const reordered=reverseKeys(baseline) as typeof baseline;
+  assert.deepEqual(reordered,baseline);assert.notEqual(JSON.stringify(reordered),JSON.stringify(baseline));
+  const before=h.calls.length;await client.save(reordered);
+  assert.equal(h.calls.length,before,'equal field values must not trigger transport');
+  assert.equal((await h.direct(account,'/sync')).body.revision,1);
+});
+
 test('a lost committed response keeps the same mutation ID and replays exactly once', async t => {
   const h = await harness(t), account = await h.register(); h.choose(account);
   const client = await h.engine(account), workout = savedWorkout(); h.loseNextPostResponse();
@@ -151,6 +166,91 @@ test('a lost committed response keeps the same mutation ID and replays exactly o
   const requests = h.calls.filter(call => call.method === 'POST'); assert.equal(requests.length, 2);
   assert.deepEqual(requests[0].body, requests[1].body); assert.equal(client.status.pending, 0);
   const result = (await h.direct(account, '/sync')).body; assert.equal(result.revision, 1); assert.equal(result.state.workouts.length, 1);
+});
+
+test('reauthentication keeps the in-memory outbox and mutation identity without offline consent', async t => {
+  const h = await harness(t), account = await h.register(); h.choose(account);
+  const client = await h.engine(account), workout = savedWorkout('Unconfirmed memory-only save');
+  h.loseNextPostResponse();
+  await assert.rejects(client.save({ ...emptyState(), workouts: [workout] }), /lost response/);
+  const firstPost = h.calls.find(call => call.method === 'POST')!.body;
+  assert.equal(client.status.pending, 1); assert.equal(await readCached(account.user.id), undefined);
+  await client.stop();
+  let notified = false;
+  await client.reauthenticate((await h.direct(account, '/sync')).body, () => { notified = true; });
+  assert.equal(notified, true); assert.equal(client.status.pending, 1);
+  await client.flush();
+  assert.deepEqual(h.calls.filter(call => call.method === 'POST').at(-1)!.body, firstPost);
+  assert.equal(client.status.pending, 0);
+  assert.equal((await h.direct(account, '/sync')).body.state.workouts.length, 1);
+});
+
+test('a render context cannot save into another account or a replacement engine', async t => {
+  const h = await harness(t), first = await h.register(), second = await h.register(); h.choose(first);
+  const original = await h.engine(first), context = original.context();
+  for (const account of [first, second]) {
+    h.choose(account); const replacement = await h.engine(account);
+    const before = h.calls.length;
+    await assert.rejects(replacement.save({ ...context.state, workouts: [savedWorkout('Stale editor')] }, context), /Account changed/);
+    assert.equal(h.calls.length, before); assert.equal(replacement.status.pending, 0);
+    assert.equal((await h.direct(account, '/sync')).body.state.workouts.length, 0);
+  }
+});
+
+test('a parked engine honors discarded deletion receipts and revoked or renewed offline consent before reauthenticating', async t => {
+  for (const consent of ['unchanged', 'revoked', 'renewed'] as const) {
+    await t.test(consent, async t => {
+      const h=await harness(t), account=await h.register();h.choose(account);
+      const workout=savedWorkout('Keep after discarded deletion');
+      await h.direct(account,'/sync',{mutationId:randomUUID(),changes:[{collection:'workouts',id:workout.id,baseVersion:0,kind:'upsert',value:workout}]});
+      const baseline=(await h.direct(account,'/sync')).body;
+      const parked=await h.engine(account,baseline);await parked.enable(true);h.browser.onLine=false;
+      await parked.save({...baseline.state,workouts:[]});await parked.stop();
+      const other=await h.engine(account,baseline);await other.discardInvalid();
+      if(consent!=='unchanged')await other.enable(false);
+      if(consent==='renewed')await other.enable(true);
+      assert.equal((await h.direct(account,'/sync')).body.state.workouts.length,1);
+      const posts=h.calls.filter(call=>call.method==='POST').length;
+      const snapshot=(await h.direct(account,'/sync')).body;
+      h.browser.onLine=true;
+      const beforeReauth=h.calls.length, resuming=parked.reauthenticate(snapshot,()=>{});
+      await parked.flush();assert.equal(h.calls.length,beforeReauth,'no request may race the durable queue reconciliation');
+      await resuming;await parked.refresh();
+      assert.equal(h.calls.filter(call=>call.method==='POST').length,posts,'a discarded deletion must never be sent by a resumed engine');
+      assert.equal(parked.status.pending,0);assert.equal((await h.direct(account,'/sync')).body.state.workouts.length,1);
+    });
+  }
+});
+
+test('verification already in flight before parking cannot revive a discarded deletion during cache restoration', async t => {
+  const h=await harness(t), account=await h.register();h.choose(account);
+  const workout=savedWorkout('Keep across delayed verification');
+  await h.direct(account,'/sync',{mutationId:randomUUID(),changes:[{collection:'workouts',id:workout.id,baseVersion:0,kind:'upsert',value:workout}]});
+  const baseline=(await h.direct(account,'/sync')).body;
+  const parked=await h.engine(account,baseline);await parked.enable(true);
+  const verification=h.gateNextMe(), saving=parked.save({...baseline.state,workouts:[]});
+  await verification.seen.promise;await parked.stop();h.browser.onLine=false;
+  const other=await h.engine(account,baseline);await other.discardInvalid();
+  const posts=h.calls.filter(call=>call.method==='POST').length;
+  const cache=h.idb.gateNextOpen();h.browser.onLine=true;
+  const restoring=parked.reauthenticate(baseline,()=>{});await cache.seen.promise;
+  verification.release.resolve();await saving;
+  assert.equal(h.calls.filter(call=>call.method==='POST').length,posts,'an old in-flight verification cannot send while its lifecycle is retired');
+  cache.release.resolve();await restoring;await parked.refresh();
+  assert.equal(h.calls.filter(call=>call.method==='POST').length,posts);
+  assert.equal(parked.status.pending,0);assert.equal((await h.direct(account,'/sync')).body.state.workouts.length,1);
+});
+
+test('a first offline grant from another tab preserves a never-consented in-memory outbox', async t => {
+  const h=await harness(t), account=await h.register(), otherAccount=await h.register();
+  const client=await h.engine(account);h.choose(otherAccount);
+  await assert.rejects(client.save({...emptyState(),workouts:[savedWorkout('Pending before first offline grant')]}),error=>error instanceof ApiError&&error.status===401);
+  assert.equal(client.status.pending,1);assert.equal(await readCached(account.user.id),undefined);
+  const otherTab=await h.engine(account);await otherTab.enable(true);
+  await client.reconcileCache();
+  assert.equal(client.status.pending,1);assert.equal((await readCached(account.user.id))!.queue.length,1);
+  h.choose(account);await client.flush();
+  assert.equal(client.status.pending,0);assert.equal((await h.direct(account,'/sync')).body.state.workouts.length,1);
 });
 
 test('account switch during delayed verification never rebinds the original queue to the next account', async t => {

@@ -144,24 +144,32 @@ function catalogMatch(name: string, catalog: CatalogExercise[]) {
   return matches.length === 1 ? matches[0] : undefined;
 }
 
+const workoutStart = (workout: Workout) => new Date(workout.createdAt).toISOString();
+
 /** IDs and import metadata are deliberately excluded. Stable across repeated previews. */
-export function workoutFingerprint(workout: Workout): string {
-  const canonical = JSON.stringify([workout.date, normalizedExerciseName(workout.name), workout.duration, workout.rpe, workout.notes, workout.exercises.map(exercise => [normalizedExerciseName(exercise.name), exercise.sets, exercise.reps, exercise.weight, exercise.supersetGroup ?? null, (exercise.setLogs ?? []).map(set => [set.kind, set.reps, set.weight, set.durationSeconds, set.distanceMeters, set.rpe, set.rir, set.completed, set.dropParentId ? exercise.setLogs?.findIndex(parent => parent.id === set.dropParentId) : null])])]);
+function fingerprint(workout: Workout, version: 1 | 2): string {
+  const content = [workout.date, normalizedExerciseName(workout.name), workout.duration, workout.rpe, workout.notes, workout.exercises.map(exercise => [normalizedExerciseName(exercise.name), exercise.sets, exercise.reps, exercise.weight, exercise.supersetGroup ?? null, (exercise.setLogs ?? []).map(set => [set.kind, set.reps, set.weight, set.durationSeconds, set.distanceMeters, set.rpe, set.rir, set.completed, set.dropParentId ? exercise.setLogs?.findIndex(parent => parent.id === set.dropParentId) : null])])];
+  const canonical = JSON.stringify(version === 1 ? content : [workoutStart(workout), ...content]);
   // Two independent 64-bit FNV streams: deterministic deduplication, not authentication.
   const mask = (1n << 64n) - 1n;
   let first = 14695981039346656037n, second = 7809847782465536322n;
   for (const byte of new TextEncoder().encode(canonical)) { first = ((first ^ BigInt(byte)) * 1099511628211n) & mask; second = ((second ^ BigInt(byte)) * 14029467366897019727n) & mask; }
-  return `training-v1:${first.toString(16).padStart(16, '0')}${second.toString(16).padStart(16, '0')}`;
+  return `training-v${version}:${first.toString(16).padStart(16, '0')}${second.toString(16).padStart(16, '0')}`;
 }
+
+export const workoutFingerprint = (workout: Workout): string => fingerprint(workout, 2);
 
 function finalize(workouts: Workout[], existing: Workout[]): ImportPreview {
   const seen = new Set(existing.flatMap(workout => [workout.importFingerprint, workoutFingerprint(workout)].filter((value): value is string => !!value)));
+  // Old fingerprints omitted start time. Scope them to the saved session so an
+  // edited v1 import still deduplicates without swallowing a second session.
+  const legacy = new Set(existing.filter(workout => workout.importFingerprint?.startsWith('training-v1:')).map(workout => `${workoutStart(workout)}|${workout.importFingerprint}`));
   const result: Workout[] = [];
   let duplicates = 0;
   for (const workout of workouts) {
-    const fingerprint = workoutFingerprint(workout);
-    if (seen.has(fingerprint)) { duplicates++; continue; }
-    seen.add(fingerprint); result.push({ ...workout, importFingerprint: fingerprint });
+    const currentFingerprint = workoutFingerprint(workout);
+    if (seen.has(currentFingerprint) || legacy.size > 0 && legacy.has(`${workoutStart(workout)}|${fingerprint(workout, 1)}`)) { duplicates++; continue; }
+    seen.add(currentFingerprint); result.push({ ...workout, importFingerprint: currentFingerprint });
   }
   return { workouts: result, issues: [], duplicates };
 }
@@ -324,6 +332,9 @@ function importCsv(text: string, format: Exclude<ImportFormat, 'forma'>, options
       let distance = rawDistance;
       if (distance !== null) {
         const distanceUnit = get('distance unit').toLowerCase();
+        const unitAliases: Record<string, string> = { m: 'm', meters: 'm', km: 'km', mi: 'mi', miles: 'mi' };
+        const headerUnit = headers.includes('distance (km)') ? 'km' : headers.includes('distance (miles)') ? 'mi' : headers.some(header => ['distance_meters', 'distance (meters)', 'distance (m)'].includes(header)) ? 'm' : undefined;
+        if (headerUnit && distanceUnit && unitAliases[distanceUnit] && headerUnit !== unitAliases[distanceUnit]) invalid('距离单位冲突 / Conflicting distance units');
         if (distanceUnit && !['m', 'meters', 'km', 'mi', 'miles'].includes(distanceUnit)) invalid('距离单位不受支持 / Unsupported distance unit');
         if (headers.includes('distance (km)') || distanceUnit === 'km') distance *= 1000;
         else if (headers.includes('distance (miles)') || distanceUnit === 'mi' || distanceUnit === 'miles') distance *= 1609.344;

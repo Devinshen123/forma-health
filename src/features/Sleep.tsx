@@ -1,40 +1,17 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Clock3, Moon, Pencil, Plus, Sun, Trash2 } from "lucide-react";
 import { Modal } from "../components/Modal";
+import { resolveSleepTime } from "./sleepTime";
+import { createSleepDraft, sleepEntryFromDraft, sleepOverlaps, upsertSleep, type SleepDraft } from "./sleepEditor";
 import {
   localDate,
   sleepHours,
-  uid,
   type FeatureProps,
   type Sleep as SleepEntry,
 } from "../types";
 
-type SleepDraft = {
-  id?: string;
-  start: string;
-  end: string;
-  quality: string;
-  energy: string;
-  timezone: string;
-  createdAt?: string;
-};
 const browserTimezone =
   Intl.DateTimeFormat().resolvedOptions().timeZone || "Etc/UTC";
-const toInput = (instant: string) => {
-  const date = new Date(instant);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return (
-    date.getFullYear() +
-    "-" +
-    pad(date.getMonth() + 1) +
-    "-" +
-    pad(date.getDate()) +
-    "T" +
-    pad(date.getHours()) +
-    ":" +
-    pad(date.getMinutes())
-  );
-};
 const wakeDate = (instant: Date, timezone: string) =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
@@ -56,6 +33,13 @@ const clockHour = (instant: string, timezone: string) => {
 };
 
 export default function Sleep({ state, lang, save, notify }: FeatureProps) {
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const zh = lang === "zh";
   const [date, setDate] = useState(localDate);
   const [draft, setDraft] = useState<SleepDraft | null>(null);
@@ -88,26 +72,9 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     return value + " · " + labels[value - 1];
   };
   const open = (sleep?: SleepEntry) => {
+    if (!mounted.current || busy) return;
     setError("");
-    setDraft(
-      sleep
-        ? {
-            id: sleep.id,
-            start: toInput(sleep.start),
-            end: toInput(sleep.end),
-            quality: String(sleep.quality),
-            energy: String(sleep.energy),
-            timezone: sleep.timezone,
-            createdAt: sleep.createdAt,
-          }
-        : {
-            start: "",
-            end: "",
-            quality: "",
-            energy: "",
-            timezone: browserTimezone,
-          },
-    );
+    setDraft(createSleepDraft(browserTimezone, sleep));
   };
   const close = () => {
     if (!busy) {
@@ -117,8 +84,16 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   };
   const patch = (change: Partial<SleepDraft>) =>
     setDraft((current) => (current ? { ...current, ...change } : null));
-  const startDate = draft?.start ? new Date(draft.start) : null;
-  const endDate = draft?.end ? new Date(draft.end) : null;
+  const resolvedStart = draft
+    ? resolveSleepTime(draft.start, draft.originalStart)
+    : null;
+  const resolvedEnd = draft
+    ? resolveSleepTime(draft.end, draft.originalEnd)
+    : null;
+  const startDate =
+    resolvedStart?.status === "valid" ? new Date(resolvedStart.instant) : null;
+  const endDate =
+    resolvedEnd?.status === "valid" ? new Date(resolvedEnd.instant) : null;
   const draftHours =
     startDate && endDate
       ? (endDate.getTime() - startDate.getTime()) / 3600000
@@ -130,10 +105,35 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     draftHours <= 24;
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || busy) return;
+    if (!draft || busy || !mounted.current) return;
     setError("");
-    const start = new Date(draft.start),
-      end = new Date(draft.end);
+    const startResolution = resolveSleepTime(draft.start, draft.originalStart);
+    const endResolution = resolveSleepTime(draft.end, draft.originalEnd);
+    if (
+      startResolution.status === "ambiguous" ||
+      endResolution.status === "ambiguous"
+    ) {
+      setError(
+        zh
+          ? "这个本地时间因夏令时回拨而出现两次，无法确定实际时刻。请选择不重复的时间；未改动的已有时间会保留原时刻。"
+          : "This local time occurs twice when daylight saving ends, so its instant is unclear. Choose a time outside the repeated period. Unchanged existing times keep their original instant.",
+      );
+      return;
+    }
+    if (startResolution.status === "gap" || endResolution.status === "gap") {
+      setError(
+        zh
+          ? "这个本地时间处于夏令时跳过的时段，实际不存在。请选择其他时间。"
+          : "This local time does not exist because of a daylight-saving change. Choose another time.",
+      );
+      return;
+    }
+    const start = new Date(
+        startResolution.status === "valid" ? startResolution.instant : NaN,
+      ),
+      end = new Date(
+        endResolution.status === "valid" ? endResolution.instant : NaN,
+      );
     const duration = end.getTime() - start.getTime();
     const quality = Number(draft.quality),
       energy = Number(draft.energy);
@@ -151,17 +151,6 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
       return;
     }
     if (
-      toInput(start.toISOString()) !== draft.start ||
-      toInput(end.toISOString()) !== draft.end
-    ) {
-      setError(
-        zh
-          ? "这个本机时间可能位于夏令时跳时区间，请核对后重选。"
-          : "This local time may fall in a daylight-saving gap. Check and choose the time again.",
-      );
-      return;
-    }
-    if (
       ![quality, energy].every(
         (value) => Number.isInteger(value) && value >= 1 && value <= 5,
       )
@@ -174,12 +163,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
       return;
     }
     if (
-      state.sleeps.some(
-        (sleep) =>
-          sleep.id !== draft.id &&
-          start.getTime() < Date.parse(sleep.end) &&
-          end.getTime() > Date.parse(sleep.start),
-      )
+      sleepOverlaps(state.sleeps, draft.id, start.toISOString(), end.toISOString())
     ) {
       setError(
         zh
@@ -190,42 +174,39 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     }
     setBusy(true);
     try {
-      const sleep: SleepEntry = {
-        id: draft.id ?? uid(),
-        date: wakeDate(end, draft.timezone),
-        start: start.toISOString(),
-        end: end.toISOString(),
-        quality,
-        energy,
-        source: "manual",
-        timezone: draft.timezone,
-        createdAt: draft.createdAt ?? new Date().toISOString(),
-      };
+      const sleep = sleepEntryFromDraft(draft,
+          startResolution.status === "valid"
+            ? startResolution.instant
+            : start.toISOString(),
+          endResolution.status === "valid"
+            ? endResolution.instant
+            : end.toISOString(),
+      );
       await save({
         ...state,
-        sleeps: draft.id
-          ? state.sleeps.map((item) => (item.id === sleep.id ? sleep : item))
-          : [...state.sleeps, sleep],
+        sleeps: upsertSleep(state.sleeps, sleep),
       });
+      if (!mounted.current) return;
       setDate(sleep.date);
       setDraft(null);
       notify("睡眠记录已保存", "Sleep saved");
     } catch (cause) {
+      if (!mounted.current) return;
       setError(
-        (zh ? "保存失败：" : "Could not save: ") +
+        (zh ? "保存暂未确认：" : "Save not confirmed: ") +
           (cause instanceof Error
             ? cause.message
             : zh
               ? "请重试。"
               : "Please try again."),
       );
-      notify("睡眠未保存，请重试", "Sleep was not saved. Please try again.");
+      notify("睡眠保存暂未确认，请查看同步状态后重试", "Sleep save is not confirmed. Check sync status before retrying.");
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   const remove = async () => {
-    if (!deleting || busy) return;
+    if (!deleting || busy || !mounted.current) return;
     setBusy(true);
     setError("");
     try {
@@ -233,9 +214,11 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
         ...state,
         sleeps: state.sleeps.filter((sleep) => sleep.id !== deleting.id),
       });
+      if (!mounted.current) return;
       setDeleting(null);
       notify("睡眠记录已删除", "Sleep deleted");
     } catch (cause) {
+      if (!mounted.current) return;
       setError(
         (zh ? "删除失败：" : "Could not delete: ") +
           (cause instanceof Error
@@ -246,7 +229,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
       );
       notify("未能删除睡眠记录", "Could not delete sleep");
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
 
@@ -445,7 +428,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
       {draft ? (
         <Modal
           title={
-            draft.id
+            draft.existing
               ? zh
                 ? "编辑睡眠"
                 : "Edit sleep"

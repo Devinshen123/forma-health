@@ -63,6 +63,35 @@ test("display rounding uses the requested step without float noise", () => {
   assert.throws(() => roundTo(1, 0), RangeError);
 });
 
+test("decimal halfway rounding is stable and retains ties toward positive infinity", () => {
+  for (const [value, expected] of [[1.005, 1.01], [2.675, 2.68], [10.075, 10.08], [9.995, 10], [-1.005, -1]]) {
+    assert.equal(roundTo(value, 0.01), expected, String(value));
+  }
+  assert.equal(roundTo(1.0049999999999997, 0.01), 1);
+  assert.equal(roundTo(1.0050000000000001, 0.01), 1.01);
+});
+
+test("display rounding preserves all digits in quarter and other decimal steps", () => {
+  assert.equal(roundTo(1.13, 0.25), 1.25);
+  assert.equal(roundTo(1.125, 0.25), 1.25);
+  assert.equal(roundTo(-1.125, 0.25), -1);
+  assert.equal(roundTo(1.18, 0.125), 1.125);
+  assert.equal(roundTo(1.0375, 0.025), 1.05);
+  assert.equal(roundTo(6.3, 2.5), 7.5);
+  assert.equal(roundTo(6.3e-7, 2.5e-7), 7.5e-7);
+  assert.equal(roundTo(1.25e-200, 0.25e-200), 1.25e-200);
+});
+
+test("display rounding rejects non-finite values and non-positive or non-finite steps", () => {
+  for (const value of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+    assert.throws(() => roundTo(value, 0.25), RangeError);
+  }
+  for (const step of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, -0.25]) {
+    assert.throws(() => roundTo(1, step), RangeError);
+  }
+  assert.throws(() => roundTo(Number.MAX_VALUE, 1e308), RangeError);
+});
+
 test("macro energy check flags implausible drafts and stays silent when data is missing", () => {
   assert.equal(macroEnergyConsistency({ kcal: 520, protein: 40, carbs: 55, fat: 15 }), "consistent");
   assert.equal(macroEnergyConsistency({ kcal: 900, protein: 40, carbs: 55, fat: 15 }), "inconsistent");

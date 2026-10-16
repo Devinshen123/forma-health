@@ -74,9 +74,29 @@ export const poundsToKg = (pounds: number) => pounds * KG_PER_POUND;
 
 /** Presentation rounding only; store unrounded values. */
 export function roundTo(value: number, step: number): number {
-  if (!(step > 0)) throw new RangeError("step must be positive");
-  const decimals = Math.max(0, -Math.floor(Math.log10(step)));
-  return Number((Math.round(value / step) * step).toFixed(decimals));
+  if (!Number.isFinite(value)) throw new RangeError("value must be finite");
+  if (!Number.isFinite(step) || !(step > 0)) throw new RangeError("step must be positive and finite");
+  // Use the canonical decimal inputs as integers at a shared scale. Binary
+  // division loses decimal ties (1.005 / .01); log10 also drops digits in .25.
+  const decimal = (input: number) => {
+    const [mantissa, exponent = "0"] = String(input).split("e");
+    return {
+      coefficient: BigInt(mantissa.replace(".", "")),
+      exponent: Number(exponent) - (mantissa.split(".")[1]?.length ?? 0),
+    };
+  };
+  const number = decimal(value), increment = decimal(step);
+  const exponent = Math.min(number.exponent, increment.exponent);
+  const numerator = number.coefficient * 10n ** BigInt(number.exponent - exponent);
+  const denominator = increment.coefficient * 10n ** BigInt(increment.exponent - exponent);
+  let multiples = numerator / denominator;
+  const twiceRemainder = (numerator % denominator) * 2n;
+  // Preserve Math.round's ties toward positive infinity, including negatives.
+  if (twiceRemainder >= denominator) multiples++;
+  else if (twiceRemainder < -denominator) multiples--;
+  const rounded = Number(`${multiples * increment.coefficient}e${increment.exponent}`);
+  if (!Number.isFinite(rounded)) throw new RangeError("rounded value must be finite");
+  return rounded;
 }
 
 /**

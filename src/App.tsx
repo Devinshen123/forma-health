@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Home,
   Utensils,
@@ -28,6 +28,7 @@ import { Auth } from "./components/Auth";
 import SyncPanel from "./components/SyncPanel";
 import { SyncEngine, type SyncStatus } from "./sync/engine";
 import { readCached } from "./sync/storage";
+import { assertWriteBinding } from "./sync/lifecycle";
 import { Modal } from "./components/Modal";
 const navigation = [
   { page: "today", zh: "今日", en: "Today", Icon: Home },
@@ -69,10 +70,13 @@ export default function App() {
   const [leavePage,setLeavePage] = useState<Page|null>(null);
   const revision = useRef(0);
   const sync = useRef<SyncEngine | null>(null);
+  const retainedEngines = useRef(new Map<string,SyncEngine>());
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const writeContext = sync.current?.context();
-  const saving = useRef(false);
+  const writeEngine = sync.current;
+  const saving = useRef<symbol | null>(null);
   const sessionEpoch = useRef(0);
+  const writeBinding = { epoch: sessionEpoch.current, accountId: user?.id, engine: writeEngine };
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const zh = lang === "zh";
   function notify(a: string, b?: string) {
@@ -130,14 +134,19 @@ export default function App() {
     };
   }, []);
   async function startSync(current:User,snapshot:import('./types').SyncSnapshot,epoch:number) {
-    await sync.current?.stop();
+    const changed = (next:AppState,status:SyncStatus)=>{if(epoch===sessionEpoch.current){setState(next);setSyncStatus(status);}};
+    if(sync.current?.user.id===current.id){const engine=sync.current;await engine.reauthenticate(snapshot,changed);if(epoch===sessionEpoch.current)void engine.refresh();return;}
+    if(sync.current){retainedEngines.current.set(sync.current.user.id,sync.current);await sync.current.stop();}
     if(epoch!==sessionEpoch.current)return;
-    const engine = new SyncEngine(current,snapshot,(next,status)=>{if(epoch===sessionEpoch.current){setState(next);setSyncStatus(status);}});
+    const retained=retainedEngines.current.get(current.id);
+    if(retained){retainedEngines.current.delete(current.id);sync.current=retained;await retained.reauthenticate(snapshot,changed);if(epoch===sessionEpoch.current)void retained.refresh();return;}
+    const engine = new SyncEngine(current,snapshot,changed);
     sync.current=engine;await engine.restore();if(epoch!==sessionEpoch.current){await engine.stop();return;}void engine.refresh();
   }
   useEffect(()=>{const refresh=()=>void sync.current?.refresh();window.addEventListener('online',refresh);window.addEventListener('offline',refresh);const timer=setInterval(refresh,15000);return()=>{clearInterval(timer);window.removeEventListener('online',refresh);window.removeEventListener('offline',refresh);};},[]);
-  useEffect(()=>{const preventLoss=(event:BeforeUnloadEvent)=>{if(syncStatus?.pending&&!syncStatus.enabled){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',preventLoss);return()=>window.removeEventListener('beforeunload',preventLoss);},[syncStatus?.pending,syncStatus?.enabled]);
+  useEffect(()=>{const preventLoss=(event:BeforeUnloadEvent)=>{const engines=[sync.current,...retainedEngines.current.values()];if(engines.some(engine=>engine&&engine.status.pending&&!engine.status.enabled)){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',preventLoss);return()=>window.removeEventListener('beforeunload',preventLoss);},[]);
   async function save(next: AppState) {
+    assertWriteBinding(writeBinding,{epoch:sessionEpoch.current,accountId:sync.current?.user.id,engine:sync.current});
     if (demo) {
       setState(next);
       return;
@@ -148,16 +157,17 @@ export default function App() {
           ? "上一条记录正在保存，请稍等。"
           : "Please wait for the current save.",
       );
-    saving.current = true;
+    const saveToken = Symbol();
+    saving.current = saveToken;
     const epoch = sessionEpoch.current;
     try {
-      if(sync.current) {await sync.current.save(next,writeContext);return;}
-      const snapshot = await api.putState(next, revision.current);
-      if (epoch !== sessionEpoch.current) return;
+      if(writeEngine) {await writeEngine.save(next,writeContext);assertWriteBinding(writeBinding,{epoch:sessionEpoch.current,accountId:sync.current?.user.id,engine:sync.current});return;}
+      const snapshot = await api.putState(next, revision.current,writeBinding.accountId ?? null);
+      if (epoch !== sessionEpoch.current) throw Error('Account changed. Reopen the editor before saving.');
       revision.current = snapshot.revision;
       setState(snapshot.state);
     } catch (err) {
-      if (epoch !== sessionEpoch.current) return;
+      if (epoch !== sessionEpoch.current) throw Error('Account changed. Reopen the editor before saving.');
       if (err instanceof api.ApiError && err.status === 401) {
         if(!sync.current)resetSession();
         setAuth(true);
@@ -170,17 +180,19 @@ export default function App() {
       }
       throw err;
     } finally {
-      saving.current = false;
+      if(saving.current===saveToken)saving.current = null;
     }
   }
   async function authenticated(current: User) {
-    const startingEpoch = sessionEpoch.current;
+    const startingEpoch = writeBinding.epoch;
+    if(startingEpoch!==sessionEpoch.current)throw Error('Account changed. Sign in again.');
     const snapshot = await api.getSync(current.id);
     if (startingEpoch !== sessionEpoch.current) return;
     const epoch = ++sessionEpoch.current;
+    saving.current=null;
+    setUnsaved({dirty:false,busy:false});setLeavePage(null);
     api.setAccountHint(current.id);
     localStorage.setItem('forma-active-account',current.id);
-    if(sync.current&&sync.current.user.id!==current.id){await sync.current.stop(false);sync.current=null;}
     setUser(current);
     setState(snapshot.state);
     revision.current = snapshot.revision;
@@ -189,11 +201,15 @@ export default function App() {
     setOnboarding(!snapshot.state.profile);
     if(user?.id!==current.id)setPage("today");
     await startSync(current,snapshot,epoch);
+    if(epoch!==sessionEpoch.current)return;
     localStorage.setItem("forma-session-change", crypto.randomUUID());
     notify("账户已准备好。", "Your account is ready.");
   }
   function resetSession(clearCache=true,force=false) {
     sessionEpoch.current++;
+    if(sync.current){if(clearCache)retainedEngines.current.delete(sync.current.user.id);else retainedEngines.current.set(sync.current.user.id,sync.current);}
+    saving.current=null;
+    setUnsaved({dirty:false,busy:false});setLeavePage(null);
     if(clearCache&&localStorage.getItem('forma-active-account')===user?.id)localStorage.removeItem('forma-active-account');
     void sync.current?.stop(clearCache,force).catch(()=>notify('待同步记录已保留，请登录原账户后恢复。','Pending records preserved. Sign in to the original account to restore them.'));sync.current=null;setSyncStatus(null);
     api.setAccountHint(null);
@@ -206,12 +222,15 @@ export default function App() {
     setAuth(false);
   }
   async function signOut() {
+    assertWriteBinding(writeBinding,{epoch:sessionEpoch.current,accountId:sync.current?.user.id,engine:sync.current});
     if(sync.current?.status.pending)throw Error(zh?'请先同步或导出并放弃待同步更改，再退出。':'Sync, or export and discard pending changes before signing out.');
     try {await api.logout();}catch(e){if(navigator.onLine)throw e;}
+    assertWriteBinding(writeBinding,{epoch:sessionEpoch.current,accountId:sync.current?.user.id,engine:sync.current});
     resetSession();
     localStorage.setItem("forma-session-change", crypto.randomUUID());
   }
   function accountDeleted() {
+    if(writeBinding.epoch!==sessionEpoch.current)return;
     resetSession(true,true);
     localStorage.setItem("forma-session-change", crypto.randomUUID());
   }
@@ -236,7 +255,7 @@ export default function App() {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
-  const props = { state, lang, save, notify, demo, accountId:user?.id, onUnsavedChange:(dirty:boolean,busy:boolean)=>setUnsaved(current=>current.dirty===dirty&&current.busy===busy?current:{dirty,busy}) };
+  const props = { state, lang, save, notify:(a:string,b?:string)=>{if(writeBinding.epoch===sessionEpoch.current)notify(a,b);}, demo, accountId:user?.id, onUnsavedChange:(dirty:boolean,busy:boolean)=>{if(writeBinding.epoch===sessionEpoch.current)setUnsaved(current=>current.dirty===dirty&&current.busy===busy?current:{dirty,busy});} };
   if (loading)
     return (
       <div className="loading-screen">
@@ -338,7 +357,8 @@ export default function App() {
             </button>
           </div>
         </header>
-        {!demo&&sync.current&&syncStatus&&<SyncPanel engine={sync.current} status={syncStatus} lang={lang} expanded={page==='settings'} onReauthenticate={()=>setAuth(true)}/>}
+        {!demo&&sync.current&&syncStatus&&<SyncPanel key={`sync:${user?.id}:${writeBinding.epoch}`} engine={sync.current} status={syncStatus} lang={lang} expanded={page==='settings'} onReauthenticate={()=>setAuth(true)}/>}
+        <Fragment key={`features:${user?.id ?? 'demo'}:${writeBinding.epoch}`}>
         {onboarding ? (
           <Onboarding
             {...props}
@@ -347,6 +367,7 @@ export default function App() {
               demo ? "Forma-onboarding-demo" : `Forma-onboarding-${user?.id}`
             }
             onComplete={() => {
+              if(writeBinding.epoch!==sessionEpoch.current)return;
               setOnboarding(false);
               setPage("today");
             }}
@@ -394,6 +415,7 @@ export default function App() {
             )}
           </>
         )}
+        </Fragment>
         <footer className="app-footer">
           Forma <span>·</span>{" "}
           {zh ? "每天一点，向前一点。" : "Small steps. Steady progress."}

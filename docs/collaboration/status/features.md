@@ -1,5 +1,18 @@
 # features 状态
 
+## 2026-10-16 L-03 本地隔离安全修复
+
+- 同日复审补修：新增 `sleepEditor.ts`，睡眠在 open 时固定 draft id/createdAt，`existing` 仅用于标题；提交使用原身份并按当前 state 的实际 ID upsert。已接受但丢失响应后，原新草稿重试能更新同一条，重叠检查排除自身，不再误报；其它记录严格按 ISO 瞬间检查，端点相接和 DST 两次重复钟点的独立区间允许。Nutrition 的 draft id/createdAt 改为必需值，AI 审核也使用 draft.createdAt，避免重试重写创建时间。
+- 补修验证：`node --import tsx --test tests/editor-lifecycle.test.ts` **12/12 通过**（含 2 个子案例），tsc 与 features/tests diff check 均通过。新增不确定响应后同步发现同 ID、修改质量重试的回归，覆盖固定创建时间、其它记录保留、自身/异 ID 重叠和回拨独立区间。已通知 root 重新 build；旧 dist 的浏览器验证不充当此次补修验收。没有启动、关闭服务或操作真实数据。
+
+- 工作目录：`C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-health`，分支 `codex/forma-local-safety-20261016`。已读 AGENTS、TASKS 顶部 L-03、旧 features 状态和发给 features 的请求；仅修改本轮授权的 features 路径、`tests/editor-lifecycle.test.ts` 及此状态文件。没有操作原目录、真实记录、GitHub、AI、部署或现有开发服务。
+- Nutrition 和 Reports 复用 `attachmentLifecycle.ts`：从未提交的上传仍在取消/替换/卸载时清理；交给 save 之前即保留附件，响应丢失或队列保存抛错后不再把它当作无引用资源删除。原上传 ID 可用于重试；新草稿创建时固定 UUID/createdAt，按现有 ID upsert，避免不确定保存后的重试重复。保守保留可能包括最终未引用文件，本轮不自动猜测或回收这类文件。
+- 两页上传、食物识别、附件 DELETE 固定发起编辑器的 accountId，显式覆盖可变全局 account hint；上传返回后如组件已卸载，只清理确定尚未交给 save 的文件且仍绑定原账号。Nutrition/Reports/Sleep/Settings 的异步完成均加或保留 mounted 守卫；App 的业务子树 account+epoch key 与 save 绑定由 root 实现。
+- Sleep 使用 `sleepTime.ts`：未改动的分钟输入返回记录原始 ISO，保留回拨第二次时刻与隐藏的秒/毫秒；新增或修改的重复本地时刻明确拒绝并提示重选，跳时缺口与非法日期也拒绝，不擅自猜测第几次时刻。支持纽约整小时及 Lord Howe 半小时回拨边界。
+- Settings 的导出和账户 DELETE 固定 ownerAccount，卸载后不下载或通知；JSON 按服务端快照导出，因此文案说明先完成同步，未同步本机改动不包含。JSON 只有记录、附件元数据/引用，不含照片、报告图片或 PDF 本体，不能作为完整附件备份；删除账户前须另存所需文件。
+- 已执行：`node --import tsx --test tests/editor-lifecycle.test.ts` **10/10 通过**（包含 2 个子案例）；`node node_modules/typescript/bin/tsc --noEmit` 通过；`git diff --check -- src/features tests/editor-lifecycle.test.ts` 通过。回归覆盖 uncertain save→cancel/unmount、重试/替换、清理失败/延迟、旧账号 upload/analyze/DELETE/export/account 边界，以及纽约/Lord Howe/UTC 的 DST/精度/非法输入。
+- 尚未由 features 执行：真实浏览器离线队列、保存响应丢失后取消、跨标签/跨账户组件生命周期、完整 Vite build。以上由 root 统一使用合成账号串行验证；本轮 helper/API mock 回归不冒充真实浏览器或真实 HTTP 测试。没有提交代码。
+
 ## 正在做
 
 T-03 完整训练五组 UI 已实现并通过 TypeScript 与双语 SSR smoke，正在交给 lead 串行构建、真实浏览器与同步验收。AI-03 已交付并由 lead 验收，历史记录保留在下文；未将真实 OpenAI 推理质量写成已验证。

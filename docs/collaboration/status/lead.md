@@ -1,5 +1,13 @@
 # Codex lead 状态
 
+2026-10-16 L-01/L-06 done。独立 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-health`，分支 `codex/forma-local-safety-20261016`，基线 eb6b559。云端补丁未在本机，已重新核对并修复账号生命周期、待同步队列、附件、DST、训练导入与舍入。独立复审补获旧引擎重放已放弃删除、在途验证跨恢复、重复 key DOM 残留与对象字段顺序无效版本，均修复并回归。
+
+验证：`npm test` 186/186，`npm run build` 通过，`git diff --check` 通过；最终 shell e477dc502d837645。独立系统 Edge 155 的 15 项真实浏览器场景全部通过，1440/390 截图复看；无脚本异常/console warning，只有故障注入对应网络错误。验收服务与浏览器均关闭。可重跑脚本/最终 JSON/QA 报告在 worktree 外 `../browser-evidence/`，测试和构建日志也在上一层；完整边界见 decisions/ADR-local-safety-20261016.md。
+
+本轮中途因 Windows 授权撤回暂停，收到恢复授权后继续；未绕过限制。原目录仍为 eb6b559、原有七类未跟踪项不变；未读取原 data/、未载入原 .env、未启用真实健康/AI/Apple/HealthKit，无 push/远程分支/PR/合并/部署。仅保存本地集成提交，AGENTS.md 的隔离副本不纳入提交。
+
+剩余边界：JSON 不含附件本体；未启用离线的队列仅在当前页面内存。旧漏导训练需原文件重导；Safari/iPhone、真实供应商源文件、真实 AI 与正式生产身份/数据未验证。保守保留不确定附件可能留下未引用文件，本轮无自动清理。无待用户决定的本轮阻塞。
+
 2026-10-15 G-01 done。人类直接要求将网站放在GitHub；已使用登录的Devinshen123账号创建私有仓库https://github.com/Devinshen123/forma-health ，HTTPS origin与main上游已设置，git push成功，GitHub API确认PRIVATE/非空/默认main且远端SHA与本机HEAD一致。未改写历史或force push。README新增仓库链接、克隆和运行说明。
 
 验证：原main全部19次提交、134历史路径、208唯一blob（200文本＋8PNG）独立只读审查，无真实secret、非.example环境文件、数据库、uploads或reference-sources路径；无SQLite签名，PNG无嵌入文本/EXIF元数据，既有截图来源为演示/合成记录，本轮没有新增像素OCR。候选均为测试夹具/属性而非真实凭据。git check-ignore确认.env/data/reference-sources/node_modules/dist排除；npm test155/155、npm run build通过（现有训练分包大小提示），git diff --check通过。

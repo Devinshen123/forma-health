@@ -88,6 +88,7 @@ async function harness(t: TestContext) {
       origin?: string;
       contentType?: string;
       accountHint?: string | null;
+      apiPrefix?: string;
     } = {},
   ) => {
     const headers: Record<string, string> = {
@@ -100,7 +101,7 @@ async function harness(t: TestContext) {
         ? options.cookie && accountByCookie.get(options.cookie)
         : options.accountHint;
     if (accountHint) headers["X-Forma-Account"] = accountHint;
-    const response = await fetch(`${base}/api${path}`, {
+    const response = await fetch(`${base}${options.apiPrefix ?? "/api"}${path}`, {
       method: options.method ?? "GET",
       headers,
       ...(options.body !== undefined
@@ -108,7 +109,7 @@ async function harness(t: TestContext) {
         : {}),
     });
     const bytes = Buffer.from(await response.arrayBuffer());
-    const data = response.headers
+    const data = bytes.length > 0 && response.headers
       .get("content-type")
       ?.includes("application/json")
       ? JSON.parse(bytes.toString())
@@ -289,6 +290,70 @@ test("a stale tab cannot read, save, upload, export or delete with another accou
   assert.ok(h.service.store.accountByEmail(b.email));
 });
 
+test("account binding covers Express case and trailing-slash aliases before any private operation", async (t) => {
+  const h = await harness(t),
+    a = await h.register(),
+    b = await h.register();
+  const uploaded = await h.request("/assets", {
+    method: "POST",
+    cookie: b.cookie,
+    body: { name: "B-private.png", mime: "image/png", base64: PNG },
+  });
+  assert.equal(uploaded.status, 201);
+  const stateB = { ...emptyState(), meals: [meal()] };
+  assert.equal((await h.request("/state", {
+    method: "PUT",
+    cookie: b.cookie,
+    body: { state: stateB, revision: 0 },
+  })).status, 200);
+  const stateA = { ...emptyState(), meals: [{ ...meal(), name: "A stale edit" }] };
+  const mutation = {
+    mutationId: randomUUID(),
+    changes: [{ collection: "meals", id: stateA.meals[0].id, baseVersion: 0, kind: "upsert", value: stateA.meals[0] }],
+  };
+  const endpoints = [
+    { path: "/state", method: "GET" },
+    { path: "/state", method: "HEAD" },
+    { path: "/state", method: "PUT", body: { state: stateA, revision: 1 } },
+    { path: "/sync", method: "GET" },
+    { path: "/sync", method: "POST", body: mutation },
+    { path: "/export", method: "GET" },
+    { path: "/account", method: "DELETE", body: { password: PASSWORD } },
+    { path: "/assets", method: "POST", body: { name: "A-stale.png", mime: "image/png", base64: PNG } },
+    { path: `/assets/${uploaded.data.id}`, method: "DELETE", body: {} },
+    { path: "/food-photo-drafts", method: "POST", body: { assetId: uploaded.data.id, consent: true, language: "en" } },
+  ];
+  for (const endpoint of endpoints) {
+    // Express accepts these route aliases by default; authorization must follow the matched route.
+    for (const path of [endpoint.path, endpoint.path.toUpperCase(), `${endpoint.path}/`, `${endpoint.path.toUpperCase()}/`]) {
+      for (const apiPrefix of ["/api", "/API"]) {
+        for (const accountHint of [a.user.id, null]) {
+          const response = await h.request(path, { ...endpoint, apiPrefix, cookie: b.cookie, accountHint });
+          const label = `${endpoint.method} ${apiPrefix}${path} (${accountHint ? "stale" : "missing"} account)`;
+          assert.equal(response.status, 401, label);
+          if (endpoint.method !== "HEAD") assert.equal(response.data.code, "ACCOUNT_CHANGED", label);
+        }
+      }
+    }
+  }
+  assert.deepEqual((await h.request("/state", { cookie: b.cookie })).data, { state: stateB, revision: 1 });
+  assert.deepEqual((await h.request("/state", { cookie: a.cookie })).data, { state: emptyState(), revision: 0 });
+  assert.equal((await h.request("/auth/me", { cookie: b.cookie })).data.user.id, b.user.id);
+  assert.equal(h.service.store.assets(b.user.id).length, 1);
+  assert.deepEqual((await h.request(`/assets/${uploaded.data.id}`, { cookie: b.cookie })).bytes, Buffer.from(PNG, "base64"));
+  assert.deepEqual(h.service.store.aiUsage(b.user.id), []);
+  assert.deepEqual(h.service.store.aiDrafts(b.user.id), []);
+
+  // Valid page headers still work for aliases. Browser image/download reads use session ownership.
+  for (const path of ["/STATE/", "/SYNC/", "/EXPORT/"]) {
+    assert.equal((await h.request(path, { apiPrefix: "/API", cookie: b.cookie })).status, 200);
+  }
+  for (const method of ["GET", "HEAD"]) {
+    assert.equal((await h.request(`/ASSETS/${uploaded.data.id}/`, { apiPrefix: "/API", method, cookie: b.cookie, accountHint: null })).status, 200);
+    assert.equal((await h.request(`/ASSETS/${uploaded.data.id}/`, { apiPrefix: "/API", method, cookie: a.cookie, accountHint: null })).status, 404);
+  }
+});
+
 test("strict schemas reject invented AI data, duplicate IDs, impossible dates, macros and sleep spans", async (t) => {
   const h = await harness(t),
     a = await h.register();
@@ -407,6 +472,11 @@ test("private uploads check bytes, ownership and references; record deletion rem
   const assetPath = join(h.dir, "uploads", a.user.id, file.data.id);
   assert.ok(existsSync(assetPath));
   assert.deepEqual(readFileSync(assetPath), Buffer.from(PNG, "base64"));
+  const exported = await h.request("/export", { cookie: a.cookie });
+  assert.equal(exported.data.assets.length, 1);
+  assert.equal(exported.data.assets[0].id, file.data.id);
+  assert.deepEqual(Object.keys(exported.data.assets[0]).sort(), ["createdAt", "id", "mime", "name", "size"]);
+  assert.ok(!JSON.stringify(exported.data).includes(PNG), "JSON export describes attachments but does not back up their bytes");
   assert.equal(
     (await h.request(`/assets/${file.data.id}`, { cookie: b.cookie })).status,
     404,

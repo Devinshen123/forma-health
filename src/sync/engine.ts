@@ -4,6 +4,9 @@ import { applyChanges, diffStates, versionKey } from './changes';
 import { clearCached, readCached, writeCached } from './storage';
 export interface SyncStatus { enabled:boolean; pending:number; online:boolean; connected?:boolean; busy:boolean; error:string; authRequired?:boolean; conflict:{keys:string[];local:AppState;remote:AppState}|null }
 export class SyncEngine {
+  private editorOwner = crypto.randomUUID();
+  private restoring = false;
+  private lifecycle = 0;
   private queue:SyncMutation[]=[];
   private stopped=false;
   private working=false;
@@ -21,7 +24,23 @@ export class SyncEngine {
   }
   async restore() { if(this.status.enabled){const cached=await readCached(this.user.id);if(cached){this.queue=cached.queue;this.generation=cached.generation;if(!cached.generation)await this.persist([],true);}else{this.status.enabled=false;localStorage.removeItem(`forma-offline-${this.user.id}`);}}this.ready=new Set(this.queue.map(x=>x.mutationId));this.emit(); }
   private view() {return this.queue.reduce((state,batch)=>applyChanges(state,batch.changes),this.snapshot.state);}
-  context() {const versions={...this.snapshot.entityVersions};for(const batch of this.queue)for(const change of batch.changes){const key=versionKey(change.collection,change.id);versions[key]=(versions[key]??0)+1;}return {state:this.view(),versions};}
+  context() {const versions={...this.snapshot.entityVersions};for(const batch of this.queue)for(const change of batch.changes){const key=versionKey(change.collection,change.id);versions[key]=(versions[key]??0)+1;}return {state:this.view(),versions,owner:this.editorOwner};}
+  async reauthenticate(snapshot:SyncSnapshot,changed:(state:AppState,status:SyncStatus)=>void) {
+    const lifecycle=++this.lifecycle;
+    this.restoring=true;
+    this.stopped=false;
+    try {
+      if(snapshot.revision>=this.snapshot.revision)this.snapshot=snapshot;
+      // A parked tab must honor another tab's discard receipts and consent
+      // generation before it can send anything from its old in-memory queue.
+      await this.reconcileCache();
+      if(this.stopped||lifecycle!==this.lifecycle)throw Error('Account changed. Sign in again.');
+      this.editorOwner=crypto.randomUUID();
+      this.changed=changed;
+      this.emit();
+    } catch(error) {if(lifecycle===this.lifecycle)this.stopped=true;throw error;}
+    finally {if(lifecycle===this.lifecycle)this.restoring=false;}
+  }
   private emit() {if(!this.stopped){this.status.pending=this.queue.length;this.status.online=navigator.onLine;this.changed(this.view(),{...this.status});}}
   private async persist(settleIds:string[] = [],grant=false) {
     if(!this.status.enabled||this.stopped)return;
@@ -36,6 +55,8 @@ export class SyncEngine {
   }
   async save(next:AppState,context=this.context()) {
     if(this.stopped)throw Error('Account changed. Sign in again.');
+    if(this.restoring)throw Error('Wait for account records to finish loading.');
+    if(context.owner!==this.editorOwner)throw Error('Account changed. Reopen the editor before saving.');
     if(this.status.conflict)throw Error('Review the sync conflict before saving more changes.');
     if(!this.status.enabled&&this.queue.length)throw Error(localStorage.getItem('forma-language')==='en'?'A save is awaiting confirmation. Retry Sync above or export the pending records before making another save.':'上一笔保存尚待确认。请使用顶部“同步”重试或导出待同步记录，再进行新的保存。');
     const changes=diffStates(context.state,next,context.versions);
@@ -56,24 +77,27 @@ export class SyncEngine {
     this.flushPromise=this.performFlush().finally(()=>{this.flushPromise=null;});return this.flushPromise;
   }
   private async performFlush() {
-    if(this.stopped||this.status.conflict||!navigator.onLine)return;
+    if(this.stopped||this.restoring||this.status.conflict||!navigator.onLine)return;
+    const lifecycle=this.lifecycle;
+    const current=()=>!this.stopped&&!this.restoring&&lifecycle===this.lifecycle;
     this.working=true;this.status.busy=true;this.status.error='';this.emit();
     let sendingId:string|null=null;
     try {
       const me=await api.getMe();
+      if(!current())return;
       if(me.user?.id!==this.user.id)throw new api.ApiError('Account changed. Sign in again.',401);
       this.status.connected=true;
       this.status.authRequired=false;
-      while(this.queue.length&&!this.stopped&&this.ready.has(this.queue[0].mutationId)) {
+      while(this.queue.length&&current()&&this.ready.has(this.queue[0].mutationId)) {
         const batch=this.queue[0];
         sendingId=batch.mutationId;
         const remote=await api.syncMutation(batch,this.user.id);
-        if(this.stopped)return;
+        if(!current())return;
         if(remote.revision>=this.snapshot.revision)this.snapshot=remote;this.queue=this.queue.filter(x=>x.mutationId!==batch.mutationId);this.ready.delete(batch.mutationId);await this.persist([batch.mutationId]);this.emit();
       }
-      if(!this.stopped){const remote=await api.getSync(this.user.id);if(remote.revision>=this.snapshot.revision)this.snapshot=remote;await this.persist();}
+      if(current()){const remote=await api.getSync(this.user.id);if(!current())return;if(remote.revision>=this.snapshot.revision)this.snapshot=remote;await this.persist();}
     } catch(e) {
-      if(this.stopped)return;
+      if(!current())return;
       this.status.error=e instanceof Error?e.message:'Sync failed';
       if(e instanceof TypeError || e instanceof DOMException && ['TimeoutError','AbortError'].includes(e.name)){this.status.connected=false;const en=localStorage.getItem('forma-language')==='en';this.status.error=this.status.enabled?(en?'Cannot reach the server. Pending changes remain on this device.':'暂时无法连接服务。待同步更改仍保留在此设备。'):(en?'Cannot reach the server. Keep this page open or export pending changes.':'暂时无法连接服务。请保持本页打开，或导出待同步更改。');}
       if(e instanceof api.ApiError && [401,403].includes(e.status))this.status.authRequired=true;
@@ -82,7 +106,7 @@ export class SyncEngine {
       throw e;
     } finally {this.working=false;this.status.busy=false;this.emit();}
   }
-  async refresh() {if(this.working||this.stopped||this.status.conflict)return;try{await this.flush();}catch{this.emit();}}
+  async refresh() {if(this.working||this.stopped||this.restoring||this.status.conflict)return;try{await this.flush();}catch{this.emit();}}
   async resolve(useLocal:boolean) {
     if(this.deciding)return;
     this.deciding=true;
@@ -102,7 +126,31 @@ export class SyncEngine {
     } finally {this.deciding=false;}
   }
   async discardInvalid() {if(this.working||this.deciding)throw Error('Wait for the current sync to finish.');const old=this.queue,discarded=old.map(x=>x.mutationId);this.queue=[];try{await this.persist(discarded);}catch(e){this.queue=old;this.emit();throw e;}this.ready=new Set(this.queue.map(x=>x.mutationId));this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';this.emit();await this.refresh();}
-  async reconcileCache() {if(this.stopped)return;await this.writeChain.catch(()=>{});const enabled=localStorage.getItem(`forma-offline-${this.user.id}`)==='enabled';if(!enabled){this.status.enabled=false;this.generation=undefined;this.emit();return;}this.status.enabled=true;const cached=await readCached(this.user.id);if(this.stopped||!cached)return;this.generation=cached.generation;const memory=this.queue.filter(x=>!this.ready.has(x.mutationId));this.queue=[...cached.queue,...memory.filter(x=>!cached.queue.some(y=>y.mutationId===x.mutationId))];if(cached.snapshot.revision>=this.snapshot.revision)this.snapshot=cached.snapshot;if(this.conflictMutationId&&cached.settled?.includes(this.conflictMutationId)){this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';}this.ready=new Set(cached.queue.map(x=>x.mutationId));this.emit();}
-  exportPending() {return {format:'forma-offline-backup-v1',userId:this.user.id,state:this.view(),pending:this.queue.length};}
-  async stop(clear=false,force=false) {this.stopped=true;await this.writeChain.catch(()=>{});if(clear){await clearCached(this.user.id,!force);localStorage.removeItem(`forma-offline-${this.user.id}`);}}
+  async reconcileCache() {
+    if(this.stopped)return;
+    await this.writeChain.catch(()=>{});
+    if(this.stopped)return;
+    const enabled=localStorage.getItem(`forma-offline-${this.user.id}`)==='enabled';
+    const hadPrivateStorage=this.status.enabled||this.generation!==undefined;
+    if(!enabled&&!hadPrivateStorage){this.emit();return;} // Never-consented outboxes live only in memory.
+    const cached=enabled?await readCached(this.user.id):undefined;
+    if(this.stopped)return;
+    if(!cached){
+      this.status.enabled=false;this.generation=undefined;this.queue=[];this.ready.clear();
+      this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';
+      localStorage.removeItem(`forma-offline-${this.user.id}`);this.emit();return;
+    }
+    this.status.enabled=true;
+    const sameGeneration=this.generation===cached.generation;
+    const memory=!hadPrivateStorage?this.queue.filter(x=>!cached.settled?.includes(x.mutationId)):sameGeneration?this.queue.filter(x=>!this.ready.has(x.mutationId)&&!cached.settled?.includes(x.mutationId)):[];
+    this.generation=cached.generation;
+    this.queue=[...cached.queue,...memory.filter(x=>!cached.queue.some(y=>y.mutationId===x.mutationId))];
+    if(cached.snapshot.revision>=this.snapshot.revision)this.snapshot=cached.snapshot;
+    if(this.conflictMutationId&&(!sameGeneration||cached.settled?.includes(this.conflictMutationId))){this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';}
+    this.ready=new Set(cached.queue.map(x=>x.mutationId));
+    if(!hadPrivateStorage&&memory.length)await this.persist();
+    this.emit();
+  }
+  exportPending() {return {format:'forma-offline-backup-v1',userId:this.user.id,state:this.view(),pending:this.queue.length,attachments:{included:false,referencesOnly:true}};}
+  async stop(clear=false,force=false) {this.lifecycle++;this.stopped=true;this.restoring=false;await this.writeChain.catch(()=>{});if(clear){await clearCached(this.user.id,!force);localStorage.removeItem(`forma-offline-${this.user.id}`);}}
 }

@@ -54,3 +54,15 @@ T-02 已完成并提交13b3bbd。客户端独立审查后，lead新增分配src/
 
 - 真实 OpenAI 密钥和供应商账户准备情况。
 - 真实照片质量评估与以后预算；本次预留账本是应用保守记账，不是实际费用承诺。
+
+## L-02 local safety audit (2026-10-16)
+
+- Scope: isolated `codex/forma-local-safety-20261016` worktree only; no real data, provider calls, push, remote branch, deployment or commit.
+- Confirmed the baseline account-header bypass: Express accepts case/trailing-slash aliases while the old auth middleware classified private paths by exact req.path spelling.
+- Replaced the path inventory with route-bound authorization: all existing private data middleware requires X-Forma-Account; attachment GET/HEAD explicitly uses session-only authorization and still looks up the asset by the session owner.
+- Regression first failed as expected: `GET /API/state` with B's cookie and A's header returned 200 instead of 401.
+- After the fix, `node --import tsx --test server/api.test.ts server/sync.test.ts server/food-photo.test.ts`: 24 passed, 0 failed. The HTTP matrix covers canonical/uppercase/trailing-slash aliases, uppercase API prefix, stale/missing headers, state/sync/export/account/assets/AI-draft operations, data preservation, and owner-scoped attachment GET/HEAD.
+- Added an assertion that JSON export contains attachment metadata only (id/name/mime/size/createdAt), not attachment bytes. It is not a complete attachment backup.
+- `npm test` was executed: backend, AI and sync tests passed; the concurrent training-import edit was temporarily incomplete (`fingerprintV1 is not defined`). Lead was notified and will run the integrated suite once all edits settle.
+- Lifecycle audit: synchronous state/sync/assets use the authenticated immutable owner; async AI uses an owner-scoped active request and checks cancellation/attachment ownership again before persisting. Existing fixture HTTP tests cover deletion during inference. No new API contract or health-rule change.
+- Ordinary sandbox localhost fetch was denied by the environment with EACCES. The same synthetic-data tests were allowed through the escalation review and completed; no remaining backend test-network blocker.

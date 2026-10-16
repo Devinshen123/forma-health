@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Camera, Check, Pencil, Plus, RefreshCw, Square, Trash2, Utensils } from "lucide-react";
 import { analyzeFoodPhoto, ApiError, assetUrl, getCapabilities, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
+import { AttachmentLifecycle } from "./attachmentLifecycle";
 import {
   localDate,
   mealTotals,
@@ -14,7 +15,8 @@ import {
 } from "../types";
 
 type MealDraft = {
-  id?: string;
+  id: string;
+  existing?: boolean;
   date: string;
   name: string;
   type: Meal["type"];
@@ -28,7 +30,7 @@ type MealDraft = {
   assetId?: string;
   aiDraftId?: string;
   aiItemIndex?: number;
-  createdAt?: string;
+  createdAt: string;
 };
 type ReviewItem = { index: number; mealId: string; name: string; grams: string; kcal: string; protein: string; carbs: string; fat: string };
 const asReviewItem = (item: FoodPhotoItem, index: number): ReviewItem => ({
@@ -74,6 +76,8 @@ const photoError = (cause: unknown, zh: boolean) => {
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const newDraft = (date: string): MealDraft => ({
+  id: uid(),
+  createdAt: new Date().toISOString(),
   date,
   name: "",
   type: "lunch",
@@ -122,6 +126,7 @@ export default function Nutrition({
   save,
   notify,
   demo,
+  accountId,
   onCreate,
 }: FeatureProps & { onCreate?: () => void }) {
   const zh = lang === "zh";
@@ -146,12 +151,16 @@ export default function Nutrition({
   const mounted = useRef(true);
   const analysisSequence = useRef(0);
   const analysisController = useRef<AbortController | null>(null);
-  const stagedAsset = useRef<string | null>(null);
+  const ownerAccount = useRef(accountId ?? "").current;
+  const deleteUpload = (id: string) => request("/assets/" + encodeURIComponent(id), {
+    method: "DELETE", body: "{}", headers: { "X-Forma-Account": ownerAccount },
+  });
+  const uploads = useRef(new AttachmentLifecycle(deleteUpload));
   const capabilitySequence = useRef(0);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const focusedDraftId = useRef<string | null>(null);
   const working = busy || analyzing;
-  const rememberUpload = (id: string | null) => { stagedAsset.current = id; setUploadedId(id); };
+  const rememberUpload = (id: string | null) => { uploads.current.stage(id); setUploadedId(id); };
   const refreshCapabilities = async () => {
     const sequence = ++capabilitySequence.current;
     setCapabilityLoading(true); setCapabilityError(false);
@@ -172,9 +181,7 @@ export default function Nutrition({
       analysisSequence.current++;
       capabilitySequence.current++;
       analysisController.current?.abort();
-      const pendingAsset = stagedAsset.current;
-      stagedAsset.current = null;
-      if (pendingAsset && !demo) void request("/assets/" + encodeURIComponent(pendingAsset), { method: "DELETE", body: "{}" }).catch(() => {});
+      if (!demo) void uploads.current.discard().catch(() => {});
     };
   }, []);
   useEffect(() => {
@@ -227,15 +234,12 @@ export default function Nutrition({
           : "Manual";
 
   const discardUpload = async () => {
-    const pendingAsset = stagedAsset.current;
+    const pendingAsset = uploads.current.id;
     if (!pendingAsset || demo) return true;
     try {
-      await request("/assets/" + encodeURIComponent(pendingAsset), {
-        method: "DELETE",
-        body: "{}",
-      });
+      await uploads.current.discard();
       if (!mounted.current) return false;
-      if (stagedAsset.current === pendingAsset) rememberUpload(null);
+      if (!uploads.current.id) setUploadedId(null);
       return true;
     } catch {
       if (!mounted.current) return false;
@@ -250,7 +254,7 @@ export default function Nutrition({
     }
   };
   const close = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     invalidateAnalysis();
     setBusy(true);
     try {
@@ -265,6 +269,7 @@ export default function Nutrition({
     }
   };
   const open = (meal?: Meal) => {
+    if (!mounted.current) return;
     invalidateAnalysis();
     setError("");
     setMode("manual");
@@ -274,6 +279,7 @@ export default function Nutrition({
       meal
         ? {
             ...meal,
+            existing: true,
             grams: String(meal.grams),
             referenceGrams: String(meal.referenceGrams),
             kcal: String(meal.kcal),
@@ -288,7 +294,7 @@ export default function Nutrition({
   const patch = (change: Partial<MealDraft>) =>
     setDraft((current) => (current ? { ...current, ...change } : null));
   const chooseFile = async (selected?: File) => {
-    if (working) return;
+    if (!mounted.current || working) return;
     setError("");
     if (!selected) return;
     if (
@@ -314,7 +320,7 @@ export default function Nutrition({
     }
   };
   const removePhoto = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     invalidateAnalysis();
     setBusy(true);
     try {
@@ -329,7 +335,7 @@ export default function Nutrition({
   };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || working) return;
+    if (!mounted.current || !draft || working) return;
     setError("");
     const numbers = [
       draft.grams,
@@ -377,16 +383,16 @@ export default function Nutrition({
     try {
       let attachment = uploadedId ?? draft.assetId;
       if (file && !demo && !uploadedId) {
-        const result = await uploadFile(file);
+        const result = await uploadFile(file, undefined, ownerAccount);
         if (!mounted.current) {
-          void request("/assets/" + encodeURIComponent(result.id), { method: "DELETE", body: "{}" }).catch(() => {});
+          void deleteUpload(result.id).catch(() => {});
           return;
         }
         attachment = result.id;
         rememberUpload(result.id);
       }
       const meal: Meal = {
-        id: draft.id ?? uid(),
+        id: draft.id,
         name: draft.name.trim(),
         date: draft.date,
         type: draft.type,
@@ -399,11 +405,14 @@ export default function Nutrition({
         source: draft.source,
         ...(attachment ? { assetId: attachment } : {}),
         ...(draft.source === "ai_estimate" ? { aiDraftId: draft.aiDraftId, aiItemIndex: draft.aiItemIndex } : {}),
-        createdAt: draft.createdAt ?? new Date().toISOString(),
+        createdAt: draft.createdAt,
       };
+      // Keep this attachment even if save rejects: it may already be in the
+      // account's outbox, or the server may have accepted a timed-out request.
+      uploads.current.retainForSave(attachment);
       await save({
         ...state,
-        meals: draft.id
+        meals: state.meals.some(item => item.id === meal.id)
           ? state.meals.map((item) => (item.id === meal.id ? meal : item))
           : [...state.meals, meal],
       });
@@ -425,13 +434,13 @@ export default function Nutrition({
       setError(
         photoError(cause, zh),
       );
-      notify("这餐未保存，请重试", "Meal was not saved. Please try again.");
+      notify("尚未确认保存，请查看同步状态后重试", "Save not confirmed. Check sync status before retrying.");
     } finally {
       if (mounted.current) setBusy(false);
     }
   };
   const remove = async () => {
-    if (!deleting || busy) return;
+    if (!mounted.current || !deleting || busy) return;
     setBusy(true);
     setError("");
     try {
@@ -458,7 +467,7 @@ export default function Nutrition({
     }
   };
   const changeMode = (next: "manual" | "photo") => {
-    if (working || draft?.id) return;
+    if (!mounted.current || working || draft?.existing) return;
     invalidateAnalysis(); setMode(next); setError("");
   };
   const cancelAnalysis = () => {
@@ -466,7 +475,7 @@ export default function Nutrition({
     setError(zh ? "已取消等待，未保存饮食记录。你可以重试或手动填写。" : "Stopped waiting. No meal was saved. You can retry or enter it manually.");
   };
   const runAnalysis = async () => {
-    if (!draft || working) return;
+    if (!mounted.current || !draft || working) return;
     if (demo) { onCreate?.(); return; }
     if (!file) { setError(zh ? "请先选择食物照片。" : "Choose a food photo first."); return; }
     if (!capabilities?.foodPhoto.available) { setError(zh ? "识图服务尚未就绪。请刷新状态或改用手动填写。" : "Photo analysis is not ready. Refresh its status or continue manually."); return; }
@@ -477,19 +486,19 @@ export default function Nutrition({
     analysisController.current = controller;
     setAnalyzing(true); setError(""); setAiDraft(null); setReviewItems([]); setReviewed(false);
     try {
-      let attachment = stagedAsset.current;
+      let attachment = uploads.current.id;
       if (!attachment) {
         setAnalysisStage("uploading");
-        const uploaded = await uploadFile(selectedFile, controller.signal);
+        const uploaded = await uploadFile(selectedFile, controller.signal, ownerAccount);
         if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) {
-          void request("/assets/" + encodeURIComponent(uploaded.id), { method: "DELETE", body: "{}" }).catch(() => {});
+          void deleteUpload(uploaded.id).catch(() => {});
           return;
         }
         attachment = uploaded.id;
         rememberUpload(attachment);
       }
       setAnalysisStage("analyzing");
-      const result = await analyzeFoodPhoto(attachment, lang, controller.signal);
+      const result = await analyzeFoodPhoto(attachment, lang, controller.signal, ownerAccount);
       if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) return;
       if (result.assetId !== attachment) throw new Error("Mismatched photo draft");
       setAiDraft(result);
@@ -513,8 +522,8 @@ export default function Nutrition({
   };
   const confirmAi = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || working || demo) return;
-    if (!aiDraft?.isFood || aiDraft.assetId !== stagedAsset.current || !reviewItems.length ||
+    if (!mounted.current || !draft || working || demo) return;
+    if (!aiDraft?.isFood || aiDraft.assetId !== uploads.current.id || !reviewItems.length ||
       !reviewed || reviewItems.some(item => !completeReviewItem(item))) {
       setError(zh ? "请保留至少一项食物，补全所有空值，并确认已核对后再保存。" : "Keep at least one food, fill every unknown value, and confirm your review before saving.");
       return;
@@ -524,9 +533,10 @@ export default function Nutrition({
       const reviewedMeals: Meal[] = reviewItems.map(item => ({
         id: item.mealId, name: item.name.trim(), date: draft.date, type: draft.type, grams: Number(item.grams),
         referenceGrams: 100, kcal: Number(item.kcal), protein: Number(item.protein), carbs: Number(item.carbs), fat: Number(item.fat),
-        source: "ai_estimate", assetId: aiDraft.assetId, aiDraftId: aiDraft.id, aiItemIndex: item.index, createdAt: new Date().toISOString(),
+        source: "ai_estimate", assetId: aiDraft.assetId, aiDraftId: aiDraft.id, aiItemIndex: item.index, createdAt: draft.createdAt,
       }));
       const reviewedIds = new Set(reviewedMeals.map(meal => meal.id));
+      uploads.current.retainForSave(aiDraft.assetId);
       await save({ ...state, meals: [...state.meals.filter(meal => !reviewedIds.has(meal.id)), ...reviewedMeals] });
       if (!mounted.current) return;
       rememberUpload(null);
@@ -535,7 +545,7 @@ export default function Nutrition({
     } catch (cause) {
       if (!mounted.current) return;
       setError(photoError(cause, zh));
-      notify("未保存饮食记录，请核对后重试", "No meals were saved. Review and retry.");
+      notify("尚未确认保存，请查看同步状态后重试", "Save not confirmed. Check sync status before retrying.");
     } finally { if (mounted.current) setBusy(false); }
   };
   const aiTotals = reviewItems.length && reviewItems.every(completeReviewItem) ? reviewItems.reduce((sum, item) => {
@@ -561,8 +571,8 @@ export default function Nutrition({
           protein: Number(draft.protein),
           carbs: Number(draft.carbs),
           fat: Number(draft.fat),
-          id: draft.id ?? "",
-          createdAt: draft.createdAt ?? "",
+          id: draft.id,
+          createdAt: draft.createdAt,
         })
       : null;
 
@@ -703,7 +713,7 @@ export default function Nutrition({
       {draft ? (
         <Modal
           title={
-            draft.id
+            draft.existing
               ? zh
                 ? "编辑这一餐"
                 : "Edit this meal"
@@ -747,7 +757,7 @@ export default function Nutrition({
             </>
           }
         >
-          {!draft.id ? <div className="segmented" aria-label={zh ? "记录方式" : "Entry method"}>
+          {!draft.existing ? <div className="segmented" aria-label={zh ? "记录方式" : "Entry method"}>
             <button className={mode === "manual" ? "selected" : ""} type="button" aria-pressed={mode === "manual"} disabled={working} onClick={() => changeMode("manual")}>{zh ? "手动填写" : "Manual entry"}</button>
             <button className={mode === "photo" ? "selected" : ""} type="button" aria-pressed={mode === "photo"} disabled={working} onClick={() => changeMode("photo")}><Camera size={17} />{zh ? "照片识别" : "Photo analysis"}</button>
           </div> : null}

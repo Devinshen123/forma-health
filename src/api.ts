@@ -93,16 +93,17 @@ export const logout = () =>
 export const getState = () => request<Snapshot>("/state");
 export const getSync = (expectedAccount?:string) => request<SyncSnapshot>("/sync", {headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
 export const syncMutation = (mutation: SyncMutation, expectedAccount?:string) => request<SyncSnapshot>("/sync", {method:"POST",body:JSON.stringify(mutation),headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
-export const putState = (state: AppState, revision: number) =>
+export const putState = (state: AppState, revision: number, expectedAccount = accountHint) =>
   request<Snapshot>("/state", {
     method: "PUT",
+    headers: { "X-Forma-Account": expectedAccount ?? "" },
     body: JSON.stringify({ state, revision }),
   });
 export async function uploadFile(
   file: File,
   signal?: AbortSignal,
+  expectedAccount = accountHint,
 ): Promise<{ id: string; name: string; mime: string }> {
-  const expectedAccount = accountHint;
   const base64 = await new Promise<string>((resolve, reject) => {
     if (signal?.aborted) {
       reject(new DOMException("Upload cancelled", "AbortError"));
@@ -133,8 +134,10 @@ export const analyzeFoodPhoto = (
   assetId: string,
   language: Language,
   signal?: AbortSignal,
+  expectedAccount = accountHint,
 ) => request<FoodPhotoDraft>("/food-photo-drafts", {
   method: "POST",
   signal,
+  headers: { "X-Forma-Account": expectedAccount ?? "" },
   body: JSON.stringify({ assetId, consent: true, language }),
 });

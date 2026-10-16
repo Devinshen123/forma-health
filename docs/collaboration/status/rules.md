@@ -65,3 +65,12 @@
 - 仍未决定：
   - 营养师审核（Q10，用户还没回答）。在此之前，引擎不自动改动任何营养目标。
   - 提交信息格式：用户本机的钩子要求 conventional 格式，与 AGENTS.md 要求的 `[角色]` 开头冲突。lead 的意见是以项目规范为准，但钩子会直接拦截 `[rules]` 开头的提交，所以本次仍用 `feat(rules): …`，由用户定夺。
+
+## L-05 decimal presentation rounding (2026-10-16, backend acting as rules owner)
+
+- Lead explicitly assigned only `server/rules/nutrition.ts`, `server/rules/nutrition.test.ts` and this status file. Existing health/nutrition policy was unchanged.
+- Reproduced three baseline failures before implementation: `roundTo(1.005, .01)` returned 1; `roundTo(1.13, .25)` returned 1.3; non-finite input was accepted.
+- `roundTo` now computes integer multiples from canonical decimal inputs at a shared scale, preserving all step digits and Math.round's existing half-toward-positive-infinity convention. It rejects non-finite values, non-positive/non-finite steps and overflowed results. No epsilon adjustment, dependency or stored-value rounding was introduced.
+- Tests cover decimal ties, just-below/above ties, negative ties, quarter/.125/.025/2.5 steps, exponent notation, very small finite values and invalid/overflow inputs.
+- Validation: `node --import tsx --test server/rules/*.test.ts` 52 passed, 0 failed; after additional numeric boundary assertions, `node --import tsx --test server/rules/nutrition.test.ts` 11 passed, 0 failed. `node node_modules/typescript/bin/tsc --noEmit --pretty false` passed; scoped `git diff --check` passed.
+- Full-suite integration remains with lead after concurrent agents finish. No real data, provider calls, remote writes, commits or deployment performed.
