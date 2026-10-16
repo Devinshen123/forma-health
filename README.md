@@ -6,6 +6,15 @@
 
 ## 启动
 
+源码托管在私有仓库 [Devinshen123/forma-health](https://github.com/Devinshen123/forma-health)。有权限的账户可克隆后按下方命令运行：
+
+```powershell
+git clone https://github.com/Devinshen123/forma-health.git
+cd forma-health
+```
+
+仓库包含网站、API、测试与文档，不包含本机账户数据库、私有附件、真实密钥、依赖目录或参考仓库；克隆后创建自己的本机账户。GitHub代码托管没有启用公开网站服务。
+
 使用支持 `node:sqlite` 的 Node.js（22.13+；本机验证使用 Node 26.1）及 npm。
 
 ```powershell
