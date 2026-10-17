@@ -208,7 +208,70 @@ try {
       assert.deepEqual((await h.snap()).state[kind], []); assert.equal(new Set(ids).size, 1, 'accepted deletion retry replays one original mutation');
       return { originalMutationReplayed: true, deleteConfirmed: true };
     });
+    // CF-17 recheck: gaps not exercised by the original 13 cases.
+    await check(kind + '-stale-delete-confirmation-remote-delete', kind, async h => {
+      await h.p.getByRole('button', { name: deleteOpen(kind), exact: true }).click(); const dialog = h.p.getByRole('dialog');
+      await h.mutate(kind, h.item.id, undefined); await h.refresh();
+      const before = await h.snap(); const posts: string[] = [];
+      h.p.on('request', (request: any) => { if (request.url().endsWith('/api/sync') && request.method() === 'POST') posts.push(request.url()); });
+      await dialog.getByRole('button', { name: deleteLabel(kind), exact: true }).click();
+      await h.p.waitForFunction(() => { const button = document.querySelector<HTMLButtonElement>('dialog button.btn-primary'); return !button || !button.disabled; });
+      const after = await h.snap();
+      assert.deepEqual(after.state[kind], [], 'stale confirmation must not recreate the remotely deleted record');
+      assert.equal(after.revision, before.revision, 'stale confirmation must not write');
+      const stillOpen = await dialog.count() > 0;
+      if (stillOpen) { await expect(dialog.getByRole('alert')).toBeVisible(); await dialog.getByRole('button', { name: 'Keep', exact: true }).click(); await expect(dialog).toHaveCount(0); }
+      return { remoteDeletionPreserved: true, writes: posts.length, dialogStayedWithAlert: stillOpen };
+    });
+    await check(kind + '-own-uncertain-save-then-remote-change', kind, async h => {
+      const dialog = await openEdit(h, kind); let accepted = false, blocked = true;
+      await h.p.route('**/api/sync', async (route: any) => { if (route.request().method() !== 'POST') return route.continue(); if (blocked) { if (!accepted) { const response = await route.fetch(); assert.equal(response.status(), 200); accepted = true; } return route.abort('failed'); } return route.continue(); });
+      await dialog.getByRole('button', { name: saveLabel(kind), exact: true }).click();
+      await expect(dialog.getByRole('alert')).toContainText('not confirmed');
+      blocked = false; await h.p.evaluate(() => window.dispatchEvent(new Event('online'))); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
+      const own = (await h.snap()).state[kind][0];
+      assert.equal(kind === 'sleeps' ? own.quality : own.markers[0].value, kind === 'sleeps' ? 5 : '11', 'own uncertain write was accepted');
+      const remote = kind === 'sleeps' ? { ...own, quality: 2 } : { ...own, markers: [{ ...own.markers[0], value: '30' }] };
+      await h.mutate(kind, h.item.id, remote); await h.refresh();
+      if (kind === 'sleeps') await dialog.getByLabel('Sleep quality (1–5)').selectOption('4'); else await dialog.getByLabel('Original value (including > or <)', { exact: true }).fill('12');
+      await dialog.getByRole('button', { name: saveLabel(kind), exact: true }).click();
+      await h.p.waitForFunction(() => { const button = document.querySelector<HTMLButtonElement>('dialog button.btn-primary'); return !button || !button.disabled; });
+      assert.deepEqual((await h.snap()).state[kind], [remote], 'retry after own accepted write must not overwrite a later remote change');
+      await expect(dialog.getByRole('alert')).toContainText('changed');
+      await h.p.screenshot({ path: join(out, kind + '-own-uncertain-then-remote-guard.png'), animations: 'disabled' });
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
+      if (kind === 'reports') assert.equal((await h.ctx.request.get(base + '/api/assets/' + h.item.assetId)).status(), 200, 'referenced attachment kept');
+      return { ownWriteAccepted: true, laterRemotePreserved: true, cancelSafe: true };
+    });
   }
+  await check('reports-uncertain-attachment-conflict-cancel', 'reports', async h => {
+    const dialog = await openEdit(h, 'reports');
+    await dialog.locator('input[type="file"]').setInputFiles({ name: 'conflict-synthetic.pdf', mimeType: 'application/pdf', buffer: syntheticPdf });
+    let blocked = true, assetId = '';
+    h.p.on('response', async (response: any) => { if (response.url().endsWith('/api/assets') && response.request().method() === 'POST' && response.status() === 201) assetId = (await response.json()).id; });
+    await h.p.route('**/api/sync', (route: any) => route.request().method() === 'POST' && blocked ? route.abort('failed') : route.continue());
+    await dialog.getByRole('button', { name: saveLabel('reports'), exact: true }).click(); await expect(dialog.getByRole('alert')).toContainText('not confirmed');
+    assert.ok(assetId, 'the replacement private upload was created');
+    await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('pending 1');
+    // Another device changes the same report while this write is still queued.
+    const current = (await h.snap()).state.reports[0];
+    const remote = { ...current, markers: [{ ...current.markers[0], value: '30' }] };
+    await h.mutate('reports', h.item.id, remote);
+    blocked = false;
+    const conflict = h.p.waitForResponse((r: any) => r.url().endsWith('/api/sync') && r.request().method() === 'POST');
+    await h.p.evaluate(() => window.dispatchEvent(new Event('online')));
+    const conflictStatus = (await conflict).status();
+    assert.equal(conflictStatus, 409, 'queued write must hit a server conflict, not overwrite');
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
+    await h.p.screenshot({ path: join(out, 'reports-uncertain-attachment-conflict-cancel.png'), animations: 'disabled' });
+    assert.deepEqual((await h.snap()).state.reports, [remote], 'server keeps the remote correction while the conflict awaits review');
+    const queued = await h.ctx.request.get(base + '/api/assets/' + assetId);
+    assert.equal(queued.status(), 200, 'cancel must retain an attachment referenced by the conflicted queued write');
+    assert.deepEqual(await queued.body(), syntheticPdf);
+    const original = await h.ctx.request.get(base + '/api/assets/' + h.item.assetId);
+    assert.equal(original.status(), 200, 'original attachment still referenced by the server record');
+    return { conflictStatus, remotePreserved: true, queuedAttachmentRetained: true, originalAttachmentRetained: true };
+  });
   await check('reports-uncertain-attachment-cancel', 'reports', async h => {
     const dialog = await openEdit(h, 'reports');
     await dialog.locator('input[type="file"]').setInputFiles({ name: 'replacement-synthetic.pdf', mimeType: 'application/pdf', buffer: syntheticPdf });
