@@ -1,3 +1,7 @@
+# 2026-10-17 Claude Code 本轮任务
+
+Owner：真实Claude会话 bb523eca-ef12-424d-8f35-0b01a1d4d551（待CLI确认）；CF-17，claude/forma-frontend-recheck-20261017，见 [CF-17任务书](tasks-20261017-claude-frontend.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
+
 # Forma 协作任务板
 
 ## 2026-10-17 三方向实际任务（当前授权，覆盖上一文档轮范围）
