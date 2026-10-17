@@ -1,5 +1,7 @@
 # FORMA 接续入口
 
+2026-10-17 新授权：当前执行 [三方向实际任务书](docs/collaboration/tasks-20261017-three-directions.md)，按其中 F-17 / B-17 / Q-17 的独占范围开发、测试或审查。下面“只读文档”文字保留为上一轮记录；新任务书与任务板顶部覆盖该阶段限制。每项任务都规定实际要用的 skill、触发、准确本地 SKILL.md 路径和缺失处理；必须先读相应文件并在状态中确认，不能仅凭推荐仓库名声称已调用。不要自动重复已发出的任务或恢复用户删除。
+
 先读本仓库 `AGENTS.md`、[当前项目状态](docs/PROJECT-STATUS.md)、[协作任务板顶部](docs/collaboration/TASKS.md) 和 [技能与会话交接](docs/SKILLS-HANDOFF.md)。用户后续授权与任务板本轮范围优先于历史阶段说明。原目录的 `docs/handoff/claude-continuation-prompt.md` 是早期阶段材料，不代表网站尚未实现，也不自动授权新的产品任务。
 
 当前为 React 19 + Vite + TypeScript 网页，Express 5 + Zod + Node `node:sqlite` / SQLite 后端；不是 Next.js、Postgres 或 Supabase 项目。产品修复到 `367ae3e`，文档分支为 `codex/forma-docs-skills-20261017`，没有自动并回原 main。

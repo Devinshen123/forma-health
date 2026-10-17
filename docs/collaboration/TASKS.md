@@ -1,5 +1,17 @@
 # Forma 协作任务板
 
+## 2026-10-17 三方向实际任务（当前授权，覆盖上一文档轮范围）
+
+用户已要求实际派发前端/后端/测试审查并推进。完整目标、独占路径、验收命令和每项必须先读的本地 skills 路径见 [三方向任务书](tasks-20261017-three-directions.md)。入口 CLAUDE/AGENTS 指向同一任务书；旧“只读文档”限制是上一轮快照，不阻止本轮已授权范围。
+
+| ID | 唯一方向 / owner | 真实本地分支 / worktree | 状态与范围 |
+|---|---|---|---|
+| F-17 | frontend，执行者由总控登记 | `codex/forma-sleep-report-lifecycle-20261017` / `forma-record-flows` | todo：Sleep/Reports 旧编辑与删除确认；仅两页面、指定浏览器回归、frontend状态 |
+| B-17 | backend，执行者由总控登记 | `codex/forma-approval-failure-recovery-20261017` / `forma-review-recovery` | todo：AI批准SQL中途失败/提交后清理/跨实例引用，指定新测试及必要app/store修复 |
+| Q-17 | qa，执行者由总控登记 | `codex/forma-three-direction-review-20261017` / `forma-health` | todo：交叉审查、合成mock回归和缺动作目录诊断；产品只读 |
+
+root / lead 只维护任务书/入口/任务板/lead状态及协调，不同时写方向独占产品文件。三个旧角色会话先前为 detached HEAD，不能冒称已是任务分支；以实际创建与回执记录为准。已有四项删除在三个本地修复 worktree 也存在，会跨切分支保留，禁止恢复或纳入提交。不安装、不push/合并/部署，不动真实数据。
+
 ## 2026-10-17 文档与技能接续（本轮有效范围）
 
 本轮仅更新 MD、核对既有源码/本地证据/技能来源，并向已有会话交接。分支 `codex/forma-docs-skills-20261017` 基于 `367ae3e`；沿用第三轮 worktree，不合并到原 main。root / lead 是下列 MD 的唯一写入者；证据与技能核验 agent 只读。禁止据此开始产品开发、运行测试/构建、安装技能/依赖、启动服务、push/PR/合并/部署，或启用真实健康接入、付费 AI、Apple 登录、HealthKit。
