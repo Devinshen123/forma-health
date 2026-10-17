@@ -1,5 +1,35 @@
 # Backend 状态
 
+## 2026-10-17 CO-03 当前聊天接手
+
+正在做：接手盘点已完成，等待 lead 派发后续任务。本轮只读产品源码；下方 2026-10-14 的测试与功能声明保留为历史，不当作本轮实测。
+
+已完成：已读 AGENTS、最新 TASKS、backend prompt、自己的历史状态、两份 lead→backend 请求（1210、1220，均已有回复），以及 M0、AI、预算、训练同步和三代理 ADR。写入范围为 server/（排除 rules/）、.env.example、src/sync/storage.ts 和本状态；本轮仅修改本状态与自己的请求。
+
+实际模块与能力（源码核对）：
+
+- `server/app.ts:235` 起实际提供 capabilities、食物照片草稿、注册/登录/me/退出、state GET/PUT、sync GET/POST、assets POST/GET/DELETE、export、删除账户，共 15 个路由；`server/index.ts:11` 只监听 127.0.0.1:3001。
+- `server/store.ts:27` 使用 SQLite/WAL 与账户 JSON state/revision；独立 sessions/assets/food_photo_drafts/AI 账本/sync_entities/sync_mutations 表。新账户写 emptyState（`:83`）；AI 草稿有禁止 UPDATE 的 trigger（`:41`），不是直接保存 Meal。
+- `server/app.ts:141`、`:204`、`:211`：HttpOnly/SameSite Strict cookie，身份来自会话；敏感接口校验 X-Forma-Account。`server/store.ts:90`、`:98`、`:290`：数据库存 token hash，查询绑定 owner；`server/app.ts:36` 密码为随机盐 scrypt，`:156` 起有可信 Origin 检查。
+- `server/app.ts:354`：上传限 10 MiB、类型枚举/文件头/canonical base64；读取按 owner（`:370`），响应 no-store/sandbox；引用中附件禁止直接删除（`:384`）。`server/store.ts:243` 使用 UUID 路径、私有目录、不可覆盖写入；账户删除级联 SQLite 并清附件（`:278`）。导出含独立 AI 草稿和账户账本，不含附件 bytes（`server/app.ts:400`）。
+- `server/food-photo.ts:74`、`:98`、`:154`：Sharp 限 5 MiB/20MP/1024px/10秒、去元数据重编码；固定 Responses 请求，原始 envelope→JSON→Zod，成功才写独立草稿；缺 key/配置错返回明确 AI 错误，available 仅反映配置（`:143`）。逐图同意服务端记时，保存 Meal 核验真实 draft/item/photo（`server/app.ts:294`）。默认 1 在途、5次/分钟、10次/UTC日；每 attempt 预留 US$0.02、账户 US$0.40/日、全局 US$2/日，事务账本/租约/最多一次重试（`server/store.ts:183`、`:199`；`server/food-photo.ts:138`、`:159`、`:166`）。这些是代码能力，未检查真实密钥或联系供应商。
+- `server/validation.ts:375`、`:382`、`:426`、`:449`：Routine 与计划只追加，接受匹配 patch，撤销追加恢复版本；原记录不随计划回滚。`server/store.ts:151`：最多 1000 项的实体 CAS/墓碑/哈希幂等/整批事务，旧 PUT 共享版本账；详细训练校验在 `server/training-validation.ts`，旧集合省略兼容在 `server/app.ts:326`。
+- `src/sync/storage.ts:16`、`:68`、`:115`：IndexedDB 按 user.id 存储，queue/settled 合并与 consent generation 校验、清除同事务；旧 writer 不能重建撤回缓存，requireEmpty 防误删其他标签 pending。engine/API/types 由 lead 管理，本轮不改。
+
+风险与 M1 界限（仅 3 项）：
+
+1. **可定位的旧契约差异，待验证/派发**：整体 state revision 不匹配及实体 CAS 已返回 409（`server/app.ts:341`；`server/store.ts:160`）；但客户端带当前 revision/实体版本、语义上尝试接受旧 base 时，`server/validation.ts:434` 拒绝后被 `server/app.ts:296` 包成 StateInputError，再由 `:448` 返回 400。拒绝机制存在，差异是状态码，不是成功接受旧计划。请求 `20261017-0054-backend-to-lead-plan-base-conflict-status.md` 建议 lead 明确契约并派发 HTTP 回归；本轮未运行该复现。
+2. **已知 M1 身份边界**：注册直接创建账户（`server/app.ts:250`），accounts 表内密码身份（`server/store.ts:33`），尚无邀请令牌校验、邮箱所有权验证/找回、独立 auth_identities 或 Apple 登录。符合本机阶段，公开邀请前需另立任务；不能把它报成新增安全回归。
+3. **已知 M1 领域/部署边界**：实际请求入口没有调用 server/rules，主状态仍是 JSON snapshot（`server/store.ts:34`），sync GET 返回全 snapshot（`:148`）；实体 CAS 已交付，但不能等同增量游标、服务端权威营养聚合/建议或云部署完成。AI 真实质量/失败费用测试也仍待配置与授权，本轮未测。
+
+验证：实际执行 `rg --files`、带行号 `rg -n`、`Get-Content`、`git status --short`/`git diff --cached --name-only` 完成源码与所有权核对。未启动/重启服务、未读 .env 或用户 data、未安装依赖、未调用真实 AI。本轮 npm test/build 由 code_review（qa）独占执行，结果由其报告；backend 不重复运行。提交前对自己的文档运行 `git diff --check`。
+
+建议下一任务：先由 lead 收取 qa 基线并关闭三角色接手；后续如派发后端实现，优先明确旧 base 的 409 语义并增补 HTTP 回归，再按 M1 独立派发领域集成与正式身份方案。当前没有实现阻塞。
+
+待用户决定：真实 AI 密钥/质量评估条件与运营预算；公开邀请的身份/供应商/部署地区。现有测试限额维持，未开通资源。
+
+---
+
 2026-10-14，America/Los_Angeles。
 
 ## 正在做
