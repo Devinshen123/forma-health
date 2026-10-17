@@ -4,7 +4,7 @@
 工作区：C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-record-flows
 分支：claude/forma-frontend-recheck-20261017
 基线：2786a336edd15dc99803520417a3216d5855e1ac
-拟传入CLI session ID：bb523eca-ef12-424d-8f35-0b01a1d4d551（只有CLI实际确认且模型接单才算派发成功）
+CLI已确认session ID：bb523eca-ef12-424d-8f35-0b01a1d4d551（preflight exit0，有CLI init/result及实际模型Read回执，见本轮evidence目录）
 ## CF-17 具体目标与技能
 
 必读 C:\Users\devin\.claude\skills\playwright\SKILL.md（真实DOM/旧编辑/删除确认/附件取消等回归）；C:\Users\devin\.claude\skills\security-review\SKILL.md（账号绑定、旧编辑器写入和不确定保存附件保留）。只有实际需要调整错误展示设计时再读 C:\Users\devin\.claude\skills\frontend-design\SKILL.md，不做视觉重设计。
