@@ -1,40 +1,31 @@
 # frontend 状态
 
-更新：2026-10-17（America/Los_Angeles）。Owner：当前聊天 frontend 子代理（合并 shell + features）。
+更新：2026-10-17（America/Los_Angeles）。角色：frontend（合并 shell + features），运动健康网站项目级独立聊天；本节替代此前“当前聊天子代理”模式。
 
-## 当前状态
+## 接手与 Git
 
-CO-02 接手盘点已完成，可接手下一项明确派发的前端任务；本轮没有修改产品源码、安装依赖、启动服务或调用真实 AI。构建与测试由当前聊天 qa 独占运行，结果以 qa 本轮报告为准，本状态不将历史结果当成本轮验证。
+- 接手就绪，本轮仅做设置与只读盘点，等待用户下一项明确任务。
+- 实际 worktree：`C:\Users\devin\.codex\worktrees\bdd7\健康网站`。
+- 起始提交：`ddbd4bd3145ef0605e41e8ade75f4abbc980beb5`。实际分支：无，Codex 管理的 checkout 为 detached HEAD；`git status --short --branch` 与 `git worktree list --porcelain` 均确认。没有擅自创建、切换或改名分支。
+- 已完整读取原目录 AGENTS.md，并读取最新 TASKS、20261017-frontend 提示、角色状态、发给 features 的请求、既有时区请求和设计规格。项目级独立 worktree 指令优先于旧提示中的子代理模式；历史提示不触发实现工作。
 
-## 已完成的接手检查
+## 负责范围
 
-- 已读 AGENTS、TASKS 最新所有权表、20261017-frontend 接手提示、历史 features 状态、发给 features 的两项请求及 features 发出的上传取消、计时/兼容摘要、未保存导航请求和回复、设计规格。没有另建聊天或派生代理。
-- 结构：`src/main.tsx` 挂载 React StrictMode，并在 production 注册离线 service worker；`src/App.tsx` 管理账户、演示、导航、语言、引导和同步状态。Training 使用 lazy/Suspense；训练子页面位于 `src/features/training/`，动作文字与原创基础动作在 `src/catalog/`。共享 Modal 使用原生 dialog。
-- 双语：当前没有独立 `src/i18n/` 实现，语言为 `zh | en`，由 App 保存到 `forma-language` 并更新 document.lang；页面使用局部 copy 字典或语言条件表达式。动作库明确说明 8 个基础动作双语，其余来源动作说明仍是英文（Library.tsx:20），这属于已说明的覆盖限制。
-- 已有代码能力：渐进引导及用户确认初始计划；饮食手动/标签份量校正、照片同意与 AI 草稿审核界面；训练动作筛选、版本计划/日程、逐组训练、暂停休息、进步及四格式导入预览；手动睡眠；趋势与记录完整度；调整前后 diff、接受/拒绝/追加恢复版本；手动报告及附件；设置中的数据导出和账户删除入口。本轮以源码盘点为证据，不声明已重新完成浏览器验收。
-- 空状态与边界：`src/types.ts:251` 的 emptyState 无示例记录；Dashboard 的演示条明确标注演示，真实饮食/训练/睡眠无记录时显示 —，Trends 按已记录日期聚合并显示覆盖。Onboarding 的能量目标默认留空，确认后才追加初始版本；没有读取身体参数推定赤字。
-- 同步边界：业务页面提交 `FeatureProps.save(next)`，App 注入当次渲染的同步 context；由 lead 所有的 engine/changes 执行实体 diff、队列、账户验证和冲突处理，由 backend 所有的 storage 管理本机缓存。Nutrition 与 Training 按 accountId 加 key；训练页的未保存回调接入主导航保护。前端不擅改 types/api/engine/storage/领域函数。
-- 尚未交付或验证的能力：真实供应商照片质量/费用/地区可用性不由本次代码阅读确认；Settings 区分未配置、无效配置与配置存在，演示不调用 AI。报告 OCR、Apple 登录、iPhone/HealthKit 明确为未接入；不存在支付接入。报告手动页面是既有实现，不把它描述为已上线 OCR。
+仅在本 worktree 写 `src/App.tsx`、`src/main.tsx`、`src/styles.css`、`src/demo.ts`、`src/components/`、`src/i18n/`、`src/features/`、`src/catalog/`、`index.html`、`public/` 和本状态；越界需求只在本 worktree 的 `docs/collaboration/requests/` 提请求。
 
-## 有证据的风险与下一任务
+`src/types.ts`、`src/api.ts`、`src/sync/`、`src/training/` 和后端只读；契约、配置依赖及集成由总控负责。不写原目录或其他 worktree，不自行提交未跟踪的 AGENTS.md。
 
-1. **确定缺陷（静态证据，待定时浏览器复验）：首页与趋势的“今日”时区不一致。** `src/features/Dashboard.tsx:30`、`:41`、`:45` 使用浏览器日期；其 helper `src/types.ts:265` 未指定 profile.timezone。`src/features/Trends.tsx:178` 则显式使用 profile.timezone。用户旅行或换设备导致浏览器时区与档案时区不同且跨日时，两个页面会筛选不同日期。例如固定时刻 2026-10-17T06:30:00Z、浏览器 America/Los_Angeles、profile Asia/Shanghai，首页为 10 月 16 日、趋势为 10 月 17 日。建议下一任务先由 lead 明确首页/记录/趋势的日归属约定，再派发最小修复与对应验证；不在接手轮更改共享 helper。
+## 源码结构与能力边界
 
-本轮不扩展全面重审。没有其他已验证的新缺陷，不把待接入能力当作新回归。
+- `src/main.tsx` 为 StrictMode 入口与 production 离线壳注册；App 管理账户、语言、演示、导航、引导与同步调用，Training 按需加载；共享 Modal 使用原生 dialog。
+- 业务页覆盖今日、饮食、训练、睡眠、趋势、计划、报告和设置；训练子页在 `src/features/training/`，动作文字在 `src/catalog/`。当前无 `src/i18n/` 目录，双语由局部字典/条件表达式实现；动作库明确说明基础动作双语、其他来源说明仍为英文。
+- 已核对演示标签、emptyState 空集合、AI 草稿审核/取消保护、账户 key、未保存导航与同步边界。Settings 明确区分识图配置与真实质量验证，报告 OCR、Apple 登录和 HealthKit 尚未接入。此处是源码阅读，不是本轮浏览器验收。
 
-## 验证与范围
+## 验证、阻塞与请求
 
-- 已实际执行 `rg` 与 PowerShell 源码/文档只读检查，核实上述文件、行号、调用及所有权；未运行 npm test、npm run build 或浏览器验收，以避免与 qa 重复构建。
-- `git diff --check -- docs/collaboration/status/frontend.md docs/collaboration/requests/20261017-0054-frontend-to-lead-date-timezone.md`：通过。
-- 只新增本状态与下述跨角色请求；没有纳入已有未跟踪目录或其他角色修改。
-- qa 本轮报告 `docs/reviews/2026-10-17-three-agent-baseline.md`：串行运行 `npm test` 155/155 通过，`npm run build` 通过；这是 qa 实际执行的结果，frontend 未重复运行。已有 Training chunk 体积提示不作为新功能缺陷。
-- 提交归属：共享索引并发窗口中，qa 的 `66a0f00` 同时提交了其两份文档与本状态/请求。已向 lead 报告，未改写历史。本次后续仅对 frontend 状态补记验证与归属，使用 `git commit --only` 精确路径及 lead 指定的一次性 Codex 身份，不改全局或仓库 Git 配置。
-
-## 阻塞与发出的请求
-
-- 接手无阻塞；源码修复需 lead 后续派发。
-- 已发 `docs/collaboration/requests/20261017-0054-frontend-to-lead-date-timezone.md`，请求确认跨页面日期约定；共享日期 helper 属 lead，不直接修改。
-
-## 待用户决定
-
-- 本轮无新增需要用户决定的事项。
+- 实际执行：PowerShell `Get-Content`、`rg --files`、`rg -n`，以及 Git 状态/分支/worktree/差异只读检查；起始工作区与索引干净。
+- QA 已有报告 `docs/reviews/2026-10-17-three-agent-baseline.md` 记录 155/155 测试和 build 通过；这是 QA 的实测，不是本角色运行。本轮未重跑测试或构建。
+- 已记录问题保留：`src/features/Dashboard.tsx:30` 使用浏览器日期，`src/features/Trends.tsx:178` 起使用档案时区；既有请求 `20261017-0054-frontend-to-lead-date-timezone.md` 待总控确认约定并派发。本轮不修复，也不重复建请求。
+- 接手无产品阻塞；Git 状态与“自动创建分支”的预期有差异，已如实记录并保留 detached HEAD。后续实现尚未派发。
+- 本轮仅更新并以 `git commit --only` 精确提交本状态；没有改产品源码、安装依赖、启动服务、结束进程、启用付费服务、创建其他聊天/子代理、合并其他目录、推送或设置自动化。
+- 待用户决定：本轮无新增事项。
