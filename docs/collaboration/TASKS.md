@@ -6,11 +6,15 @@
 
 | ID | 唯一方向 / owner | 真实本地分支 / worktree | 状态与范围 |
 |---|---|---|---|
-| F-17 | frontend，执行者由总控登记 | `codex/forma-sleep-report-lifecycle-20261017` / `forma-record-flows` | todo：Sleep/Reports 旧编辑与删除确认；仅两页面、指定浏览器回归、frontend状态 |
-| B-17 | backend，执行者由总控登记 | `codex/forma-approval-failure-recovery-20261017` / `forma-review-recovery` | todo：AI批准SQL中途失败/提交后清理/跨实例引用，指定新测试及必要app/store修复 |
-| Q-17 | qa，执行者由总控登记 | `codex/forma-three-direction-review-20261017` / `forma-health` | todo：交叉审查、合成mock回归和缺动作目录诊断；产品只读 |
+| F-17 | frontend / `/root/frontend_task` | `codex/forma-sleep-report-lifecycle-20261017` / `forma-record-flows` | done：2786a33；两真红→13/13组件DOM+HTTP，QA代表例3/3；实际读playwright/tdd/security-review/frontend-design。完整App/build未验 |
+| B-17 | backend / `/root/backend_task` | `codex/forma-approval-failure-recovery-20261017` / `forma-review-recovery` | partial：b27c3cc；跨Store误删已修，局部5/5、QA全量207/207；实际读backend-patterns/security-review/tdd。持久清理重试有真实未修失败，需持久策略决定 |
+| Q-17 | qa / `/root/review_task` | `codex/forma-three-direction-review-20261017` / `forma-health` | done：579d905；独立207/207、代表例3/3、确认未修200≠404；完整tsc失败38条。实际读playwright/security-review/tdd，报告/补丁已交付 |
 
 root / lead 只维护任务书/入口/任务板/lead状态及协调，不同时写方向独占产品文件。三个旧角色会话先前为 detached HEAD，不能冒称已是任务分支；以实际创建与回执记录为准。已有四项删除在三个本地修复 worktree 也存在，会跨切分支保留，禁止恢复或纳入提交。不安装、不push/合并/部署，不动真实数据。
+
+派发记录：三条本地协作任务的工具回执与开工确认均已收到；三分支实际建立在 `33f1256`，旧修复分支指针保留。优先核对的三个长期角色会话仍在各自 detached 工作区，但会话服务报告 local/durable 主机不可用，未向它们下发本轮写入 GO，避免双写。上一轮不确定的公开来源补充没有重发。本轮实际执行者是上表三个本地 agent，不把原会话当作已经接单。四个工作区的 AGENTS 都只增补当前任务/skill读取段，保留原文且仍未跟踪；CLAUDE 与任务书随 `33f1256` 在三个执行区可读。
+
+最终证据根目录 `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-task-evidence-20261017`，frontend/backend/qa 各有补丁、日志和metadata。三个任务分支未整合，所有自有fixture已关闭。需后续决定：持久记录精确清理意图与重试策略（当前hash-only receipt不能恢复此前asset列表），不能扫描所有未引用资产；文件所有者需另定动作库/依赖缺件处理，未在本轮恢复或迁移真实数据。
 
 ## 2026-10-17 文档与技能接续（本轮有效范围）
 

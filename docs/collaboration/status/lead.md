@@ -1,5 +1,19 @@
 # Codex lead 状态
 
+## 2026-10-17 三方向实际交付（含未修复项）
+
+当前用户授权已从文档核对转为实际前端/后端/审查任务。已提交任务书33f1256，三个现有隔离修复worktree实际建立独立分支；旧分支指针与每区四项删除保留。三个长期角色会话服务不可用，未给它们写入GO，改由明确唯一的frontend_task/backend_task/review_task执行，三者均实际读取任务MD和各自本机skill，未把会话数冒充Git分支数。
+
+F-17：forma-record-flows / codex/forma-sleep-report-lifecycle-20261017，提交2786a336edd15dc99803520417a3216d5855e1ac。Sleep与Reports各18行RecordDraft保护；两真红例后最终13/13组件DOM+SyncEngine+HTTP，pageErrors0，服务已关。实际读取playwright/tdd/security-review/frontend-design。完整App/跨账号壳/build未验证，lucide类型缺失另记。
+
+B-17：forma-review-recovery / codex/forma-approval-failure-recovery-20261017，提交b27c3cce48e3dc088a17df06d040b5e9aa2105dd。跨Store新引用误删已真实复现并以SQLite写锁内最新引用检查修复；新增局部5/5（含父/子测试），独立QA完整并发1套件207/207通过、0 fail/skip/cancel。实际读取backend-patterns/security-review/tdd。提交后清理失败的同receipt重试仍遗留旧附件，需要持久清理意图策略，不做广泛GC；独立失败脚本已由QA实际运行确认。
+
+Q-17：forma-health / codex/forma-three-direction-review-20261017，提交579d90510a8c6184033a28f85b07116dfea1f5d7，仅审查报告与qa状态。已读playwright/security-review/tdd并交叉审F/B确切提交，独立复跑后端207/207、前端代表例3/3/pageErrors0；修正独立诊断导入后确认清理重试真实200≠404（0pass/1fail，不混入绿色套件）。完整tsc退出2、38条诊断，含缺动作库JSON、lucide及node:crypto声明与派生错误；未恢复文件或声称build通过。报告/补丁/metadata已交付，所有自有fixture关闭。
+
+原依赖缺件阻止启动，已从本机npm缓存按lockfile逐包SHA512核验，在独立forma-task-runtime-20261017解出10包供测试进程解析覆盖；没有网络下载、安装钩子或共享node_modules改动，没有恢复用户JSON/图片。AGENTS仅追加本轮任务与skills要求，保留原文且仍不提交。每项精确目标、路径、验收及缺失处理写在task书、CLAUDE和各执行区AGENTS中。
+
+交付根目录forma-task-evidence-20261017，F/B/Q各有完整补丁、日志、结果及交付JSON。三个任务分支未合并到协调分支/主分支，用户原删除保持；未push、PR、部署、真实健康/AI/邮件/凭证操作。B-17仍需确定精确持久清理意图的存储/重试策略，不能把当前未引用资产当垃圾；此问题有可复跑已知失败，未假装全修。MD原文清单在D:\CodexTaskData\forma-md-review-manifest-20261017.json，供统一只读打包；QA最新两个MD需纳入最终快照。
+
 ## 2026-10-17 文档与技能接续
 
 产品修复停止在 `367ae3e`。本轮仅在同一 worktree 新建 `codex/forma-docs-skills-20261017` 分支更新 MD，不扩展产品、不重跑测试或构建、不安装或修改全局技能，不启动服务。新增 PROJECT-STATUS、SKILLS-HANDOFF 与 CLAUDE 入口，更新 README、VALIDATION 和任务板，将三轮本地修复、远程/本地差异、证据与下一步串联。

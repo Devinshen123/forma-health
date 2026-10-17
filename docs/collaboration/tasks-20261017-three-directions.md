@@ -6,6 +6,13 @@
 
 共同限制：仅合成账号、临时 SQLite、合成附件与 mock AI；不读用户真实 data/ 或 .env，不接真实供应商、健康接入、邮件、付费 AI、Apple/HealthKit，不改凭证或权限。保持 Showroom/视频服务、标签与 GPU 独立。测试并发 1，不同时跑三份完整测试或构建；浏览器禁 GPU。依赖沿用已存在的 node_modules，不安装。
 
+本轮实测补充：共享安装目录已有缺件，原始命令会在启动阶段失败，不能算产品红例。测试使用独立 `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-task-runtime-20261017`，10个包均由本机缓存按 package-lock 版本与 SHA-512核对后解出，`provenance.json` 可查；无下载、安装钩子或共享目录修改。下面验收命令需在单独测试进程设置这两个进程级变量，不改系统/用户环境变量；没有该运行区时先报告工具缺失，不假装原命令可运行：
+
+```powershell
+$env:ESBUILD_BINARY_PATH = 'C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-task-runtime-20261017\node_modules\@esbuild\win32-x64\esbuild.exe'
+$env:NODE_OPTIONS = '--import=file:///C:/Users/devin/Documents/Codex/2026-10-16/task-2/forma-task-runtime-20261017/runtime-hook.mjs'
+```
+
 四项用户删除及未跟踪 AGENTS 保留，不恢复、不暂存、不覆盖。任务工作区同样带着这些删除，当前不可宣称 build 通过。禁止为让 build 变绿恢复 `src/catalog/exercises.json`；审查只诊断依赖并提出方案，改变删除意图须报告。若局部浏览器流程因缺失动作库也无法运行，交付具体阻塞、已执行的非浏览器回归和可审阅补丁，不假装已验收。
 
 ## F-17：Sleep / Reports 旧编辑与确认快照

@@ -1,5 +1,19 @@
 # 网站验收记录
 
+## 2026-10-17 三方向任务最终证据
+
+共同基线33f1256，三个独立分支未整合。仅合成账号/临时SQLite/合成附件/mock AI，自有服务最终均关闭；未上传、合并或部署。
+
+| 任务提交 | 本轮实际验证 | 边界 |
+|---|---|---|
+| 前端2786a33 | Sleep/Reports两个真实覆盖红例→13/13真实组件DOM+SyncEngine+HTTP，页面异常0；QA另复跑3/3 | 未挂完整App/账号切换壳，不称全App或实机验证 |
+| 后端b27c3cc | 跨Store引用误删红→绿；新测试5/5（3顶层含2子例），SQL中途回滚已证；QA完整串行207/207，0fail/skip/cancel/todo | SQL两案是Store/SQLite测试；有HTTP竞态测试，不把所有SQL失败称HTTP验证 |
+| 审查579d905 | 确切F/B差异复核、上述独立复跑、已知清理重试真实断言失败200≠404；完整tsc退出2、38条诊断 | 缺exercises.json、lucide/node声明等；没有恢复文件、改变配置或声称构建通过 |
+
+证据根目录 `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-task-evidence-20261017`：frontend 的 baseline-both/final-13 与完整补丁，backend 的红绿日志/补丁/独立清理重试脚本，qa 的完整套件/类型检查/确认失败日志、代表例结果、审查补丁及metadata。原运行器缺件及首个独立脚本入口错误分别保留，不当产品失败证据。测试运行器使用独立lock/SHA512匹配本机缓存overlay，未安装或改共享依赖。
+
+仍未修复：提交后清理失败时hash-only receipt缺少原asset列表，重放无法补清理。需明确精确持久意图与重试策略；没有广泛GC。用户四项删除和AGENTS原文保留（AGENTS仅按新授权追加任务/skills入口，未提交）。完整App、构建、生产、真实供应商和iPhone/Safari均无本轮通过声明。
+
 ## 2026-10-17 当前证据索引与文档核对
 
 三轮本地修复已完成；本轮仅读回源码、既有日志和结果 JSON 并更新 MD，没有重新测试或构建。完整提交、D 盘路径、备份边界和下一步见 [PROJECT-STATUS](PROJECT-STATUS.md)。以下为各提交当时的结果，不相加，也不代表当前脏工作区的结果。
