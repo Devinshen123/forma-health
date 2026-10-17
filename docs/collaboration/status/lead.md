@@ -1,5 +1,21 @@
 # Codex lead 状态
 
+## 最新：协调真实Claude Code三任务
+
+CF-17/CB-17/CQ-17均实际通过官方Claude CLI启动，保留唯一session、命令、prompt、原始stream、receipt和真实会话文件路径；没有编辑Claude历史。既有Claude原工作区与旧Codex分支保留，当前三任务在无其他写入者的隔离工作区新建真实claude分支，沿用当前登录订阅/默认模型、不改账号或权限设置，不把内部协调审计当产品任务。
+
+CF-17 session bb523eca-ef12-424d-8f35-0b01a1d4d551，claude/forma-frontend-recheck-20261017，产品/测试交付d794e384646559302edecc269e5c6b6507de1bd9。读Claude公共playwright/security-review文件，新增5边界，真实Edge最终18/18、pageErrors0；产品页面无diff。可选旧版敏感性实验被CLI拒绝且未执行，不绕过或重试；报告已区分冲突放弃/新上传候选范围与CB的服务端引用移除重试，未提出多余用户审批。
+
+CB-17 session a02c2fec-4908-4d91-972a-06c1f05c67c8，claude/forma-attachment-retry-20261017，产品/测试交付c32d8fc8197a0bff73263243e5819edb09fdf9ba。读Claude backend-patterns/security-review/database-migrations，记录精确owner/mutation/asset意图并持久恢复，同写锁内核精确意图与最新引用；两个HTTP真红与一个Store候选误删真红后，最终12/12、214/214。无策略/契约改变或真实迁移；只在临时SQLite创建增量表。协调者核对提出方法边界，由原Claude亲自复现与修复，没有替代实现。
+
+CQ-17 session bf755c6b-5bb9-413a-a6f4-63f764629745，claude/forma-boundary-review-20261017。实际读Claude security-review/backend-patterns/database-migrations/playwright，独立12/12和新增代表例3/3；F/B各自完整tsc都exit2/38条，与历史缺件状态一致，不证明类型正确。审查已完成自己的2个MD，协调者仅核对交付。
+
+最终分支HEAD：CF4674a98（产品/测试d794e38），CBd88b4e6（产品/测试c32d8fc），CQ8df22c6（审查报告）。CF/CB最后提交仅更新任务状态与真实session确认，未改已测产品/测试。当前三任务均已完成限定范围、全部CLI exit0、自有fixtures关闭。Q额外静态观察cancelAsset先于引用检查，未复现，报告不当作新证实漏洞。Desktop Commander独立设备连接器仍Offline/ping无在线，当前本地Windows授权命令成功；未重启会话/Remote、未重复测试，也未变更账号权限。
+
+每任务先preflight，再在同session后续消息授予唯一串行时段；纯MD修正不占重测试时段。官方CLI最初参数吞prompt是已知未执行的本地入口错误，保留原回执，修正后沿同UUID第一次实际调用模型；不是重复启动无响应任务。当前无登录/额度/接口阻碍。准确Claude路径/先读/缺失规则直接写入各区AGENTS/CLAUDE/TASKS/专属任务书；未复制内部技能或安装软件。
+
+交付位于forma-claude-evidence-20261017；D:\CodexTaskData\forma-claude-dispatch-20261017.json供总控即时汇总。四区AGENTS本轮追加前的9282字节前缀逐一SHA核对原manifest完全相同；四项删除未恢复或提交。无push/远程分支/PR/merge/部署/真实健康或AI应用接入，Showroom/Mail/视频独立。旧hash-only/PUT/DB-filesystem窗口、缺catalog和声明、完整App/build未验证继续明示；JSON不等于附件/未同步队列完整备份。
+
 ## 2026-10-17 三方向实际交付（含未修复项）
 
 当前用户授权已从文档核对转为实际前端/后端/审查任务。已提交任务书33f1256，三个现有隔离修复worktree实际建立独立分支；旧分支指针与每区四项删除保留。三个长期角色会话服务不可用，未给它们写入GO，改由明确唯一的frontend_task/backend_task/review_task执行，三者均实际读取任务MD和各自本机skill，未把会话数冒充Git分支数。

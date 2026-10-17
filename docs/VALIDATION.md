@@ -1,5 +1,21 @@
 # 网站验收记录
 
+## 2026-10-17 真实Claude Code任务证据
+
+执行者为三个真实CLI session，具体ID/命令/输出见 [Claude任务总览](collaboration/tasks-20261017-claude.md) 及 `task-2/forma-claude-evidence-20261017/dispatch.json`。协调者没有代跑产品测试；旧Codex F/B/Q记录保留历史，以下为新Claude实跑。
+
+| 指定产品/测试提交 | 实际结果 | 证据与范围 |
+|---|---|---|
+| CF-17 d794e38 | 13基线、5新增、18最终均通过，pageErrors0 | frontend/execute-browser；真实组件DOM+SyncEngine+随机端口HTTP/SQLite。页面产品无改动，没有完整App/账号壳/移动真机声明 |
+| CB-17 c32d8fc | 聚焦12/12、完整214/214，均exit0，0fail/skip/cancel/todo | backend/r2-green-exact-intent.log、r2-full-suite.log；两个HTTP红例、精确意图Store红例均保留。旧11/11、213/213对应前版diff |
+| CQ-17 独立复核F/B确切SHA | 聚焦12/12；新增浏览器代表例恰好3/3、pageErrors0；两个完整tsc都exit2/38诊断 | review/execute；不重复整份214/18套件。F/B各自未集成，缺声明可掩盖错误，不推断类型/组合版本正确 |
+
+本轮CB新增单表+索引的精确清理意图，与同步提交同事务持久化；首次及同receipt重放处理自己的意图，写锁内核精确意图与当前owner引用。没有广泛GC，PUT恢复、旧hash-only历史事件和DB/文件系统原子性未解决；不操作真实数据迁移。
+
+CF可选旧版敏感性实验含git checkout，整条命令被Claude CLI规则在执行前拒绝，未重试、未绕过，也不是自动审批审查拒绝或产品红例；新增用例在旧版是否失败未实证。运行器入口错误、sqlite测试null-prototype比较错误、metadata生成字段修正均独立记载，不冒充产品失败。用户四项删除及AGENTS原文保持，AGENTS只追加授权入口且未跟踪；所有自有fixtures最终关闭，未启动持久3001/5173服务、不动Showroom。
+
+本轮完整构建、完整App跨账号壳、生产、真实健康/AI供应商、Safari/iPhone均未验证。JSON导出没有附件bytes，服务端导出没有客户端未同步队列，不是完整备份。
+
 ## 2026-10-17 三方向任务最终证据
 
 共同基线33f1256，三个独立分支未整合。仅合成账号/临时SQLite/合成附件/mock AI，自有服务最终均关闭；未上传、合并或部署。

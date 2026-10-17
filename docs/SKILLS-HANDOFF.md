@@ -1,3 +1,5 @@
+当前Claude执行补充：见 [真实Claude任务](collaboration/tasks-20261017-claude.md)。三个session均已通过CLI实际确认及模型Read；CF实际读Claude树playwright/security-review，CB读backend-patterns/security-review/database-migrations，CQ读security-review/backend-patterns/database-migrations/playwright。均按绝对路径读文件，不冒称slash技能注册，也不使用Codex插件作为Claude技能。旧Codex回执与旧会话不可用记录是历史阶段。
+
 # FORMA 技能与会话接续
 
 核对：2026-10-17 UTC。目标是让既有 Codex / Claude 按 FORMA 的实际源码选择技能；本轮只读核验与交接，不安装、不升级、不复制私人技能树，不执行其中的脚本。先读 [项目状态](PROJECT-STATUS.md)、`../AGENTS.md` 和 [任务板顶部](collaboration/TASKS.md)。
