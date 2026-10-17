@@ -4,7 +4,7 @@
 工作区：C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-review-recovery
 分支：claude/forma-attachment-retry-20261017
 基线：b27c3cce48e3dc088a17df06d040b5e9aa2105dd
-拟传入CLI session ID：a02c2fec-4908-4d91-972a-06c1f05c67c8（只有CLI实际确认且模型接单才算派发成功）
+CLI已确认session ID：a02c2fec-4908-4d91-972a-06c1f05c67c8（preflight exit0，有CLI init/result及实际模型Read回执，见本轮evidence目录）
 ## CB-17 具体目标与技能
 
 必读 C:\Users\devin\.claude\skills\backend-patterns\SKILL.md（Express/SQLite事务、CAS和幂等回执）；C:\Users\devin\.claude\skills\security-review\SKILL.md（owner隔离、精确附件引用和导出边界）。若设计确需添加/调整SQLite持久结构，实施前还必须读 C:\Users\devin\.claude\skills\database-migrations\SKILL.md，并说明前后兼容、事务及回滚；schema大改或清理保留策略变化先报告，不擅自实施。

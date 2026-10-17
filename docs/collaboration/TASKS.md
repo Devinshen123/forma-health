@@ -1,6 +1,8 @@
 # 2026-10-17 Claude Code 本轮任务
 
-Owner：真实Claude会话 a02c2fec-4908-4d91-972a-06c1f05c67c8（待CLI确认）；CB-17，claude/forma-attachment-retry-20261017，见 [CB-17任务书](tasks-20261017-claude-backend.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
+本轮进度：CB-17真实Claude交付c32d8fc，持久清理重试及精确意图边界已修，聚焦12/12、完整214/214；历史hash-only/PUT/跨资源原子性限制明示。
+
+Owner：真实Claude会话 a02c2fec-4908-4d91-972a-06c1f05c67c8（CLI已确认，预检exit0）；CB-17，claude/forma-attachment-retry-20261017，见 [CB-17任务书](tasks-20261017-claude-backend.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
 
 # Forma 协作任务板
 
