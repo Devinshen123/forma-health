@@ -27,6 +27,8 @@ CO-02 接手盘点已完成，可接手下一项明确派发的前端任务；�
 - 已实际执行 `rg` 与 PowerShell 源码/文档只读检查，核实上述文件、行号、调用及所有权；未运行 npm test、npm run build 或浏览器验收，以避免与 qa 重复构建。
 - `git diff --check -- docs/collaboration/status/frontend.md docs/collaboration/requests/20261017-0054-frontend-to-lead-date-timezone.md`：通过。
 - 只新增本状态与下述跨角色请求；没有纳入已有未跟踪目录或其他角色修改。
+- qa 本轮报告 `docs/reviews/2026-10-17-three-agent-baseline.md`：串行运行 `npm test` 155/155 通过，`npm run build` 通过；这是 qa 实际执行的结果，frontend 未重复运行。已有 Training chunk 体积提示不作为新功能缺陷。
+- 提交归属：共享索引并发窗口中，qa 的 `66a0f00` 同时提交了其两份文档与本状态/请求。已向 lead 报告，未改写历史。本次后续仅对 frontend 状态补记验证与归属，使用 `git commit --only` 精确路径及 lead 指定的一次性 Codex 身份，不改全局或仓库 Git 配置。
 
 ## 阻塞与发出的请求
 
