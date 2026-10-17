@@ -1,3 +1,7 @@
+# 2026-10-17 Claude Code 本轮任务
+
+Owner：真实Claude会话 a02c2fec-4908-4d91-972a-06c1f05c67c8（待CLI确认）；CB-17，claude/forma-attachment-retry-20261017，见 [CB-17任务书](tasks-20261017-claude-backend.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
+
 # Forma 协作任务板
 
 ## 2026-10-17 三方向实际任务（当前授权，覆盖上一文档轮范围）

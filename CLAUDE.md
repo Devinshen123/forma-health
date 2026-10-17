@@ -1,3 +1,8 @@
+
+## 2026-10-17 Claude Code 实际任务（最新授权）
+
+本工作区当前只执行 CB-17，任务书为 docs/collaboration/tasks-20261017-claude-backend.md，分支 claude/forma-attachment-retry-20261017。必须先读其准确Claude技能路径与阶段/所有权限制；旧F/B/Q任务仅作历史。真实Claude会话执行，协调者不替代。保留AGENTS原文及用户删除，禁止恢复JSON、上传、合并、部署或真实数据服务。
+
 # FORMA 接续入口
 
 2026-10-17 新授权：当前执行 [三方向实际任务书](docs/collaboration/tasks-20261017-three-directions.md)，按其中 F-17 / B-17 / Q-17 的独占范围开发、测试或审查。下面“只读文档”文字保留为上一轮记录；新任务书与任务板顶部覆盖该阶段限制。每项任务都规定实际要用的 skill、触发、准确本地 SKILL.md 路径和缺失处理；必须先读相应文件并在状态中确认，不能仅凭推荐仓库名声称已调用。不要自动重复已发出的任务或恢复用户删除。
