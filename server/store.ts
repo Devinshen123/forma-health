@@ -46,7 +46,9 @@ export class Store {
       CREATE TABLE IF NOT EXISTS ai_reservations(id TEXT PRIMARY KEY,request_id TEXT NOT NULL REFERENCES ai_requests(id) ON DELETE CASCADE,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,utc_day TEXT NOT NULL,reserved_micro_usd INTEGER NOT NULL,model TEXT NOT NULL,created_at TEXT NOT NULL,outcome TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS ai_global_usage(utc_day TEXT PRIMARY KEY,reserved_micro_usd INTEGER NOT NULL DEFAULT 0);
       CREATE TABLE IF NOT EXISTS sync_entities(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,entity_key TEXT NOT NULL,version INTEGER NOT NULL,deleted INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(owner_id,entity_key));
-      CREATE TABLE IF NOT EXISTS sync_mutations(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,payload_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id));`);
+      CREATE TABLE IF NOT EXISTS sync_mutations(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,payload_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id));
+      CREATE TABLE IF NOT EXISTS asset_cleanup_intents(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,asset_id TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id,asset_id));
+      CREATE INDEX IF NOT EXISTS asset_cleanup_intents_asset ON asset_cleanup_intents(asset_id);`);
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -161,8 +163,29 @@ export class Store {
       const state = validate(snapshot.state, applySyncChanges(snapshot.state, mutation.changes));
       this.db.prepare('UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=?').run(JSON.stringify(state), ownerId);
       this.touchEntities(ownerId, mutation.changes.map(entityKey), state);
-      this.db.prepare('INSERT INTO sync_mutations VALUES (?,?,?,?)').run(ownerId, mutation.mutationId, hash, new Date().toISOString());
+      const createdAt = new Date().toISOString();
+      this.db.prepare('INSERT INTO sync_mutations VALUES (?,?,?,?)').run(ownerId, mutation.mutationId, hash, createdAt);
+      // Record exactly which of this owner's attachments the commit stopped referencing, so a replay
+      // of the same receipt can still finish cleanup after a post-commit failure or a restart.
+      const kept = attachmentIds(state), intent = this.db.prepare('INSERT OR IGNORE INTO asset_cleanup_intents SELECT owner_id,?,id,? FROM assets WHERE owner_id=? AND id=?');
+      for (const assetId of attachmentIds(snapshot.state)) if (!kept.has(assetId)) intent.run(mutation.mutationId, createdAt, ownerId, assetId);
       return { snapshot: this.readSyncSnapshot(ownerId), previous: snapshot.state };
+    });
+  }
+  assetCleanupIntents(ownerId: string, mutationId: string) {
+    const rows = this.db.prepare('SELECT asset_id FROM asset_cleanup_intents WHERE owner_id=? AND mutation_id=? ORDER BY asset_id').all(ownerId, mutationId) as { asset_id: string }[];
+    return rows.map(row => row.asset_id);
+  }
+  /** Consumes one recorded intent; a failed delete rolls back and leaves the intent for the next retry. */
+  completeAssetCleanup(ownerId: string, mutationId: string, assetId: string) {
+    return this.transaction(() => {
+      // Only an intent recorded by this owner's mutation authorises deletion; anything else is a no-op.
+      if (!this.db.prepare('SELECT 1 FROM asset_cleanup_intents WHERE owner_id=? AND mutation_id=? AND asset_id=?').get(ownerId, mutationId, assetId)) return false;
+      const deleted = this.deleteUnreferencedAsset(ownerId, assetId);
+      // Still referenced again or already gone: this mutation's removal needs no further cleanup.
+      // Other mutations' intents for the same asset are left for their own replays.
+      this.db.prepare('DELETE FROM asset_cleanup_intents WHERE owner_id=? AND mutation_id=? AND asset_id=?').run(ownerId, mutationId, assetId);
+      return deleted;
     });
   }
   asset(ownerId: string, assetId: string) {
@@ -267,19 +290,19 @@ export class Store {
     return readFileSync(this.assetPath(asset.owner_id, asset.id));
   }
   deleteAsset(ownerId: string, assetId: string) {
-    return this.transaction(() => {
-      const asset = this.asset(ownerId, assetId);
-      if (!asset) return false;
-      // A state commit may have added a reference after a caller chose its cleanup candidates.
-      // Hold the same SQLite write lock as state writers until deletion is complete.
-      const state = this.snapshot(ownerId).state;
-      if ([...state.meals, ...state.reports].some(record => record.assetId === assetId)) return false;
-      this.db
-        .prepare("DELETE FROM assets WHERE owner_id=? AND id=?")
-        .run(ownerId, assetId);
-      rmSync(this.assetPath(ownerId, assetId), { force: true });
-      return true;
-    });
+    return this.transaction(() => this.deleteUnreferencedAsset(ownerId, assetId));
+  }
+  private deleteUnreferencedAsset(ownerId: string, assetId: string) {
+    const asset = this.asset(ownerId, assetId);
+    if (!asset) return false;
+    // A state commit may have added a reference after a caller chose its cleanup candidates.
+    // Callers hold the same SQLite write lock as state writers until deletion is complete.
+    if (attachmentIds(this.snapshot(ownerId).state).has(assetId)) return false;
+    this.db
+      .prepare("DELETE FROM assets WHERE owner_id=? AND id=?")
+      .run(ownerId, assetId);
+    rmSync(this.assetPath(ownerId, assetId), { force: true });
+    return true;
   }
   deleteAccount(ownerId: string) {
     const folder = resolve(this.uploadsDir, ownerId);
@@ -293,5 +316,7 @@ export class Store {
     this.db.prepare("DELETE FROM accounts WHERE id=?").run(ownerId);
   }
 }
+const attachmentIds = (state: AppState) =>
+  new Set([...state.meals, ...state.reports].flatMap(record => record.assetId ? [record.assetId] : []));
 export const hashToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");

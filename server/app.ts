@@ -317,12 +317,19 @@ export function createApp(options: AppOptions) {
       store.deleteAsset(ownerId, assetId);
     }
   };
+  // Consumes only the intents this mutation's commit recorded; a replay of the same receipt resumes them.
+  const finishMutationCleanup = (ownerId: string, mutationId: string) => {
+    for (const assetId of store.assetCleanupIntents(ownerId, mutationId)) {
+      foodPhoto.cancelAsset(ownerId, assetId);
+      store.completeAssetCleanup(ownerId, mutationId, assetId);
+    }
+  };
   app.get('/api/sync', auth, (_req, res) => res.json(store.syncSnapshot(res.locals.account.id)));
   app.post('/api/sync', auth, (req, res) => {
     const mutation = syncMutationSchema.parse(req.body) as SyncMutation;
     const ownerId: string = res.locals.account.id;
     const result = store.sync(ownerId, mutation, (previous, next) => validateOwnedState(ownerId, previous, next));
-    if (result.previous) cleanRemovedAssets(ownerId, result.previous, result.snapshot.state);
+    finishMutationCleanup(ownerId, mutation.mutationId);
     res.json(result.snapshot);
   });
   app.put("/api/state", auth, (req, res) => {
