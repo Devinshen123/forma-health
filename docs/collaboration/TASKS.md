@@ -1,5 +1,17 @@
 # Forma 协作任务板
 
+## 2026-10-17 第三轮：删除/放弃确认边界（三方向，仅本 worktree）
+
+分支 `codex/forma-confirmation-boundaries-20261017` 基于受保护的 `1ec7b3a1ef463ffb91602e5f7b4b859b91607532`，同时保留 `874b13c`；不自动合并并行 main。仅本地合成数据/mock AI，无 push/PR/合并/部署、真实账户/健康数据/邮件、付费服务或权限修改。最多修复三项可复现高价值缺陷，完成该范围即停止。测试由 root 单独串行运行，TEMP/TMP 在 `D:\CodexTaskData\forma-confirmation-boundaries-20261017`，Edge 禁用 GPU，不干扰视频/Showroom。
+
+| ID | 方向 / owner | 状态 | 唯一可写范围 | 验收 |
+|---|---|---|---|---|
+| C-01 | 前端 / root，独立只读复审 | done | src/features/training/、docs/collaboration/ | 实证并最小修复 Session 放弃、Progress 历史删除、QuickSummary 删除的旧确认误删；绑定记录快照，Keep/重开与普通dirty草稿保持可用 |
+| C-02 | 后端 / backend-confirmation agent | done | server/confirmation-boundaries.test.ts，其余 server/ 只读 | 新增4项HTTP回归均通过：删除/放弃CAS、畸形delete整批回滚、旧receipt重放、跨集合附件引用；未发现须改的后端产品缺陷 |
+| C-03 | 端到端 / e2e-confirmation agent 编写，root 执行 | done | 本轮 D 盘 browser-confirmations.mts、交付证据，产品只读 | 修复前三案服务端记录被误删，修复后13/13；mock AI审核/删除/放弃/恢复、390px三类控件真实点击，单浏览器禁GPU |
+
+本轮共修三项，到此停止扩展。全量串行 202/202、build、diff检查通过，shell `2a24c4362fea75f4`；D盘 `QA.md` / `final-confirmed/results.json` / 日志 / PNG / 可复跑脚本为交付证据。没有新增依赖、API/数据库/权限变更，也没有新增删除后撤销功能；后端测试的 tombstone 后显式写入只验证协议。仅系统 Edge 与移动视口模拟，不代表真机 Safari/iPhone。JSON 仍不含附件本体，需另存原文件。
+
 ## 2026-10-17 第二轮：审核、逐组训练与恢复（仅本 worktree）
 
 分支 `codex/forma-review-recovery-20261017` 从上一轮 `874b13cac7db203d7c36db0191e9c2490fe1f55a` 建立。原目录和上一轮 worktree 保持不动。本轮仅本地、合成数据、mock AI；无付费调用、真实健康数据、生产写入、push/PR/合并/部署。以下分工优先于历史分工；root 为唯一产品写入者，其他 agent 只读审查。测试并发 1，临时文件 `D:\CodexTaskData\forma-review-recovery-20261017`，不使用视频 GPU。

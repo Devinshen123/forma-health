@@ -81,6 +81,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const editRecord = useRef<RecordDraft<Workout> | null>(null);
+  const deleteRecord = useRef<RecordDraft<Workout> | null>(null);
   useEffect(() => { if(draft) editRecord.current?.observe(state.workouts.find(workout=>workout.id===draft.id)); }, [state.workouts,draft?.id]);
   const workouts = state.workouts
     .filter((workout) => workout.date === date && !workout.exercises.some((exercise) => exercise.setLogs !== undefined))
@@ -245,9 +246,14 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
   };
   const remove = async () => {
     if (!deleting || busy) return;
+    if (!deleteRecord.current?.canSave(state.workouts.find(workout => workout.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请先保留并重新核对后再删除。" : "This record changed elsewhere. Keep it and review the latest version before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         workouts: state.workouts.filter(
@@ -363,6 +369,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
                   aria-label={(zh ? "删除 " : "Delete ") + workout.name}
                   disabled={busy}
                   onClick={() => {
+                    deleteRecord.current = new RecordDraft(workout);
                     setDeleting(workout);
                     setError("");
                   }}

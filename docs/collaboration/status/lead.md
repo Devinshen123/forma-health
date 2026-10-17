@@ -1,5 +1,17 @@
 # Codex lead 状态
 
+2026-10-17 C-01/C-02/C-03 done（第三轮，范围结束）。独立 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-confirmation-boundaries`，分支 `codex/forma-confirmation-boundaries-20261017`，基线 `1ec7b3a1ef463ffb91602e5f7b4b859b91607532`，保护该提交与 `874b13c`，不自动合并并行 main（开工 ac56b65）。原工作目录及其他工作者 worktree 不修改。
+
+前端实际修三项：Session 旧放弃确认、Progress 旧历史删除、QuickSummary 旧摘要删除都会借最新渲染的实体版本误删另一处更新。修复前3个浏览器案例均实际把服务端新版删成 undefined；现在各自用独立 RecordDraft 在打开时绑定快照、确认前核对当前值、提交前登记 undefined。Session 捕获 active 而非未保存 draft，已有版本冲突必须先核对。Keep/关闭无写入，重开绑定最新版本，不影响其他记录新增；独立只读复审通过，无大规模重构。
+
+后端实际任务仅新增 server/confirmation-boundaries.test.ts 的4个HTTP回归：过期删除导致全批零提交；过期放弃被409拒绝、旧已接受receipt不删除后续显式新写入；畸形delete携value整体400且不消耗mutationId；AI饮食照片后被报告引用时仍保留，旧删除receipt重放和最后引用清理正确。4/4通过，未发现后端产品缺陷，不为凑变更改接口/数据库/权限。
+
+端到端由独立工作者准备、root统一串行执行，最终13/13通过：3处过时确认保护及重新核对后删除、3处Keep与无关新增、3处已接受丢响应后的取消/幂等重放、mock AI多项审核到共享照片逐项删除、未提交AI取消、dirty草稿Keep和版本冲突处理、390×844三类确认控件实际点击。真实 /api/assets、/api/food-photo-drafts、/api/sync 与服务端事实核对；仅2次内存mock AI，无外部调用。页面身份、非空、无覆盖层、截图与交互均通过；pageerror/console warning为0，只有4个主动丢响应ERR_FAILED。
+
+已执行：`node --import tsx --test --test-concurrency=1 server/*.test.ts server/rules/*.test.ts tests/*.test.ts` 202/202、0失败/跳过/取消；`npm run build`成功（原训练分包提示保留），shell 2a24c4362fea75f4、主包 index-Da4F5TB5.js；`git diff --check`通过。证据和可复跑脚本在 `D:\CodexTaskData\forma-confirmation-boundaries-20261017` 的 QA.md、baseline/final-confirmed JSON、PNG与日志。首轮通用标题/选择框定位误报修正后重跑13项通过，未计作额外产品缺陷。
+
+资源与限制：测试并发1，单系统Edge禁GPU/compositing，TEMP/TMP仅本命令进程指向D盘，复用依赖联接，未安装或改全局设置；验收浏览器和fixture均关闭，未占用或关闭Showroom/视频服务。仅本地，无push/PR/合并/部署、真实账户/健康数据/邮件/付费AI/生产写入，无权限修改或绕过拒绝。未实测WebKit/Safari/iPhone，移动视口只为桌面模拟；未新增删除后撤销，后端显式新写入测试不代表UI恢复功能。JSON仍只含文字记录和附件引用/元数据，设置导出不含未同步改动，两种JSON都不含附件本体。无本轮执行阻塞，完成三项后停止扩展。
+
 2026-10-17 R-01–R-04 done（第二轮）。新 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-review-recovery`，分支 `codex/forma-review-recovery-20261017`，基线上一轮 `874b13cac7db203d7c36db0191e9c2490fe1f55a`。先实际复现 5 个失败场景后修复三组问题：AI 批次不确定保存覆盖/复活及候选集合改变、逐组历史校正自身重试被拒、训练结束审核后台更新后勾选未失效。前端增加批次成员/值快照保护，首次尝试后固定照片与候选集合、允许同 ID 数值校正，明确可能已保存/待同步；历史校正沿用 RecordDraft，版本变化清除审核。
 
 后端任务由独立工作者完成，唯一写 server/review-recovery.test.ts：4 项真实 HTTP 回归验证 AI 原始来源、多项原子提交、共享照片与旧 receipt 重放、active→finished 的 400/409 回滚、校正与重启幂等。未发现明确后端产品缺陷，未为凑前后端变更修改接口/数据库/权限。浏览器联调通过真实 /api/assets、/api/food-photo-drafts 和 /api/sync，将页面反馈与服务端事实核对，AI transport 全部原始 mock Response，无付费调用。
