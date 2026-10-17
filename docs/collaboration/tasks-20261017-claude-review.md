@@ -4,12 +4,12 @@
 工作区：C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-health
 分支：claude/forma-boundary-review-20261017
 基线：579d90510a8c6184033a28f85b07116dfea1f5d7
-拟传入CLI session ID：bf755c6b-5bb9-413a-a6f4-63f764629745（只有CLI实际确认且模型接单才算派发成功）
+CLI已确认session ID：bf755c6b-5bb9-413a-a6f4-63f764629745（preflight exit0，有CLI init/result及实际模型Read回执，见本轮evidence目录）
 ## CQ-17 具体目标与技能
 
 必读 C:\Users\devin\.claude\skills\security-review\SKILL.md（独立证据、账号/附件/数据导出与日志边界）；只有实际获得浏览器验证时段才读 C:\Users\devin\.claude\skills\playwright\SKILL.md。审查后端持久方案时读 C:\Users\devin\.claude\skills\backend-patterns\SKILL.md；涉及结构设计再读 C:\Users\devin\.claude\skills\database-migrations\SKILL.md。都先读再用，报告准确路径。
 
-独立核实缺src/catalog/exercises.json与上轮完整TypeScript38条诊断及当前可运行边界。先读 docs/reviews/20261017-three-direction-review.md、../forma-task-evidence-20261017/qa/frontend-typescript-full.log/metadata、F2786a33/Bb27c3cc确切差异。区分用户删除意图（不能猜/恢复）、现有依赖缺件（lucide声明与node:crypto声明等）、代码缺陷、派生错误；给出最小后续选择而非空数据/占位声明/弱化tsconfig让构建变绿。
+独立核实缺src/catalog/exercises.json与上轮完整TypeScript38条诊断及当前可运行边界。先读 docs/reviews/20261017-three-direction-review.md、../forma-task-evidence-20261017/qa/frontend-typescript-full.log 与 ../forma-task-evidence-20261017/qa/frontend-typescript-full.metadata.json、F2786a33/Bb27c3cc确切差异。区分用户删除意图（不能猜/恢复）、现有依赖缺件（lucide声明与node:crypto声明等）、代码缺陷、派生错误；给出最小后续选择而非空数据/占位声明/弱化tsconfig让构建变绿。
 
 获得时段后只运行有意义的当前边界核查：读取实际imports与声明路径，完整tsc可复核一次，必要组件回归由协调者安排；不运行必然先被tsc挡住的Vite构建重复消耗。若前后端有本轮diff，由协调者给确切SHA/diff后只读复核和独立代表例，不修改它们。可写自身 docs/reviews/20261017-claude-review.md、docs/collaboration/status/claude-review-20261017.md；所有产品/测试配置只读，不切换他人分支、不做整合。
 

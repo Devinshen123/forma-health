@@ -1,6 +1,8 @@
 # 2026-10-17 Claude Code 本轮任务
 
-Owner：真实Claude会话 bf755c6b-5bb9-413a-a6f4-63f764629745（待CLI确认）；CQ-17，claude/forma-boundary-review-20261017，见 [CQ-17任务书](tasks-20261017-claude-review.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
+本轮进度：CQ-17真实Claude已完成独立审查；聚焦12/12、3个新增浏览器代表例3/3，F/B完整tsc均exit2/38条，报告明确删除意图/依赖缺件与运行边界。
+
+Owner：真实Claude会话 bf755c6b-5bb9-413a-a6f4-63f764629745（CLI已确认，预检exit0）；CQ-17，claude/forma-boundary-review-20261017，见 [CQ-17任务书](tasks-20261017-claude-review.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
 
 # Forma 协作任务板
 
