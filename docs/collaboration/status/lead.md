@@ -1,5 +1,13 @@
 # Codex lead 状态
 
+2026-10-17 F-01/F-02 done。新 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-record-flows`，分支 `codex/forma-record-flows-20261017`，基于 PR #1 head 500e66b（开工核对仍 OPEN/DRAFT、main eb6b559）。先实证复现并报告三类问题：旧饮食表单覆盖/复活及过时删除确认、活动自身不确定保存无法在原表单校正、偏好切单位重解释已打开负重。增加记录草稿快照及自身提交识别，草稿固定单位；未改服务端/API/权限或依赖。
+
+验证：串行 `node --import tsx --test --test-concurrency=1 server/*.test.ts server/rules/*.test.ts tests/*.test.ts` 191/191；`npm run build` 通过（既有训练分包大小提示），shell 5cd67b87961bf8f8；真实系统 Edge 8/8、pageerror 0，1440/390 截图复看、移动端无横向溢出。D 盘 `D:\CodexTaskData\forma-record-flows-20261017` 保存 baseline-confirmed/final JSON、截图及 final-tests/build/browser 日志。可复跑浏览器脚本在 tests/browser/record-flows.mts。独立只读复审无新增阻塞，未启动额外测试/服务。
+
+本轮限制：GPU 禁用，测试并发 1，TEMP/TMP 仅在命令进程指向 D 盘；复用依赖目录联接，不安装、不清理其他文件。合成数据库/账号与浏览器独立，结束后关闭本轮服务，不触碰 Showroom 或视频任务。原目录和上一轮 worktree 的未提交文件保留。仅本地提交，无 push/PR/合并/部署、真实数据/AI/Apple/HealthKit 或生产迁移。
+
+剩余边界：AI 多项审核保存、逐组训练专项浏览器回归、Safari/iPhone 未在本轮验证；没有新增记录删除后撤销。JSON 仍不包含附件本体，须另保留原文件。完整说明 decisions/ADR-record-flows-20261017.md，无待用户决定的本轮阻塞。
+
 2026-10-16 L-01/L-06 done。独立 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-health`，分支 `codex/forma-local-safety-20261016`，基线 eb6b559。云端补丁未在本机，已重新核对并修复账号生命周期、待同步队列、附件、DST、训练导入与舍入。独立复审补获旧引擎重放已放弃删除、在途验证跨恢复、重复 key DOM 残留与对象字段顺序无效版本，均修复并回归。
 
 验证：`npm test` 186/186，`npm run build` 通过，`git diff --check` 通过；最终 shell e477dc502d837645。独立系统 Edge 155 的 15 项真实浏览器场景全部通过，1440/390 截图复看；无脚本异常/console warning，只有故障注入对应网络错误。验收服务与浏览器均关闭。可重跑脚本/最终 JSON/QA 报告在 worktree 外 `../browser-evidence/`，测试和构建日志也在上一层；完整边界见 decisions/ADR-local-safety-20261016.md。

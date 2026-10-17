@@ -3,6 +3,7 @@ import { Camera, Check, Pencil, Plus, RefreshCw, Square, Trash2, Utensils } from
 import { analyzeFoodPhoto, ApiError, assetUrl, getCapabilities, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
 import { AttachmentLifecycle } from "./attachmentLifecycle";
+import { RecordDraft } from "./recordDraft";
 import {
   localDate,
   mealTotals,
@@ -136,6 +137,9 @@ export default function Nutrition({
   const [uploadedId, setUploadedId] = useState<string | null>(null);
   const [demoPhotos, setDemoPhotos] = useState<Record<string, File>>({});
   const [deleting, setDeleting] = useState<Meal | null>(null);
+  const editRecord = useRef<RecordDraft<Meal> | null>(null);
+  const deleteRecord = useRef<RecordDraft<Meal> | null>(null);
+  useEffect(() => { if (draft) editRecord.current?.observe(state.meals.find(meal => meal.id === draft.id)); }, [state.meals, draft?.id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<"manual" | "photo">("manual");
@@ -270,6 +274,7 @@ export default function Nutrition({
   };
   const open = (meal?: Meal) => {
     if (!mounted.current) return;
+    editRecord.current = new RecordDraft(meal);
     invalidateAnalysis();
     setError("");
     setMode("manual");
@@ -336,6 +341,10 @@ export default function Nutrition({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!mounted.current || !draft || working) return;
+    if (!editRecord.current?.canSave(state.meals.find(meal => meal.id === draft.id))) {
+      setError(zh ? "这条记录已在另一处变化或删除，请取消并重新打开核对。" : "This record changed or was deleted elsewhere. Cancel and reopen to review it.");
+      return;
+    }
     setError("");
     const numbers = [
       draft.grams,
@@ -410,6 +419,7 @@ export default function Nutrition({
       // Keep this attachment even if save rejects: it may already be in the
       // account's outbox, or the server may have accepted a timed-out request.
       uploads.current.retainForSave(attachment);
+      editRecord.current.submittedValue(meal);
       await save({
         ...state,
         meals: state.meals.some(item => item.id === meal.id)
@@ -441,9 +451,14 @@ export default function Nutrition({
   };
   const remove = async () => {
     if (!mounted.current || !deleting || busy) return;
+    if (!deleteRecord.current?.canSave(state.meals.find(meal => meal.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请取消并重新核对后再删除。" : "This record changed elsewhere. Cancel and review it before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         meals: state.meals.filter((meal) => meal.id !== deleting.id),
@@ -679,6 +694,7 @@ export default function Nutrition({
                     aria-label={(zh ? "删除 " : "Delete ") + meal.name}
                     disabled={busy}
                     onClick={() => {
+                      deleteRecord.current = new RecordDraft(meal);
                       setDeleting(meal);
                       setError("");
                     }}
