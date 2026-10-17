@@ -1,5 +1,11 @@
 # Codex lead 状态
 
+2026-10-17 WT-01 done。用户先选择当前聊天子代理，随后明确改为“项目下三个独立聊天，各用 Git worktree 隔离”。已经在运动健康网站项目实际创建Forma前端开发、Forma后端开发、Forma代码审查，各自worktree为bdd7/7f7e/9260；三个聊天均返回就绪无阻塞，已完成首轮并等待具体任务。准确threadId、路径和提交见ADR-project-worktrees-20261017。工具实际采用detached HEAD，不称其为命名分支。总控也已调用项目归属工具加入该项目。原三个子代理已经结束，未建立自动化。
+
+验证：CO轮qa实际串行npm test155/155（exit0）及npm run build（exit0），有限范围报告见docs/reviews/2026-10-17-three-agent-baseline.md；三个新聊天只提交自己的接手状态，没有重复运行或宣称其自身实测。lead核实git worktree list的三个独立目录与聊天projectId；本轮产品源码未改，其他隔离修复不合并。根目录原AGENTS/skills/handoff等未跟踪文件保持原状，仅向新worktree同步项目规则和当前任务板。静态时区差异与语义旧base状态码差异已记录请求，尚未修复/运行复现；没有新增用户待决。
+
+提交协议偏差：CO轮qa提交66a0f00误纳入frontend同时暂存的两份文档，未含产品源码；frontend在ddbd4bd补记，保留历史。新worktree独立索引；lead仅按精确路径提交本轮自有文档，git diff --check通过。
+
 2026-10-15 G-01 done。人类直接要求将网站放在GitHub；已使用登录的Devinshen123账号创建私有仓库https://github.com/Devinshen123/forma-health ，HTTPS origin与main上游已设置，git push成功，GitHub API确认PRIVATE/非空/默认main且远端SHA与本机HEAD一致。未改写历史或force push。README新增仓库链接、克隆和运行说明。
 
 验证：原main全部19次提交、134历史路径、208唯一blob（200文本＋8PNG）独立只读审查，无真实secret、非.example环境文件、数据库、uploads或reference-sources路径；无SQLite签名，PNG无嵌入文本/EXIF元数据，既有截图来源为演示/合成记录，本轮没有新增像素OCR。候选均为测试夹具/属性而非真实凭据。git check-ignore确认.env/data/reference-sources/node_modules/dist排除；npm test155/155、npm run build通过（现有训练分包大小提示），git diff --check通过。
