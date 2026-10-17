@@ -40,7 +40,7 @@ function Harness() {
     const engine = new SyncEngine(user, snapshot, (state,status)=>setView({state,status,engine}));
     engineRef.current=engine; await engine.restore();
   }
-  useEffect(()=>{void boot(); return()=>{void engineRef.current?.stop();};},[]);
+  useEffect(()=>{void boot(); const refresh=()=>{void engineRef.current?.refresh();}; window.addEventListener('online',refresh); return()=>{window.removeEventListener('online',refresh); void engineRef.current?.stop();};},[]);
   if(!view)return <p>Loading synthetic fixture</p>;
   const {engine,state,status}=view, context=engine.context();
   const save=async next=>{if(engineRef.current!==engine)throw Error('Account changed'); await engine.save(next,context);};
@@ -64,7 +64,8 @@ createRoot(document.getElementById('root')).render(<Harness/>);
 let vite: any;
 try {
 vite = await createServer({ root: repo, configFile: false, cacheDir: join(out, 'vite-cache'),
-  esbuild: { jsx: 'automatic' }, optimizeDeps: { include: ['react', 'react-dom/client', 'lucide-react'] },
+  resolve: { alias: { 'react-dom': resolve(repo, '../forma-task-runtime-20261017/node_modules/react-dom') }, dedupe: ['react', 'scheduler'] },
+  esbuild: { jsx: 'automatic' }, optimizeDeps: { noDiscovery: true, include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'lucide-react'] },
   server: { host: '127.0.0.1', port: 0, proxy: { '/api': { target: apiBase,
     configure: (proxy: any) => proxy.on('proxyReq', (request: any) => request.setHeader('Origin', 'http://127.0.0.1:5173')) } } },
   plugins: [{ name: 'synthetic-sleep-report-fixture',
@@ -118,13 +119,13 @@ async function account(kind: string) {
   if (kind === 'reports') await p.getByRole('button', { name: 'Open report fixture', exact: true }).click();
   else await p.getByLabel('Wake-up date', { exact: true }).fill(day);
   // Register the response listener before clicking to avoid races on a fast loopback server.
-  const refreshNow = async () => { const response = p.waitForResponse((r: any) => r.url().endsWith('/api/sync') && r.request().method() === 'GET'); await p.getByRole('button', { name: 'Refresh synthetic records', exact: true }).click(); await response; await expect(p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced'); };
+  const refreshNow = async () => { const response = p.waitForResponse((r: any) => r.url().endsWith('/api/sync') && r.request().method() === 'GET'); await p.evaluate(() => window.dispatchEvent(new Event('online'))); await response; await expect(p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced'); };
   return { ctx, p, user, item, snap, mutate, refresh: refreshNow };
 }
 async function openEdit(h: any, kind: string) {
   await h.p.getByRole('button', { name: kind === 'sleeps' ? 'Edit this sleep' : 'Edit Synthetic report', exact: true }).click();
   const dialog = h.p.getByRole('dialog');
-  if (kind === 'sleeps') await dialog.getByLabel('Sleep quality (1–5)', { exact: true }).selectOption('5');
+  if (kind === 'sleeps') await dialog.getByLabel('Sleep quality (1–5)').selectOption('5');
   else await dialog.getByLabel('Original value (including > or <)', { exact: true }).fill('11');
   return dialog;
 }
@@ -152,6 +153,7 @@ try {
       const actual = (await h.snap()).state[kind];
       assert.deepEqual(actual, change === 'delete' ? [] : [remote], 'old editor must preserve the remote correction or deletion');
       await expect(dialog.getByRole('alert')).toContainText('changed');
+      await h.p.screenshot({ path: join(out, kind + '-stale-edit-' + change + '-guard.png'), animations: 'disabled' });
       await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
       return { remotePreserved: true, cancelSafe: true };
     });
@@ -163,6 +165,7 @@ try {
       await h.p.waitForFunction(() => { const button = document.querySelector<HTMLButtonElement>('dialog button.btn-primary'); return !button || !button.disabled; });
       assert.deepEqual((await h.snap()).state[kind], [remote], 'old confirmation must not delete the changed record');
       await expect(dialog.getByRole('alert')).toContainText('changed');
+      await h.p.screenshot({ path: join(out, kind + '-stale-delete-guard.png'), animations: 'disabled' });
       await dialog.getByRole('button', { name: 'Keep', exact: true }).click(); await expect(dialog).toHaveCount(0);
       return { remotePreserved: true, keepSafe: true };
     });
@@ -186,9 +189,9 @@ try {
       await h.p.route('**/api/sync', async (route: any) => { if (route.request().method() !== 'POST') return route.continue(); ids.push(route.request().postDataJSON().mutationId); if (blocked) { if (!accepted) { const response = await route.fetch(); assert.equal(response.status(), 200); accepted = true; } return route.abort('failed'); } return route.continue(); });
       await dialog.getByRole('button', { name: saveLabel(kind), exact: true }).click();
       await expect(dialog.getByRole('alert')).toContainText('not confirmed'); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('pending 1');
-      blocked = false; await h.p.getByRole('button', { name: 'Retry queued sync', exact: true }).click(); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
+      blocked = false; await h.p.evaluate(() => window.dispatchEvent(new Event('online'))); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
       assert.equal(new Set(ids).size, 1, 'uncertain transport retry must reuse the original mutation');
-      if (kind === 'sleeps') await dialog.getByLabel('Sleep quality (1–5)', { exact: true }).selectOption('4'); else await dialog.getByLabel('Original value (including > or <)', { exact: true }).fill('12');
+      if (kind === 'sleeps') await dialog.getByLabel('Sleep quality (1–5)').selectOption('4'); else await dialog.getByLabel('Original value (including > or <)', { exact: true }).fill('12');
       await dialog.getByRole('button', { name: saveLabel(kind), exact: true }).click(); await expect(dialog).toHaveCount(0);
       const rows = (await h.snap()).state[kind]; assert.equal(rows.length, 1); assert.equal(rows[0].id, h.item.id);
       assert.equal(kind === 'sleeps' ? rows[0].quality : rows[0].markers[0].value, kind === 'sleeps' ? 4 : '12');
@@ -200,7 +203,7 @@ try {
       await h.p.route('**/api/sync', async (route: any) => { if (route.request().method() !== 'POST') return route.continue(); ids.push(route.request().postDataJSON().mutationId); if (blocked) { if (!accepted) { const response = await route.fetch(); assert.equal(response.status(), 200); accepted = true; } return route.abort('failed'); } return route.continue(); });
       await dialog.getByRole('button', { name: deleteLabel(kind), exact: true }).click();
       await expect(dialog.getByRole('alert')).toBeVisible(); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('pending 1');
-      blocked = false; await h.p.getByRole('button', { name: 'Retry queued sync', exact: true }).click(); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
+      blocked = false; await h.p.evaluate(() => window.dispatchEvent(new Event('online'))); await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
       await dialog.getByRole('button', { name: deleteLabel(kind), exact: true }).click(); await expect(dialog).toHaveCount(0);
       assert.deepEqual((await h.snap()).state[kind], []); assert.equal(new Set(ids).size, 1, 'accepted deletion retry replays one original mutation');
       return { originalMutationReplayed: true, deleteConfirmed: true };

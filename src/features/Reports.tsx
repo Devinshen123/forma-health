@@ -10,6 +10,7 @@ import {
 import { assetUrl, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
 import { AttachmentLifecycle } from "./attachmentLifecycle";
+import { RecordDraft } from "./recordDraft";
 import {
   localDate,
   uid,
@@ -113,6 +114,11 @@ export default function Reports({
   const [demoFiles, setDemoFiles] = useState<Record<string, File>>({});
   const [previewing, setPreviewing] = useState<Report | null>(null);
   const [deleting, setDeleting] = useState<Report | null>(null);
+  const editRecord = useRef<RecordDraft<Report> | null>(null);
+  const deleteRecord = useRef<RecordDraft<Report> | null>(null);
+  useEffect(() => {
+    if (draft) editRecord.current?.observe(state.reports.find(report => report.id === draft.id));
+  }, [state.reports, draft?.id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const mounted = useRef(true);
@@ -178,6 +184,7 @@ export default function Reports({
   };
   const open = (report?: Report) => {
     if (!mounted.current || busy) return;
+    editRecord.current = new RecordDraft(report);
     setError("");
     rememberUpload(null);
     setFile(report ? (demoFiles[report.id] ?? null) : null);
@@ -260,6 +267,10 @@ export default function Reports({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!mounted.current || !draft || busy) return;
+    if (!editRecord.current?.canSave(state.reports.find(report => report.id === draft.id))) {
+      setError(zh ? "这条记录已在另一处变化或删除，请取消并重新打开核对。" : "This record changed or was deleted elsewhere. Cancel and reopen to review it.");
+      return;
+    }
     setError("");
     const filledMarkers = draft.markers.filter(hasMarkerContent);
     if (
@@ -320,6 +331,7 @@ export default function Reports({
         createdAt: draft.createdAt,
       };
       uploads.current.retainForSave(attachment);
+      editRecord.current.submittedValue(report);
       await save({
         ...state,
         reports: state.reports.some((item) => item.id === report.id)
@@ -363,9 +375,14 @@ export default function Reports({
   };
   const remove = async () => {
     if (!mounted.current || !deleting || busy) return;
+    if (!deleteRecord.current?.canSave(state.reports.find(report => report.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请取消并重新核对后再删除。" : "This record changed elsewhere. Cancel and review it before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         reports: state.reports.filter((report) => report.id !== deleting.id),
@@ -470,6 +487,7 @@ export default function Reports({
                     disabled={busy}
                     aria-label={(zh ? "删除 " : "Delete ") + report.name}
                     onClick={() => {
+                      deleteRecord.current = new RecordDraft(report);
                       setDeleting(report);
                       setError("");
                     }}
