@@ -267,13 +267,19 @@ export class Store {
     return readFileSync(this.assetPath(asset.owner_id, asset.id));
   }
   deleteAsset(ownerId: string, assetId: string) {
-    const asset = this.asset(ownerId, assetId);
-    if (!asset) return false;
-    this.db
-      .prepare("DELETE FROM assets WHERE owner_id=? AND id=?")
-      .run(ownerId, assetId);
-    rmSync(this.assetPath(ownerId, assetId), { force: true });
-    return true;
+    return this.transaction(() => {
+      const asset = this.asset(ownerId, assetId);
+      if (!asset) return false;
+      // A state commit may have added a reference after a caller chose its cleanup candidates.
+      // Hold the same SQLite write lock as state writers until deletion is complete.
+      const state = this.snapshot(ownerId).state;
+      if ([...state.meals, ...state.reports].some(record => record.assetId === assetId)) return false;
+      this.db
+        .prepare("DELETE FROM assets WHERE owner_id=? AND id=?")
+        .run(ownerId, assetId);
+      rmSync(this.assetPath(ownerId, assetId), { force: true });
+      return true;
+    });
   }
   deleteAccount(ownerId: string) {
     const folder = resolve(this.uploadsDir, ownerId);
