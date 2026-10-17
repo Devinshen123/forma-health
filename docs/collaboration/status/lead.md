@@ -1,5 +1,15 @@
 # Codex lead 状态
 
+2026-10-17 R-01–R-04 done（第二轮）。新 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-review-recovery`，分支 `codex/forma-review-recovery-20261017`，基线上一轮 `874b13cac7db203d7c36db0191e9c2490fe1f55a`。先实际复现 5 个失败场景后修复三组问题：AI 批次不确定保存覆盖/复活及候选集合改变、逐组历史校正自身重试被拒、训练结束审核后台更新后勾选未失效。前端增加批次成员/值快照保护，首次尝试后固定照片与候选集合、允许同 ID 数值校正，明确可能已保存/待同步；历史校正沿用 RecordDraft，版本变化清除审核。
+
+后端任务由独立工作者完成，唯一写 server/review-recovery.test.ts：4 项真实 HTTP 回归验证 AI 原始来源、多项原子提交、共享照片与旧 receipt 重放、active→finished 的 400/409 回滚、校正与重启幂等。未发现明确后端产品缺陷，未为凑前后端变更修改接口/数据库/权限。浏览器联调通过真实 /api/assets、/api/food-photo-drafts 和 /api/sync，将页面反馈与服务端事实核对，AI transport 全部原始 mock Response，无付费调用。
+
+已执行：`node --import tsx --test --test-concurrency=1 server/*.test.ts server/rules/*.test.ts tests/*.test.ts` 198/198、0 失败/跳过/取消；`npm run build` 成功，shell 8e214ee1e8811712（既有训练分包体积提示）；`git diff --check` 通过。系统 Edge 单浏览器串行专项 12/12，pageerror 0、console warning 0，只有注入响应丢失的网络错误与 mock 无效输出对应 502。1440×1000 / 390×844 截图复看，无横向溢出。WebKit executable 不存在，未安装或冒称真机 Safari/iPhone。AI/训练独立只读复审未发现修复新增阻塞。
+
+日志、修复前后 JSON、截图与可复跑脚本保存在 `D:\CodexTaskData\forma-review-recovery-20261017`，完整前后端清单及限制见 QA.md。测试并发 1、Edge 禁 GPU/compositing，TEMP/TMP 仅命令进程指向 D；依赖目录联接，不安装依赖或改全局设置。验收浏览器与 fixture 均关闭，3001/5173 无本轮监听；未占用或关闭 Showroom/视频服务、未清理其他文件。
+
+仅本地提交，不 push/PR/合并/部署；原仓库、上一轮 worktree 与 AGENTS 副本均保留，真实数据/附件、.env、健康接入、Apple/HealthKit 和生产迁移未操作。范围边界：旧删除/放弃确认的并发行为未专项验证，未新增删除后撤销；真实供应商/生产、Safari/iPhone 未验。JSON 只含记录和附件引用/元数据，不含文件本体；设置导出不含未同步改动，待同步导出也不是完整附件备份。无本轮执行阻塞或待用户决定项。
+
 2026-10-17 F-01/F-02 done。新 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-record-flows`，分支 `codex/forma-record-flows-20261017`，基于 PR #1 head 500e66b（开工核对仍 OPEN/DRAFT、main eb6b559）。先实证复现并报告三类问题：旧饮食表单覆盖/复活及过时删除确认、活动自身不确定保存无法在原表单校正、偏好切单位重解释已打开负重。增加记录草稿快照及自身提交识别，草稿固定单位；未改服务端/API/权限或依赖。
 
 验证：串行 `node --import tsx --test --test-concurrency=1 server/*.test.ts server/rules/*.test.ts tests/*.test.ts` 191/191；`npm run build` 通过（既有训练分包大小提示），shell 5cd67b87961bf8f8；真实系统 Edge 8/8、pageerror 0，1440/390 截图复看、移动端无横向溢出。D 盘 `D:\CodexTaskData\forma-record-flows-20261017` 保存 baseline-confirmed/final JSON、截图及 final-tests/build/browser 日志。可复跑浏览器脚本在 tests/browser/record-flows.mts。独立只读复审无新增阻塞，未启动额外测试/服务。

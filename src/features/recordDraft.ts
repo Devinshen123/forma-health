@@ -27,3 +27,38 @@ export class RecordDraft<T> {
     return fingerprint(current) === this.baseline;
   }
 }
+
+/** A partially confirmed batch keeps its identity until all results are reviewed. */
+export class RecordBatchDraft<T extends { id: string }> {
+  private records = new Map<string, RecordDraft<T>>();
+  private submittedIds: Set<string> | null = null;
+
+  get hasSubmitted() { return this.submittedIds !== null; }
+
+  observe(current: T[]) {
+    const byId = new Map(current.map(record => [record.id, record]));
+    this.records.forEach((draft, id) => draft.observe(byId.get(id)));
+  }
+
+  canSave(values: T[], current: T[]): boolean {
+    const ids = new Set(values.map(value => value.id));
+    const submittedIds = this.submittedIds;
+    if (ids.size !== values.length || submittedIds &&
+      (ids.size !== submittedIds.size || [...ids].some(id => !submittedIds.has(id)))) return false;
+    const byId = new Map(current.map(record => [record.id, record]));
+    return values.every(value => {
+      let draft = this.records.get(value.id);
+      if (!draft) { draft = new RecordDraft<T>(undefined); this.records.set(value.id, draft); }
+      return draft.canSave(byId.get(value.id));
+    });
+  }
+
+  submittedValues(values: T[]) {
+    this.submittedIds ??= new Set(values.map(value => value.id));
+    for (const value of values) {
+      let draft = this.records.get(value.id);
+      if (!draft) { draft = new RecordDraft<T>(undefined); this.records.set(value.id, draft); }
+      draft.submittedValue(value);
+    }
+  }
+}

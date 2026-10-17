@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RecordDraft } from '../src/features/recordDraft';
+import { RecordBatchDraft, RecordDraft } from '../src/features/recordDraft';
 const original = () => ({ id: 'synthetic-record', duration: 30, items: [{ name: 'Synthetic', weight: 20 }], notes: '' });
 test('an open editor refuses an unseen update or deletion and ignores object field ordering', () => {
     const record = original(), editor = new RecordDraft(record);
@@ -43,4 +43,37 @@ test('delete retry accepts its own missing record while a changed delete confirm
     deletion.submittedValue(undefined);
     assert.equal(deletion.canSave(undefined), true);
     assert.equal(deletion.canSave({ ...record, notes: 'Recreated elsewhere' }), false);
+});
+
+test('an uncertain food batch preserves its submitted membership while allowing value corrections', () => {
+    const first = original(), second = { ...original(), id: 'another-synthetic-record' };
+    const batch = new RecordBatchDraft<ReturnType<typeof original>>();
+    assert.equal(batch.canSave([first, second], []), true);
+    batch.submittedValues([first, second]);
+    batch.observe([first, second]);
+    assert.equal(batch.hasSubmitted, true);
+    assert.equal(batch.canSave([{ ...first, duration: 45 }, second], [first, second]), true);
+    assert.equal(batch.canSave([first], [first, second]), false, 'removing a possibly saved item needs a separate reviewed deletion');
+    assert.equal(batch.canSave([first, second, { ...first, id: 'new-candidate' }], [first, second]), false);
+});
+
+test('one changed or deleted member prevents a stale food batch from overwriting any member', () => {
+    const first = original(), second = { ...original(), id: 'another-synthetic-record' };
+    const batch = new RecordBatchDraft<ReturnType<typeof original>>();
+    batch.submittedValues([first, second]);
+    batch.observe([first, second]);
+    assert.equal(batch.canSave([first, second], [{ ...first, notes: 'Remote correction' }, second]), false);
+    assert.equal(batch.canSave([first, second], [second]), false);
+    assert.equal(batch.canSave([first, second], [first, second, { ...first, id: 'unrelated-record' }]), true);
+});
+
+test('a food selection may change before submission but repeated candidate identities are rejected', () => {
+    const first = original(), batch = new RecordBatchDraft<ReturnType<typeof original>>();
+    assert.equal(batch.hasSubmitted, false);
+    assert.equal(batch.canSave([first, first], []), false);
+    assert.equal(batch.canSave([first], []), true);
+    batch.submittedValues([first]);
+    const corrected = { ...first, duration: 45 };
+    batch.submittedValues([corrected]);
+    assert.equal(batch.canSave([corrected], [first]), true, 'an earlier uncertain result remains retryable');
 });

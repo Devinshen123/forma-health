@@ -1,5 +1,20 @@
 # Forma 协作任务板
 
+## 2026-10-17 第二轮：审核、逐组训练与恢复（仅本 worktree）
+
+分支 `codex/forma-review-recovery-20261017` 从上一轮 `874b13cac7db203d7c36db0191e9c2490fe1f55a` 建立。原目录和上一轮 worktree 保持不动。本轮仅本地、合成数据、mock AI；无付费调用、真实健康数据、生产写入、push/PR/合并/部署。以下分工优先于历史分工；root 为唯一产品写入者，其他 agent 只读审查。测试并发 1，临时文件 `D:\CodexTaskData\forma-review-recovery-20261017`，不使用视频 GPU。
+
+| ID | owner | 状态 | 可写范围 | 验收 |
+|---|---|---|---|---|
+| R-01 | root / lead | done | src/features/、tests/、docs/collaboration/ | 三组实证缺陷最小修复：AI 批次生命周期、历史校正自身重试、训练审核版本失效；串行测试 198/198、build、Edge 浏览器 12/12 |
+| R-02 | AI 审核只读 agent | done | 无写权限；Nutrition、审核/附件与相关服务和测试只读 | 确认 AI 多项不确定保存覆盖/复活及候选集合不一致；复审修复，无新增阻塞，不启动测试/服务 |
+| R-03 | 训练只读 agent | done | 无写权限；逐组训练及领域与同步代码只读 | 确认历史校正重试、审核未失效；复审修复，不启动测试/服务 |
+| R-04 | backend-contract agent | done | server/review-recovery.test.ts（新增专项测试），其余 server/ 只读 | 4 项真实 HTTP 契约回归通过：AI 来源/批次原子性、共享照片/receipt 重放、结束训练异常恢复与 409；未发现须改的后端产品缺陷 |
+
+用户新增前后端均需任务：R-01 是前端实际交互与最小修复，R-04 是后端实际接口契约检查与回归；没有缺陷的一侧不强行改产品。联调共同使用本轮合成数据库、mock AI 及真实本地接口。
+
+最终证据在上述 D 盘目录：`QA.md`、`final-confirmed/results.json`/PNG、`browser-recovery.mts`、`final-tests.log`、`final-build.log`、`final-browser.log`。浏览器仅系统 Edge，1440×1000 / 390×844；WebKit 未安装，不能视为真机 Safari/iPhone。未验证生产服务、真实 AI、旧删除/放弃确认的并发边界；未扩展删除后撤销功能。JSON 仍不含附件本体。
+
 ## 2026-10-17 普通记录核心链路（仅本 worktree）
 
 当前分支 `codex/forma-record-flows-20261017` 从 PR #1 的 500e66b 建立；PR #1 仍 OPEN/DRAFT，main 为 eb6b559。本轮只本地，不 push/PR/合并/部署，不改真实数据、权限、依赖或外部服务。所有原目录与未提交文件保留。以下表优先于历史分工；测试串行，临时数据放 `D:\CodexTaskData\forma-record-flows-20261017`，不使用 GPU。
