@@ -6,6 +6,8 @@
 
 ## 启动
 
+2026-10-17 文档核对：本地接续分支为 `codex/forma-docs-skills-20261017`，三轮产品修复停在 `367ae3e`。本 worktree 已有用户删除的 `src/catalog/exercises.json`，而 `src/catalog/exercises.ts` 仍引用它；另有三项图片删除。本轮保留这些改动，未运行构建，不能把下方历史成功结果当作当前工作区可直接启动的证明。先由文件所有者确认删除意图，再决定后续验证。完整状态见 [项目状态](docs/PROJECT-STATUS.md)。
+
 源码托管在私有仓库 [Devinshen123/forma-health](https://github.com/Devinshen123/forma-health)。有权限的账户可克隆后按下方命令运行：
 
 ```powershell
@@ -54,7 +56,7 @@ npm start
 
 **SQLite 和附件当前未做应用层静态加密，依赖本机操作系统账户权限与磁盘保护。**密码采用随机盐 scrypt hash，会话数据库只保存随机 token 的 hash；这不等同于健康记录已加密。
 
-`/api/export` 导出真实账号信息、全部 AppState、revision、附件元数据、独立AI草稿及预算预留记录，**不包含图片/PDF文件 bytes**。附件需另外下载；当前JSON不是完整附件备份。训练支持Strong/Hevy/FitNotes英文CSV格式和Forma JSON训练切片导入，浏览器解析、预览校正、排除重复，确认后保存；缺失值不补零，不导入账户/权限/AI来源或外部附件。供应商CSV升级或其它语言header需另行适配；不宣称已用每个供应商的真实文件验证。删除账户会移除记录、AI草稿/预算、附件、同步账与会话。
+`/api/export` 导出服务端已经保存的账号信息、AppState、revision、附件元数据、独立AI草稿及预算预留记录，**不包含图片/PDF文件 bytes，也不包含仍只在客户端的未同步队列**。附件需另外下载；同步面板的待同步 JSON 可保留本地文字变更和引用，但同样没有附件本体。两种 JSON 都不是完整附件备份，也不能代替原文件。训练支持Strong/Hevy/FitNotes英文CSV格式和Forma JSON训练切片导入，浏览器解析、预览校正、排除重复，确认后保存；缺失值不补零，不导入账户/权限/AI来源或外部附件。供应商CSV升级或其它语言header需另行适配；不宣称已用每个供应商的真实文件验证。删除账户会移除记录、AI草稿/预算、附件、同步账与会话。
 
 未配置密钥时不发起 AI 调用。配置后只有用户逐张同意并点击识别才向 OpenAI 发送去 EXIF、缩至最长1024像素的照片，以及输出语言；不附账户信息、过敏、训练、睡眠或化验数据。`store:false` 不等于供应商零保留，应按实际供应商政策处理。原附件和识别草稿保留在本机；没有自动云同步。
 
@@ -66,11 +68,19 @@ npm start
 
 默认一账户一次在途、5次/分钟、10次/UTC日；每个供应商尝试预留US$0.02、每账户US$0.40/日、项目总额US$2/日，包含最多一次重试。SQLite原子检查两级限额，重启/删除账户不退项目已预留额。这是应用限额记账，不是实际账单或用户认可的运营预算；其他应用调用不在此限额内。可在`.env.example`列出的范围内调整预算。缺密钥、超时、拒绝、无效输出或额度耗尽时可继续手动记录。
 
-此轮没有配置真实密钥，测试供应商只在验证代码中注入；真实识别质量与账户可用性尚待配置后验证。
+既有验证没有配置真实密钥，测试供应商只在验证代码中注入；真实识别质量与供应商账户可用性尚待另行验证。
 
 ## 验证与文档
 
-2026-10-16 本地隔离安全修复：测试 186/186、构建通过，独立 Windows Edge 的账号切换、离线刷新、重新登录、附件不确定保存与重试等 15 项真实浏览器场景全部通过。详见[本轮验证与边界](docs/collaboration/decisions/ADR-local-safety-20261016.md)。本轮仅保存在本地分支，未上传 GitHub、合并或部署。
+2026-10-17 已完成三轮合成数据修复，按各轮提交核对源码、D 盘日志和浏览器结果如下。本轮只改文档，未重复执行这些测试。
+
+| 提交 | 已修复范围 | 对应提交的验证 |
+|---|---|---|
+| `874b13c` | 普通饮食编辑/删除的旧值覆盖、活动训练不确定保存重试、草稿 kg/lb 单位固定 | 191/191 测试、构建通过、Edge 8/8 |
+| `1ec7b3a` | AI 批量审核保存生命周期、历史训练校正重试、训练完成审核失效 | 198/198 测试、构建通过、Edge 12/12 |
+| `367ae3e` | Session 丢弃、Progress 删除、QuickSummary 删除的旧确认快照保护；HTTP 原子冲突、回执重试与附件引用回归 | 202/202 测试、构建通过、Edge 13/13 |
+
+2026-10-16 安全修复提交 `500e66b` 曾通过 186/186 测试、构建及 Edge 15/15（账号切换、离线、重新登录和附件）。旧交付文字的“未上传”仅描述当时状态：2026-10-17 只读核对确认它已在 [PR #1](https://github.com/Devinshen123/forma-health/pull/1) 的远程分支，PR 仍为 OPEN / DRAFT；远程 main 为 `eb6b559`。上述三轮较新修复仍仅本地，均未合并、部署。详见 [当前状态与证据](docs/PROJECT-STATUS.md) 及 [验收记录](docs/VALIDATION.md)。
 
 ```powershell
 npm test
@@ -81,6 +91,8 @@ npm run build
 
 - [API 契约与云端迁移差异](docs/API-CONTRACT.md)
 - [服务器运行说明](server/README.md)
+- [Codex / Claude 技能与接续指南](docs/SKILLS-HANDOFF.md)
+- [Claude 接续入口](CLAUDE.md)
 - [FudAI/openGym 源码审计](docs/research/fudai-opengym-audit.md)
 - [HealthKit 架构研究](docs/research/healthkit-architecture.md)
 

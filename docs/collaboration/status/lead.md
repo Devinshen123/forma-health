@@ -1,5 +1,17 @@
 # Codex lead 状态
 
+## 2026-10-17 文档与技能接续
+
+产品修复停止在 `367ae3e`。本轮仅在同一 worktree 新建 `codex/forma-docs-skills-20261017` 分支更新 MD，不扩展产品、不重跑测试或构建、不安装或修改全局技能，不启动服务。新增 PROJECT-STATUS、SKILLS-HANDOFF 与 CLAUDE 入口，更新 README、VALIDATION 和任务板，将三轮本地修复、远程/本地差异、证据与下一步串联。
+
+实际检查：读回源码、D 盘测试/构建日志与结果 JSON，核实 191/198/202 及 Edge 8/12/13 对应提交；只读远程查询确认 main eb6b559、PR #1 OPEN/DRAFT head 500e66b，纠正早期 README 的“未上传”时点描述。三轮较新提交仍仅本地，没有 push/PR/合并/部署。本轮核对六个技能在 Codex / Claude 两侧均可读、SHA 一致，来源/许可不完整的本机副本明确标记，不复制私人笔记、配置或凭证。已读取 find-skills 与集中公开发现报告，补入 Vercel 32,561、Anthropic 181,772、社区 ECC 282,370 仓库星数快照和许可证据；Supabase 2,859 星但不适配 SQLite，因此不选。ECC backend / migration 对应固定公开提交；本机 security-review 是缺参数展开修复的历史版，未升级共享文件。星数不等于单技能质量。
+
+开始时已存在四项删除与未跟踪 AGENTS，原样保留且不暂存。动作目录 JSON 仍被导入，因此不声称当前脏工作区构建通过。文档只读复核已纠正第三轮 baseline 路径与一处摘要长度；相对链接、源码/技能入口有效，未见私人内容泄露。JSON 导出不含附件本体，服务端导出不含客户端队列，已分别说明。
+
+交接：真实消息工具已确认向现有 Forma 前端开发、Forma 后端开发、Forma 代码审查会话发送三条只读任务。前端 21:16 UTC、审查 21:19 UTC 最终回执已核实；均读了文档与角色技能并停在等待新任务。后端已发只读检查说明，最终回执尚未确认。公开发现结果后来补入指南，向前端发送补充的调用持续无响应，停止等待后结果不确定，未重发，也未对另两会话重复启动任务。会话 API 间歇返回 local/durable 主机不可用；本地 PowerShell 与文件操作正常，初次消息成功不受影响。详细状态在 SKILLS-HANDOFF。Claude CLI 2.1.293 可运行，但活动列表为空、完整列表未发现 FORMA 可寻址目标，亦无专用会话消息工具；没有强行 resume 历史 session ID 或新开会话，不能记为已交付。
+
+本轮文档交付结束；后端回执与公开来源补充的接收情况仍待会话服务恢复后核对，Claude 交接需可用既有目标。后续开发须另有明确任务。文件所有者需先决定既有删除意图，之后才选择本地修复集成与重测范围。保持 Showroom/视频服务、浏览器标签和 GPU 独立。
+
 2026-10-17 C-01/C-02/C-03 done（第三轮，范围结束）。独立 worktree `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-confirmation-boundaries`，分支 `codex/forma-confirmation-boundaries-20261017`，基线 `1ec7b3a1ef463ffb91602e5f7b4b859b91607532`，保护该提交与 `874b13c`，不自动合并并行 main（开工 ac56b65）。原工作目录及其他工作者 worktree 不修改。
 
 前端实际修三项：Session 旧放弃确认、Progress 旧历史删除、QuickSummary 旧摘要删除都会借最新渲染的实体版本误删另一处更新。修复前3个浏览器案例均实际把服务端新版删成 undefined；现在各自用独立 RecordDraft 在打开时绑定快照、确认前核对当前值、提交前登记 undefined。Session 捕获 active 而非未保存 draft，已有版本冲突必须先核对。Keep/关闭无写入，重开绑定最新版本，不影响其他记录新增；独立只读复审通过，无大规模重构。

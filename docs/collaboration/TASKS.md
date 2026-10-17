@@ -1,5 +1,18 @@
 # Forma 协作任务板
 
+## 2026-10-17 文档与技能接续（本轮有效范围）
+
+本轮仅更新 MD、核对既有源码/本地证据/技能来源，并向已有会话交接。分支 `codex/forma-docs-skills-20261017` 基于 `367ae3e`；沿用第三轮 worktree，不合并到原 main。root / lead 是下列 MD 的唯一写入者；证据与技能核验 agent 只读。禁止据此开始产品开发、运行测试/构建、安装技能/依赖、启动服务、push/PR/合并/部署，或启用真实健康接入、付费 AI、Apple 登录、HealthKit。
+
+| ID | owner | 状态 | 本轮可写范围 / 交付 |
+|---|---|---|---|
+| D-01 | root / lead | done | README.md、CLAUDE.md、docs/PROJECT-STATUS.md、docs/SKILLS-HANDOFF.md、docs/VALIDATION.md、本任务板、status/lead.md；已补三轮真实进度、验证边界、公开候选与下一步 |
+| D-02 | 证据审计 agent | done | 只读核对源码与 D 盘日志、结果 JSON、历史说明；191/198/202 项测试与 8/12/13 项浏览器结果匹配各轮提交 |
+| D-03 | 技能盘点 agent | done | 只读核对 Codex / Claude 技能路径、摘要、来源与许可；不复制私人笔记、凭证或整套技能目录 |
+| D-04 | root / lead | partial | 三个现有 Codex 会话消息均确认发送，前端/审查已回执、后端最终回执待确认；公开来源补充发送结果不确定，未重发。Claude 无可寻址既有会话，未交付；详见 SKILLS-HANDOFF |
+
+开始时已有 `docs/design/dashboard-concept.png`、`docs/design/mobile-meal-concept.png`、`public/demo-meal.png`、`src/catalog/exercises.json` 四项删除，以及未跟踪 `AGENTS.md`，均按用户改动保留，不恢复、不暂存。`src/catalog/exercises.ts` 仍引用被删除的 JSON，历史测试/构建结果不能证明当前脏工作区可构建。当前事实与下一步见 [PROJECT-STATUS](../PROJECT-STATUS.md)，技能路径与交接状态见 [SKILLS-HANDOFF](../SKILLS-HANDOFF.md)。
+
 ## 2026-10-17 第三轮：删除/放弃确认边界（三方向，仅本 worktree）
 
 分支 `codex/forma-confirmation-boundaries-20261017` 基于受保护的 `1ec7b3a1ef463ffb91602e5f7b4b859b91607532`，同时保留 `874b13c`；不自动合并并行 main。仅本地合成数据/mock AI，无 push/PR/合并/部署、真实账户/健康数据/邮件、付费服务或权限修改。最多修复三项可复现高价值缺陷，完成该范围即停止。测试由 root 单独串行运行，TEMP/TMP 在 `D:\CodexTaskData\forma-confirmation-boundaries-20261017`，Edge 禁用 GPU，不干扰视频/Showroom。
