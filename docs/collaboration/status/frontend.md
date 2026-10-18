@@ -1,3 +1,21 @@
+# 2026-10-17 当前：整合、构建修复与本地体验已完成
+
+用户直接授权当前聊天整合最新前后端、修复构建并启动网站；本轮在自己的 bdd7 worktree 独占执行集成/必要后端及测试修复，覆盖此前只接手的角色阶段限制。分支 `codex/forma-integrated-20261017`；保留原分支历史与他人未提交改动，没有创建代理或修改原 main。
+
+- 已 merge 前端 4674a98、后端 d88b4e6、审查 8df22c6、文档 2976a87；冲突仅在协作文档，保留双方记录。当前工作区已有完整已跟踪动作库与图片，其他目录的四项删除和 AGENTS 未动。
+- 依赖：当前无 node_modules，实际按原锁文件 npm ci 安装独立 157 个包；不修改共享安装、版本或检查配置。首次构建暴露新增后端测试两处 UUID 模板字面量推导问题，helper 的 id 参数显式标注 string 后 TypeScript 通过。浏览器回归去掉旧 sibling runtime 的 react-dom 路径。
+- 运行缺陷：完整浏览器第一次首页返回 500；最小 HTTP 复现确认绝对 sendFile 路径被 .codex 隐藏段拦截。新增 server/static-site.test.ts 红例，修成固定 dist root + 相对 index.html 后绿；私有 dotfile 内容仍不泄露、API 仍需认证。新测试只使用带安全路径检查的临时目录及合成 SQLite。
+- 最终实测：npm run build exit0（1617 modules，离线壳41bd32dcc736728e）；npm test 215/215；record-flows 浏览器8/8、sleep-report-lifecycle18/18，pageErrors均0。新增静态测试曾错误要求所有 dotfile URL 必为4xx，已按既有 SPA fallback 语义改为拒绝私有内容且只允许错误或固定首页，未为该测试放宽产品权限。
+- Edge 冒烟1440×1000/390×844：首页、训练、884动作库、搜索/展开、桌面中英切换通过；无横向溢出，console/pageerror0。额外冒烟脚本初次因中文标题换行空格/手机导航命名匹配失败，按实际可访问文本调整选择器后两视口通过，无相应产品改动。Browser plugin 未提供，自动回归采用现有 Playwright/Edge；用户可见交付使用内置浏览器 CUA。
+- 证据：C:\Users\devin\.codex\visualizations\2026\10\17\01a148dd-26a1-7812-a1fd-e10d8f096bd5\integration-qa\ 下的两组回归results.json与site-smoke JSON/桌面手机PNG。此处均为本轮新实测，不沿用历史通过数字。
+- 启动前确认3001/5173无监听，本worktree无data/.env。npm start已运行于 http://127.0.0.1:3001 ，仅本机；创建本区新空库，未迁移原真实数据。内置浏览器实际进入中文首页、训练库及中英切换；保持用户可见页。
+- 已实际读取 frontend-testing-debugging、security-review 与浏览器指导，按现有 React/Vite+Express/SQLite 适配。本轮不推送/合main/部署公网，不接真实AI；foodPhoto.reason实测not_configured。训练chunk896.56kB大小提示、PUT/旧receipt清理恢复与实机验证等既有限制保留，不扩展本轮范围。
+- 阻塞：无。后续可在当前网站体验演示或创建空账户。待用户决定：本轮无新增事项。
+
+---
+
+以下为此前接手与上传的历史状态。
+
 # frontend 状态
 
 更新：2026-10-17（America/Los_Angeles）。角色：frontend（合并 shell + features），运动健康网站项目级独立聊天；本节替代此前“当前聊天子代理”模式。

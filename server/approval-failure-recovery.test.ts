@@ -79,7 +79,7 @@ async function harness(t: TestContext) {
 
 const CLEANUP_FAULT = "CREATE TRIGGER synthetic_cleanup_failure BEFORE DELETE ON assets BEGIN SELECT RAISE(ABORT,'synthetic cleanup failure'); END";
 
-function meal(draft: FoodPhotoDraft, id = randomUUID()): Meal {
+function meal(draft: FoodPhotoDraft, id: string = randomUUID()): Meal {
   return { id, date: '2026-10-17', name: 'Reviewed synthetic rice', type: 'lunch', grams: 150, referenceGrams: 100, kcal: 130, protein: 2.7, carbs: 28, fat: 0.3, source: 'ai_estimate', assetId: draft.assetId, aiDraftId: draft.id, aiItemIndex: 0, createdAt: NOW };
 }
 

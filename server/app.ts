@@ -449,7 +449,7 @@ export function createApp(options: AppOptions) {
   if (options.distDir && existsSync(join(options.distDir, "index.html"))) {
     const dist = resolve(options.distDir);
     app.use(express.static(dist, { dotfiles: "deny", index: false }));
-    app.get("/{*path}", (_req, res) => res.sendFile(join(dist, "index.html")));
+    app.get("/{*path}", (_req, res) => res.sendFile("index.html", { root: dist }));
   }
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {

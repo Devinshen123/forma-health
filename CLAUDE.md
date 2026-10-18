@@ -1,5 +1,9 @@
 
-## 2026-10-17 Claude Code 实际任务（最新授权）
+## 2026-10-17 当前：用户授权整合、修复构建并本地启动
+
+本 worktree 为 `C:\Users\devin\.codex\worktrees\bdd7\健康网站`，分支 `codex/forma-integrated-20261017`。当前聊天按用户直接指令整合最新前后端，修复构建与运行问题，并在本机打开网站；任务及验收以 `docs/collaboration/TASKS.md` 顶部 INT-01 至 INT-03 为准。下文各会话专属范围和禁止整合/安装/启动文字属于已结束的历史任务，不覆盖本次授权。保留其他 worktree 的未提交改动，不接原真实数据或付费 AI，不部署公网。
+
+## 2026-10-17 Claude Code 实际任务（历史）
 
 本工作区当前只执行 CB-17，任务书为 docs/collaboration/tasks-20261017-claude-backend.md，分支 claude/forma-attachment-retry-20261017。必须先读其准确Claude技能路径与阶段/所有权限制；旧F/B/Q任务仅作历史。真实Claude会话执行，协调者不替代。保留AGENTS原文及用户删除，禁止恢复JSON、上传、合并、部署或真实数据服务。
 

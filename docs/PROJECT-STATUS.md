@@ -1,5 +1,25 @@
 # FORMA 当前项目状态
 
+## 当前：整合版已构建并本地启动
+
+2026-10-17（America/Los_Angeles），用户直接授权整合最新前后端、修复构建并启动打开网站。执行区为 `C:\Users\devin\.codex\worktrees\bdd7\健康网站`，分支 `codex/forma-integrated-20261017`。已通过保留历史的 merge 纳入前端 `4674a98`、后端 `d88b4e6`、审查 `8df22c6` 和交接文档 `2976a87`；产品代码无合并冲突，协作文档冲突保留双方记录。
+
+本工作区此前就包含已跟踪的动作库 JSON 和图片，没有恢复其他工作区的四项删除。原修复工作区的删除和未跟踪 AGENTS 保持原样，原 main 未改变。本地依赖此前不存在，按现有锁文件 `npm ci --no-audit --no-fund` 安装完整独立依赖，不修改共享目录、依赖版本或构建检查。
+
+本轮新增修复：后端回归 helper 的 UUID 参数显式采用 Meal.id 的 string 类型，消除两处 TS2345；睡眠/报告浏览器脚本改用仓库自己的 react-dom，去除旧临时 runtime 路径；Express 首页改用相对文件名加固定 dist root，修复 `.codex` 隐藏工作区下绝对 sendFile 路径被拦截而返回 500。新增真实 HTTP 红绿回归，覆盖隐藏/中文目录的首页与客户端路径、静态脚本、dotfile 不泄露及 API 认证边界，没有放开 dotfile 访问。
+
+实际最终验证：
+
+- `npm run build`：exit 0，TypeScript/Vite/离线壳完整通过，壳 `41bd32dcc736728e`；训练分包 896.56 kB 的大小提示仍存在。
+- `npm test`：exit 0，215/215，0 fail/skip；包含本轮新静态服务回归和既有账户/附件/CAS/回执恢复测试。
+- `node --import tsx tests/browser/record-flows.mts`：8/8；`node --import tsx tests/browser/sleep-report-lifecycle.mts`：18/18，均 pageErrors 0。
+- 系统 Edge 冒烟：1440×1000、390×844 首页与训练导航；桌面 884 动作库、搜索/展开及中英切换通过，console/pageerror 0，无横向溢出。内置浏览器也已实际打开首页并点击训练库和切换语言。
+- 浏览器 JSON/PNG 证据在本聊天 workspace 外 `C:\Users\devin\.codex\visualizations\2026\10\17\01a148dd-26a1-7812-a1fd-e10d8f096bd5\integration-qa\`；本轮使用新合成数据，不将历史验证当成本轮结果。
+
+`npm start` 已在本工作区运行，地址 http://127.0.0.1:3001 ，仅绑定本机回环。启动前确认端口空闲、当前工作区不存在 data 或 .env；仅创建本工作区的新空数据库，没有迁移或读取原真实数据。页面明确显示演示数据，用户可创建自己的空账户。capabilities 实测 foodPhoto.reason=not_configured，没有真实 AI 调用、付费接入、Apple/HealthKit 或公网部署。
+
+这段只更新当前整合工作区的验证事实，不抹除下文各历史修复区当时缺件/失败的记录；PUT 清理恢复、旧 hash-only receipt、跨资源崩溃原子性和真实 iPhone/Safari 等既有界限仍保留。
+
 ## 最新：真实Claude Code三方向
 
 用户已明确本轮必须由Claude执行。三个已安装官方CLI会话均有真实init/result、模型Read及preflight exit0回执，实际分支/工作区/session见 [Claude任务总览](collaboration/tasks-20261017-claude.md)。协调者仅准备任务/技能入口、串行资源、交付核对及精确本地提交，不以先前Codex或内部agent代替本轮产品开发/独立审查。三分支保持隔离，未合入当前协调分支或main。

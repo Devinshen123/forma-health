@@ -6,7 +6,7 @@
 
 ## 启动
 
-2026-10-17 文档核对：本地接续分支为 `codex/forma-docs-skills-20261017`，三轮产品修复停在 `367ae3e`。本 worktree 已有用户删除的 `src/catalog/exercises.json`，而 `src/catalog/exercises.ts` 仍引用它；另有三项图片删除。本轮保留这些改动，未运行构建，不能把下方历史成功结果当作当前工作区可直接启动的证明。先由文件所有者确认删除意图，再决定后续验证。完整状态见 [项目状态](docs/PROJECT-STATUS.md)。
+2026-10-17 整合版：`codex/forma-integrated-20261017` 已合入最新前端、后端、审查和交接文档。当前干净整合工作区自带已跟踪的完整动作库和演示素材；其他 worktree 的四项未提交删除保持原状。按锁文件独立安装依赖后，完整构建、215 项测试、26 项浏览器回归及桌面/手机首页与训练冒烟检查通过。首页静态发送已兼容 `.codex` 等隐藏工作区路径。完整状态见 [项目状态](docs/PROJECT-STATUS.md)。
 
 源码托管在私有仓库 [Devinshen123/forma-health](https://github.com/Devinshen123/forma-health)。有权限的账户可克隆后按下方命令运行：
 
@@ -71,6 +71,8 @@ npm start
 既有验证没有配置真实密钥，测试供应商只在验证代码中注入；真实识别质量与供应商账户可用性尚待另行验证。
 
 ## 验证与文档
+
+当前整合分支的新验证：`npm ci --no-audit --no-fund`、`npm run build`、`npm test`（215/215）、`tests/browser/record-flows.mts`（8/8）及 `tests/browser/sleep-report-lifecycle.mts`（18/18）均实际通过。两份浏览器脚本需设置 `FORMA_TEST_OUTPUT` 到独立合成证据目录，并安装系统 Edge；无需旧 worktree 的 runtime overlay。额外使用 Edge 1440×1000 和 390×844 验证首页、训练库/手机导航及桌面中英切换，无页面或控制台异常、无横向溢出。Vite 仍提示训练分包较大（896.56 kB），未将它当作构建失败。以下均保留为对应旧提交的历史记录。
 
 本轮实际交给三个真实 Claude Code 会话，见 [Claude任务总览](docs/collaboration/tasks-20261017-claude.md)。CF-17 `d794e38` 独立复核并新增5个边界例，最终18/18且页面异常0，未改产品页面；CB-17 `c32d8fc` 以精确持久清理意图修复sync提交后失败的同receipt重试，聚焦12/12、完整串行214/214。独立Claude已复跑12/12及新增浏览器代表例3/3，F/B完整tsc均失败38条；三个分支未整合，完整App/build无通过结论。旧轮下面的“清理重试未修复”仅是当时快照；PUT、旧hash-only历史receipt与DB/文件系统原子性仍在限制中。
 

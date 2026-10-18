@@ -64,7 +64,7 @@ createRoot(document.getElementById('root')).render(<Harness/>);
 let vite: any;
 try {
 vite = await createServer({ root: repo, configFile: false, cacheDir: join(out, 'vite-cache'),
-  resolve: { alias: { 'react-dom': resolve(repo, '../forma-task-runtime-20261017/node_modules/react-dom') }, dedupe: ['react', 'scheduler'] },
+  resolve: { alias: { 'react-dom': resolve(repo, 'node_modules/react-dom') }, dedupe: ['react', 'scheduler'] },
   esbuild: { jsx: 'automatic' }, optimizeDeps: { noDiscovery: true, include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'lucide-react'] },
   server: { host: '127.0.0.1', port: 0, proxy: { '/api': { target: apiBase,
     configure: (proxy: any) => proxy.on('proxyReq', (request: any) => request.setHeader('Origin', 'http://127.0.0.1:5173')) } } },
