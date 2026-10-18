@@ -166,6 +166,10 @@ export interface CatalogExercise {
   instructions: string[];
   instructionsZh?: string[];
   animation?: "squat" | "pushup" | "row" | "press" | "curl" | "hinge" | "lunge" | "plank";
+  source?: "forma" | "free-exercise-db" | "opengym";
+  sourceId?: string;
+  instructionUrl?: string;
+  video?: { src: string; poster: string; credit: string };
 }
 export interface Sleep {
   id: string;

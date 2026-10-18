@@ -7,4 +7,7 @@ data/
 reference-sources/
 test-results/
 playwright-report/
+
+# Separately licensed exercise media: stage from the user's authorized local pack.
+public/exercise-media/opengym/
 docs/collaboration/*response.json

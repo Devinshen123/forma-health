@@ -52,7 +52,8 @@
 ### 许可证
 
 - `reference-sources/` 只用来参考，不能修改。
-- 不复制 SparkyFitness（非商业许可）、Mealie 和 openGym（AGPL）的代码、schema、UI、图片。openGym 的动作图片和动画一律不用。
+- 不复制 SparkyFitness（非商业许可）、Mealie 的代码、schema、UI、图片；openGym 的应用代码、schema 和 UI 也不复制。
+- 2026-10-18 用户明确要求导入 openGym 的 5,632 个主动作，并确认其授权包含 Gym visual 动画/图片及在 Forma 中复制、展示和随网站分发。这是对此前“不用 openGym 动作文本/媒体”规则的指定例外；授权记录与来源见 `docs/architecture/training-source-log.md`。只读来源，不将许可视为对第三方的普遍授权；不把素材输入 AI。独立授权媒体与公开 Git 源码分开暂存。
 - FudAI（MIT）的片段如果要采用：先在 `docs/architecture/reuse-log.md` 里记录来源路径、commit、改动、许可证，并经 lead 同意。
 
 ### 设计

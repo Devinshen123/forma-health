@@ -1,6 +1,7 @@
 import {useEffect,useId,useState} from 'react';
 import {Pause,Play} from 'lucide-react';
 import type {CatalogExercise,Language} from '../types';
+import ExerciseVideo from './ExerciseVideo';
 type Point=[number,number];
 type Pose={head:Point;shoulder:Point;hip:Point;elbow:Point;hand:Point;knee:Point;foot:Point;elbow2?:Point;hand2?:Point;knee2?:Point;foot2?:Point};
 const standing:Pose={head:[160,48],shoulder:[160,80],hip:[160,133],elbow:[176,110],hand:[178,143],knee:[152,166],foot:[145,200],knee2:[172,168],foot2:[180,200]};
@@ -16,7 +17,7 @@ const frames:Record<NonNullable<CatalogExercise['animation']>,[Pose,Pose]>={
 };
 const point=(a:Point,b:Point,t:number):Point=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
 function interpolate(a:Pose,b:Pose,t:number):Pose {const p={...a};for(const key of Object.keys(a) as (keyof Pose)[]){if(a[key]&&b[key])p[key]=point(a[key]!,b[key]!,t);}return p;}
-export default function ExerciseAnimation({exercise,lang}:{exercise:CatalogExercise;lang:Language}) {
+function OriginalExerciseAnimation({exercise,lang}:{exercise:CatalogExercise;lang:Language}) {
   const zh=lang==='zh',id=useId(),mode=exercise.animation;
   const [playing,setPlaying]=useState(false),[phase,setPhase]=useState(0);
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -48,4 +49,8 @@ export default function ExerciseAnimation({exercise,lang}:{exercise:CatalogExerc
     </div>
     <p className="hint">{zh?'Forma 原创二维路径示意，简化了视角与关节运动；请同时阅读动作步骤。':'Original Forma 2D diagram simplifies perspective and joint movement. Read the movement instructions alongside it.'}{reduced&&(zh?' 已使用减少动态，可手动逐步查看。':' Reduced motion enabled; step through manually.')}</p>
   </section>;
+}
+
+export default function ExerciseAnimation(props: {exercise:CatalogExercise;lang:Language}) {
+  return props.exercise.video ? <ExerciseVideo key={props.exercise.id} {...props} /> : <OriginalExerciseAnimation {...props} />;
 }

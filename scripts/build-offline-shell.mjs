@@ -2,7 +2,7 @@ import {readdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const files=readdirSync('dist/assets').map(x=>`/assets/${x}`);
 const version=createHash('sha256').update(readFileSync('dist/index.html')).digest('hex').slice(0,16);
-const assets=['/index.html',...files,'/demo-meal.png','/favicon.svg','/licenses/free-exercise-db-Unlicense.txt'];
+const assets=['/index.html',...files,'/demo-meal.png','/favicon.svg','/licenses/free-exercise-db-Unlicense.txt','/licenses/opengym-NOTICE.txt','/licenses/opengym-AGPL-3.0.txt'];
 writeFileSync('dist/sw.js', `// Forma static shell only. Private API and uploads are never cached.
 const CACHE='forma-shell-${version}',FILES=${JSON.stringify(assets)};
 // Wait for old clients to close instead of replacing the worker during an unsaved session.

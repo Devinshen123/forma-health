@@ -1,4 +1,5 @@
 import data from './exercises.json';
+import { openGymExercises } from './opengym';
 import type { CatalogExercise, Language } from '../types';
 // Original teaching entries. Their demonstration geometry is independently authored.
 export const foundationExercises: CatalogExercise[] = [
@@ -11,9 +12,15 @@ export const foundationExercises: CatalogExercise[] = [
   {id:'forma-lunge',name:'Stationary split squat',nameZh:'原地分腿蹲',primaryMuscles:['quadriceps'],secondaryMuscles:['glutes'],equipment:'body only',category:'strength',level:'beginner',animation:'lunge',instructions:['Take a stable split stance with both feet staying in place.','Bend both knees and lower vertically within a controlled range.','Push through the front foot to rise. Log repetitions per side.'],instructionsZh:['前后分腿站稳，双脚位置固定。','双膝弯曲，在能控制的范围内垂直下蹲。','前脚推地站起；记录每侧次数。']},
   {id:'forma-plank',name:'Forearm plank',nameZh:'前臂平板支撑',primaryMuscles:['abdominals'],secondaryMuscles:['shoulders'],equipment:'body only',category:'strength',level:'beginner',animation:'plank',instructions:['Place elbows below shoulders and support yourself on forearms and toes.','Keep a steady line from head to heels and breathe.','Hold only while the position remains controlled; log actual seconds.'],instructionsZh:['肘位于肩下，以前臂和脚尖支撑。','从头到脚跟保持稳定的直线，正常呼吸。','仅在能保持姿势时继续，记录实际秒数。']},
 ];
-export const catalog: CatalogExercise[] = [...foundationExercises, ...data as CatalogExercise[]];
+export const catalog: CatalogExercise[] = [...foundationExercises.map(item => ({ ...item, source: 'forma' as const })), ...(data as CatalogExercise[]).map(item => ({ ...item, source: 'free-exercise-db' as const })), ...openGymExercises];
 const muscles: Record<string,string> = {abdominals:'腹部',abductors:'髋外展肌',adductors:'髋内收肌',biceps:'肱二头肌',calves:'小腿',chest:'胸部',forearms:'前臂',glutes:'臀部',hamstrings:'腘绳肌',lats:'背阔肌','lower back':'下背部','middle back':'中背部',neck:'颈部',quadriceps:'股四头肌',shoulders:'肩部',traps:'斜方肌',triceps:'肱三头肌'};
 const equipment: Record<string,string> = {'body only':'自重',barbell:'杠铃',dumbbell:'哑铃',kettlebells:'壶铃',cable:'绳索',machine:'器械',bands:'弹力带','medicine ball':'药球','exercise ball':'健身球','e-z curl bar':'曲杆','foam roll':'泡沫轴',other:'其他'};
 export const muscleLabel = (key:string,lang:Language) => lang==='zh' ? muscles[key] ?? key : key;
 export const equipmentLabel = (key:string|null,lang:Language) => key===null ? lang==='zh'?'器械未注明':'Equipment unspecified' : lang==='zh'?equipment[key]??key:key;
 export const exerciseLabel = (ex:CatalogExercise,lang:Language) => lang==='zh' ? ex.nameZh ?? ex.name : ex.name;
+Object.assign(muscles, {'serratus anterior':'前锯肌','hip flexors':'髋屈肌群',obliques:'腹斜肌',core:'核心肌群',back:'背部',brachialis:'肱肌',rhomboids:'菱形肌','rotator cuff':'肩袖肌群','ankle stabilizers':'踝部稳定肌群',ankles:'踝部',feet:'足部','grip muscles':'握力肌群',groin:'腹股沟肌群',hands:'手部',shins:'胫部',soleus:'比目鱼肌',sternocleidomastoid:'胸锁乳突肌','wrist extensors':'腕伸肌群','wrist flexors':'腕屈肌群',wrists:'腕部'});
+Object.assign(equipment, {kettlebell:'壶铃','leverage machine':'杠杆式器械',assisted:'辅助器械',rope:'绳索',weighted:'额外负重','bosu ball':'半球平衡球','sled machine':'倒蹬/雪橇式器械','smith machine':'史密斯机','wheel roller':'健腹轮','trap bar':'六角杠铃',landmine:'地雷杆','weight plate':'杠铃片',sandbag:'沙袋',macebell:'钢锤','suspension trainer':'悬挂训练器',hammer:'锤','stationary bike':'固定自行车','upper body ergometer':'上肢功率车','elliptical machine':'椭圆机','skierg machine':'滑雪机','stepmill machine':'阶梯机',tire:'轮胎'});
+const categories: Record<string,string> = {strength:'力量',calisthenics:'自重训练',mobility:'灵活性',olympic:'举重',plyometrics:'爆发跳跃',cardio:'有氧',isometric:'静力',yoga:'瑜伽',stretching:'拉伸',pilates:'普拉提',rehab:'康复类动作',combat:'格斗',powerlifting:'力量举',strongman:'大力士训练'};
+categories['olympic weightlifting'] = '举重';
+equipment.rope = '训练绳';
+export const categoryLabel = (key:string,lang:Language) => lang==='zh' ? categories[key] ?? key : key;
