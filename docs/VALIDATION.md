@@ -1,5 +1,35 @@
 # 网站验收记录
 
+## 2026-10-17 真实Claude Code任务证据
+
+执行者为三个真实CLI session，具体ID/命令/输出见 [Claude任务总览](collaboration/tasks-20261017-claude.md) 及 `task-2/forma-claude-evidence-20261017/dispatch.json`。协调者没有代跑产品测试；旧Codex F/B/Q记录保留历史，以下为新Claude实跑。
+
+| 指定产品/测试提交 | 实际结果 | 证据与范围 |
+|---|---|---|
+| CF-17 d794e38 | 13基线、5新增、18最终均通过，pageErrors0 | frontend/execute-browser；真实组件DOM+SyncEngine+随机端口HTTP/SQLite。页面产品无改动，没有完整App/账号壳/移动真机声明 |
+| CB-17 c32d8fc | 聚焦12/12、完整214/214，均exit0，0fail/skip/cancel/todo | backend/r2-green-exact-intent.log、r2-full-suite.log；两个HTTP红例、精确意图Store红例均保留。旧11/11、213/213对应前版diff |
+| CQ-17 独立复核F/B确切SHA | 聚焦12/12；新增浏览器代表例恰好3/3、pageErrors0；两个完整tsc都exit2/38诊断 | review/execute；不重复整份214/18套件。F/B各自未集成，缺声明可掩盖错误，不推断类型/组合版本正确 |
+
+本轮CB新增单表+索引的精确清理意图，与同步提交同事务持久化；首次及同receipt重放处理自己的意图，写锁内核精确意图与当前owner引用。没有广泛GC，PUT恢复、旧hash-only历史事件和DB/文件系统原子性未解决；不操作真实数据迁移。
+
+CF可选旧版敏感性实验含git checkout，整条命令被Claude CLI规则在执行前拒绝，未重试、未绕过，也不是自动审批审查拒绝或产品红例；新增用例在旧版是否失败未实证。运行器入口错误、sqlite测试null-prototype比较错误、metadata生成字段修正均独立记载，不冒充产品失败。用户四项删除及AGENTS原文保持，AGENTS只追加授权入口且未跟踪；所有自有fixtures最终关闭，未启动持久3001/5173服务、不动Showroom。
+
+本轮完整构建、完整App跨账号壳、生产、真实健康/AI供应商、Safari/iPhone均未验证。JSON导出没有附件bytes，服务端导出没有客户端未同步队列，不是完整备份。
+
+## 2026-10-17 三方向任务最终证据
+
+共同基线33f1256，三个独立分支未整合。仅合成账号/临时SQLite/合成附件/mock AI，自有服务最终均关闭；未上传、合并或部署。
+
+| 任务提交 | 本轮实际验证 | 边界 |
+|---|---|---|
+| 前端2786a33 | Sleep/Reports两个真实覆盖红例→13/13真实组件DOM+SyncEngine+HTTP，页面异常0；QA另复跑3/3 | 未挂完整App/账号切换壳，不称全App或实机验证 |
+| 后端b27c3cc | 跨Store引用误删红→绿；新测试5/5（3顶层含2子例），SQL中途回滚已证；QA完整串行207/207，0fail/skip/cancel/todo | SQL两案是Store/SQLite测试；有HTTP竞态测试，不把所有SQL失败称HTTP验证 |
+| 审查579d905 | 确切F/B差异复核、上述独立复跑、已知清理重试真实断言失败200≠404；完整tsc退出2、38条诊断 | 缺exercises.json、lucide/node声明等；没有恢复文件、改变配置或声称构建通过 |
+
+证据根目录 `C:\Users\devin\Documents\Codex\2026-10-16\task-2\forma-task-evidence-20261017`：frontend 的 baseline-both/final-13 与完整补丁，backend 的红绿日志/补丁/独立清理重试脚本，qa 的完整套件/类型检查/确认失败日志、代表例结果、审查补丁及metadata。原运行器缺件及首个独立脚本入口错误分别保留，不当产品失败证据。测试运行器使用独立lock/SHA512匹配本机缓存overlay，未安装或改共享依赖。
+
+仍未修复：提交后清理失败时hash-only receipt缺少原asset列表，重放无法补清理。需明确精确持久意图与重试策略；没有广泛GC。用户四项删除和AGENTS原文保留（AGENTS仅按新授权追加任务/skills入口，未提交）。完整App、构建、生产、真实供应商和iPhone/Safari均无本轮通过声明。
+
 ## 2026-10-17 当前证据索引与文档核对
 
 三轮本地修复已完成；本轮仅读回源码、既有日志和结果 JSON 并更新 MD，没有重新测试或构建。完整提交、D 盘路径、备份边界和下一步见 [PROJECT-STATUS](PROJECT-STATUS.md)。以下为各提交当时的结果，不相加，也不代表当前脏工作区的结果。

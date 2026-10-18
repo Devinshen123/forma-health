@@ -1,6 +1,10 @@
+当前Claude执行补充：见 [真实Claude任务](collaboration/tasks-20261017-claude.md)。三个session均已通过CLI实际确认及模型Read；CF实际读Claude树playwright/security-review，CB读backend-patterns/security-review/database-migrations，CQ读security-review/backend-patterns/database-migrations/playwright。均按绝对路径读文件，不冒称slash技能注册，也不使用Codex插件作为Claude技能。旧Codex回执与旧会话不可用记录是历史阶段。
+
 # FORMA 技能与会话接续
 
 核对：2026-10-17 UTC。目标是让既有 Codex / Claude 按 FORMA 的实际源码选择技能；本轮只读核验与交接，不安装、不升级、不复制私人技能树，不执行其中的脚本。先读 [项目状态](PROJECT-STATUS.md)、`../AGENTS.md` 和 [任务板顶部](collaboration/TASKS.md)。
+
+后续用户已授权实际三方向任务，上一段“只读”是文档轮历史。执行前须读 [三方向任务书](collaboration/tasks-20261017-three-directions.md) 中自己条目的 skill、触发、精确本地路径与缺失处理。当前前端实际读取 playwright/tdd/security-review/frontend-design（最后一项仅用于保持错误提示的原设计）；后端读取 backend-patterns/security-review/tdd；审查读取 playwright/security-review/tdd，三者均已回执，不因安装目录存在就推定使用。三个长期会话服务不可用时由任务板登记的本地 agent 执行，没有冒充长期会话已接新任务；旧交接的不确定补充没有盲重发。
 
 ## 本机已存在且可读
 
