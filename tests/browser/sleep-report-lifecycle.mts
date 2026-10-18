@@ -343,7 +343,10 @@ try {
       const b = await secondAccount(h, 'reports'); await reloadAccount(h, b.user.id);
       await expect(h.p.getByRole('dialog')).toHaveCount(0);
       const cleanup = h.p.waitForResponse((r: any) => r.url().endsWith('/api/assets/' + uploaded.id) && r.request().method() === 'DELETE');
-      release(); assert.equal((await cleanup).status(), 401, 'late A cleanup cannot act with B session cookies');
+      release(); const cleanupResponse = await cleanup;
+      assert.equal(cleanupResponse.status(), 401, 'late A cleanup cannot act with B session cookies');
+      // A missing/expired session is also 401; require the account-mismatch rejection specifically.
+      assert.equal((await cleanupResponse.json()).code, 'ACCOUNT_CHANGED', 'late A cleanup is rejected as an account mismatch, not a missing session');
       assert.deepEqual(requests.filter(r => r.method === 'POST').map(r => r.account), [h.user.id], 'the held upload is explicitly owned by A and never submits a stale report');
       assert.deepEqual(requests.filter(r => r.method === 'DELETE').map(r => r.account), [h.user.id], 'late cleanup retains the original owner header');
       assert.deepEqual(await http(observerA, 'GET', '/sync', h.user.id), beforeA);
@@ -375,10 +378,13 @@ try {
       assert.ok(assetId); assert.equal(queuedA.user.id, h.user.id); assert.equal(queuedA.queue.length, 1);
       assert.equal(queuedA.queue[0].changes[0].value.assetId, assetId);
       assert.deepEqual(await http(observerA, 'GET', '/sync', h.user.id), beforeA, 'aborted queue has not reached the server');
+      assert.equal(writes.length, 1, 'only the original aborted A write precedes the account switch');
       const b = await secondAccount(h, 'reports'); observerB = await observeAccount(b.user);
       await reloadAccount(h, b.user.id);
       await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
       await expect(h.p.getByRole('status', { name: 'Synthetic offline consent', exact: true })).toHaveText('disabled');
+      // An A-header replay during B boot/restore would otherwise pass the later account/mutation checks.
+      assert.equal(writes.length, 1, 'B boot/restore submits no write, including an A-header replay');
       const countBeforeBRetry = writes.length;
       const refreshedB = h.p.waitForResponse((r: any) => r.url().endsWith('/api/sync') && r.request().method() === 'GET');
       await h.p.getByRole('button', { name: 'Retry queued sync', exact: true }).click(); await refreshedB;
