@@ -9,7 +9,6 @@ import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Store } from '../server/store';
 import { parseState } from '../server/validation';
-import { mutationHash } from '../server/sync';
 import type { Report, SyncChange, SyncMutation } from '../src/types';
 
 const NOW = '2026-10-18T12:00:00.000Z';
@@ -82,11 +81,12 @@ test('legacy hash-only receipt: replay preserves unknown candidates and other ow
   const f = fixture(t), removed = f.asset(), candidate = f.asset(), foreign = f.asset(f.other.id), original = report(removed.id);
   apply(f.store, f.owner.id, mutation(change(original)));
   const deletion = mutation({ collection: 'reports', id: original.id, kind: 'delete', baseVersion: 1 });
-  // Model the exact persisted shape of a pre-intent removal: updated state + hash receipt,
-  // with no historical asset list. No old database or real account is opened.
-  const before = f.store.snapshot(f.owner.id);
-  assert.equal(f.store.save(f.owner.id, { ...before.state, reports: [] }, before.revision), true);
-  f.store.db.prepare('INSERT INTO sync_mutations VALUES (?,?,?,?)').run(f.owner.id, deletion.mutationId, mutationHash(deletion), NOW);
+  // Model a pre-intent persisted shape using real sync state/version/receipt writes,
+  // then remove only this synthetic mutation's new-format intent. Bytes and metadata
+  // stay intact. This avoids depending on the old Store.save implementation, which
+  // later versions may extend with their own PUT intent bookkeeping.
+  apply(f.store, f.owner.id, deletion);
+  f.store.db.prepare('DELETE FROM asset_cleanup_intents WHERE owner_id=? AND mutation_id=?').run(f.owner.id, deletion.mutationId);
   const snapshot = f.store.syncSnapshot(f.owner.id);
   f.store.close();
   const h = await http(f);
@@ -103,7 +103,7 @@ test('legacy hash-only receipt: replay preserves unknown candidates and other ow
   assert.equal(changed.status, 409);
   assert.deepEqual(h.store.syncSnapshot(f.owner.id), snapshot);
   assert.equal(h.store.db.prepare('SELECT COUNT(*) AS count FROM asset_cleanup_intents').get()?.count, 0);
-  f.evidence('legacy-receipt', { replay: replay.status, changedPayload: changed.status, sameSnapshot: true, intentCount: 0, removedAssetRetained: true, candidateRetained: true, otherOwnerIsolated: true, historicalCleanupCandidatesRecoverable: false });
+  f.evidence('legacy-receipt', { fixtureConstruction: 'Real sync commit; remove only exact synthetic owner/mutation cleanup intent without changing bytes or metadata.', replay: replay.status, changedPayload: changed.status, sameSnapshot: true, intentCount: 0, removedAssetRetained: true, candidateRetained: true, otherOwnerIsolated: true, historicalCleanupCandidatesRecoverable: false });
 });
 
 test('sync pre-COMMIT abrupt exit rolls back state, versions, receipt and intent together while preserving bytes', t => {
