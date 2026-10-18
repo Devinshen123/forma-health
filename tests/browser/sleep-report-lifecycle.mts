@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import type { Server } from 'node:http';
 import { createApp } from '../../server/app';
 
@@ -53,8 +53,11 @@ function Harness() {
       <button onClick={()=>engine.refresh()}>Refresh synthetic records</button>
       <button onClick={()=>engine.refresh()}>Retry queued sync</button>
       <button onClick={()=>boot()}>Reload synthetic account</button>
+      <button onClick={()=>engine.enable(true)}>Enable synthetic offline storage</button>
     </nav>
     <p role="status" aria-label="Synthetic sync status">{status.busy?'busy':status.pending?'pending '+status.pending:'synced'}</p>
+    <p role="status" aria-label="Synthetic account">{engine.user.id}</p>
+    <p role="status" aria-label="Synthetic offline consent">{status.enabled?'enabled':'disabled'}</p>
     <p aria-label="Synthetic notification">{message}</p>
     <Feature key={kind+engine.user.id} state={state} lang="en" save={save} notify={(zh,en)=>setMessage(en||zh)} demo={false} accountId={engine.user.id}/>
   </main>;
@@ -64,7 +67,9 @@ createRoot(document.getElementById('root')).render(<Harness/>);
 let vite: any;
 try {
 vite = await createServer({ root: repo, configFile: false, cacheDir: join(out, 'vite-cache'),
-  resolve: { alias: { 'react-dom': resolve(repo, 'node_modules/react-dom') }, dedupe: ['react', 'scheduler'] },
+  // Follow the process-only resolver when a checkout has incomplete shared dependencies.
+  // No package/cache writes are made to the dependency source worktree.
+  resolve: { alias: Object.fromEntries(['react', 'react-dom', 'scheduler', 'lucide-react'].map(name => [name, dirname(require.resolve(name + '/package.json'))])), dedupe: ['react', 'scheduler'] },
   esbuild: { jsx: 'automatic' }, optimizeDeps: { noDiscovery: true, include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'lucide-react'] },
   server: { host: '127.0.0.1', port: 0, proxy: { '/api': { target: apiBase,
     configure: (proxy: any) => proxy.on('proxyReq', (request: any) => request.setHeader('Origin', 'http://127.0.0.1:5173')) } } },
@@ -101,6 +106,44 @@ async function http(ctx: any, method: string, path: string, id?: string, data?: 
 }
 async function register(ctx: any) {
   return (await http(ctx, 'POST', '/auth/register', undefined, { email: `lifecycle-${randomUUID()}@example.test`, password: 'Synthetic-lifecycle-password-2026', name: 'Synthetic lifecycle account' })).user;
+}
+async function observeAccount(user: any) {
+  // A new login retires the caller's previous cookie. Use an independent synthetic
+  // session, rather than copying a cookie which the account-switch step invalidates.
+  const ctx = await browser.newContext();
+  try {
+    const result = await http(ctx, 'POST', '/auth/login', undefined, { email: user.email, password: 'Synthetic-lifecycle-password-2026' });
+    assert.equal(result.user.id, user.id);
+    return ctx;
+  } catch (error) { await ctx.close(); throw error; }
+}
+async function upsert(ctx: any, userId: string, kind: string, item: any) {
+  const s = await http(ctx, 'GET', '/sync', userId);
+  return http(ctx, 'POST', '/sync', userId, { mutationId: randomUUID(), changes: [{ collection: kind, id: item.id, baseVersion: s.entityVersions[kind + ':' + item.id] ?? 0, kind: 'upsert', value: item }] });
+}
+async function secondAccount(h: any, kind: string) {
+  const user = await register(h.ctx);
+  const asset = kind === 'reports' ? await http(h.ctx, 'POST', '/assets', user.id, { name: 'account-b.pdf', mime: 'application/pdf', base64: syntheticPdf.toString('base64') }) : null;
+  // Reusing a record ID is legal between owners and exposes accidental draft carry-over.
+  const item = kind === 'sleeps' ? { ...h.item, quality: 2, energy: 2 } : { ...h.item, assetId: asset.id, markers: [{ ...h.item.markers[0], value: '30' }] };
+  await upsert(h.ctx, user.id, kind, item);
+  return { user, item, before: await http(h.ctx, 'GET', '/sync', user.id) };
+}
+async function reloadAccount(h: any, id: string) {
+  // Simulate the external account transition while a native modal blocks pointer input.
+  // This dispatch is a fixture control; product editors/confirmations use real clicks.
+  await h.p.getByRole('button', { name: 'Reload synthetic account', exact: true }).dispatchEvent('click');
+  await expect(h.p.getByRole('status', { name: 'Synthetic account', exact: true })).toHaveText(id);
+  await expect(h.p.getByRole('status', { name: 'Synthetic sync status', exact: true })).not.toHaveText('busy');
+  if (await h.p.getByLabel('Wake-up date', { exact: true }).count()) await h.p.getByLabel('Wake-up date', { exact: true }).fill(day);
+}
+async function cachedAccount(p: any, id: string) {
+  return p.evaluate(async (accountId: string) => { const path = '/src/sync/storage.ts'; return (await import(path)).readCached(accountId); }, id);
+}
+async function privatePdf(ctx: any, id: string, status = 200) {
+  const response = await ctx.request.get(base + '/api/assets/' + id);
+  assert.equal(response.status(), status, 'private attachment owner boundary');
+  if (status === 200) assert.deepEqual(await response.body(), syntheticPdf, 'synthetic PDF bytes remain intact');
 }
 async function account(kind: string) {
   const ctx = await browser.newContext({ viewport: { width: process.env.FORMA_MOBILE ? 390 : 1280, height: 900 }, timezoneId: 'UTC' });
@@ -219,6 +262,7 @@ try {
       const after = await h.snap();
       assert.deepEqual(after.state[kind], [], 'stale confirmation must not recreate the remotely deleted record');
       assert.equal(after.revision, before.revision, 'stale confirmation must not write');
+      assert.equal(posts.length, 0, 'stale confirmation must not even submit an ineffective mutation');
       const stillOpen = await dialog.count() > 0;
       if (stillOpen) { await expect(dialog.getByRole('alert')).toBeVisible(); await dialog.getByRole('button', { name: 'Keep', exact: true }).click(); await expect(dialog).toHaveCount(0); }
       return { remoteDeletionPreserved: true, writes: posts.length, dialogStayedWithAlert: stillOpen };
@@ -243,7 +287,119 @@ try {
       if (kind === 'reports') assert.equal((await h.ctx.request.get(base + '/api/assets/' + h.item.assetId)).status(), 200, 'referenced attachment kept');
       return { ownWriteAccepted: true, laterRemotePreserved: true, cancelSafe: true };
     });
+    for (const mode of ['editor', 'delete']) await check(kind + '-account-remount-' + mode, kind, async h => {
+      const observerA = await observeAccount(h.user);
+      try {
+        const beforeA = await h.snap();
+        if (mode === 'editor') await openEdit(h, kind);
+        else await h.p.getByRole('button', { name: deleteOpen(kind), exact: true }).click();
+        await expect(h.p.getByRole('dialog')).toHaveCount(1);
+        const b = await secondAccount(h, kind), writes: any[] = [];
+        h.p.on('request', (request: any) => { if (request.url().endsWith('/api/sync') && request.method() === 'POST') writes.push({ account: request.headers()['x-forma-account'], mutationId: request.postDataJSON().mutationId }); });
+        await reloadAccount(h, b.user.id);
+        await expect(h.p.getByRole('dialog')).toHaveCount(0);
+        assert.deepEqual(await http(h.ctx, 'GET', '/sync', b.user.id), b.before, 'account remount alone cannot submit the old editor or confirmation');
+        assert.equal(writes.length, 0);
+        if (mode === 'editor') {
+          await h.p.getByRole('button', { name: kind === 'sleeps' ? 'Edit this sleep' : 'Edit Synthetic report', exact: true }).click();
+          const dialog = h.p.getByRole('dialog');
+          if (kind === 'sleeps') { await expect(dialog.getByLabel('Sleep quality (1–5)')).toHaveValue('2'); await dialog.getByLabel('Sleep quality (1–5)').selectOption('4'); }
+          else { await expect(dialog.getByLabel('Original value (including > or <)', { exact: true })).toHaveValue('30'); await dialog.getByLabel('Original value (including > or <)', { exact: true }).fill('31'); }
+          await dialog.getByRole('button', { name: saveLabel(kind), exact: true }).click(); await expect(dialog).toHaveCount(0);
+          const actualB = (await http(h.ctx, 'GET', '/sync', b.user.id)).state[kind];
+          assert.deepEqual(actualB, [{ ...b.item, ...(kind === 'sleeps' ? { quality: 4 } : { markers: [{ ...b.item.markers[0], value: '31' }] }) }]);
+        } else {
+          await h.p.getByRole('button', { name: deleteOpen(kind), exact: true }).click();
+          await h.p.getByRole('dialog').getByRole('button', { name: deleteLabel(kind), exact: true }).click();
+          await expect(h.p.getByRole('dialog')).toHaveCount(0);
+          assert.deepEqual((await http(h.ctx, 'GET', '/sync', b.user.id)).state[kind], []);
+        }
+        assert.equal(writes.length, 1, 'only the explicitly reopened B editor/confirmation may write');
+        assert.equal(writes[0].account, b.user.id, 'the new component writes as B');
+        assert.deepEqual(await http(observerA, 'GET', '/sync', h.user.id), beforeA, 'A remains byte-for-byte unchanged');
+        if (kind === 'reports') { await privatePdf(observerA, h.item.assetId); await privatePdf(h.ctx, h.item.assetId, 404); }
+        return { sameRecordId: true, oldDialogUnmounted: true, remountWrites: 0, explicitNewOwnerWrites: writes, originalAccountUnchanged: true, ...(kind === 'reports' ? { originalAttachmentIntact: true, foreignAttachmentDenied: true } : {}) };
+      } finally { await observerA.close(); }
+    });
   }
+  await check('reports-account-remount-delayed-upload', 'reports', async h => {
+    const observerA = await observeAccount(h.user);
+    let release!: () => void;
+    const held = new Promise<void>(done => { release = done; });
+    let uploaded: any;
+    const requests: any[] = [];
+    try {
+      const beforeA = await h.snap(), dialog = await openEdit(h, 'reports');
+      await dialog.locator('input[type="file"]').setInputFiles({ name: 'delayed-account-a.pdf', mimeType: 'application/pdf', buffer: syntheticPdf });
+      h.p.on('request', (request: any) => { if (request.url().includes('/api/assets') || request.url().endsWith('/api/sync') && request.method() === 'POST') requests.push({ method: request.method(), path: new URL(request.url()).pathname, account: request.headers()['x-forma-account'] }); });
+      await h.p.route('**/api/assets', async (route: any) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        const response = await route.fetch(); assert.equal(response.status(), 201); uploaded = await response.json();
+        await held; await route.fulfill({ response });
+      });
+      await dialog.getByRole('button', { name: saveLabel('reports'), exact: true }).click();
+      await expect.poll(() => uploaded?.id).toBeTruthy();
+      await privatePdf(observerA, uploaded.id);
+      const b = await secondAccount(h, 'reports'); await reloadAccount(h, b.user.id);
+      await expect(h.p.getByRole('dialog')).toHaveCount(0);
+      const cleanup = h.p.waitForResponse((r: any) => r.url().endsWith('/api/assets/' + uploaded.id) && r.request().method() === 'DELETE');
+      release(); assert.equal((await cleanup).status(), 401, 'late A cleanup cannot act with B session cookies');
+      assert.deepEqual(requests.filter(r => r.method === 'POST').map(r => r.account), [h.user.id], 'the held upload is explicitly owned by A and never submits a stale report');
+      assert.deepEqual(requests.filter(r => r.method === 'DELETE').map(r => r.account), [h.user.id], 'late cleanup retains the original owner header');
+      assert.deepEqual(await http(observerA, 'GET', '/sync', h.user.id), beforeA);
+      assert.deepEqual(await http(h.ctx, 'GET', '/sync', b.user.id), b.before);
+      await privatePdf(observerA, h.item.assetId); await privatePdf(observerA, uploaded.id); await privatePdf(h.ctx, uploaded.id, 404); await privatePdf(h.ctx, b.item.assetId);
+      return { lateUploadOwner: h.user.id, cleanupStatus: 401, oldDialogUnmounted: true, bothAccountSnapshotsUnchanged: true, originalAndLateAttachmentIntact: true, foreignAttachmentDenied: true, requests };
+    } finally { release(); await observerA.close(); }
+  });
+  await check('reports-account-remount-offline-queue', 'reports', async h => {
+    const observerA = await observeAccount(h.user);
+    let observerB: any, blocked = true, assetId = '';
+    const writes: any[] = [];
+    try {
+      const beforeA = await h.snap();
+      await h.p.getByRole('button', { name: 'Enable synthetic offline storage', exact: true }).click();
+      await expect(h.p.getByRole('status', { name: 'Synthetic offline consent', exact: true })).toHaveText('enabled');
+      const dialog = await openEdit(h, 'reports');
+      await dialog.locator('input[type="file"]').setInputFiles({ name: 'queued-account-a.pdf', mimeType: 'application/pdf', buffer: syntheticPdf });
+      const uploadResponse = h.p.waitForResponse((response: any) => response.url().endsWith('/api/assets') && response.request().method() === 'POST' && response.status() === 201);
+      await h.p.route('**/api/sync', (route: any) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        writes.push({ account: route.request().headers()['x-forma-account'], mutationId: route.request().postDataJSON().mutationId });
+        return blocked ? route.abort('failed') : route.continue();
+      });
+      await dialog.getByRole('button', { name: saveLabel('reports'), exact: true }).click(); await expect(dialog).toHaveCount(0);
+      assetId = (await (await uploadResponse).json()).id;
+      await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('pending 1');
+      const queuedA = await cachedAccount(h.p, h.user.id);
+      assert.ok(assetId); assert.equal(queuedA.user.id, h.user.id); assert.equal(queuedA.queue.length, 1);
+      assert.equal(queuedA.queue[0].changes[0].value.assetId, assetId);
+      assert.deepEqual(await http(observerA, 'GET', '/sync', h.user.id), beforeA, 'aborted queue has not reached the server');
+      const b = await secondAccount(h, 'reports'); observerB = await observeAccount(b.user);
+      await reloadAccount(h, b.user.id);
+      await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
+      await expect(h.p.getByRole('status', { name: 'Synthetic offline consent', exact: true })).toHaveText('disabled');
+      const countBeforeBRetry = writes.length;
+      const refreshedB = h.p.waitForResponse((r: any) => r.url().endsWith('/api/sync') && r.request().method() === 'GET');
+      await h.p.getByRole('button', { name: 'Retry queued sync', exact: true }).click(); await refreshedB;
+      assert.equal(writes.length, countBeforeBRetry, 'B retry cannot drain A outbox');
+      assert.deepEqual((await cachedAccount(h.p, h.user.id)).queue, queuedA.queue, 'A durable queue remains unchanged during B use');
+      assert.equal(await cachedAccount(h.p, b.user.id), undefined, 'A consent does not create a B cache');
+      assert.deepEqual(await http(h.ctx, 'GET', '/sync', b.user.id), b.before);
+      await privatePdf(observerA, h.item.assetId); await privatePdf(observerA, assetId); await privatePdf(h.ctx, assetId, 404); await privatePdf(h.ctx, b.item.assetId);
+      // Restore only this synthetic context's A cookie, then remount and replay its exact stored mutation.
+      await h.ctx.clearCookies(); await h.ctx.addCookies((await observerA.storageState()).cookies);
+      await reloadAccount(h, h.user.id);
+      await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('pending 1');
+      blocked = false; await h.p.getByRole('button', { name: 'Retry queued sync', exact: true }).click();
+      await expect(h.p.getByRole('status', { name: 'Synthetic sync status' })).toHaveText('synced');
+      assert.ok(writes.length > countBeforeBRetry); assert.ok(writes.every(write => write.account === h.user.id && write.mutationId === queuedA.queue[0].mutationId), 'original owner and exact mutation identity survive remount');
+      const actualA = await h.snap(); assert.deepEqual(actualA.state.reports, [{ ...h.item, assetId, markers: [{ ...h.item.markers[0], value: '11' }] }]);
+      assert.equal((await cachedAccount(h.p, h.user.id)).queue.length, 0); await privatePdf(h.ctx, assetId);
+      assert.deepEqual(await http(observerB, 'GET', '/sync', b.user.id), b.before); await privatePdf(observerB, b.item.assetId);
+      return { originalMutation: queuedA.queue[0].mutationId, writes, bRetryWrites: 0, durableQueueRestored: true, attachmentBytesIntact: true, foreignAttachmentDenied: true, bSnapshotUnchanged: true };
+    } finally { await observerA.close(); if (observerB) await observerB.close(); }
+  });
   await check('reports-uncertain-attachment-conflict-cancel', 'reports', async h => {
     const dialog = await openEdit(h, 'reports');
     await dialog.locator('input[type="file"]').setInputFiles({ name: 'conflict-synthetic.pdf', mimeType: 'application/pdf', buffer: syntheticPdf });
