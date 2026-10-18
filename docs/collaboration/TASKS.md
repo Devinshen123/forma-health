@@ -1,3 +1,8 @@
+
+## 2026-10-18 Codex -> Claude Code current task
+
+Current task: docs/collaboration/tasks-20261018-backend.md; branch codex/forma-put-cleanup-retry-20261018. Codex /root/forma_backend_20261018 implements/diagnoses first, real Claude session 7bd94c31-1d67-4b13-85e4-b196ac699a2d then reviews serially. Read exact skill files listed in task, preserve user deletions and all previous records. New evidence on D; no push/merge/deploy/real data. This user-authorized task supersedes historical phase-only limits.
+
 # 2026-10-17 当前整合与本地启动任务
 
 用户在 Forma 前端聊天直接授权“把最新的前后端代码整合好，修复构建问题，然后启动并打开网站”。本节优先于下方已结束阶段的禁止整合/安装/启动文字；本轮由本聊天在自己的 bdd7 worktree 单独完成集成与必要修复，不创建子代理、不写其他 worktree、不改原 main、不部署公网或调用付费 AI。
