@@ -302,9 +302,15 @@ export function createApp(options: AppOptions) {
         throw new StateInputError('The AI meal must reference its genuine reviewed draft and photo');
       }
     }
+    const assetsWithNewAssociations = new Set<string>();
+    for (const collection of ['meals', 'reports'] as const) {
+      const previousAssociations = new Map<string, string | undefined>(previous[collection].map(record => [record.id, record.assetId]));
+      for (const record of state[collection]) if (record.assetId && previousAssociations.get(record.id) !== record.assetId)
+        assetsWithNewAssociations.add(record.assetId);
+    }
     for (const assetId of referencedAssets(state)) {
       const asset = store.asset(ownerId, assetId);
-      if (!asset || !store.assetBytesAvailable(asset) || (state.meals.some(meal => meal.assetId === assetId) && !asset.mime.startsWith('image/'))) {
+      if (!asset || (assetsWithNewAssociations.has(assetId) && !store.assetBytesAvailable(asset)) || (state.meals.some(meal => meal.assetId === assetId) && !asset.mime.startsWith('image/'))) {
         throw new StateInputError('An attachment is unavailable or invalid for this account');
       }
     }

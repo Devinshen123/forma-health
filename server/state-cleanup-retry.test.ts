@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import type { Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
-import type { AppState } from '../src/types';
+import type { AppState, SyncSnapshot } from '../src/types';
 import { Store } from './store';
 
 interface Account { id: string; cookie: string }
@@ -227,4 +227,54 @@ test('PUT: attachment validation under the save lock rejects a second Store dele
   assert.deepEqual((await h.request('GET', '/sync', owner)).body, syncBefore);
   assert.equal((await h.request('GET', `/assets/${candidate.id}`, owner)).status, 404);
   assert.deepEqual((await h.request('GET', `/assets/${kept.id}`, owner)).bytes, kept.bytes);
+});
+
+for (const route of ['sync', 'put'] as const) test(`${route}: existing broken references allow unrelated edits but cannot be copied or reassigned`, async t => {
+  const h = await harness(t), owner = await h.register(), old = await h.pdf(owner), candidate = await h.pdf(owner);
+  const initial = await h.snapshot(owner), existing = report(old.id);
+  assert.equal((await h.put(owner, { ...initial, state: { ...initial.state, reports: [existing] } })).status, 200);
+  h.removeBytes(owner, old.id);
+  await h.restart();
+  const snapshot = async (): Promise<SyncSnapshot> => (await h.request('GET', '/sync', owner)).body;
+  const send = (base: SyncSnapshot, state: AppState, changes: unknown[], mutationId: string = randomUUID()) => route === 'sync'
+    ? h.request('POST', '/sync', owner, { mutationId, changes })
+    : h.put(owner, { revision: base.revision, state });
+  const before = await snapshot();
+  const unrelated = { id: randomUUID(), date: '2026-10-18', name: 'Unrelated synthetic meal', type: 'lunch' as const,
+    grams: 100, referenceGrams: 100, kcal: 100, protein: 5, carbs: 10, fat: 2, source: 'manual' as const, createdAt: NOW };
+  const logged = await send(before, { ...before.state, meals: [unrelated] },
+    [{ collection: 'meals', id: unrelated.id, baseVersion: 0, kind: 'upsert', value: unrelated }]);
+  assert.equal(logged.status, 200, 'an existing broken association must not block an unrelated save');
+  const afterMeal = await snapshot();
+  assert.equal(afterMeal.revision, before.revision + 1);
+  assert.deepEqual(afterMeal.state.reports, [existing], 'the old broken reference is preserved as-is');
+  const renamed = { ...existing, name: 'Existing report edited without changing its attachment' };
+  assert.equal((await send(afterMeal, { ...afterMeal.state, reports: [renamed] },
+    [{ collection: 'reports', id: renamed.id, baseVersion: afterMeal.entityVersions[`reports:${renamed.id}`], kind: 'upsert', value: renamed }])).status, 200,
+    'other fields of the same record and attachment association remain editable');
+  const beforeCopy = await snapshot(), copied = report(old.id), copyMutation = randomUUID();
+  const copyChanges = (value: typeof copied) => [{ collection: 'reports', id: value.id, baseVersion: 0, kind: 'upsert', value }];
+  const copiedResult = await send(beforeCopy, { ...beforeCopy.state, reports: [renamed, copied] }, copyChanges(copied), copyMutation);
+  assert.equal(copiedResult.status, 400, 'a new record cannot copy the old broken asset even while the old association remains');
+  assert.deepEqual(await snapshot(), beforeCopy, 'rejecting a new association consumes neither state, versions nor revision');
+  const availableCopy = { ...copied, assetId: candidate.id };
+  assert.equal((await send(beforeCopy, { ...beforeCopy.state, reports: [renamed, availableCopy] }, copyChanges(availableCopy), copyMutation)).status, 200,
+    'the same refused mutation identity or revision remains usable with an available attachment');
+  const beforeSwap = await snapshot(), reassigned = { ...availableCopy, assetId: old.id }, swapMutation = randomUUID();
+  const swapChanges = (value: typeof availableCopy) => [{ collection: 'reports', id: value.id,
+    baseVersion: beforeSwap.entityVersions[`reports:${value.id}`], kind: 'upsert', value }];
+  assert.equal((await send(beforeSwap, { ...beforeSwap.state, reports: [renamed, reassigned] }, swapChanges(reassigned), swapMutation)).status, 400,
+    'an existing different record cannot switch to the broken asset');
+  assert.deepEqual(await snapshot(), beforeSwap);
+  const corrected = { ...availableCopy, name: 'Corrected without the refused reassignment' };
+  assert.equal((await send(beforeSwap, { ...beforeSwap.state, reports: [renamed, corrected] }, swapChanges(corrected), swapMutation)).status, 200);
+  const beforeRemoval = await snapshot();
+  assert.equal((await send(beforeRemoval, { ...beforeRemoval.state, reports: [corrected] },
+    [{ collection: 'reports', id: renamed.id, baseVersion: beforeRemoval.entityVersions[`reports:${renamed.id}`], kind: 'delete' }])).status, 200,
+    'the user can remove the old broken record without a byte-repair policy');
+  assert.equal((await h.request('GET', `/assets/${old.id}`, owner)).status, 404, 'final removal retires its metadata through exact cleanup');
+  const latest = await snapshot();
+  assert.deepEqual(latest.state.reports, [corrected]);
+  assert.deepEqual(latest.state.meals, [unrelated]);
+  assert.deepEqual((await h.request('GET', `/assets/${candidate.id}`, owner)).bytes, candidate.bytes);
 });
