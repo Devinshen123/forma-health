@@ -5,6 +5,8 @@ import { resolve, join } from 'node:path';
 import type { Server } from 'node:http';
 import { chromium, expect, type BrowserContext, type Page } from '@playwright/test';
 import { createApp } from '../../server/app';
+import { catalog } from '../../src/catalog/exercises';
+import muscleIndex from '../../src/catalog/opengym-muscles.json';
 import { openGymExercises } from '../../src/catalog/opengym';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -14,7 +16,7 @@ const out = resolve(output);
 await mkdir(out, { recursive: true });
 const fixture = createApp({ dataDir: join(out, 'synthetic-' + randomUUID()), distDir: join(root, 'dist'), secureCookies: false, ai: {} });
 // Use an existing trusted local origin; never relax CSRF for a random test port.
-// Port 5173 must be free. The persistent built Forma site may keep using 3001.
+// Port 5173 must be free. The lead stops only its own preview before this suite.
 const server: Server = fixture.app.listen(5173, '127.0.0.1');
 await new Promise<void>((done, reject) => { server.once('listening', done); server.once('error', reject); });
 const address = server.address(); assert.ok(address && typeof address !== 'string');
@@ -51,10 +53,13 @@ async function account(width = 1440) {
   });
   page.on('console', message => { if (message.type() === 'error' || message.type() === 'warning') consoleErrors.push(message.text()); });
   await page.goto(base);
+  assert.equal(new URL(page.url()).origin, base);
+  await expect(page).toHaveTitle(/Forma/i);
   await expect(page.locator('.sync-summary')).toContainText('Records synced');
   if (width === 1440) await page.getByRole('navigation', { name: 'Main navigation', exact: true }).getByRole('button', { name: 'Training', exact: true }).click();
   else await page.getByRole('navigation', { name: 'Mobile navigation', exact: true }).getByRole('button', { name: 'Training', exact: true }).click();
   await page.getByRole('button', { name: 'Library', exact: true }).click();
+  await expect(page.locator('vite-error-overlay')).toHaveCount(0);
   const snapshot = async () => {
     const response = await context.request.get(base + '/api/sync', { headers: { 'X-Forma-Account': user.id } });
     assert.equal(response.status(), 200); return response.json();
@@ -92,31 +97,117 @@ async function play(video: ReturnType<Page['locator']>) {
   return metadata;
 }
 
+const sourceMuscles = muscleIndex as Record<string, { primary: string[]; secondary: string[] }>;
+const metadataFor = (sourceId: string) => sourceMuscles[sourceId];
+const expectedMuscleCount = (key: string) => openGymExercises.filter(action => {
+  const metadata = metadataFor(action.sourceId!);
+  return [...metadata.primary, ...metadata.secondary].includes(key);
+}).length;
+
+async function expectResults(page: Page, count: number) {
+  await expect(page.getByTestId('exercise-results')).toContainText(`${count.toLocaleString('en-US')} results`);
+}
+
+async function maskedScreenshot(page: Page, filename: string) {
+  await page.screenshot({ path: join(out, filename), mask: [page.locator('video'), page.locator('.exercise-preview img')], maskColor: '#f7f8fa', animations: 'disabled' });
+}
+
 let context: BrowserContext | undefined;
 try {
   const desktop = await account(); context = desktop.context;
   const { page } = desktop;
-  await check('catalogue-count-source-filters-and-pagination', async () => {
-    await expect(page.getByRole('status').filter({ hasText: '6,516 exercises' })).toContainText('5,632 with licensed animations');
+  await check('animation-only-catalogue-keeps-legacy-identities-and-removes-source-controls', async () => {
+    await expect(page.getByRole('status').filter({ hasText: '5,632 animated exercises' })).toBeVisible();
+    assert.equal(catalog.filter(action => action.source !== 'opengym').length, 884, 'old record identities remain resolvable outside the selection UI');
+    assert.ok(catalog.find(action => action.id === 'forma-squat'));
+    await expect(page.getByLabel('Exercise source', { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel('Only exercises with animations or demonstrations', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Free Exercise DB', { exact: false })).toHaveCount(0);
     await expect(page.locator('video')).toHaveCount(0);
-    await page.getByLabel('Exercise source', { exact: true }).selectOption('opengym');
-    await expect(page.getByText('5,632 results', { exact: false })).toBeVisible();
+    await expectResults(page, 5632);
     await expect(page.locator('[data-exercise-id]')).toHaveCount(12);
+    assert.ok((await page.locator('[data-exercise-id]').evaluateAll(cards => cards.map(card => card.getAttribute('data-exercise-id')))).every(id => id?.startsWith('opengym-')));
+    await expect(page.locator('[data-exercise-id] .exercise-preview img')).toHaveCount(12);
     const first = await page.locator('[data-exercise-id]').first().getAttribute('data-exercise-id');
     await page.getByRole('button', { name: 'Next page', exact: true }).click();
     assert.notEqual(await page.locator('[data-exercise-id]').first().getAttribute('data-exercise-id'), first);
-    await page.getByRole('button', { name: 'Previous page', exact: true }).click();
-    await page.getByLabel('Primary muscle', { exact: true }).selectOption('chest');
+    await page.getByLabel('Muscle group', { exact: true }).selectOption('chest');
+    await expect(page.getByRole('button', { name: 'Previous page', exact: true })).toBeDisabled();
+    await expectResults(page, 905);
     await page.getByLabel('Equipment', { exact: true }).selectOption('barbell');
     assert.ok(await page.locator('[data-exercise-id]').count() > 0);
     await page.getByLabel('Exercise category', { exact: true }).selectOption('strength');
     assert.ok(await page.locator('[data-exercise-id]').count() > 0);
-    await page.getByLabel('Primary muscle', { exact: true }).selectOption('');
-    await page.getByLabel('Equipment', { exact: true }).selectOption('');
-    await page.getByLabel('Exercise category', { exact: true }).selectOption('');
+    await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+    await expectResults(page, 5632);
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ path: join(out, 'desktop-library.png'), mask: [page.locator('video'), page.locator('.exercise-preview img')], maskColor: '#f7f8fa', animations: 'disabled' });
-    return { count: 5632, pageSize: 12, combinedFilters: true };
+    await maskedScreenshot(page, 'desktop-library.png');
+    return { visibleCount: 5632, historicalIdentitiesRetained: 884, pageSize: 12, sourceControlsRemoved: true, filterResetsPagination: true };
+  });
+  await check('body-map-primary-secondary-counts-keyboard-clear-and-bilingual-state', async () => {
+    const toggle = page.getByRole('button', { name: 'Explore muscles', exact: true });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    const map = page.getByRole('region', { name: 'Body muscle map', exact: true });
+    await expect(map.getByText('Front', { exact: true })).toBeVisible();
+    await expect(map.getByText('Back', { exact: true })).toBeVisible();
+    const chest = map.locator('g[role="button"][data-muscle-key="chest"]').first();
+    await expect(chest).toHaveAttribute('data-muscle-count', '905');
+    await chest.locator('path').first().click();
+    await expect(chest).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByLabel('Muscle group', { exact: true })).toHaveValue('chest');
+    await expectResults(page, expectedMuscleCount('chest'));
+    for (const id of await page.locator('[data-exercise-id]').evaluateAll(cards => cards.map(card => card.getAttribute('data-exercise-id')!))) {
+      const metadata = metadataFor(id.slice('opengym-'.length));
+      assert.ok([...metadata.primary, ...metadata.secondary].includes('chest'));
+    }
+    const primary = openGymExercises.find(action => metadataFor(action.sourceId!).primary.includes('chest'))!;
+    const secondary = openGymExercises.find(action => {
+      const metadata = metadataFor(action.sourceId!);
+      return !metadata.primary.includes('chest') && metadata.secondary.includes('chest');
+    })!;
+    for (const action of [primary, secondary]) {
+      await page.getByLabel('Search exercises', { exact: true }).fill(action.sourceId!);
+      await expect(page.locator(`[data-exercise-id="${action.id}"]`)).toBeVisible();
+    }
+    await page.getByLabel('Search exercises', { exact: true }).fill('');
+    await page.getByRole('button', { name: 'Clear muscle filter', exact: true }).click();
+    await expect(page.getByLabel('Muscle group', { exact: true })).toHaveValue('');
+    await expectResults(page, 5632);
+    const trapezius = map.locator('button.muscle-explorer__chip[data-muscle-key="trapezius"]');
+    await trapezius.focus();
+    await trapezius.press('Enter');
+    await expect(trapezius).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByLabel('Muscle group', { exact: true })).toHaveValue('trapezius');
+    await expectResults(page, 525);
+    await page.getByLabel('Muscle group', { exact: true }).selectOption('chest');
+    await expect(chest).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: '切换简体中文', exact: true }).click();
+    await expect(page.getByLabel('肌群', { exact: true })).toHaveValue('chest');
+    const zhMap = page.getByRole('region', { name: '人体肌群图', exact: true });
+    await expect(zhMap.locator('g[role="button"][data-muscle-key="chest"]').first()).toHaveAccessibleName('胸部 · 905 个动作');
+    await expect(zhMap.locator('button.muscle-explorer__chip[data-muscle-key="chest"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await maskedScreenshot(page, 'desktop-muscle-explorer.png');
+    await page.getByRole('button', { name: '清除筛选', exact: true }).click();
+    await expect(page.getByLabel('肌群', { exact: true })).toHaveValue('');
+    await expect(zhMap.locator('g[role="button"][data-muscle-key="chest"]').first()).toHaveAttribute('aria-pressed', 'false');
+    await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
+    await page.getByRole('button', { name: 'Explore muscles', exact: true }).click();
+    await expect(map).toHaveCount(0);
+    return { chestCount: 905, primaryAndSecondaryMatch: [primary.id, secondary.id], keyboardSelection: true, sharedDropdownState: true, bilingualSelectionPreserved: true };
+  });
+  await check('empty-search-recovers-and-searching-a-later-page-resets-pagination', async () => {
+    await page.getByRole('button', { name: 'Next page', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Previous page', exact: true })).toBeEnabled();
+    await page.getByLabel('Search exercises', { exact: true }).fill('no-such-synthetic-action-20261018');
+    await expect(page.getByText('No matching exercises. Adjust the filters.', { exact: true })).toBeVisible();
+    await expect(page.locator('[data-exercise-id]')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+    await expect(page.getByLabel('Search exercises', { exact: true })).toHaveValue('');
+    await expectResults(page, 5632);
+    await expect(page.getByRole('button', { name: 'Previous page', exact: true })).toBeDisabled();
+    return { noMatches: true, clearRestoresFullLibrary: true, paginationReset: true };
   });
   const samples = [openGymExercises[0], openGymExercises[Math.floor(openGymExercises.length / 2)], openGymExercises.at(-1)!];
   await check('first-middle-last-animations-decode-play-and-pause', async () => {
@@ -188,20 +279,40 @@ try {
   await context.close(); context = undefined;
   await check('mobile-library-keeps-video-controls-visible-without-overflow', async () => {
     const mobile = await account(390); context = mobile.context;
-    await mobile.page.getByLabel('Exercise source', { exact: true }).selectOption('opengym');
+    await mobile.page.getByRole('button', { name: 'Explore muscles', exact: true }).click();
+    const map = mobile.page.getByRole('region', { name: 'Body muscle map', exact: true });
+    const figures = map.locator('figure');
+    await expect(figures).toHaveCount(2);
+    for (let index = 0; index < 2; index++) {
+      const box = await figures.nth(index).boundingBox();
+      assert.ok(box && box.x >= 0 && box.x + box.width <= 391, 'both body diagrams fit the mobile width');
+    }
+    const chest = map.locator('button.muscle-explorer__chip[data-muscle-key="chest"]');
+    await chest.scrollIntoViewIfNeeded();
+    await chest.click();
+    await expect(mobile.page.getByLabel('Muscle group', { exact: true })).toHaveValue('chest');
+    await expectResults(mobile.page, 905);
+    await chest.focus();
+    await chest.press('Space');
+    await expect(chest).toHaveAttribute('aria-pressed', 'false');
+    await expect(mobile.page.getByLabel('Muscle group', { exact: true })).toHaveValue('');
+    const hamstring = map.locator('g[role="button"][data-muscle-key="hamstring"]').first();
+    await hamstring.locator('path').first().click();
+    await expect(mobile.page.getByLabel('Muscle group', { exact: true })).toHaveValue('hamstring');
+    await expectResults(mobile.page, expectedMuscleCount('hamstring'));
+    assert.ok(await mobile.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    await mobile.page.evaluate(() => window.scrollTo(0, 0));
+    await maskedScreenshot(mobile.page, 'mobile-muscle-explorer.png');
+    await mobile.page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+    await mobile.page.getByRole('button', { name: 'Explore muscles', exact: true }).click();
     const card = await select(mobile.page, '0001');
     await play(card.locator('video'));
     assert.ok(await mobile.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     await mobile.page.evaluate(() => window.scrollTo(0, 0));
-    await mobile.page.screenshot({ path: join(out, 'mobile-library.png'), mask: [mobile.page.locator('video'), mobile.page.locator('.exercise-preview img')], maskColor: '#f7f8fa', animations: 'disabled' });
-    await mobile.page.getByLabel('Exercise source', { exact: true }).selectOption('forma');
-    await mobile.page.getByLabel('Search exercises', { exact: true }).fill('');
-    await expect(mobile.page.locator('[data-exercise-id]')).toHaveCount(8);
-    await mobile.page.locator('[data-exercise-id="forma-squat"]').getByRole('button', { name: 'View exercise', exact: true }).click();
-    await expect(mobile.page.getByRole('region', { name: 'Original movement demonstration', exact: true })).toBeVisible();
-    await mobile.page.getByLabel('Exercise source', { exact: true }).selectOption('free-exercise-db');
-    await expect(mobile.page.getByText('876 results', { exact: false })).toBeVisible();
-    return { viewport: '390x844', noOverflow: true, originalEightPreserved: true, original876Preserved: true };
+    await maskedScreenshot(mobile.page, 'mobile-library.png');
+    await expect(mobile.page.getByLabel('Exercise source', { exact: true })).toHaveCount(0);
+    await expect(mobile.page.getByRole('region', { name: 'Original movement demonstration', exact: true })).toHaveCount(0);
+    return { viewport: '390x844', reducedMotion: true, noOverflow: true, frontAndBackFit: true, pointerAndKeyboardSelection: true, actualAnimationDecoded: true };
   });
 } finally {
   if (context) await context.close();

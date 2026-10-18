@@ -49,12 +49,13 @@ export const setLogsSchema = z.array(setLogSchema).max(100).superRefine((sets, c
 export const exerciseSchema = z.object({
   name: title,
   sets: z.number().int().min(1).max(100),
-  reps: z.number().int().min(0).max(1000),
-  weight: z.number().min(0).max(2000),
+  reps: z.number().int().min(0).max(1000).nullable(),
+  weight: z.number().min(0).max(2000).nullable(),
   id: idSchema.optional(), exerciseId: exerciseId.optional(),
   primaryMuscles: muscles.optional(), setLogs: setLogsSchema.optional(),
   supersetGroup: supersetGroup.optional(), restSeconds: restSeconds.optional(),
-}).strict().refine(value => value.setLogs !== undefined || value.reps >= 1, 'Legacy summaries require recorded positive reps');
+}).strict().refine(value => value.setLogs !== undefined || (value.reps !== null && value.reps >= 1 && value.weight !== null), 'Legacy summaries require recorded positive reps and load')
+  .refine(value => (value.reps !== null && value.weight !== null) || value.setLogs?.some(set => set.completed), 'Missing summaries require actual completed set details');
 
 const uniqueExerciseAndSetIds = (exercises: { id?: string; setLogs?: { id: string }[] }[], ctx: z.RefinementCtx) => {
   const ids = new Set<string>();
@@ -69,7 +70,7 @@ const uniqueExerciseAndSetIds = (exercises: { id?: string; setLogs?: { id: strin
 
 export const workoutSchema = z.object({
   id: idSchema, date: dateSchema, name: title,
-  duration: z.number().int().min(1).max(1440), rpe,
+  duration: z.number().positive().max(1440), rpe,
   exercises: z.array(exerciseSchema).min(1).max(100), notes, createdAt: instant,
   routineId: idSchema.optional(), source: z.enum(['manual', 'strong', 'hevy', 'fitnotes', 'forma']).optional(),
   importFingerprint: z.string().min(1).max(160).optional(),

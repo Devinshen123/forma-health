@@ -30,6 +30,7 @@ import { SyncEngine, type SyncStatus } from "./sync/engine";
 import { readCached } from "./sync/storage";
 import { assertWriteBinding } from "./sync/lifecycle";
 import { Modal } from "./components/Modal";
+import { clearWorkbenchCache } from "./training/workbench-storage";
 const navigation = [
   { page: "today", zh: "今日", en: "Today", Icon: Home },
   { page: "nutrition", zh: "饮食", en: "Nutrition", Icon: Utensils },
@@ -229,10 +230,12 @@ export default function App() {
     resetSession();
     localStorage.setItem("forma-session-change", crypto.randomUUID());
   }
-  function accountDeleted() {
+  async function accountDeleted() {
     if(writeBinding.epoch!==sessionEpoch.current)return;
+    const deletedAccount = writeBinding.accountId;
     resetSession(true,true);
     localStorage.setItem("forma-session-change", crypto.randomUUID());
+    if(deletedAccount) await clearWorkbenchCache(deletedAccount);
   }
   useEffect(() => {
     const changed = (event: StorageEvent) => {
@@ -255,7 +258,7 @@ export default function App() {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
-  const props = { state, lang, save, notify:(a:string,b?:string)=>{if(writeBinding.epoch===sessionEpoch.current)notify(a,b);}, demo, accountId:user?.id, onUnsavedChange:(dirty:boolean,busy:boolean)=>{if(writeBinding.epoch===sessionEpoch.current)setUnsaved(current=>current.dirty===dirty&&current.busy===busy?current:{dirty,busy});} };
+  const props = { state, lang, save, notify:(a:string,b?:string)=>{if(writeBinding.epoch===sessionEpoch.current)notify(a,b);}, demo, accountId:user?.id, onTrainingRefresh:async()=>{if(writeBinding.epoch===sessionEpoch.current && writeBinding.accountId===sync.current?.user.id) await writeBinding.engine?.refresh();}, onUnsavedChange:(dirty:boolean,busy:boolean)=>{if(writeBinding.epoch===sessionEpoch.current)setUnsaved(current=>current.dirty===dirty&&current.busy===busy?current:{dirty,busy});} };
   if (loading)
     return (
       <div className="loading-screen">

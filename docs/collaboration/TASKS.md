@@ -1,4 +1,29 @@
-# 2026-10-18 openGym 授权动作库导入（当前任务）
+# 2026-10-18 动画动作库与探索肌肉（当前任务）
+
+最新用户进一步要求将 openGym 所有训练功能放入 Forma，并明确允许本机真实 Claude Code 合作。采用授权前端自托管子应用 `/training-workbench/`，复用 Forma 会话并独立保存完整训练工作台状态；不是链接或反代 localhost:8080。原生训练保留，已完成且兼容的数据确定性投影供 Forma 汇总，不能为未知值造0/时长。原生移动能力、客户端供应商密钥/聊天教练、账户替换不作为网站已实现能力；既有 Forma 安全/事实规则继续适用。
+
+WB所有权追加：实际 Claude Code 已结束两轮前端工作（真实CLI exit0），`vendor/opengym/` 与 `scripts/build-training-workbench.mjs` 交回lead，只作集成缺陷修复；Claude自己的状态保留其交付记录。backend（当前muscle_ui agent）独占server（不含投影两文件）；projection（当前qa agent）独占server/training-workbench-projection.ts及对应test；QA另独占tests/browser/training-workbench.mts。lead独占根build配置、Training入口、Workbench框架及文档。来源只读，不读真实data/.env，不提交密钥或本机数据库。root负责依赖安装及构建串行时段。
+
+| ID | owner | 状态 | 文件 / 依赖 | 验收 |
+|---|---|---|---|---|
+| WB-01 | 实际 Claude Code → lead | done | vendor/opengym、build-training-workbench.mjs | 两轮真实CLI exit0；84文件构建成功，适配层最终25/25、媒体32/32；会话与存储隔离、禁独立SW/未配置能力 |
+| WB-02 | backend → lead | done | server独占范围 | 专项16/16；root最终255/255；cookie/header/Origin、CAS/幂等、媒体隔离、导出删除、投影原子保存通过 |
+| WB-03 | projection → lead | done | server/training-workbench-projection.ts/test | 专项11/11；真实浏览器30kg×6投影通过；缺失null/小数时长、warnings及原文保留 |
+| WB-04 | lead | done | Training入口/构建集成/合成端到端 | 真实Claude回执、最终工作台9/9无非预期错误；计划/训练/围度/体重/照片/备份/账号及断网会话门禁、390px通过 |
+
+上述角色已完成并冻结写入，交回lead执行最终精确集成提交；不将原始日志中的harness定位/初始化失败掩盖为产品已通过。最终有效证据为workbench-20261018/browser-12及native-library-final，Safari实机、完整进阶组合、ZIP导入/相机不在浏览器结论内。
+
+用户要求移除动作来源筛选及旧图片/示意动作，并采用本地 openGym 动作库的探索肌肉功能，随后明确“我已经得到了opengym的所有授权”。当前聊天 lead 负责整合，继续使用已授权的 5,632 个动画动作；旧目录 ID 只保留给既有训练记录，不展示在选动作界面。允许为本次功能复用授权的必要代码/图形，保留来源归属；不修改来源目录。
+
+本轮所有权：lead 独占 Library.tsx、src/styles.css、文档及服务启动；muscle_ui 仅写 src/components/MuscleExplorer.tsx、MuscleExplorer.css、src/catalog/muscle-explorer.ts、src/catalog/body-paths.ts 和自己的状态；qa 仅写 tests/browser/opengym-catalog.mts、tests/muscle-explorer.test.ts 和自己的状态；inspect_library 只读来源。各写入路径互不重叠，不改后端或数据库。
+
+| ID | owner | 状态 | 文件 / 依赖 | 验收 |
+|---|---|---|---|---|
+| MUS-01 | lead | done | features/training/Library.tsx、styles.css | 来源/旧示意/文字动作选项移除，默认仅5632动画；既有历史ID保留 |
+| MUS-02 | muscle_ui → lead | done | components/MuscleExplorer.tsx/.css、catalog/muscle-explorer.ts | 正背面18区人体图、主次肌群/权重去零、键盘/双语/手机适配；MIT归属保留 |
+| MUS-03 | qa / lead | done | 指定tests、外部截图、最终集成 | 完整build与255测试通过；原生目录8/8，人体筛选/重置/分页/加入计划/手机/旧记录兼容通过 |
+
+# 2026-10-18 openGym 授权动作库导入（历史）
 
 用户直接要求把 openGym 的 5,632 个动画动作加入 Forma，并在本聊天明确回复“是的”，确认授权覆盖 Gym visual 动画/图片及在 Forma 中复制、展示和随网站分发。本轮只依该明确范围导入动作文本及素材；不复制 openGym 应用代码、UI 或数据模型，不写 reference-sources，不赋予其他人任何新素材许可。该最新用户指令覆盖本项目此前对这些动作文本/素材的禁止采用规则，仅限本次指定导入。
 

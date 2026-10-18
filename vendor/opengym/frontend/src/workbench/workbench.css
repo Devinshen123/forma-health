@@ -1,0 +1,27 @@
+/* Forma training workbench: Forma's brand accent and the few screens of its own. */
+
+/* Forma's Chinese typography uses natural spacing, including inherited upstream headings. */
+html:lang(zh) body, html:lang(zh) body * { letter-spacing: normal !important; }
+
+/* Forma's lime (#c5f467) as a preset accent, the default of every new copy (lib/accent.js). In
+   the light theme a filled button keeps the lime with dark ink; text and lines in the accent use
+   the darker olive, since the lime itself is too light to read on white. */
+:root[data-accent="forma"] { --acc:#c5f467; --acc-2:#7fa82a; --on-acc:#171b20 }
+:root[data-theme="light"][data-accent="forma"] { --acc:#5f8f12; --acc-2:#4a720c; --on-acc:#ffffff }
+
+.forma-gate { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 22vh 20px 40px; }
+.forma-gate-card { max-width: 440px; width: 100%; text-align: center; }
+.forma-gate-brand { font-weight: 700; letter-spacing: .02em; color: var(--acc); margin-bottom: 10px; }
+.forma-gate h1 { font-size: 22px; line-height: 1.3; margin: 0 0 10px; color: var(--label); }
+.forma-gate p { margin: 0 0 20px; color: var(--label-2); line-height: 1.55; }
+.forma-gate-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.forma-gate-btn { min-height: 44px; padding: 0 18px; border-radius: 12px; border: var(--hair, 1px) solid var(--sep, #d1d5db); background: var(--bg-2, transparent); color: var(--label); font: inherit; font-weight: 600; cursor: pointer; }
+.forma-gate-btn.primary { background: var(--acc); color: var(--on-acc); border-color: transparent; }
+.forma-gate-btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* The media play/pause/retry hint is a button (components/Media.jsx); it keeps openGym's pill look. */
+.exmedia button.gifhint { border: 0; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+.exmedia button.gifhint:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* A note the workbench adds where openGym's own wording promised more than Forma does. */
+.forma-note { font-size: 13px; line-height: 1.45; color: var(--label-2); }

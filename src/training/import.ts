@@ -199,7 +199,7 @@ function importForma(text: string, options: ImportOptions): ImportPreview {
         for (const muscle of exercise.primaryMuscles) textField(muscle, 160);
       }
       const name = textField(exercise.name), identified = (typeof exercise.exerciseId === 'string' ? options.catalog.find(item => item.id === exercise.exerciseId) : undefined) ?? catalogMatch(name, options.catalog);
-      const parsed: Exercise = { id: uuid(), name, sets: jsonNumber(exercise.sets, 1, 100, true)!, reps: jsonNumber(exercise.reps, 0, 1000, true)!, weight: jsonNumber(exercise.weight, 0, 2000)!, ...(identified ? { exerciseId: identified.id, primaryMuscles: [...identified.primaryMuscles] } : {}) };
+      const parsed: Exercise = { id: uuid(), name, sets: jsonNumber(exercise.sets, 1, 100, true)!, reps: jsonNumber(exercise.reps, 0, 1000, true, true), weight: jsonNumber(exercise.weight, 0, 2000, false, true), ...(identified ? { exerciseId: identified.id, primaryMuscles: [...identified.primaryMuscles] } : {}) };
       if (exercise.supersetGroup !== undefined) parsed.supersetGroup = exercise.supersetGroup === null ? null : textField(exercise.supersetGroup, 50);
       if (exercise.restSeconds !== undefined) parsed.restSeconds = jsonNumber(exercise.restSeconds, 0, 7200, true)!;
       if (exercise.setLogs !== undefined) {
@@ -228,11 +228,12 @@ function importForma(text: string, options: ImportOptions): ImportPreview {
           if (set.weight !== null && parent.weight !== null && set.weight > parent.weight) invalid('递减组不能增加重量 / Drop set load exceeds parent');
         }
       }
-      if (parsed.setLogs === undefined && parsed.reps < 1) invalid('旧摘要需要正次数 / Legacy summary needs positive reps');
+      if (parsed.setLogs === undefined && (parsed.reps === null || parsed.reps < 1 || parsed.weight === null)) invalid('旧摘要需要正次数和明确负重 / Legacy summary needs positive reps and recorded load');
+      if ((parsed.reps === null || parsed.weight === null) && !parsed.setLogs?.some(set => set.completed)) invalid('缺失摘要必须有实际完成组 / Missing summaries require completed set details');
       return parsed;
     });
     if (!exercises.length) invalid('训练至少需要一个动作 / Workout requires an exercise');
-    return { id: uuid(), date, name: textField(entry.name), duration: jsonNumber(entry.duration, 0, 1440, true)!, rpe: jsonNumber(entry.rpe, 1, 10, false, true), exercises, notes: textField(entry.notes, 10000, true), createdAt, source: 'forma' };
+    return { id: uuid(), date, name: textField(entry.name), duration: jsonNumber(entry.duration, Number.MIN_VALUE, 1440)!, rpe: jsonNumber(entry.rpe, 1, 10, false, true), exercises, notes: textField(entry.notes, 10000, true), createdAt, source: 'forma' };
   });
   return finalize(workouts, options.existing);
 }

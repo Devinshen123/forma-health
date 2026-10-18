@@ -22,6 +22,8 @@ import type { AppState, User, SyncMutation } from "../src/types";
 import { syncMutationSchema, SyncConflict } from './sync';
 import { FoodPhotoService, type FoodPhotoAiConfig } from './food-photo';
 import { AiError } from './ai-errors';
+import { trainingWorkbenchRouter } from './training-workbench';
+import { WorkbenchConflict, WorkbenchError } from './training-workbench-data';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -227,6 +229,12 @@ export function createApp(options: AppOptions) {
   // Browser images and download navigation cannot attach custom headers. The
   // read route still resolves each attachment by its session-derived owner.
   const assetReadAuth = authenticate(false);
+  app.use('/training-workbench', (_req, res, next) => {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+    next();
+  });
+  app.use('/training-workbench/api', trainingWorkbenchRouter(store, auth, secureCookies, localOrigins));
   const issueSession = (req: Request, res: Response, user: User) => {
     const previous = sessionOf(req);
     if (previous) store.deleteSession(previous.token);
@@ -431,6 +439,7 @@ export function createApp(options: AppOptions) {
       aiDrafts: store.aiDrafts(account.id),
       aiUsage: store.aiUsage(account.id),
       aiReservations: store.aiReservations(account.id),
+      trainingWorkbench: store.exportWorkbench(account.id),
     });
   });
   app.delete("/api/account", auth, rateLimit, async (req, res) => {
@@ -448,11 +457,18 @@ export function createApp(options: AppOptions) {
   );
   if (options.distDir && existsSync(join(options.distDir, "index.html"))) {
     const dist = resolve(options.distDir);
+    const workbenchDist = join(dist, 'training-workbench');
+    if (existsSync(join(workbenchDist, 'index.html'))) {
+      app.use('/training-workbench', express.static(workbenchDist, { dotfiles: 'deny', index: 'index.html' }));
+      app.get('/training-workbench/{*path}', (_req, res) => res.status(404).send('Training resource not found'));
+    }
     app.use(express.static(dist, { dotfiles: "deny", index: false }));
     app.get("/{*path}", (_req, res) => res.sendFile("index.html", { root: dist }));
   }
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
+      if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
       if (error instanceof StateInputError) return res.status(400).json({ error: error.message });
       if (error instanceof AiError) return res.status(error.status).json({ error: error.message, code: error.code });

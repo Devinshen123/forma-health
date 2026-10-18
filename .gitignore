@@ -10,4 +10,5 @@ playwright-report/
 
 # Separately licensed exercise media: stage from the user's authorized local pack.
 public/exercise-media/opengym/
+vendor/opengym/.wb-tmp/
 docs/collaboration/*response.json

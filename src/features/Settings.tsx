@@ -26,7 +26,7 @@ export default function Settings({
 }: {
   user: User | null;
   onLogout: () => Promise<void>;
-  onDeleted: () => void;
+  onDeleted: () => Promise<void>;
   onCreate: () => void;
 } & FeatureProps) {
   const zh = lang === "zh";
@@ -93,7 +93,7 @@ export default function Settings({
       });
       if (!mounted.current) return;
       setDeleting(false);
-      onDeleted();
+      await onDeleted();
       notify("账户和本机记录已删除。", "Account and local records deleted.");
     } catch (e) {
       if (mounted.current) notify(e instanceof Error ? e.message : String(e));
@@ -249,8 +249,8 @@ export default function Settings({
         </div>
         <p className="hint">
           {zh
-            ? "请先完成同步，导出不包含尚未同步的本机改动。JSON 包含记录和附件引用，不包含照片、报告图片或 PDF 文件本体，不能作为完整附件备份。请在删除账户前另行保存所需文件。导出包含个人数据，请妥善保存；删除账户会同时删除记录、上传文件与登录会话。"
-            : "Finish syncing first; unsynced changes are not included. JSON includes records and attachment references, but not photo, report-image or PDF files. It is not a complete attachment backup. Save any files you need separately before deleting the account. Keep exports private; account deletion removes records, uploaded files and sessions."}
+            ? "请先完成同步，导出不包含尚未同步的本机改动。JSON 包含训练工作台原始记录及其已上传媒体；饮食照片、报告图片和 PDF 仍仅含附件引用，请另行保存所需文件。导出包含个人数据，请妥善保存；删除账户会同时删除记录、上传文件与登录会话。"
+            : "Finish syncing first; unsynced changes are not included. JSON includes original training-workbench records and their uploaded media. Food photos, report images and PDFs remain attachment references; save those files separately. Keep exports private; account deletion removes records, uploaded files and sessions."}
         </p>
       </section>
       {deleting && (

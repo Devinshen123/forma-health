@@ -93,7 +93,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
       workout.exercises.reduce((total, exercise) => total + exercise.sets, 0),
     0,
   );
-  const showWeight = (weight: number) =>
+  const showWeight = (weight: number | null) => weight === null ? '—' :
     Math.round(weight * (imperial ? KG_TO_LB : 1) * 100) / 100;
   const open = (workout?: Workout) => {
     editRecord.current = new RecordDraft(workout);
@@ -111,8 +111,8 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
               key: uid(),
               name: exercise.name,
               sets: String(exercise.sets),
-              reps: String(exercise.reps),
-              weight: String(
+              reps: exercise.reps === null ? '' : String(exercise.reps),
+              weight: exercise.weight === null ? '' : String(
                 Math.round(
                   exercise.weight * (imperial ? KG_TO_LB : 1) * 100000,
                 ) / 100000,
@@ -161,7 +161,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
     }
     const duration = Number(draft.duration),
       rpe = draft.rpe.trim() ? Number(draft.rpe) : null;
-    const exercises: Exercise[] = draft.exercises.map((exercise) => ({
+    const exercises = draft.exercises.map((exercise) => ({
       ...exercise.original,
       name: exercise.name.trim(),
       sets: Number(exercise.sets),
@@ -344,7 +344,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
                   <p key={index}>
                     {exercise.name}{" "}
                     <span className="muted">
-                      · {exercise.sets} × {exercise.reps} ·{" "}
+                      · {exercise.sets} × {exercise.reps ?? '—'} ·{" "}
                       {showWeight(exercise.weight)} {weightUnit}
                     </span>
                   </p>

@@ -1,11 +1,12 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
-import { createHash, randomUUID } from "node:crypto";
-import type { AppState, User, FoodPhotoDraft, SyncMutation, SyncSnapshot } from "../src/types";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import type { AppState, User, FoodPhotoDraft, SyncMutation, SyncSnapshot, Workout } from "../src/types";
 import { emptyState } from "../src/types";
 import { AiError } from './ai-errors';
 import { normalizedState, entityValues, changedEntityKeys, mutationHash, entityKey, applySyncChanges, SyncConflict } from './sync';
+import { WorkbenchConflict, WorkbenchError, WORKBENCH_MEDIA_QUOTA, workbenchPlannerSnapshot, workbenchReferencedHashes, type WorkbenchMedia, type WorkbenchMediaMime, type WorkbenchReceipt, type WorkbenchSnapshot, type WorkbenchWarning, type WorkbenchWrite } from './training-workbench-data';
 
 export interface Account extends User {
   password_hash: string;
@@ -49,6 +50,14 @@ export class Store {
       CREATE TABLE IF NOT EXISTS sync_mutations(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,payload_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id));
       CREATE TABLE IF NOT EXISTS asset_cleanup_intents(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,mutation_id TEXT NOT NULL,asset_id TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,mutation_id,asset_id));
       CREATE INDEX IF NOT EXISTS asset_cleanup_intents_asset ON asset_cleanup_intents(asset_id);`);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS workbench_states(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,state_json TEXT NOT NULL,revision INTEGER NOT NULL,wid TEXT NOT NULL,warnings_json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS workbench_revisions(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,revision INTEGER NOT NULL,state_json TEXT NOT NULL,wid TEXT NOT NULL,warnings_json TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,revision));
+      CREATE TRIGGER IF NOT EXISTS immutable_workbench_revisions BEFORE UPDATE ON workbench_revisions BEGIN SELECT RAISE(ABORT,'Workbench revisions are immutable'); END;
+      CREATE TABLE IF NOT EXISTS workbench_receipts(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,request_hash TEXT NOT NULL,response_json TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,request_hash));
+      CREATE TABLE IF NOT EXISTS workbench_projection_links(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,workout_id TEXT NOT NULL,payload_hash TEXT NOT NULL,PRIMARY KEY(owner_id,workout_id));
+      CREATE TABLE IF NOT EXISTS workbench_media(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,hash TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,hash));
+    `);
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -313,10 +322,138 @@ export class Store {
       throw new Error("Invalid account path");
     // Deleting files first prevents a failed filesystem cleanup from being reported as complete.
     rmSync(folder, { recursive: true, force: true });
+    rmSync(this.workbenchMediaFolder(ownerId), { recursive: true, force: true });
     this.db.prepare("DELETE FROM accounts WHERE id=?").run(ownerId);
+  }
+
+  workbenchSnapshot(ownerId: string): WorkbenchSnapshot {
+    const row = this.db.prepare('SELECT state_json,revision,wid,warnings_json FROM workbench_states WHERE owner_id=?').get(ownerId) as { state_json: string; revision: number; wid: string; warnings_json: string } | undefined;
+    return row ? { state: JSON.parse(row.state_json), rev: row.revision, wid: row.wid, warnings: JSON.parse(row.warnings_json) } : { state: null, rev: 0, warnings: [] };
+  }
+
+  saveWorkbench(ownerId: string, write: WorkbenchWrite, projection: { workouts: Workout[]; warnings: WorkbenchWarning[] }): WorkbenchReceipt {
+    const requestHash = hashValue(write);
+    return this.transaction(() => {
+      const retry = this.db.prepare('SELECT response_json FROM workbench_receipts WHERE owner_id=? AND request_hash=?').get(ownerId, requestHash) as { response_json: string } | undefined;
+      if (retry) return JSON.parse(retry.response_json) as WorkbenchReceipt;
+      const current = this.workbenchSnapshot(ownerId);
+      if ((write.baseRev ?? 0) !== current.rev || (write.baseWid !== undefined && write.baseWid !== current.wid)) throw new WorkbenchConflict(current);
+      const before = this.snapshot(ownerId);
+      const links = this.db.prepare('SELECT workout_id,payload_hash FROM workbench_projection_links WHERE owner_id=?').all(ownerId) as { workout_id: string; payload_hash: string }[];
+      const linked = new Map(links.map(link => [link.workout_id, link.payload_hash]));
+      const existing = new Map(before.state.workouts.map(workout => [workout.id, workout]));
+      // A separate Forma editor cannot be overwritten by a later vendor-document save.
+      for (const [id, hash] of linked) {
+        const workout = existing.get(id);
+        if (!workout || hashValue(workout) !== hash) throw new WorkbenchConflict(current, 'projection-conflict');
+      }
+      for (const workout of projection.workouts) if (existing.has(workout.id) && !linked.has(workout.id)) throw new WorkbenchConflict(current, 'projection-conflict');
+      const workouts = [...before.state.workouts.filter(workout => !linked.has(workout.id)), ...projection.workouts];
+      if (workouts.length > 10000) throw new WorkbenchError(413, 'The account has reached the supported workout limit');
+      const next = { ...before.state, workouts };
+      const changed = changedEntityKeys(before.state, next);
+      if (changed.length) {
+        this.ensureEntityVersions(ownerId, before.state);
+        this.db.prepare('UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=?').run(JSON.stringify(next), ownerId);
+        this.touchEntities(ownerId, changed, next);
+      }
+      const rev = current.rev + 1, wid = randomBytes(8).toString('hex');
+      const lineage = Array.isArray(current.state?._wids) ? current.state._wids.filter(value => typeof value === 'string') : [];
+      const state = { ...write.state, _rev: rev, _wid: wid, _wids: [...lineage, ...(current.wid ? [current.wid] : [])].slice(-64) };
+      const stateJson = JSON.stringify(state), warningsJson = JSON.stringify(projection.warnings), createdAt = new Date().toISOString();
+      this.db.prepare('INSERT INTO workbench_states VALUES (?,?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET state_json=excluded.state_json,revision=excluded.revision,wid=excluded.wid,warnings_json=excluded.warnings_json').run(ownerId, stateJson, rev, wid, warningsJson);
+      this.db.prepare('INSERT INTO workbench_revisions VALUES (?,?,?,?,?,?)').run(ownerId, rev, JSON.stringify(workbenchPlannerSnapshot(state)), wid, '[]', createdAt);
+      this.db.prepare('DELETE FROM workbench_projection_links WHERE owner_id=?').run(ownerId);
+      const insertLink = this.db.prepare('INSERT INTO workbench_projection_links VALUES (?,?,?)');
+      for (const workout of projection.workouts) insertLink.run(ownerId, workout.id, hashValue(workout));
+      const receipt: WorkbenchReceipt = { ok: true, ts: typeof write.state._ts === 'number' ? write.state._ts : null, rev, wid, warnings: projection.warnings };
+      this.db.prepare('INSERT INTO workbench_receipts VALUES (?,?,?,?)').run(ownerId, requestHash, JSON.stringify(receipt), createdAt);
+      return receipt;
+    });
+  }
+
+  private workbenchMediaFolder(ownerId: string): string {
+    if (!/^[a-f0-9-]{36}$/i.test(ownerId)) throw new Error('Invalid account path');
+    const root = resolve(this.dataDir, 'workbench-media'), folder = resolve(root, ownerId);
+    if (!folder.startsWith(root + sep)) throw new Error('Invalid account path');
+    return folder;
+  }
+  private workbenchMediaPath(ownerId: string, hash: string): string {
+    if (!/^[0-9a-f]{64}$/.test(hash)) throw new Error('Invalid media path');
+    return join(this.workbenchMediaFolder(ownerId), hash);
+  }
+  workbenchMedia(ownerId: string, hash: string): WorkbenchMedia | undefined {
+    return this.db.prepare('SELECT * FROM workbench_media WHERE owner_id=? AND hash=?').get(ownerId, hash) as unknown as WorkbenchMedia | undefined;
+  }
+  workbenchMediaList(ownerId: string): WorkbenchMedia[] {
+    return this.db.prepare('SELECT * FROM workbench_media WHERE owner_id=? ORDER BY created_at,hash').all(ownerId) as unknown as WorkbenchMedia[];
+  }
+  workbenchMediaUsage(ownerId: string) {
+    const usage = this.db.prepare('SELECT COALESCE(SUM(size),0) AS bytes,COUNT(*) AS count FROM workbench_media WHERE owner_id=?').get(ownerId) as { bytes: number; count: number };
+    return { ...usage, quotaBytes: WORKBENCH_MEDIA_QUOTA };
+  }
+  workbenchMediaBytes(media: WorkbenchMedia): Buffer {
+    try {
+      const bytes = readFileSync(this.workbenchMediaPath(media.owner_id, media.hash));
+      if (bytes.length !== media.size || hashValueBytes(bytes) !== media.hash) throw new WorkbenchError(404, 'Training media is not available', 'media-missing');
+      return bytes;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new WorkbenchError(404, 'Training media is not available', 'media-missing');
+      throw error;
+    }
+  }
+  workbenchMediaAvailable(ownerId: string, hash: string): boolean {
+    const media = this.workbenchMedia(ownerId, hash);
+    if (!media) return false;
+    try { this.workbenchMediaBytes(media); return true; }
+    catch (error) { if (error instanceof WorkbenchError && error.status === 404) return false; throw error; }
+  }
+  addWorkbenchMedia(ownerId: string, hash: string, mime: WorkbenchMediaMime, bytes: Buffer) {
+    return this.transaction(() => {
+      const existing = this.workbenchMedia(ownerId, hash);
+      if (existing && this.workbenchMediaAvailable(ownerId, hash)) return { ok: true, hash, mime: existing.mime, size: existing.size, existed: true };
+      if (this.workbenchMediaUsage(ownerId).bytes - (existing?.size ?? 0) + bytes.length > WORKBENCH_MEDIA_QUOTA) throw new WorkbenchError(413, 'Account media storage is full', 'media-quota');
+      const folder = this.workbenchMediaFolder(ownerId), path = this.workbenchMediaPath(ownerId, hash);
+      mkdirSync(folder, { recursive: true, mode: 0o700 });
+      // A crash before the SQL insert may leave only an orphaned hash file. Reusing it is safe
+      // after checking its bytes; no other account's directory is consulted.
+      try { writeFileSync(path, bytes, { mode: 0o600, flag: existing ? 'w' : 'wx' }); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST' || hashValueBytes(readFileSync(path)) !== hash) throw error;
+      }
+      try { this.db.prepare('INSERT INTO workbench_media VALUES (?,?,?,?,?) ON CONFLICT(owner_id,hash) DO UPDATE SET mime=excluded.mime,size=excluded.size').run(ownerId, hash, mime, bytes.length, new Date().toISOString()); }
+      catch (error) { if (!existing) rmSync(path, { force: true }); throw error; }
+      return { ok: true, hash, mime, size: bytes.length, existed: false };
+    });
+  }
+  sweepWorkbenchMedia(ownerId: string) {
+    return this.transaction(() => {
+      const kept = workbenchReferencedHashes(this.workbenchSnapshot(ownerId).state);
+      // Only planner history is retained. Deleted workout/custom media are not kept by it.
+      const history = this.db.prepare('SELECT state_json FROM workbench_revisions WHERE owner_id=?').all(ownerId) as { state_json: string }[];
+      for (const revision of history) for (const hash of workbenchReferencedHashes(JSON.parse(revision.state_json))) kept.add(hash);
+      let removed = 0, freedBytes = 0;
+      for (const media of this.workbenchMediaList(ownerId)) if (!kept.has(media.hash)) {
+        rmSync(this.workbenchMediaPath(ownerId, media.hash), { force: true });
+        this.db.prepare('DELETE FROM workbench_media WHERE owner_id=? AND hash=?').run(ownerId, media.hash);
+        removed++; freedBytes += media.size;
+      }
+      return { ok: true, removed, freedBytes };
+    });
+  }
+  exportWorkbench(ownerId: string) {
+    const revisions = this.db.prepare('SELECT revision,state_json,wid,warnings_json,created_at FROM workbench_revisions WHERE owner_id=? ORDER BY revision').all(ownerId) as { revision: number; state_json: string; wid: string; warnings_json: string; created_at: string }[];
+    return {
+      ...this.workbenchSnapshot(ownerId),
+      revisions: revisions.map(row => ({ kind: 'planner', rev: row.revision, state: JSON.parse(row.state_json), wid: row.wid, createdAt: row.created_at })),
+      media: this.workbenchMediaList(ownerId).map(media => ({ hash: media.hash, mime: media.mime, size: media.size, createdAt: media.created_at, base64: this.workbenchMediaBytes(media).toString('base64') })),
+    };
   }
 }
 const attachmentIds = (state: AppState) =>
   new Set([...state.meals, ...state.reports].flatMap(record => record.assetId ? [record.assetId] : []));
 export const hashToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");
+// Schema parsers and other Forma editors may reorder object fields without changing facts.
+const hashValue = (value: unknown) => createHash('sha256').update(JSON.stringify(value, (_key, part) => part && typeof part === 'object' && !Array.isArray(part) ? Object.fromEntries(Object.keys(part).sort().map(key => [key, part[key]])) : part)).digest('hex');
+const hashValueBytes = (value: Buffer) => createHash('sha256').update(value).digest('hex');

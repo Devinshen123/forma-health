@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(root, 'src/catalog/opengym-manifest.json');
@@ -10,8 +10,35 @@ const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const json = path => JSON.parse(readFileSync(path, 'utf8'));
 const write = (path, content) => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, content); };
 const asJson = value => JSON.stringify(value) + '\n';
+const muscleIndexPath = 'src/catalog/opengym-muscles.json';
 
-if (process.argv.includes('--check')) {
+async function importMuscles(source, expectedIds) {
+  // User-authorized local catalogue logic includes curated overrides and explicit exclusions.
+  // Project its output to Forma's small lookup table; do not import its runtime into the app.
+  const { CATALOGUE } = await import(pathToFileURL(join(source, 'frontend/src/lib/exercises.js')).href);
+  const { MUSCLES, muscleWeightsOf } = await import(pathToFileURL(join(source, 'frontend/src/lib/muscles.js')).href);
+  if (MUSCLES.length !== 18 || new Set(MUSCLES).size !== 18 || CATALOGUE.length !== expectedIds.length) throw Error('Unexpected muscle catalogue');
+  const wanted = new Set(expectedIds), index = {};
+  for (const exercise of CATALOGUE) {
+    if (!wanted.has(exercise.id) || Object.hasOwn(index, exercise.id)) throw Error('Muscle catalogue identities do not match imported actions');
+    const weights = muscleWeightsOf(exercise);
+    for (const value of Object.values(weights)) if (![0, 0.4, 1].includes(value)) throw Error('Unsupported source muscle weight');
+    index[exercise.id] = { primary: MUSCLES.filter(key => weights[key] === 1), secondary: MUSCLES.filter(key => weights[key] > 0 && weights[key] < 1) };
+  }
+  const content = asJson(index);
+  write(join(root, muscleIndexPath), content);
+  return { path: muscleIndexPath, bytes: Buffer.byteLength(content), sha256: sha256(content), actionCount: expectedIds.length, regionCount: MUSCLES.length };
+}
+
+if (process.argv[2] === '--muscles-only') {
+  if (!process.argv[3]) throw Error('Provide the authorized local openGym source directory');
+  const source = resolve(process.argv[3]), manifest = json(manifestPath);
+  const sourceCommit = execFileSync('git', ['-C', source, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  if (sourceCommit !== manifest.sourceCommit) throw Error('Muscle source revision differs from the imported catalogue');
+  manifest.muscleIndex = await importMuscles(source, json(join(root, 'src/catalog/opengym.json')).map(item => item.sourceId));
+  write(manifestPath, asJson(manifest));
+  console.log(`Imported ${manifest.muscleIndex.actionCount} muscle mappings across ${manifest.muscleIndex.regionCount} regions, including curated exclusions.`);
+} else if (process.argv.includes('--check')) {
   const manifest = json(manifestPath);
   let checked = 0;
   for (const file of manifest.files) {
@@ -21,6 +48,10 @@ if (process.argv.includes('--check')) {
     checked++;
   }
   if (manifest.primaryCount !== 5632 || manifest.videoCount !== 5632) throw Error('Unexpected catalogue count');
+  const muscle = manifest.muscleIndex;
+  if (!muscle || muscle.path !== muscleIndexPath || muscle.actionCount !== 5632 || muscle.regionCount !== 18) throw Error('Missing muscle mapping; rerun the importer with your licensed source');
+  const muscleBytes = readFileSync(join(root, muscleIndexPath));
+  if (muscleBytes.length !== muscle.bytes || sha256(muscleBytes) !== muscle.sha256) throw Error('Changed muscle mapping; rerun the importer');
   console.log(`Verified ${manifest.primaryCount} exercises, ${manifest.videoCount} videos and ${checked} media/content files against SHA-256.`);
 } else {
   const sourceArg = process.argv[2];
@@ -62,7 +93,8 @@ if (process.argv.includes('--check')) {
     files.push({ path, bytes: Buffer.byteLength(content), sha256: sha256(content) });
   }
   write(join(root, 'src/catalog/opengym.json'), asJson(index));
-  const manifest = { schemaVersion: 1, source: 'openGym', sourceCommit, primaryCount: primary.length, excludedVariantCount: entries.length - primary.length, videoCount: stagedMedia.length / 2, chineseNameCount: index.length, chineseInstructionCount: translatedSteps, files };
+  const muscleIndex = await importMuscles(source, primary.map(item => item.id));
+  const manifest = { schemaVersion: 1, source: 'openGym', sourceCommit, primaryCount: primary.length, excludedVariantCount: entries.length - primary.length, videoCount: stagedMedia.length / 2, chineseNameCount: index.length, chineseInstructionCount: translatedSteps, muscleIndex, files };
   write(manifestPath, asJson(manifest));
   copyFileSync(join(source, 'NOTICE.md'), join(root, 'public/licenses/opengym-NOTICE.txt'));
   copyFileSync(join(source, 'LICENSE'), join(root, 'public/licenses/opengym-AGPL-3.0.txt'));

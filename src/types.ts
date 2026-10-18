@@ -67,8 +67,8 @@ export interface Capabilities {
 export interface Exercise {
   name: string;
   sets: number;
-  reps: number;
-  weight: number;
+  reps: number | null; // Legacy summary only; timed entries may have no repetition/load observation.
+  weight: number | null;
   id?: string;
   exerciseId?: string;
   primaryMuscles?: string[];
@@ -246,6 +246,7 @@ export interface FeatureProps {
   notify: (zh: string, en?: string) => void;
   demo: boolean;
   accountId?: string;
+  onTrainingRefresh?: () => Promise<void>;
   onUnsavedChange?: (dirty:boolean,busy:boolean) => void;
 }
 export type SyncCollection = "meals" | "workouts" | "sleeps" | "reports" | "planVersions" | "suggestions" | "routines" | "schedules" | "activeWorkouts" | "profile" | "currentPlanId" | "completedActions";
