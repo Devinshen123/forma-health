@@ -29,3 +29,11 @@
 - 接手无产品阻塞；Git 状态与“自动创建分支”的预期有差异，已如实记录并保留 detached HEAD。后续实现尚未派发。
 - 本轮仅更新并以 `git commit --only` 精确提交本状态；没有改产品源码、安装依赖、启动服务、结束进程、启用付费服务、创建其他聊天/子代理、合并其他目录、推送或设置自动化。
 - 待用户决定：本轮无新增事项。
+
+## 2026-10-17 用户授权上传 GitHub
+
+- 按用户“把最新代码上传 GitHub 然后打开”的直接授权，仅推送已有提交；没有合并、改写历史或提交其他 worktree 的未提交文件。
+- 实际原子推送并以 git ls-remote 复核：frontend 4674a98、backend d88b4e6、review 8df22c6、交接文档 2976a87；四个对应分支均在 Devinshen123/forma-health 私有仓库，main 未变。
+- 上传前检查新增历史的 83 个 blob，未发现私有数据目录、数据库或所检查的凭据模式；git push --dry-run 与正式 git push --atomic 均成功。未读取真实 data 或 .env，未恢复四项本机删除，未包含未跟踪 AGENTS。
+- 已打开并实际确认浏览器标题为 Branches · Devinshen123/forma-health，保留用户可见标签；网址 https://github.com/Devinshen123/forma-health/branches 。
+- 未执行产品测试或构建；本轮是已有提交上传，不将历史验证当成本轮实测。网站尚未部署，最新分支未整合，完整构建限制仍以交接文档为准。
