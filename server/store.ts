@@ -19,6 +19,9 @@ export interface Asset {
   size: number;
   created_at: string;
 }
+// HTTP sync mutations require UUIDs; this internal revision key cannot collide with them.
+export const stateCleanupId = (revision: number) => `put-state:${revision}`;
+
 export class Store {
   readonly db: DatabaseSync;
   readonly dataDir: string;
@@ -128,7 +131,14 @@ export class Store {
           "UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=? AND revision=?",
         )
         .run(JSON.stringify(state), ownerId, revision).changes === 1;
-      if (saved) this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+      if (saved) {
+        this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+        // Keep precise cleanup authority with this state commit, including after a restart.
+        const kept = attachmentIds(state), createdAt = new Date().toISOString();
+        const intent = this.db.prepare('INSERT OR IGNORE INTO asset_cleanup_intents SELECT owner_id,?,id,? FROM assets WHERE owner_id=? AND id=?');
+        for (const assetId of attachmentIds(previous.state)) if (!kept.has(assetId))
+          intent.run(stateCleanupId(revision), createdAt, ownerId, assetId);
+      }
       return saved;
     });
   }

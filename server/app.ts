@@ -8,7 +8,7 @@ import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z, ZodError } from "zod";
-import { Store, type Account } from "./store";
+import { Store, stateCleanupId, type Account } from "./store";
 import {
   credentialsSchema,
   idSchema,
@@ -310,14 +310,7 @@ export function createApp(options: AppOptions) {
     }
     return state;
   };
-  const cleanRemovedAssets = (ownerId: string, previous: AppState, next: AppState) => {
-    const kept = referencedAssets(next);
-    for (const assetId of referencedAssets(previous)) if (!kept.has(assetId)) {
-      foodPhoto.cancelAsset(ownerId, assetId);
-      store.deleteAsset(ownerId, assetId);
-    }
-  };
-  // Consumes only the intents this mutation's commit recorded; a replay of the same receipt resumes them.
+  // Consumes only recorded intents, never candidates derived from a retry payload.
   const finishMutationCleanup = (ownerId: string, mutationId: string) => {
     for (const assetId of store.assetCleanupIntents(ownerId, mutationId)) {
       foodPhoto.cancelAsset(ownerId, assetId);
@@ -345,19 +338,24 @@ export function createApp(options: AppOptions) {
     }
     const { state: parsed, revision } = putStateSchema.parse(body);
     const state = parsed as AppState;
-    if (snapshot.revision !== revision)
+    if (snapshot.revision !== revision) {
+      // A committed PUT can fail during cleanup. Resume only its durable intent,
+      // while retaining the stale-revision 409 contract and never replaying the state write.
+      try { finishMutationCleanup(ownerId, stateCleanupId(revision)); }
+      catch { /* The durable intent remains retryable; cleanup failure must not change this 409. */ }
       return res
         .status(409)
         .json({
           error: "Your data changed in another window. Reload before saving.",
           revision: snapshot.revision,
         });
+    }
     validateOwnedState(ownerId, snapshot.state, state);
     if (!store.save(ownerId, state, revision))
       return res
         .status(409)
         .json({ error: "Your data changed. Reload before saving." });
-    cleanRemovedAssets(ownerId, snapshot.state, state);
+    finishMutationCleanup(ownerId, stateCleanupId(revision));
     res.json({ state, revision: revision + 1 });
   });
   app.post("/api/assets", auth, (req, res) => {
