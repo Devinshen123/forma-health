@@ -3,6 +3,7 @@ import { Clock3, Moon, Pencil, Plus, Sun, Trash2 } from "lucide-react";
 import { Modal } from "../components/Modal";
 import { resolveSleepTime } from "./sleepTime";
 import { createSleepDraft, sleepEntryFromDraft, sleepOverlaps, upsertSleep, type SleepDraft } from "./sleepEditor";
+import { RecordDraft } from "./recordDraft";
 import {
   localDate,
   sleepHours,
@@ -44,6 +45,11 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   const [date, setDate] = useState(localDate);
   const [draft, setDraft] = useState<SleepDraft | null>(null);
   const [deleting, setDeleting] = useState<SleepEntry | null>(null);
+  const editRecord = useRef<RecordDraft<SleepEntry> | null>(null);
+  const deleteRecord = useRef<RecordDraft<SleepEntry> | null>(null);
+  useEffect(() => {
+    if (draft) editRecord.current?.observe(state.sleeps.find(sleep => sleep.id === draft.id));
+  }, [state.sleeps, draft?.id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const records = state.sleeps
@@ -73,6 +79,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   };
   const open = (sleep?: SleepEntry) => {
     if (!mounted.current || busy) return;
+    editRecord.current = new RecordDraft(sleep);
     setError("");
     setDraft(createSleepDraft(browserTimezone, sleep));
   };
@@ -106,6 +113,10 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!draft || busy || !mounted.current) return;
+    if (!editRecord.current?.canSave(state.sleeps.find(sleep => sleep.id === draft.id))) {
+      setError(zh ? "这条记录已在另一处变化或删除，请取消并重新打开核对。" : "This record changed or was deleted elsewhere. Cancel and reopen to review it.");
+      return;
+    }
     setError("");
     const startResolution = resolveSleepTime(draft.start, draft.originalStart);
     const endResolution = resolveSleepTime(draft.end, draft.originalEnd);
@@ -182,6 +193,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
             ? endResolution.instant
             : end.toISOString(),
       );
+      editRecord.current.submittedValue(sleep);
       await save({
         ...state,
         sleeps: upsertSleep(state.sleeps, sleep),
@@ -207,9 +219,14 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   };
   const remove = async () => {
     if (!deleting || busy || !mounted.current) return;
+    if (!deleteRecord.current?.canSave(state.sleeps.find(sleep => sleep.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请取消并重新核对后再删除。" : "This record changed elsewhere. Cancel and review it before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         sleeps: state.sleeps.filter((sleep) => sleep.id !== deleting.id),
@@ -337,6 +354,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
                       aria-label={zh ? "删除这段睡眠" : "Delete this sleep"}
                       disabled={busy}
                       onClick={() => {
+                        deleteRecord.current = new RecordDraft(sleep);
                         setDeleting(sleep);
                         setError("");
                       }}
