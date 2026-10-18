@@ -1,4 +1,9 @@
 
+## 2026-10-18 Codex -> Claude Code current task
+
+Current task: docs/collaboration/tasks-20261018-frontend.md; branch codex/forma-frontend-boundaries-20261018. Codex /root/forma_frontend_20261018 implements/diagnoses first, real Claude session eac1956d-3640-4789-bba7-07e5ebc3688f then reviews serially. Read exact skill files listed in task, preserve user deletions and all previous records. New evidence on D; no push/merge/deploy/real data. This user-authorized task supersedes historical phase-only limits.
+
+
 ## 2026-10-17 当前：用户授权整合、修复构建并本地启动
 
 本 worktree 为 `C:\Users\devin\.codex\worktrees\bdd7\健康网站`，分支 `codex/forma-integrated-20261017`。当前聊天按用户直接指令整合最新前后端，修复构建与运行问题，并在本机打开网站；任务及验收以 `docs/collaboration/TASKS.md` 顶部 INT-01 至 INT-03 为准。下文各会话专属范围和禁止整合/安装/启动文字属于已结束的历史任务，不覆盖本次授权。保留其他 worktree 的未提交改动，不接原真实数据或付费 AI，不部署公网。
