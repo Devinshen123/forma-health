@@ -6,6 +6,7 @@ import type { Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import type { AppState } from '../src/types';
+import { Store } from './store';
 
 interface Account { id: string; cookie: string }
 interface Snapshot { state: AppState; revision: number }
@@ -15,6 +16,7 @@ const CLEANUP_FAULT = "CREATE TRIGGER synthetic_put_cleanup_failure BEFORE DELET
 /** Only synthetic HTTP accounts, private PDF bytes and a disposable SQLite database. */
 async function harness(t: TestContext) {
   const directory = mkdtempSync(join(tmpdir(), 'forma-state-cleanup-'));
+  const peers: Store[] = [];
   const { createApp } = await import('./app');
   const open = async () => {
     const service = createApp({ dataDir: directory, secureCookies: false,
@@ -32,6 +34,7 @@ async function harness(t: TestContext) {
   let running = await open();
   t.after(async () => {
     await close(running);
+    for (const peer of peers) peer.close();
     const target = resolve(directory);
     assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes('forma-state-cleanup-'));
     rmSync(target, { recursive: true, force: true });
@@ -64,8 +67,16 @@ async function harness(t: TestContext) {
     assert.equal(result.status, 201); return { id: result.body.id as string, bytes };
   };
   const put = (account: Account, body: Snapshot) => request('PUT', '/state', account, body);
+  const removeBytes = (account: Account, assetId: string) => {
+    assert.ok(running.service.store.asset(account.id, assetId), 'only a registered synthetic owner asset may be faulted');
+    const target = resolve(directory, 'uploads', account.id, assetId);
+    assert.ok(target.startsWith(resolve(directory) + sep) && /^[a-f0-9-]{36}$/i.test(assetId));
+    rmSync(target);
+  };
   return { request, register, snapshot, pdf, put, get store() { return running.service.store; },
     restart: async () => { await close(running); running = await open(); },
+    removeBytes,
+    peer: () => { const peer = new Store(directory); peers.push(peer); return peer; },
   };
 }
 
@@ -158,4 +169,62 @@ test('PUT: moving the same attachment between reports does not select it for cle
   assert.equal((await h.request('GET', `/assets/${removed.id}`, owner)).status, 404);
   assert.deepEqual((await h.request('GET', `/assets/${kept.id}`, owner)).bytes, kept.bytes);
   assert.deepEqual((await h.request('GET', `/assets/${candidate.id}`, owner)).bytes, candidate.bytes);
+});
+
+for (const route of ['sync', 'put'] as const) test(`${route}: missing private bytes cannot gain a new reference or consume a save identity`, async t => {
+  const h = await harness(t), owner = await h.register(), other = await h.register();
+  const old = await h.pdf(owner), candidate = await h.pdf(owner), foreign = await h.pdf(other), initial = await h.snapshot(owner);
+  assert.equal((await h.put(owner, { ...initial, state: { ...initial.state, reports: [report(old.id)] } })).status, 200);
+  const before = await h.snapshot(owner), removal = { ...before, state: { ...before.state, reports: [] } };
+  h.store.db.exec(CLEANUP_FAULT);
+  assert.equal((await h.put(owner, removal)).status, 500);
+  h.store.db.exec('DROP TRIGGER synthetic_put_cleanup_failure');
+  // Reconstruct only the metadata-present/bytes-missing state independently observed after a cleanup crash.
+  // This targeted fixture is not a claim that the physical crash or original bytes have been repaired.
+  h.removeBytes(owner, old.id);
+  await h.restart();
+  assert.ok(h.store.asset(owner.id, old.id), 'cleanup must still see the retained metadata');
+  const saved = await h.snapshot(owner), syncBefore = (await h.request('GET', '/sync', owner)).body;
+  const attempted = report(old.id), mutationId = randomUUID();
+  const submit = (assetId: string) => {
+    const value = { ...attempted, assetId };
+    return route === 'sync'
+      ? h.request('POST', '/sync', owner, { mutationId, changes: [{ collection: 'reports', id: value.id, baseVersion: 0, kind: 'upsert', value }] })
+      : h.put(owner, { ...saved, state: { ...saved.state, reports: [value] } });
+  };
+  const rejected = await submit(old.id);
+  assert.equal(rejected.status, 400, 'metadata alone is insufficient authority to reference missing private bytes');
+  assert.equal(rejected.body.error, 'An attachment is unavailable or invalid for this account');
+  assert.deepEqual((await h.request('GET', '/sync', owner)).body, syncBefore, 'failed validation commits no record, revision or entity version');
+  assert.equal((await submit(old.id)).status, 400, 'an invalid save remains retryable and unacknowledged');
+  assert.equal((await h.put(owner, removal)).status, 409, 'the original exact cleanup remains resumable');
+  assert.equal((await h.request('GET', `/assets/${old.id}`, owner)).status, 404, 'cleanup can retire the metadata even though its bytes were already missing');
+  assert.equal((await submit(candidate.id)).status, 200, 'the same mutation ID or PUT revision accepts a corrected available candidate, proving no receipt was consumed');
+  const latest = await h.snapshot(owner);
+  assert.equal(latest.revision, saved.revision + 1);
+  assert.equal(latest.state.reports[0].assetId, candidate.id);
+  assert.equal((await submit(candidate.id)).status, route === 'sync' ? 200 : 409);
+  assert.deepEqual(await h.snapshot(owner), latest);
+  assert.deepEqual((await h.request('GET', `/assets/${candidate.id}`, owner)).bytes, candidate.bytes);
+  assert.deepEqual((await h.request('GET', `/assets/${foreign.id}`, other)).bytes, foreign.bytes);
+  assert.equal((await h.request('GET', `/assets/${foreign.id}`, owner)).status, 404);
+});
+
+test('PUT: attachment validation under the save lock rejects a second Store deletion before save begins', async t => {
+  const h = await harness(t), owner = await h.register(), candidate = await h.pdf(owner), kept = await h.pdf(owner);
+  const before = await h.snapshot(owner), syncBefore = (await h.request('GET', '/sync', owner)).body;
+  const peer = h.peer(), save = h.store.save.bind(h.store);
+  let intervened = false;
+  h.store.save = (...args: Parameters<Store['save']>) => {
+    assert.equal(peer.deleteAsset(owner.id, candidate.id), true, 'the still-unreferenced candidate is removed before acquiring the save lock');
+    intervened = true;
+    return save(...args);
+  };
+  const result = await h.put(owner, { ...before, state: { ...before.state, reports: [report(candidate.id)] } });
+  assert.equal(intervened, true);
+  assert.equal(result.status, 400, 'a prior route-level availability check cannot authorise this later commit');
+  assert.equal(result.body.error, 'An attachment is unavailable or invalid for this account');
+  assert.deepEqual((await h.request('GET', '/sync', owner)).body, syncBefore);
+  assert.equal((await h.request('GET', `/assets/${candidate.id}`, owner)).status, 404);
+  assert.deepEqual((await h.request('GET', `/assets/${kept.id}`, owner)).bytes, kept.bytes);
 });

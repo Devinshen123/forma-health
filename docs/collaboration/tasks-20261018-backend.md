@@ -36,3 +36,9 @@ Use security-review for owner/account/private-upload boundaries; backend-pattern
 ## Delivery
 
 Record exact source SHA/diff, commands, exit codes, counts, evidence paths and limitations. Old215/18/build results are historical integrated-baseline evidence only until actually rerun. JSON export includes records and attachment metadata/references, not image/PDF bytes; server export also omits unsynced client outbox. Never call JSON alone a full backup. iPhone/Safari, real AI, full App shell are unverified unless actually tested.
+
+## B-18 bounded follow-up after independent crash reproduction
+
+Q-18 actually reproduced cleanup process exit before COMMIT: metadata/intent roll back, bytes are already gone, GET returns500 and a new sync report reference was accepted200. The coordinator reported this to the user before authorizing this follow-up. Codex backend remains the sole product writer; Claude reviews after final handoff.
+
+Add an existing-contract availability guard: unavailable attachment bytes must reject a new reference with the existing400 validation response, without committing state/revision/receipt. Do not change Store.asset metadata lookup semantics, because cleanup still needs to remove that exact metadata/intent on replay. Avoid loading every whole attachment merely to check availability. Keep validation under the state-write transaction, including PUT Store.save, to avoid a new validation/cleanup race. In addition to the original paths, server/missing-asset-reference.test.ts is authorized if needed. Capture real pre-fix failure and focused/full results in new D evidence filenames. Preserve the original Q-18 physical crash red case: this guard does not restore bytes or promise cross-resource atomicity. No DDL, retention policy, tombstone design or broad cleanup is authorized by this addition.

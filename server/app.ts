@@ -304,7 +304,7 @@ export function createApp(options: AppOptions) {
     }
     for (const assetId of referencedAssets(state)) {
       const asset = store.asset(ownerId, assetId);
-      if (!asset || (state.meals.some(meal => meal.assetId === assetId) && !asset.mime.startsWith('image/'))) {
+      if (!asset || !store.assetBytesAvailable(asset) || (state.meals.some(meal => meal.assetId === assetId) && !asset.mime.startsWith('image/'))) {
         throw new StateInputError('An attachment is unavailable or invalid for this account');
       }
     }
@@ -350,8 +350,7 @@ export function createApp(options: AppOptions) {
           revision: snapshot.revision,
         });
     }
-    validateOwnedState(ownerId, snapshot.state, state);
-    if (!store.save(ownerId, state, revision))
+    if (!store.save(ownerId, state, revision, (previous, candidate) => validateOwnedState(ownerId, previous, candidate)))
       return res
         .status(409)
         .json({ error: "Your data changed. Reload before saving." });

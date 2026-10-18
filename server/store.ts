@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import type { AppState, User, FoodPhotoDraft, SyncMutation, SyncSnapshot } from "../src/types";
@@ -121,20 +121,21 @@ export class Store {
       revision: row.revision,
     };
   }
-  save(ownerId: string, state: AppState, revision: number): boolean {
+  save(ownerId: string, state: AppState, revision: number, validate?: (previous: AppState, candidate: AppState) => AppState): boolean {
     return this.transaction(() => {
       const previous = this.snapshot(ownerId);
       if (previous.revision !== revision) return false;
+      const next = validate ? validate(previous.state, state) : state;
       this.ensureEntityVersions(ownerId, previous.state);
       const saved = this.db
         .prepare(
           "UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=? AND revision=?",
         )
-        .run(JSON.stringify(state), ownerId, revision).changes === 1;
+        .run(JSON.stringify(next), ownerId, revision).changes === 1;
       if (saved) {
-        this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+        this.touchEntities(ownerId, changedEntityKeys(previous.state, next), next);
         // Keep precise cleanup authority with this state commit, including after a restart.
-        const kept = attachmentIds(state), createdAt = new Date().toISOString();
+        const kept = attachmentIds(next), createdAt = new Date().toISOString();
         const intent = this.db.prepare('INSERT OR IGNORE INTO asset_cleanup_intents SELECT owner_id,?,id,? FROM assets WHERE owner_id=? AND id=?');
         for (const assetId of attachmentIds(previous.state)) if (!kept.has(assetId))
           intent.run(stateCleanupId(revision), createdAt, ownerId, assetId);
@@ -298,6 +299,14 @@ export class Store {
   }
   assetBytes(asset: Asset) {
     return readFileSync(this.assetPath(asset.owner_id, asset.id));
+  }
+  assetBytesAvailable(asset: Asset): boolean {
+    try { return statSync(this.assetPath(asset.owner_id, asset.id)).isFile(); }
+    catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'ENOENT' || code === 'ENOTDIR') return false;
+      throw error;
+    }
   }
   deleteAsset(ownerId: string, assetId: string) {
     return this.transaction(() => this.deleteUnreferencedAsset(ownerId, assetId));
