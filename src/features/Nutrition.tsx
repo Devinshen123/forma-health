@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Camera, Check, Pencil, Plus, RefreshCw, Square, Trash2, Utensils } from "lucide-react";
 import { analyzeFoodPhoto, ApiError, assetUrl, getCapabilities, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
+import { AttachmentLifecycle } from "./attachmentLifecycle";
+import { RecordBatchDraft, RecordDraft } from "./recordDraft";
 import {
   localDate,
   mealTotals,
@@ -14,7 +16,8 @@ import {
 } from "../types";
 
 type MealDraft = {
-  id?: string;
+  id: string;
+  existing?: boolean;
   date: string;
   name: string;
   type: Meal["type"];
@@ -28,7 +31,7 @@ type MealDraft = {
   assetId?: string;
   aiDraftId?: string;
   aiItemIndex?: number;
-  createdAt?: string;
+  createdAt: string;
 };
 type ReviewItem = { index: number; mealId: string; name: string; grams: string; kcal: string; protein: string; carbs: string; fat: string };
 const asReviewItem = (item: FoodPhotoItem, index: number): ReviewItem => ({
@@ -74,6 +77,8 @@ const photoError = (cause: unknown, zh: boolean) => {
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const newDraft = (date: string): MealDraft => ({
+  id: uid(),
+  createdAt: new Date().toISOString(),
   date,
   name: "",
   type: "lunch",
@@ -122,6 +127,7 @@ export default function Nutrition({
   save,
   notify,
   demo,
+  accountId,
   onCreate,
 }: FeatureProps & { onCreate?: () => void }) {
   const zh = lang === "zh";
@@ -131,6 +137,9 @@ export default function Nutrition({
   const [uploadedId, setUploadedId] = useState<string | null>(null);
   const [demoPhotos, setDemoPhotos] = useState<Record<string, File>>({});
   const [deleting, setDeleting] = useState<Meal | null>(null);
+  const editRecord = useRef<RecordDraft<Meal> | null>(null);
+  const deleteRecord = useRef<RecordDraft<Meal> | null>(null);
+  useEffect(() => { if (draft) editRecord.current?.observe(state.meals.find(meal => meal.id === draft.id)); }, [state.meals, draft?.id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<"manual" | "photo">("manual");
@@ -143,15 +152,22 @@ export default function Nutrition({
   const [aiDraft, setAiDraft] = useState<FoodPhotoDraft | null>(null);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
   const [reviewed, setReviewed] = useState(false);
+  const aiRecords = useRef(new RecordBatchDraft<Meal>());
+  const aiSubmitted = aiRecords.current.hasSubmitted;
+  useEffect(() => { aiRecords.current.observe(state.meals); }, [state.meals]);
   const mounted = useRef(true);
   const analysisSequence = useRef(0);
   const analysisController = useRef<AbortController | null>(null);
-  const stagedAsset = useRef<string | null>(null);
+  const ownerAccount = useRef(accountId ?? "").current;
+  const deleteUpload = (id: string) => request("/assets/" + encodeURIComponent(id), {
+    method: "DELETE", body: "{}", headers: { "X-Forma-Account": ownerAccount },
+  });
+  const uploads = useRef(new AttachmentLifecycle(deleteUpload));
   const capabilitySequence = useRef(0);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const focusedDraftId = useRef<string | null>(null);
   const working = busy || analyzing;
-  const rememberUpload = (id: string | null) => { stagedAsset.current = id; setUploadedId(id); };
+  const rememberUpload = (id: string | null) => { uploads.current.stage(id); setUploadedId(id); };
   const refreshCapabilities = async () => {
     const sequence = ++capabilitySequence.current;
     setCapabilityLoading(true); setCapabilityError(false);
@@ -172,9 +188,7 @@ export default function Nutrition({
       analysisSequence.current++;
       capabilitySequence.current++;
       analysisController.current?.abort();
-      const pendingAsset = stagedAsset.current;
-      stagedAsset.current = null;
-      if (pendingAsset && !demo) void request("/assets/" + encodeURIComponent(pendingAsset), { method: "DELETE", body: "{}" }).catch(() => {});
+      if (!demo) void uploads.current.discard().catch(() => {});
     };
   }, []);
   useEffect(() => {
@@ -190,6 +204,7 @@ export default function Nutrition({
     analysisController.current?.abort();
     analysisController.current = null;
     setAnalyzing(false); setAiDraft(null); setReviewItems([]); setReviewed(false); setConsent(false);
+    aiRecords.current = new RecordBatchDraft<Meal>();
   };
   const meals = state.meals
     .filter((meal) => meal.date === date)
@@ -227,15 +242,12 @@ export default function Nutrition({
           : "Manual";
 
   const discardUpload = async () => {
-    const pendingAsset = stagedAsset.current;
+    const pendingAsset = uploads.current.id;
     if (!pendingAsset || demo) return true;
     try {
-      await request("/assets/" + encodeURIComponent(pendingAsset), {
-        method: "DELETE",
-        body: "{}",
-      });
+      await uploads.current.discard();
       if (!mounted.current) return false;
-      if (stagedAsset.current === pendingAsset) rememberUpload(null);
+      if (!uploads.current.id) setUploadedId(null);
       return true;
     } catch {
       if (!mounted.current) return false;
@@ -250,7 +262,7 @@ export default function Nutrition({
     }
   };
   const close = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     invalidateAnalysis();
     setBusy(true);
     try {
@@ -265,6 +277,8 @@ export default function Nutrition({
     }
   };
   const open = (meal?: Meal) => {
+    if (!mounted.current) return;
+    editRecord.current = new RecordDraft(meal);
     invalidateAnalysis();
     setError("");
     setMode("manual");
@@ -274,6 +288,7 @@ export default function Nutrition({
       meal
         ? {
             ...meal,
+            existing: true,
             grams: String(meal.grams),
             referenceGrams: String(meal.referenceGrams),
             kcal: String(meal.kcal),
@@ -288,7 +303,7 @@ export default function Nutrition({
   const patch = (change: Partial<MealDraft>) =>
     setDraft((current) => (current ? { ...current, ...change } : null));
   const chooseFile = async (selected?: File) => {
-    if (working) return;
+    if (!mounted.current || working || aiSubmitted) return;
     setError("");
     if (!selected) return;
     if (
@@ -314,7 +329,7 @@ export default function Nutrition({
     }
   };
   const removePhoto = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     invalidateAnalysis();
     setBusy(true);
     try {
@@ -329,7 +344,11 @@ export default function Nutrition({
   };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || working) return;
+    if (!mounted.current || !draft || working) return;
+    if (!editRecord.current?.canSave(state.meals.find(meal => meal.id === draft.id))) {
+      setError(zh ? "这条记录已在另一处变化或删除，请取消并重新打开核对。" : "This record changed or was deleted elsewhere. Cancel and reopen to review it.");
+      return;
+    }
     setError("");
     const numbers = [
       draft.grams,
@@ -377,16 +396,16 @@ export default function Nutrition({
     try {
       let attachment = uploadedId ?? draft.assetId;
       if (file && !demo && !uploadedId) {
-        const result = await uploadFile(file);
+        const result = await uploadFile(file, undefined, ownerAccount);
         if (!mounted.current) {
-          void request("/assets/" + encodeURIComponent(result.id), { method: "DELETE", body: "{}" }).catch(() => {});
+          void deleteUpload(result.id).catch(() => {});
           return;
         }
         attachment = result.id;
         rememberUpload(result.id);
       }
       const meal: Meal = {
-        id: draft.id ?? uid(),
+        id: draft.id,
         name: draft.name.trim(),
         date: draft.date,
         type: draft.type,
@@ -399,11 +418,15 @@ export default function Nutrition({
         source: draft.source,
         ...(attachment ? { assetId: attachment } : {}),
         ...(draft.source === "ai_estimate" ? { aiDraftId: draft.aiDraftId, aiItemIndex: draft.aiItemIndex } : {}),
-        createdAt: draft.createdAt ?? new Date().toISOString(),
+        createdAt: draft.createdAt,
       };
+      // Keep this attachment even if save rejects: it may already be in the
+      // account's outbox, or the server may have accepted a timed-out request.
+      uploads.current.retainForSave(attachment);
+      editRecord.current.submittedValue(meal);
       await save({
         ...state,
-        meals: draft.id
+        meals: state.meals.some(item => item.id === meal.id)
           ? state.meals.map((item) => (item.id === meal.id ? meal : item))
           : [...state.meals, meal],
       });
@@ -425,16 +448,21 @@ export default function Nutrition({
       setError(
         photoError(cause, zh),
       );
-      notify("这餐未保存，请重试", "Meal was not saved. Please try again.");
+      notify("尚未确认保存，请查看同步状态后重试", "Save not confirmed. Check sync status before retrying.");
     } finally {
       if (mounted.current) setBusy(false);
     }
   };
   const remove = async () => {
-    if (!deleting || busy) return;
+    if (!mounted.current || !deleting || busy) return;
+    if (!deleteRecord.current?.canSave(state.meals.find(meal => meal.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请取消并重新核对后再删除。" : "This record changed elsewhere. Cancel and review it before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         meals: state.meals.filter((meal) => meal.id !== deleting.id),
@@ -458,7 +486,7 @@ export default function Nutrition({
     }
   };
   const changeMode = (next: "manual" | "photo") => {
-    if (working || draft?.id) return;
+    if (!mounted.current || working || draft?.existing || aiSubmitted) return;
     invalidateAnalysis(); setMode(next); setError("");
   };
   const cancelAnalysis = () => {
@@ -466,7 +494,7 @@ export default function Nutrition({
     setError(zh ? "已取消等待，未保存饮食记录。你可以重试或手动填写。" : "Stopped waiting. No meal was saved. You can retry or enter it manually.");
   };
   const runAnalysis = async () => {
-    if (!draft || working) return;
+    if (!mounted.current || !draft || working || aiSubmitted) return;
     if (demo) { onCreate?.(); return; }
     if (!file) { setError(zh ? "请先选择食物照片。" : "Choose a food photo first."); return; }
     if (!capabilities?.foodPhoto.available) { setError(zh ? "识图服务尚未就绪。请刷新状态或改用手动填写。" : "Photo analysis is not ready. Refresh its status or continue manually."); return; }
@@ -477,19 +505,19 @@ export default function Nutrition({
     analysisController.current = controller;
     setAnalyzing(true); setError(""); setAiDraft(null); setReviewItems([]); setReviewed(false);
     try {
-      let attachment = stagedAsset.current;
+      let attachment = uploads.current.id;
       if (!attachment) {
         setAnalysisStage("uploading");
-        const uploaded = await uploadFile(selectedFile, controller.signal);
+        const uploaded = await uploadFile(selectedFile, controller.signal, ownerAccount);
         if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) {
-          void request("/assets/" + encodeURIComponent(uploaded.id), { method: "DELETE", body: "{}" }).catch(() => {});
+          void deleteUpload(uploaded.id).catch(() => {});
           return;
         }
         attachment = uploaded.id;
         rememberUpload(attachment);
       }
       setAnalysisStage("analyzing");
-      const result = await analyzeFoodPhoto(attachment, lang, controller.signal);
+      const result = await analyzeFoodPhoto(attachment, lang, controller.signal, ownerAccount);
       if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) return;
       if (result.assetId !== attachment) throw new Error("Mismatched photo draft");
       setAiDraft(result);
@@ -513,8 +541,8 @@ export default function Nutrition({
   };
   const confirmAi = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || working || demo) return;
-    if (!aiDraft?.isFood || aiDraft.assetId !== stagedAsset.current || !reviewItems.length ||
+    if (!mounted.current || !draft || working || demo) return;
+    if (!aiDraft?.isFood || aiDraft.assetId !== uploads.current.id || !reviewItems.length ||
       !reviewed || reviewItems.some(item => !completeReviewItem(item))) {
       setError(zh ? "请保留至少一项食物，补全所有空值，并确认已核对后再保存。" : "Keep at least one food, fill every unknown value, and confirm your review before saving.");
       return;
@@ -524,9 +552,15 @@ export default function Nutrition({
       const reviewedMeals: Meal[] = reviewItems.map(item => ({
         id: item.mealId, name: item.name.trim(), date: draft.date, type: draft.type, grams: Number(item.grams),
         referenceGrams: 100, kcal: Number(item.kcal), protein: Number(item.protein), carbs: Number(item.carbs), fat: Number(item.fat),
-        source: "ai_estimate", assetId: aiDraft.assetId, aiDraftId: aiDraft.id, aiItemIndex: item.index, createdAt: new Date().toISOString(),
+        source: "ai_estimate", assetId: aiDraft.assetId, aiDraftId: aiDraft.id, aiItemIndex: item.index, createdAt: draft.createdAt,
       }));
+      if (!aiRecords.current.canSave(reviewedMeals, state.meals)) {
+        setError(zh ? "这批记录已在另一处变化或删除，请取消并在记录中重新核对。" : "These records changed or were deleted elsewhere. Cancel and review the saved records.");
+        return;
+      }
       const reviewedIds = new Set(reviewedMeals.map(meal => meal.id));
+      uploads.current.retainForSave(aiDraft.assetId);
+      aiRecords.current.submittedValues(reviewedMeals);
       await save({ ...state, meals: [...state.meals.filter(meal => !reviewedIds.has(meal.id)), ...reviewedMeals] });
       if (!mounted.current) return;
       rememberUpload(null);
@@ -535,7 +569,7 @@ export default function Nutrition({
     } catch (cause) {
       if (!mounted.current) return;
       setError(photoError(cause, zh));
-      notify("未保存饮食记录，请核对后重试", "No meals were saved. Review and retry.");
+      notify("尚未确认保存，请查看同步状态后重试", "Save not confirmed. Check sync status before retrying.");
     } finally { if (mounted.current) setBusy(false); }
   };
   const aiTotals = reviewItems.length && reviewItems.every(completeReviewItem) ? reviewItems.reduce((sum, item) => {
@@ -561,8 +595,8 @@ export default function Nutrition({
           protein: Number(draft.protein),
           carbs: Number(draft.carbs),
           fat: Number(draft.fat),
-          id: draft.id ?? "",
-          createdAt: draft.createdAt ?? "",
+          id: draft.id,
+          createdAt: draft.createdAt,
         })
       : null;
 
@@ -669,6 +703,7 @@ export default function Nutrition({
                     aria-label={(zh ? "删除 " : "Delete ") + meal.name}
                     disabled={busy}
                     onClick={() => {
+                      deleteRecord.current = new RecordDraft(meal);
                       setDeleting(meal);
                       setError("");
                     }}
@@ -703,7 +738,7 @@ export default function Nutrition({
       {draft ? (
         <Modal
           title={
-            draft.id
+            draft.existing
               ? zh
                 ? "编辑这一餐"
                 : "Edit this meal"
@@ -747,9 +782,9 @@ export default function Nutrition({
             </>
           }
         >
-          {!draft.id ? <div className="segmented" aria-label={zh ? "记录方式" : "Entry method"}>
-            <button className={mode === "manual" ? "selected" : ""} type="button" aria-pressed={mode === "manual"} disabled={working} onClick={() => changeMode("manual")}>{zh ? "手动填写" : "Manual entry"}</button>
-            <button className={mode === "photo" ? "selected" : ""} type="button" aria-pressed={mode === "photo"} disabled={working} onClick={() => changeMode("photo")}><Camera size={17} />{zh ? "照片识别" : "Photo analysis"}</button>
+          {!draft.existing ? <div className="segmented" aria-label={zh ? "记录方式" : "Entry method"}>
+            <button className={mode === "manual" ? "selected" : ""} type="button" aria-pressed={mode === "manual"} disabled={working || aiSubmitted} onClick={() => changeMode("manual")}>{zh ? "手动填写" : "Manual entry"}</button>
+            <button className={mode === "photo" ? "selected" : ""} type="button" aria-pressed={mode === "photo"} disabled={working || aiSubmitted} onClick={() => changeMode("photo")}><Camera size={17} />{zh ? "照片识别" : "Photo analysis"}</button>
           </div> : null}
           {mode === "photo" ? <form id="nutrition-photo-form" className="stack" onSubmit={confirmAi}>
             <fieldset disabled={working} className="stack" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -757,7 +792,7 @@ export default function Nutrition({
                 <label className="field">{zh ? "日期" : "Date"}<input className="input" type="date" required value={draft.date} onInput={event => patch({ date: event.currentTarget.value })} onChange={event => patch({ date: event.target.value })} /></label>
                 <label className="field">{zh ? "餐次" : "Meal"}<select className="input" value={draft.type} onChange={event => patch({ type: event.target.value as Meal["type"] })}>{(["breakfast", "lunch", "dinner", "snack"] as const).map(type => <option key={type} value={type}>{typeLabel(type)}</option>)}</select></label>
               </div>
-              <label className="field">{zh ? "食物照片" : "Food photo"}<input className="input" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { void chooseFile(event.target.files?.[0]); event.target.value = ""; }} /></label>
+              <label className="field">{zh ? "食物照片" : "Food photo"}<input className="input" type="file" accept="image/jpeg,image/png,image/webp" disabled={aiSubmitted} onChange={event => { void chooseFile(event.target.files?.[0]); event.target.value = ""; }} /></label>
               <p className="hint">{demo ? zh ? "JPEG、PNG 或 WebP，最多 5 MB。演示照片仅在本页预览，不会上传。" : "JPEG, PNG or WebP, up to 5 MB. Demo photos stay in this page and are never uploaded." : zh ? "JPEG、PNG 或 WebP，最多 5 MB。原图作为当前账户的私有附件保存。" : "JPEG, PNG or WebP, up to 5 MB. The original is saved as a private attachment in your account."}</p>
               {file ? <div className="ai-photo-summary">
                 <Photo file={file} name={file.name} />
@@ -767,14 +802,15 @@ export default function Nutrition({
                 : <div className="panel stack">
                   <div className="section-title"><strong>{zh ? "识图服务状态" : "Photo analysis status"}</strong><button className="btn btn-ghost" type="button" disabled={capabilityLoading || working} onClick={() => void refreshCapabilities()}><RefreshCw size={15} />{zh ? "刷新状态" : "Refresh status"}</button></div>
                   <p className="muted" role="status">{capabilityLoading ? zh ? "正在读取配置…" : "Checking configuration…" : capabilityError ? zh ? "暂时无法读取状态，可继续手动填写。" : "Could not read the status. Manual entry is still available." : capabilities?.foodPhoto.available ? zh ? "识图已配置；真实照片质量仍需验证。" : "Photo analysis is configured; real-photo quality still needs validation." : capabilities?.foodPhoto.reason === "invalid_config" ? zh ? "识图配置无效，请联系本机管理员；可继续手动填写。" : "Photo analysis configuration is invalid. Contact the local administrator; manual entry remains available." : zh ? "待配置 OpenAI 密钥。你仍可手动保存照片与营养。" : "Waiting for an OpenAI key. You can still save a photo and enter nutrition manually."}</p>
-                  <label className="checkbox-label"><input type="checkbox" checked={consent} disabled={!file || !capabilities?.foodPhoto.available} onChange={event => setConsent(event.target.checked)} /><span>{zh ? "我同意本次将这张照片及输出语言发送给 OpenAI，用于生成可审核的食物草稿。不会随请求发送我的账户、过敏、训练、睡眠及其它记录。" : "I consent to send this photo and output language to OpenAI for this analysis, to generate a food draft I can review. My account, allergies, training, sleep and other records are not sent with it."}</span></label>
+                  <label className="checkbox-label"><input type="checkbox" checked={consent} disabled={!file || !capabilities?.foodPhoto.available || aiSubmitted} onChange={event => setConsent(event.target.checked)} /><span>{zh ? "我同意本次将这张照片及输出语言发送给 OpenAI，用于生成可审核的食物草稿。不会随请求发送我的账户、过敏、训练、睡眠及其它记录。" : "I consent to send this photo and output language to OpenAI for this analysis, to generate a food draft I can review. My account, allergies, training, sleep and other records are not sent with it."}</span></label>
                   <p className="hint">{zh ? "发送前会压缩照片并去除 EXIF；供应商的数据保留按其政策执行。" : "The photo is resized and EXIF is removed before sending. Provider data retention follows its policies."} <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">{zh ? "查看 OpenAI 数据政策" : "View OpenAI data policy"}</a></p>
-                  <button className="btn btn-primary" type="button" disabled={!file || !consent || !capabilities?.foodPhoto.available || working} onClick={() => void runAnalysis()}><Camera size={17} />{aiDraft ? zh ? "重新识别这张照片" : "Analyze this photo again" : zh ? "识别照片" : "Analyze photo"}</button>
+                  <button className="btn btn-primary" type="button" disabled={!file || !consent || !capabilities?.foodPhoto.available || working || aiSubmitted} onClick={() => void runAnalysis()}><Camera size={17} />{aiDraft ? zh ? "重新识别这张照片" : "Analyze this photo again" : zh ? "识别照片" : "Analyze photo"}</button>
                 </div>}
             </fieldset>
             {analyzing ? <div className="ai-photo-summary" role="status" aria-live="polite"><RefreshCw size={20} /><div><strong>{analysisStage === "uploading" ? zh ? "正在私有上传照片…" : "Uploading the photo privately…" : zh ? "正在生成食物草稿…" : "Preparing a food draft…"}</strong><p className="muted">{zh ? "尚未保存饮食记录。识别完成后请逐项核对。" : "No meal has been saved. Review each candidate when analysis finishes."}</p></div><button className="btn btn-secondary" type="button" onClick={cancelAnalysis}><Square size={15} />{zh ? "停止等待" : "Stop waiting"}</button></div> : null}
             {aiDraft && !analyzing ? <fieldset disabled={busy} className="stack" style={{ border: 0, padding: 0, margin: 0 }}>
-              <div className="section-title"><h3 ref={reviewHeading} tabIndex={-1}>{zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
+              <div className="section-title"><h3 ref={reviewHeading} tabIndex={-1}>{zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{aiSubmitted ? zh ? "AI 估算 · 已尝试保存" : "AI estimate · Save attempted" : zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
+              {aiSubmitted ? <p className="hint" role="status">{zh ? "这些食物可能已保存或正在等待同步。你可以校正数值并重试这一批；如需移除食物、更换照片或重新识别，请关闭后先核对已有记录。" : "These foods may already be saved or waiting to sync. You can correct values and retry this batch. Close and check existing records before removing foods, changing the photo or analyzing again."}</p> : null}
               <p className="hint">{zh ? "仅凭照片无法确定所有过敏原、隐藏食材、烹调油和准确重量。请核对名称、份量与营养；不确定的数值留空，不能直接保存。" : "A photo cannot determine every allergen, hidden ingredient, cooking oil or exact weight. Check names, portions and nutrition. Unknown values stay blank and must be completed before saving."}</p>
               {aiDraft.warnings.length ? <ul className="ai-warning-list">{aiDraft.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul> : null}
               {!aiDraft.isFood || !reviewItems.length ? <p className="hint">{aiDraft.isFood ? zh ? "没有保留食物候选。你可以重新识别或改用手动填写。" : "No food candidates remain. Analyze again or continue manually." : zh ? "这张照片没有识别为食物，未添加任何记录。" : "This photo was not identified as food. No records were added."}</p> : null}
@@ -782,7 +818,7 @@ export default function Nutrition({
                 const itemValue = reviewTotals(item);
                 const missing = ([{ key: "grams", zh: "重量", en: "weight" }, { key: "kcal", zh: "热量", en: "energy" }, { key: "protein", zh: "蛋白质", en: "protein" }, { key: "carbs", zh: "碳水", en: "carbs" }, { key: "fat", zh: "脂肪", en: "fat" }] as const).filter(field => !item[field.key].trim()).map(field => zh ? field.zh : field.en);
                 return <div className="ai-item-card stack" key={item.index}>
-                  <div className="section-title"><strong>{zh ? "食物 " : "Food "}{position + 1}</strong><button className="icon-button" type="button" aria-label={(zh ? "移除候选 " : "Remove candidate ") + (item.name || position + 1)} onClick={() => { setReviewItems(current => current.filter(candidate => candidate.index !== item.index)); setReviewed(false); }}><Trash2 size={16} /></button></div>
+                  <div className="section-title"><strong>{zh ? "食物 " : "Food "}{position + 1}</strong><button className="icon-button" type="button" disabled={aiSubmitted} aria-label={(zh ? "移除候选 " : "Remove candidate ") + (item.name || position + 1)} onClick={() => { if (!aiSubmitted) { setReviewItems(current => current.filter(candidate => candidate.index !== item.index)); setReviewed(false); } }}><Trash2 size={16} /></button></div>
                   <div className="form-grid"><label className="field">{zh ? "食物名称" : "Food name"}<input className="input" required maxLength={160} value={item.name} onChange={event => patchReviewItem(item.index, { name: event.target.value })} /></label><label className="field">{zh ? "实际份量（克）" : "Portion eaten (g)"}<input className="input" type="number" required min="0.01" max="10000" step="any" placeholder={zh ? "待填写" : "Unknown"} value={item.grams} onChange={event => patchReviewItem(item.index, { grams: event.target.value })} /></label></div>
                   <p className="hint">{zh ? "下方营养数值均为每 100 g；实际摄入按上方重量计算。" : "Nutrition below is per 100 g. Intake scales to the portion weight above."}</p>
                   <div className="form-grid four">{([{ key: "kcal", zh: "热量", en: "Energy", unit: "kcal" }, { key: "protein", zh: "蛋白质", en: "Protein", unit: "g" }, { key: "carbs", zh: "碳水", en: "Carbs", unit: "g" }, { key: "fat", zh: "脂肪", en: "Fat", unit: "g" }] as const).map(field => <label className="field" key={field.key}>{zh ? field.zh : field.en} ({field.unit}/100 g)<input className="input" type="number" required min="0" max={field.key === "kcal" ? 1200 : 100} step="any" placeholder={zh ? "待填写" : "Unknown"} value={item[field.key]} onChange={event => patchReviewItem(item.index, { [field.key]: event.target.value })} /></label>)}</div>
@@ -793,7 +829,7 @@ export default function Nutrition({
               {reviewItems.length ? <div className="panel"><strong>{zh ? "保留项目的合计摄入" : "Total intake for retained foods"}</strong><p className="muted">{aiTotals ? aiTotals.kcal + " kcal · " + (zh ? "蛋白质 " : "Protein ") + Math.round(aiTotals.protein * 10) / 10 + " g · " + (zh ? "碳水 " : "Carbs ") + Math.round(aiTotals.carbs * 10) / 10 + " g · " + (zh ? "脂肪 " : "Fat ") + Math.round(aiTotals.fat * 10) / 10 + " g" : zh ? "— · 补全并核对所有项目后显示合计。" : "— · Complete and check every item to see totals."}</p></div> : null}
               {reviewItems.length ? <label className="checkbox-label"><input type="checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} /><span>{zh ? "我已核对保留项目的名称、份量与营养，确认将它们作为 AI 估算保存。" : "I reviewed the retained names, portions and nutrition, and confirm saving them as AI estimates."}</span></label> : null}
             </fieldset> : null}
-            <button className="btn btn-ghost" type="button" disabled={working} onClick={() => changeMode("manual")}>{zh ? "改用手动填写" : "Continue with manual entry"}</button>
+            <button className="btn btn-ghost" type="button" disabled={working || aiSubmitted} onClick={() => changeMode("manual")}>{zh ? "改用手动填写" : "Continue with manual entry"}</button>
             {error ? <p className="form-error" role="alert">{error}</p> : null}
           </form> : <form id="nutrition-form" className="stack" onSubmit={submit}>
             <fieldset

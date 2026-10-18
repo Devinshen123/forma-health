@@ -1,8 +1,24 @@
 # 网站验收记录
 
+## 2026-10-17 当前证据索引与文档核对
+
+三轮本地修复已完成；本轮仅读回源码、既有日志和结果 JSON 并更新 MD，没有重新测试或构建。完整提交、D 盘路径、备份边界和下一步见 [PROJECT-STATUS](PROJECT-STATUS.md)。以下为各提交当时的结果，不相加，也不代表当前脏工作区的结果。
+
+| 本地提交 | 全量测试 / 构建 | 真实浏览器结果 | 结果 JSON |
+|---|---|---|---|
+| `874b13c` 普通记录流 | 191/191；壳 `5cd67b87961bf8f8` | 系统 Edge 8/8 | `D:\CodexTaskData\forma-record-flows-20261017\final\results.json` |
+| `1ec7b3a` 审核恢复 | 198/198；壳 `8e214ee1e8811712` | 系统 Edge 12/12 | `D:\CodexTaskData\forma-review-recovery-20261017\final-confirmed\results.json` |
+| `367ae3e` 删除/丢弃确认边界 | 202/202；壳 `2a24c4362fea75f4` | 系统 Edge 13/13；页面异常/console warning 0 | `D:\CodexTaskData\forma-confirmation-boundaries-20261017\final-confirmed\results.json` |
+
+对应目录的 `final-tests.log`、`final-build.log` 已核对成功；后两轮另有 `QA.md` 与截图/脚本。第三轮修复前 3 个失败场景和修复后通过均有证据，后端 4 项真实 HTTP 专项已通过。使用临时数据库、合成账号/附件和 mock AI；390px 是移动视口模拟，WebKit 未安装，没有真实 iPhone/Safari/VoiceOver 验收。
+
+当前目录已有四项用户删除，包括仍被 `src/catalog/exercises.ts` 导入的 `src/catalog/exercises.json`；全部保留。本轮没有把历史构建通过推广为当前缺文件工作区可构建。远程 PR #1 的 `500e66b` 是较早的 186/186 安全轮，仍为 OPEN / DRAFT；上述三轮未上传、合并或部署。任何历史“服务运行中”只指当轮验收时刻。
+
+尚未验证的真实 AI/供应商、实机、生产托管与原生健康接入仍按原边界处理。JSON 没有附件本体；服务端导出也不含客户端待同步队列，待同步 JSON 仅文字变更与引用。不要因此删除原文件。
+
 ## 2026-10-14 完整训练与离线同步增量
 
-本节是当前版本；下方M0与AI照片段落为各自交付时的历史记录，不代表仍缺少训练或离线队列。网站在现有实现上增量扩展，没有复制openGym的代码、schema、界面或媒体。
+本节是 2026-10-14 交付时的历史记录；之后修复见上方索引。下方 M0 与 AI 照片段落也为各自交付时快照，不代表仍缺少训练或离线队列。网站在现有实现上增量扩展，没有复制openGym的代码、schema、界面或媒体。
 
 | 检查 | 实际结果 |
 |---|---|
@@ -77,4 +93,4 @@ IAB截图初次展示成功后连续返回 Unable to capture screenshot；按前
 
 未接通/未验证：AI识图、OCR/医学解释、Apple OAuth/邮件验证、HealthKit真机、跨端云同步、离线队列、Safari/真实iPhone浏览器、VoiceOver系统实测、TestFlight、付费、正式合规与公开托管。固定规则不是AI，当前并非完整双端MVP。
 
-[运行说明](../README.md) · [产品计划](PRODUCT-PLAN.md) · [费用](COSTS.md) · [接口](API-CONTRACT.md) · [设计概念](design/dashboard-concept.png) · [原尺寸截图](design/desktop-native.png) · [手机截图](design/mobile-render.png) · [Claude协商回复](collaboration/requests/20261013-2220-claude-to-lead-planning-review.md)
+[运行说明](../README.md) · [产品计划](PRODUCT-PLAN.md) · [费用](COSTS.md) · [接口](API-CONTRACT.md) · 历史设计概念 `design/dashboard-concept.png`（本轮开始前已删除，未恢复） · [原尺寸截图](design/desktop-native.png) · [手机截图](design/mobile-render.png) · [Claude协商回复](collaboration/requests/20261013-2220-claude-to-lead-planning-review.md)

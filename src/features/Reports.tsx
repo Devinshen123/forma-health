@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ExternalLink,
   FileText,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { assetUrl, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
+import { AttachmentLifecycle } from "./attachmentLifecycle";
 import {
   localDate,
   uid,
@@ -19,12 +20,13 @@ import {
 
 type MarkerDraft = Marker & { key: string };
 type ReportDraft = {
-  id?: string;
+  id: string;
+  existing?: boolean;
   name: string;
   date: string;
   assetId?: string;
   markers: MarkerDraft[];
-  createdAt?: string;
+  createdAt: string;
 };
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const FILE_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
@@ -101,6 +103,7 @@ export default function Reports({
   save,
   notify,
   demo,
+  accountId,
 }: FeatureProps) {
   const zh = lang === "zh";
   const [date, setDate] = useState("");
@@ -112,6 +115,25 @@ export default function Reports({
   const [deleting, setDeleting] = useState<Report | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const mounted = useRef(true);
+  const ownerAccount = useRef(accountId ?? "").current;
+  const deleteUpload = (id: string) => request("/assets/" + encodeURIComponent(id), {
+    method: "DELETE",
+    body: "{}",
+    headers: { "X-Forma-Account": ownerAccount },
+  });
+  const uploads = useRef(new AttachmentLifecycle(deleteUpload));
+  const rememberUpload = (id: string | null) => {
+    uploads.current.stage(id);
+    if (mounted.current) setUploadedId(id);
+  };
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (!demo) void uploads.current.discard().catch(() => {});
+    };
+  }, []);
   const reports = state.reports
     .filter((report) => !date || report.date === date)
     .sort(
@@ -119,15 +141,14 @@ export default function Reports({
         b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
     );
   const discardUpload = async () => {
-    if (!uploadedId || demo) return true;
+    if (demo) return true;
     try {
-      await request("/assets/" + encodeURIComponent(uploadedId), {
-        method: "DELETE",
-        body: "{}",
-      });
+      await uploads.current.discard();
+      if (!mounted.current) return false;
       setUploadedId(null);
       return true;
     } catch (cause) {
+      if (!mounted.current) return false;
       setError(
         (zh
           ? "未保存的附件清理失败，请重试关闭："
@@ -142,32 +163,40 @@ export default function Reports({
     }
   };
   const close = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     setBusy(true);
     try {
-      if (await discardUpload()) {
+      if ((await discardUpload()) && mounted.current) {
         setDraft(null);
         setFile(null);
-        setUploadedId(null);
+        rememberUpload(null);
         setError("");
       }
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   const open = (report?: Report) => {
+    if (!mounted.current || busy) return;
     setError("");
-    setUploadedId(null);
+    rememberUpload(null);
     setFile(report ? (demoFiles[report.id] ?? null) : null);
     setDraft(
       report
         ? {
             ...report,
+            existing: true,
             markers: report.markers.length
               ? report.markers.map((marker) => ({ ...marker, key: uid() }))
               : [newMarker()],
           }
-        : { name: "", date: date || localDate(), markers: [newMarker()] },
+        : {
+            id: uid(),
+            createdAt: new Date().toISOString(),
+            name: "",
+            date: date || localDate(),
+            markers: [newMarker()],
+          },
     );
   };
   const patch = (change: Partial<ReportDraft>) =>
@@ -184,6 +213,7 @@ export default function Reports({
         : null,
     );
   const chooseFile = async (selected?: File) => {
+    if (!mounted.current || busy) return;
     setError("");
     if (!selected) return;
     if (!FILE_TYPES.includes(selected.type) || selected.size > MAX_FILE_BYTES) {
@@ -196,9 +226,9 @@ export default function Reports({
     }
     setBusy(true);
     try {
-      if (await discardUpload()) {
+      if ((await discardUpload()) && mounted.current) {
         setFile(selected);
-        setUploadedId(null);
+        rememberUpload(null);
         setDraft((current) =>
           current
             ? {
@@ -211,25 +241,25 @@ export default function Reports({
         );
       }
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   const removeAttachment = async () => {
-    if (busy) return;
+    if (!mounted.current || busy) return;
     setBusy(true);
     try {
-      if (await discardUpload()) {
+      if ((await discardUpload()) && mounted.current) {
         setFile(null);
-        setUploadedId(null);
+        rememberUpload(null);
         patch({ assetId: undefined });
       }
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!draft || busy) return;
+    if (!mounted.current || !draft || busy) return;
     setError("");
     const filledMarkers = draft.markers.filter(hasMarkerContent);
     if (
@@ -266,12 +296,16 @@ export default function Reports({
     try {
       let attachment = uploadedId ?? draft.assetId;
       if (file && !demo && !uploadedId) {
-        const result = await uploadFile(file);
+        const result = await uploadFile(file, undefined, ownerAccount);
         attachment = result.id;
-        setUploadedId(result.id);
+        rememberUpload(result.id);
+        if (!mounted.current) {
+          await uploads.current.discard().catch(() => {});
+          return;
+        }
       }
       const report: Report = {
-        id: draft.id ?? uid(),
+        id: draft.id,
         name: draft.name.trim(),
         date: draft.date,
         ...(attachment ? { assetId: attachment } : {}),
@@ -283,14 +317,16 @@ export default function Reports({
           notes,
         })),
         extractionStatus: "manual",
-        createdAt: draft.createdAt ?? new Date().toISOString(),
+        createdAt: draft.createdAt,
       };
+      uploads.current.retainForSave(attachment);
       await save({
         ...state,
-        reports: draft.id
+        reports: state.reports.some((item) => item.id === report.id)
           ? state.reports.map((item) => (item.id === report.id ? report : item))
           : [...state.reports, report],
       });
+      if (!mounted.current) return;
       if (demo)
         setDemoFiles((current) => {
           const next = { ...current };
@@ -300,7 +336,7 @@ export default function Reports({
         });
       setDraft(null);
       setFile(null);
-      setUploadedId(null);
+      rememberUpload(null);
       notify(
         demo && file ? "演示报告已保存，附件仅在本页预览" : "报告已保存",
         demo && file
@@ -308,21 +344,25 @@ export default function Reports({
           : "Report saved",
       );
     } catch (cause) {
+      if (!mounted.current) return;
       setError(
-        (zh ? "保存失败：" : "Could not save: ") +
+        (zh ? "保存暂未确认：" : "Save not confirmed: ") +
           (cause instanceof Error
             ? cause.message
             : zh
               ? "请重试。"
               : "Please try again."),
       );
-      notify("报告未保存，请重试", "Report was not saved. Please try again.");
+      notify(
+        "报告保存暂未确认，请查看同步状态后重试",
+        "Report save is not confirmed. Check the sync status before retrying.",
+      );
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   const remove = async () => {
-    if (!deleting || busy) return;
+    if (!mounted.current || !deleting || busy) return;
     setBusy(true);
     setError("");
     try {
@@ -330,6 +370,7 @@ export default function Reports({
         ...state,
         reports: state.reports.filter((report) => report.id !== deleting.id),
       });
+      if (!mounted.current) return;
       setDemoFiles((current) => {
         const next = { ...current };
         delete next[deleting.id];
@@ -338,6 +379,7 @@ export default function Reports({
       setDeleting(null);
       notify("报告记录已删除", "Report deleted");
     } catch (cause) {
+      if (!mounted.current) return;
       setError(
         (zh ? "删除失败：" : "Could not delete: ") +
           (cause instanceof Error
@@ -348,7 +390,7 @@ export default function Reports({
       );
       notify("未能删除报告", "Could not delete report");
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
 
@@ -546,7 +588,7 @@ export default function Reports({
       {draft ? (
         <Modal
           title={
-            draft.id
+            draft.existing
               ? zh
                 ? "校正报告与指标"
                 : "Correct report and markers"

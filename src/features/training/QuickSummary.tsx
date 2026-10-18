@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Modal } from "../../components/Modal";
+import { RecordDraft } from "../recordDraft";
 import {
   localDate,
   uid,
@@ -34,6 +35,7 @@ type WorkoutDraft = {
   exercises: ExerciseDraft[];
   notes: string;
   createdAt: string;
+  loadUnit: "kg" | "lb";
 };
 const KG_TO_LB = 2.2046226218487757;
 const newExercise = (): ExerciseDraft => ({
@@ -78,7 +80,9 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
   const [deleting, setDeleting] = useState<Workout | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const editBaseline = useRef("");
+  const editRecord = useRef<RecordDraft<Workout> | null>(null);
+  const deleteRecord = useRef<RecordDraft<Workout> | null>(null);
+  useEffect(() => { if(draft) editRecord.current?.observe(state.workouts.find(workout=>workout.id===draft.id)); }, [state.workouts,draft?.id]);
   const workouts = state.workouts
     .filter((workout) => workout.date === date && !workout.exercises.some((exercise) => exercise.setLogs !== undefined))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -92,13 +96,14 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
   const showWeight = (weight: number) =>
     Math.round(weight * (imperial ? KG_TO_LB : 1) * 100) / 100;
   const open = (workout?: Workout) => {
-    editBaseline.current = workout ? JSON.stringify(workout) : "";
+    editRecord.current = new RecordDraft(workout);
     setError("");
     setDraft(
       workout
         ? {
             ...workout,
             existing: true,
+            loadUnit: weightUnit,
             duration: String(workout.duration),
             rpe: workout.rpe === null ? "" : String(workout.rpe),
             exercises: workout.exercises.map((exercise) => ({
@@ -117,6 +122,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
         : {
             id: uid(),
             existing: false,
+            loadUnit: weightUnit,
             createdAt: new Date().toISOString(),
             date,
             name: "",
@@ -150,7 +156,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
     event.preventDefault();
     if (!draft || busy) return;
     setError("");
-    if (draft.existing && JSON.stringify(state.workouts.find((workout) => workout.id === draft.id)) !== editBaseline.current) {
+    if (!editRecord.current?.canSave(state.workouts.find((workout) => workout.id === draft.id))) {
       setError(zh ? "记录已在另一处变化，请取消并重新打开核对。" : "This record changed elsewhere. Cancel and reopen to review it."); return;
     }
     const duration = Number(draft.duration),
@@ -162,7 +168,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
       reps: Number(exercise.reps),
       weight:
         Math.round(
-          (Number(exercise.weight) / (imperial ? KG_TO_LB : 1)) * 1000000,
+          (Number(exercise.weight) / (draft.loadUnit === "lb" ? KG_TO_LB : 1)) * 1000000,
         ) / 1000000,
     }));
     if (
@@ -210,6 +216,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
         notes: draft.notes.trim(),
         createdAt: draft.createdAt,
       };
+      editRecord.current.submittedValue(workout);
       await save({
         ...state,
         workouts: state.workouts.some((item) => item.id === workout.id)
@@ -239,9 +246,14 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
   };
   const remove = async () => {
     if (!deleting || busy) return;
+    if (!deleteRecord.current?.canSave(state.workouts.find(workout => workout.id === deleting.id))) {
+      setError(zh ? "这条记录已在另一处变化，请先保留并重新核对后再删除。" : "This record changed elsewhere. Keep it and review the latest version before deleting.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
+      deleteRecord.current.submittedValue(undefined);
       await save({
         ...state,
         workouts: state.workouts.filter(
@@ -357,6 +369,7 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
                   aria-label={(zh ? "删除 " : "Delete ") + workout.name}
                   disabled={busy}
                   onClick={() => {
+                    deleteRecord.current = new RecordDraft(workout);
                     setDeleting(workout);
                     setError("");
                   }}
@@ -596,12 +609,12 @@ export default function QuickSummary({ state, lang, save, notify }: FeatureProps
                       />
                     </label>
                     <label className="field">
-                      {zh ? "负重" : "Load"} ({weightUnit})
+                      {zh ? "负重" : "Load"} ({draft.loadUnit})
                       <input
                         className="input"
                         type="number"
                         min="0"
-                        max={imperial ? 2000 * KG_TO_LB : 2000}
+                        max={draft.loadUnit === "lb" ? 2000 * KG_TO_LB : 2000}
                         step="any"
                         required
                         value={exercise.weight}

@@ -207,15 +207,11 @@ export function createApp(options: AppOptions) {
       ? { token, account: store.session(token) }
       : null;
   };
-  const auth = (req: Request, res: Response, next: NextFunction) => {
+  const authenticate = (requireAccountHint: boolean) => (req: Request, res: Response, next: NextFunction) => {
     const account = sessionOf(req)?.account;
     if (!account)
       return res.status(401).json({ error: "Sign in to access your data" });
-    const accountBound =
-      ["/api/state", "/api/sync", "/api/export", "/api/account", '/api/food-photo-drafts'].includes(req.path) ||
-      (req.path.startsWith("/api/assets") &&
-        ["POST", "DELETE"].includes(req.method));
-    if (accountBound && req.get("X-Forma-Account") !== account.id)
+    if (requireAccountHint && req.get("X-Forma-Account") !== account.id)
       return res
         .status(401)
         .json({
@@ -225,6 +221,12 @@ export function createApp(options: AppOptions) {
     res.locals.account = account;
     next();
   };
+  // Bind authorization to the matched route, not its spelling: Express also
+  // matches case variants and trailing slashes. New private routes are bound by default.
+  const auth = authenticate(true);
+  // Browser images and download navigation cannot attach custom headers. The
+  // read route still resolves each attachment by its session-derived owner.
+  const assetReadAuth = authenticate(false);
   const issueSession = (req: Request, res: Response, user: User) => {
     const previous = sessionOf(req);
     if (previous) store.deleteSession(previous.token);
@@ -315,12 +317,19 @@ export function createApp(options: AppOptions) {
       store.deleteAsset(ownerId, assetId);
     }
   };
+  // Consumes only the intents this mutation's commit recorded; a replay of the same receipt resumes them.
+  const finishMutationCleanup = (ownerId: string, mutationId: string) => {
+    for (const assetId of store.assetCleanupIntents(ownerId, mutationId)) {
+      foodPhoto.cancelAsset(ownerId, assetId);
+      store.completeAssetCleanup(ownerId, mutationId, assetId);
+    }
+  };
   app.get('/api/sync', auth, (_req, res) => res.json(store.syncSnapshot(res.locals.account.id)));
   app.post('/api/sync', auth, (req, res) => {
     const mutation = syncMutationSchema.parse(req.body) as SyncMutation;
     const ownerId: string = res.locals.account.id;
     const result = store.sync(ownerId, mutation, (previous, next) => validateOwnedState(ownerId, previous, next));
-    if (result.previous) cleanRemovedAssets(ownerId, result.previous, result.snapshot.state);
+    finishMutationCleanup(ownerId, mutation.mutationId);
     res.json(result.snapshot);
   });
   app.put("/api/state", auth, (req, res) => {
@@ -367,7 +376,7 @@ export function createApp(options: AppOptions) {
       .status(201)
       .json(store.addAsset(res.locals.account.id, cleanName, mime, bytes));
   });
-  app.get("/api/assets/:id", auth, (req, res) => {
+  app.get("/api/assets/:id", assetReadAuth, (req, res) => {
     const parsed = idSchema.safeParse(req.params.id);
     if (!parsed.success)
       return res.status(404).json({ error: "Attachment not found" });

@@ -66,6 +66,32 @@ test('progression is a reversible proposal after two distinct recent sessions, n
   assert.equal(progressionSuggestions(plan, [history[1], history[1]]).length, 0);
 });
 
+test('progression compares imported pounds at manual input precision without changing recorded loads', () => {
+  const plan = routine();
+  plan.exercises[0].weight = 4.535924; // A manually entered 10 lb target.
+  const session = (date: string, load: number) => achieved(date, { exercises: [exercise([set({ weight: load }), set({ weight: load })], { exerciseId: 'bench' })] });
+  const history = [session('2026-10-10', kilograms(10, 'lb')), session('2026-10-14', kilograms(10, 'lb'))];
+  const before = JSON.stringify(history);
+  assert.equal(progressionSuggestions(plan, history).length, 1);
+  assert.equal(JSON.stringify(history), before);
+  for (const load of [kilograms(9.999, 'lb'), kilograms(9.99, 'lb'), kilograms(9.9, 'lb')]) {
+    assert.equal(progressionSuggestions(plan, [history[0], session('2026-10-14', load)]).length, 0);
+  }
+});
+
+test('progression rounding cannot create a non-increasing or out-of-range draft', () => {
+  const plan = routine();
+  plan.exercises[0].weight = 0.1;
+  plan.exercises[0].progression.incrementKg = 0.2;
+  assert.equal(progressionSuggestions(plan, [achieved('2026-10-10'), achieved('2026-10-14')])[0].toWeight, 0.3);
+  for (const [weight, incrementKg] of [[60.0000004, 1e-8], [60, 1e-8], [2000, 2.5]]) {
+    plan.exercises[0].weight = weight;
+    plan.exercises[0].progression.incrementKg = incrementKg;
+    const session = (date: string) => achieved(date, { exercises: [exercise([set({ weight }), set({ weight })], { exerciseId: 'bench' })] });
+    assert.equal(progressionSuggestions(plan, [session('2026-10-10'), session('2026-10-14')]).length, 0);
+  }
+});
+
 test('one bad latest attempt blocks progression; older successes are not cherry-picked', () => {
   const history = [achieved('2026-10-01'), achieved('2026-10-05')];
   for (const patch of [{ completed: false }, { reps: null }, { reps: 7 }, { weight: null }, { weight: 59 }, { rpe: 9 }, { rpe: null, rir: null }, { rpe: 7, rir: 1 }]) {

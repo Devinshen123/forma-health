@@ -18,6 +18,7 @@ export default function Settings({
   save,
   notify,
   demo,
+  accountId,
   user,
   onLogout,
   onDeleted,
@@ -37,6 +38,8 @@ export default function Settings({
   const [capabilityError, setCapabilityError] = useState(false);
   const capabilitySequence = useRef(0);
   const mounted = useRef(true);
+  const ownerAccount = useRef(accountId ?? "").current;
+  const accountHeaders = { "X-Forma-Account": ownerAccount };
   const refreshCapabilities = async () => {
     const sequence = ++capabilitySequence.current;
     setCapabilityLoading(true); setCapabilityError(false);
@@ -62,8 +65,10 @@ export default function Settings({
     : capabilities?.foodPhoto.reason === "invalid_config" ? zh ? "配置无效" : "Invalid configuration"
     : zh ? "待配置 OpenAI 密钥" : "Waiting for OpenAI key";
   async function exportData() {
+    if (!mounted.current) return;
     try {
-      const data = demo ? state : await request("/export");
+      const data = demo ? state : await request("/export", { headers: accountHeaders });
+      if (!mounted.current) return;
       const url = URL.createObjectURL(
         new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
       );
@@ -74,23 +79,26 @@ export default function Settings({
       URL.revokeObjectURL(url);
       notify("导出已完成。", "Export complete.");
     } catch (e) {
-      notify(e instanceof Error ? e.message : String(e));
+      if (mounted.current) notify(e instanceof Error ? e.message : String(e));
     }
   }
   async function remove() {
+    if (!mounted.current || busy || demo) return;
     setBusy(true);
     try {
       await request("/account", {
         method: "DELETE",
+        headers: accountHeaders,
         body: JSON.stringify({ password }),
       });
+      if (!mounted.current) return;
       setDeleting(false);
       onDeleted();
       notify("账户和本机记录已删除。", "Account and local records deleted.");
     } catch (e) {
-      notify(e instanceof Error ? e.message : String(e));
+      if (mounted.current) notify(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   }
   return (
@@ -159,7 +167,7 @@ export default function Settings({
                     ...state.profile,
                     units: e.target.value as "metric" | "imperial",
                   },
-                }).catch((err) => notify(String(err)));
+                }).catch((err) => { if (mounted.current) notify(String(err)); });
             }}
           >
             <option value="metric">
@@ -227,7 +235,7 @@ export default function Settings({
         <div className="row-actions">
           <button className="btn btn-secondary" onClick={exportData}>
             <Download size={17} />
-            {zh ? "导出全部记录" : "Export all records"}
+            {zh ? "导出 JSON 记录" : "Export JSON records"}
           </button>
           {!demo && (
             <button
@@ -241,8 +249,8 @@ export default function Settings({
         </div>
         <p className="hint">
           {zh
-            ? "删除包含记录、上传文件与登录会话。导出文件包含你的个人数据，请妥善保存。"
-            : "Deletion includes records, uploaded files and sessions. Exports contain your personal data; keep them private."}
+            ? "请先完成同步，导出不包含尚未同步的本机改动。JSON 包含记录和附件引用，不包含照片、报告图片或 PDF 文件本体，不能作为完整附件备份。请在删除账户前另行保存所需文件。导出包含个人数据，请妥善保存；删除账户会同时删除记录、上传文件与登录会话。"
+            : "Finish syncing first; unsynced changes are not included. JSON includes records and attachment references, but not photo, report-image or PDF files. It is not a complete attachment backup. Save any files you need separately before deleting the account. Keep exports private; account deletion removes records, uploaded files and sessions."}
         </p>
       </section>
       {deleting && (

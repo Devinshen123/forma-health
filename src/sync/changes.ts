@@ -6,12 +6,17 @@ export function entities(state: AppState, collection: SyncCollection): Map<strin
   return new Map((state[collection] ?? []).map(x=>[x.id,x]));
 }
 export const versionKey = (collection: SyncCollection,id:string) => `${collection}:${id}`;
+function canonical(value:unknown):string {
+  if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
+  if(value&&typeof value==='object')return '{'+Object.entries(value).filter(([,item])=>item!==undefined).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([key,item])=>JSON.stringify(key)+':'+canonical(item)).join(',')+'}';
+  return JSON.stringify(value)??'null';
+}
 export function diffStates(before:AppState,after:AppState,versions:Record<string,number>):SyncChange[] {
   const changes:SyncChange[]=[];
   for (const collection of collections) {
     const old=entities(before,collection), next=entities(after,collection);
     for (const id of new Set([...old.keys(),...next.keys()])) {
-      if (JSON.stringify(old.get(id))===JSON.stringify(next.get(id))) continue;
+      if (canonical(old.get(id))===canonical(next.get(id))) continue;
       changes.push({collection,id,baseVersion:versions[versionKey(collection,id)]??0,kind:next.has(id)?'upsert':'delete',...(next.has(id)?{value:next.get(id)}:{})});
     }
   }
