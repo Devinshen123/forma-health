@@ -8,6 +8,10 @@ Owner：真实Claude会话 a02c2fec-4908-4d91-972a-06c1f05c67c8（CLI已确认�
 
 Owner：真实Claude会话 bb523eca-ef12-424d-8f35-0b01a1d4d551（CLI已确认，预检exit0）；CF-17，claude/forma-frontend-recheck-20261017，见 [CF-17任务书](tasks-20261017-claude-frontend.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
 
+本轮进度：CQ-17真实Claude已完成独立审查；聚焦12/12、3个新增浏览器代表例3/3，F/B完整tsc均exit2/38条，报告明确删除意图/依赖缺件与运行边界。
+
+Owner：真实Claude会话 bf755c6b-5bb9-413a-a6f4-63f764629745（CLI已确认，预检exit0）；CQ-17，claude/forma-boundary-review-20261017，见 [CQ-17任务书](tasks-20261017-claude-review.md)。协调者准备MD，先preflight，后按同一session授权时段执行；不把先前Codex工作称Claude完成。
+
 # Forma 协作任务板
 
 更新：2026-10-17，America/Los_Angeles。当前人类授权先做网站并添加AI识图，密钥稍后配置；已确认 US$20/月和已有Mac/iPhone。付费开通、生产发布和iPhone/TestFlight未据此自动获准。早期predevelopment的C08/G01是旧阶段快照，不能覆盖后续人类指令。运行事实以根README、实际API和用户最新指令为准。

@@ -10,6 +10,20 @@
 - 阻塞：无。未安装依赖、调用真实 AI、读取真实环境/健康数据、启动固定服务或修改其他角色文件。浏览器、真实 IndexedDB、生产与供应商质量不在本次验证内。
 - 待用户决定：本轮没有新增事项；既有供应商/预算等仍以当前任务板和人类指令为准。
 
+## 2026-10-17 Q-17 三方向独立审查（已交付，有明确未修项）
+
+- 唯一执行者：`review_task`；工作区 `task-2/forma-health`，实际分支 `codex/forma-three-direction-review-20261017`，开始 SHA `33f12568e7fb386efd88def9cd63dc1ee5883217`。本轮仅写审查报告和本状态；前后端产品只读，分支未集成。报告：`docs/reviews/20261017-three-direction-review.md`。
+- 已读当前 AGENTS、CLAUDE、TASKS 顶部、三方向任务书、PROJECT-STATUS、SKILLS-HANDOFF 和历史 qa 状态；已实际读 `C:\Users\devin\.codex\skills\playwright\SKILL.md`、`C:\Users\devin\.codex\skills\security-review\SKILL.md`、`C:\Users\devin\.codex\skills\tdd\SKILL.md`，分别应用于 DOM 行为证据、账号/附件/事务安全和失败→通过回归审查。旧版 security-review 不照搬 Supabase/Next.js 示例；未安装技能、依赖或运行来源包装器。
+- 精确审查 F-17 `2786a336edd15dc99803520417a3216d5855e1ac` 与 B-17 `b27c3cce48e3dc088a17df06d040b5e9aa2105dd`。两个页面独立 edit/delete RecordDraft、自己的提交 observe、AttachmentLifecycle 保留；后端 SQLite 写锁内先查最新 owner 引用再删 metadata/draft/bytes。未发现指定补丁新增阻塞，保留已知清理恢复缺陷与构建阻塞。
+- 后端独立实跑 `node --import tsx --test --test-concurrency=1 server/approval-failure-recovery.test.ts` **5/5通过**（3顶层+2子测）；完整 `node --import tsx --test --test-concurrency=1 server/*.test.ts server/rules/*.test.ts tests/*.test.ts` **207/207通过**、0fail/skip/cancel，约15.2秒。未重复过滤套件，未把历史202/202当本轮结果。两案SQL ABORT为Store/SQLite边界，不各自声称HTTP错误响应覆盖。
+- 独立确认仍未修的清理恢复缺陷：assets DELETE故障后HTTP500，但新值/receipt已提交；同mutationId重试200、不重复写，却旧附件仍GET200。修正artifact入口后实跑1项 **0通过/1失败，exit1，真实200!=404断言**，保留在 `qa/postcommit-cleanup-confirmed-failure.log`，不混入绿色207。首次Sharp错误入口引发的MODULE_NOT_FOUND另存 `qa/postcommit-cleanup-known-failure.log`，不把加载错误当产品红例。
+- 前端指定SHA独立执行完整 `node ../forma-task-runtime-20261017/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json`：**exit2、38诊断**，缺 `exercises.json`、lucide-react类型及node:crypto声明，另有派生any；没有忽略或补占位。动作库仍沿Training五页面导入链，不能声称当前build通过。
+- 前端实际 `node --import tsx tests/browser/sleep-report-lifecycle.mts`，用现有 `FORMA_QA_MATCH` 仅筛 `sleeps-stale-delete-confirmation|reports-stale-edit-update|reports-uncertain-attachment-cancel` 的完整名称：**3/3通过、pageErrors0**。旧值保护、取消/Keep零误写、报告排队附件取消后GET与原PDF bytes均通过。系统Edge/1280×900/UTC、禁GPU，范围为真实两组件+SyncEngine+合成本地HTTP/SQLite，未挂完整App/训练；不冒称全App跨账号或实机验收。前端执行者另有13/13证据，并非QA重跑13项。
+- 独立证据在 `task-2/forma-task-evidence-20261017/qa`：各 `.log`、SHA/命令/退出码metadata，`frontend-representative/results.json` 和两PNG；已实际查看PNG。运行采用总控锁校验本机缓存overlay，仅进程NODE_OPTIONS/ESBUILD_BINARY_PATH/TEMP/TMP，不改共享node_modules或全局设置。串行时段已释放，自有Edge/API/Vite均finally关闭，未操作其他任务服务。
+- 用户四项删除和未跟踪AGENTS全部保留，未恢复/暂存/改引用掩盖。未build、安装、push、merge、deploy或访问真实数据/外部AI。待决定：具体owner/asset持久清理意图策略（涉及schema）、动作库删除意图；不做全账号GC。DB+文件跨资源原子性、真实外部服务、完整App及Safari/iPhone仍未验证。
+
+以下为历史任务记录，不代表本轮当前验证。
+
 更新：2026-10-14（America/Los_Angeles）。Owner：native_architecture / T-04，AI-04 为已完成历史。
 
 ## 当前状态
