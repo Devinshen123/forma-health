@@ -1,6 +1,6 @@
 # Forma · 本机健康与健身网站
 
-独立iPhone开发已开始：[iOS工程与运行说明](ios/README.md)。SwiftUI原生五页与同一Forma后端，详细训练工具保留同源工作台；签名、真机安装与TestFlight尚未完成，真实构建结果见项目状态。
+独立iPhone首版工程已提交：[iOS工程与运行说明](ios/README.md)。SwiftUI原生五页与同一Forma后端，详细训练工具保留同源工作台；Mac编译、21项核心测试、10项原生网络/存储测试、4项原生UI测试及无签名iPhone Release归档已实际通过。签名、用户真机安装与TestFlight尚未完成，见[真实构建结果](https://github.com/Devinshen123/forma-health/actions/runs/39193436826)。
 
 当前版本将饮食、训练、手动睡眠和趋势放在同一个网页里，提供简体中文与英文界面。已实现本机账号、首次计划、记录编辑删除、私有照片/PDF附件、计划调整审核与版本历史、周复盘和 JSON 导出。
 

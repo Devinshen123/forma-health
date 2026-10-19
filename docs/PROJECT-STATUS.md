@@ -6,7 +6,9 @@
 
 原生/API采用同一Forma事实和实体版本契约，URLSession私有cookie+本机不可迁移Keychain；工作台按账户/服务使用命名持久profile，关闭保留进行中训练/待同步媒体，同账户重登恢复，换户/显式退出先锁定再清理。退出标记和清理队列跨重启保留，失败不能自动恢复旧凭据；原生未确认保存只在本次进程按账户暂存原mutation，不能称持久离线队列。窗口遮罩包含sheet，Library排除系统备份；不承诺应用层静态加密。
 
-实际验证：Windows `npm run build`与`npx tsc --noEmit`成功，新增Node真实HTTP契约4/4。GitHub Mac CI已在iPhone16Pro/iOS18.5编译原生App及测试；Core21通过，Swift网络6项曾全部通过无skip。最新持久化修复的10项原生测试和4项UI测试正在运行，最终结果尚待确认，不能计入通过。之前UI定位失败、一次live测试skip和首次架构/Sleep编译错误都保留在ios-lead状态中。
+实际最终验证：[Mac CI 39193436826](https://github.com/Devinshen123/forma-health/actions/runs/39193436826)，代码`a5b65f3`，Xcode16.4/iPhone16Pro/iOS18.5：Core21/21、原生网络/存储10/10（包含真实Swift→临时Express与4项真实HTTP WebKit恢复/隔离/清理测试）、原生UI4/4均通过，无fail/skip；iPhone真机SDK的无签名Release archive成功。UI涵盖五个原生Tab、实际500kcal/30min/8h与宏量、未知逐组明细—、三个工作台演示门禁、语言切换和有效演示表单不能个人保存。Windows完整Web build/类型检查成功，新增Node真实HTTP契约4/4；后端未改，不把过去255主测试冒称本轮重跑。之前真实失败均保留在ios-lead状态。
+
+最终原生模拟器截图、xcresult、模拟器.app与无签名archive已下载至本聊天外部visualizations/ios-20261018/final-7，实际检查了今日与训练PNG，不是网站窄屏截图。GitHub保留该构建附件7天；源码、工程、运行说明持续在分支保留。此后交付文档提交不改变已测试的Swift/工程/CI源文件。
 
 本机Windows无xcrun；用户Mac可用尚未接入，Xcode还未安装或未确认，Developer会员未确认。未安装用户iPhone、未签名IPA、未发布TestFlight/App Store。模拟器.app和无签名archive不能直接装到iPhone。网页下载目前被原生工作台导航策略拦截，使用原生设置导出；文件上传/导入与相机需真机确认，HealthKit/Apple/完整HTTPS服务尚待后续。详见[Mac打开与数据边界](../ios/README.md)。未修改其它worktree、原main或源8080服务，既有5173预览保留。
 

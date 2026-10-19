@@ -29,3 +29,8 @@
 ## 待用户决定
 
 - 无新增决定；签名证书、开发者会员、TestFlight和真机测试由 lead 据实际授权另行处理。
+
+## Lead 最终 Mac 验证（2026-10-18）
+
+GitHub CI 39193436826 / a5b65f3 已实际成功：Core 21/21、Native API/WebKit 10/10、UI 4/4，零失败/跳过，模拟器编译与无签名 iPhone Release archive通过。本角色代码已冻结交回lead；这些是lead的Mac CI结果，不是Windows本地运行。真机安装、签名与TestFlight尚未完成。
+

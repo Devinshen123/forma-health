@@ -4,13 +4,15 @@
 
 | ID | owner / 本轮独占写入 | 状态 | 验收 |
 |---|---|---|---|
-| IOS-01 | lead：ios/Forma（不含Features）、ios/Forma.xcodeproj、ios/Config、scripts/ios*、.github、根文档 | doing | 原生入口/设置/登录/会话隔离/同源工作台；实际Mac构建及如实限制 |
-| IOS-02 | inspect_library：ios/Packages/FormaCore与status/ios-core.md | doing | 纯Swift JSON/请求结构/确定性营养与睡眠/记录工厂/边界测试 |
-| IOS-03 | muscle_ui：ios/Forma/Features与status/ios-features.md | doing | Today/Nutrition/Training/Sleep/Trends原生页面、真实记录表单、空态/双语 |
-| IOS-04 | qa：ios/FormaUITests、tests/ios-contract.test.ts与status/ios-qa.md | doing | 真正API契约/模拟器UI测试；不改root工程或构建依赖 |
-| IOS-05 | inspect_library：ios/Forma/Infrastructure/WorkbenchSession.swift、ios/FormaNativeTests/WorkbenchSessionTests.swift及status/ios-storage.md | doing | 账户专属持久WebKit profile，关闭重开保留进行中/未同步草稿；退出清理，真实WebKit隔离/恢复测试 |
+| IOS-01 | lead：ios/Forma（不含Features）、ios/Forma.xcodeproj、ios/Config、scripts/ios*、.github、根文档 | done | 原生工程实际Mac编译/iphoneos Release archive通过，账号/Keychain/退出标记/清理及同源工作台；个人真机与发布未完成 |
+| IOS-02 | inspect_library → lead：ios/Packages/FormaCore与status/ios-core.md | done | Core21/21，确定性记录/营养/睡眠/完整度；不把未记录填0 |
+| IOS-03 | muscle_ui → lead：ios/Forma/Features与status/ios-features.md | done | 原生五页及手动表单，真实数值/缺失/双语/演示禁存经4项UI验证；核心HTTP契约另4/4 |
+| IOS-04 | qa → lead：ios/FormaUITests、tests/ios-contract.test.ts与status/ios-qa.md | done | 最终Node4/4，Mac UI4/4无skip；真实截图/xcresult留存，历史失败保留 |
+| IOS-05 | inspect_library → lead：ios/Forma/Infrastructure/WorkbenchSession.swift、ios/FormaNativeTests/WorkbenchSessionTests.swift及status/ios-storage.md | done | 命名持久profile/保留页面，真实HTTP WebKit4/4恢复/隔离/清理/lock；旧about:blank及in-use缺陷已修 |
 
 核心接口在本轮消息和ADR-ios-native-20261018.md确定；所有agent不改其他路径、不读data/.env、不自启/停止5173、不自行安装/推送/合并。只有lead整合并上传，commit前逐条确认测试结果。ios开发的完成状态与Web已有完成记录分开。
+
+最终验证为Mac CI 39193436826（a5b65f3）：Core21、Native10、UI4全过，无skip；无签名设备archive成功。最终原生源码冻结；未接用户Mac、未安装用户iPhone、未签名IPA或TestFlight，Xcode安装/团队/HTTPS服务为后续实机交接项。网站5173/8080与原main保留。
 
 # 2026-10-18 训练统计直接整合（已完成）
 

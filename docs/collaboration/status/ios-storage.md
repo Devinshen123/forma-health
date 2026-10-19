@@ -36,3 +36,8 @@ The first real Mac run compiled the files but failed runtime acceptance. Lifecyc
 API signatures and the iOS 17 availability were checked against Apple's [named profile API documentation](https://developer.apple.com/documentation/webkit/wkwebsitedatastore), [profile deletion contract](https://developer.apple.com/documentation/webkit/wkwebsitedatastore/remove(foridentifier:completionhandler:)) and WebKit's [profile API introduction](https://webkit.org/blog/14423/building-profiles-with-new-webkit-api/). The WebKit contract requires releasing WKWebViews before deleting their profile; the retry queue does not treat a failed removal as successful.
 
 The additional network-process check is visible in WebKit's [WebsiteDataStoreCocoa.mm, removeDataStoreWithIdentifier](https://github.com/WebKit/WebKit/blob/main/Source/WebKit/UIProcess/WebsiteData/Cocoa/WebsiteDataStoreCocoa.mm#L303). This is why the data-clearing helper does not retain its temporary WKWebsiteDataStore into the profile-removal call.
+
+## Lead 最终 Mac 验证（2026-10-18）
+
+GitHub CI 39193436826 / a5b65f3 已实际成功：Core 21/21、Native API/WebKit 10/10、UI 4/4，零失败/跳过，模拟器编译与无签名 iPhone Release archive通过。本角色代码已冻结交回lead；这些是lead的Mac CI结果，不是Windows本地运行。真机安装、签名与TestFlight尚未完成。
+

@@ -22,6 +22,8 @@
 - 根目录 `node --import tsx --test tests/ios-contract.test.ts`：合成fixture通过实际Express cookie会话、同步幂等/账户隔离/冲突契约。
 - `.github/workflows/ios.yml`：Mac上无签名构建、Core与UI检查，保留结果、截图和模拟器.app。实际运行结论见项目状态文档，不把工程文件存在视为已运行成功。
 
+最终已运行结果：[39193436826 / a5b65f3](https://github.com/Devinshen123/forma-health/actions/runs/39193436826)，Xcode16.4、iPhone16Pro/iOS18.5。Core21、Native10（真实HTTP API与WebKit存储）、UI4全部通过、无skip；模拟器build和iPhone SDK无签名Release archive成功。运行附件中包含真实UI截图和xcresult，保留7天。此前失败及修复记录在`docs/collaboration/status/ios-lead.md`；最终文档提交未改变已验证代码。
+
 ## 数据与限制
 
 URLSession使用私有内存会话与无缓存请求；会话cookie及随机WebKit profile编号只存本机Keychain(解锁时、不可迁移)，不存密码。工作台每次先核验同一账户，再使用该账户和服务专属的持久WebKit仓库；关闭页面保留原页面和待同步写入，重启或同账户重新登录沿用原profile。离线或会话失效会锁住个人页面，保留草稿待验证。退出/删除或确认换账户先锁旧页面，再清理profile；清理失败保留重试意图并阻止新账户显示。Library排除系统备份。后台切换的窗口级隐私遮罩覆盖原生表单与工作台。服务器拒绝跨账户及不可信Origin；原生并未绕过这些检查。

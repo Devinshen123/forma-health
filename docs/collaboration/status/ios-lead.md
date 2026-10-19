@@ -23,3 +23,11 @@ IOS-05 review发现非持久工作台丢active草稿，已采用账户/服务命
 追加只读安全复审：Keychain删除失败原来未检查，现先持久保存仅UUID的退出标记，凭据恢复/保存均拒绝；删除仅success/notFound算通过，全部profile清理后移除标记。崩溃重启会按同一标记恢复清理。原生未确认保存遇401时，按server+account暂存原UUID/mutation；相同账户重新验证并核对sync后才恢复重试，换户或显式退出丢弃。未把原生内存pending宣称为跨重启离线队列。UI交互改精确Button/可见frame后定向滚动；卡片纯装饰边框禁hit-testing；下一轮Mac验收。
 
 第六次Mac CI 39192510261 / 376832a：Core21、原生编译、NativeAPI6全部通过；设备Release unsigned archive也实际成功。WK第一测试memory/localStorage断言通过，但模拟HTML的真实location=about:blank，hash导航被正确同源策略拦截；其后首次profile purge报cleanupPending，后3测试开头drain均受影响，不能计4项WK通过；UI当时因Native失败跳过。agent按官方WebKit源码确认：锁定后新启blank导航与clearData helper持有store均会挡remove profile，正在修复释放顺序；真实HTTP fixture改用CI-only 127.0.0.1:3002。后续UI与native独立执行，保留无skip门槛；去掉额外启动父模拟器截图步骤，直接导出原生UI测试keepAlways截图。用户已确认Xcode还未安装或不确定，Mac仍未连接。
+
+## 最终交付验证
+
+Mac CI 39193436826 / a5b65f3，2026-10-19 UTC（当地10月18日），结论success。Xcode16.4/iPhone16Pro/iOS18.5：Core21/21，Native10/10（6网络/格式＋4真实HTTP WebKit生命周期），UI4/4，0fail/skip；build-for-testing与iphoneos无签名Release archive都成功。真实原生PNG已检查，附件位于本聊天visualizations/ios-20261018/final-7，包含xcresult、simulator.app和unsigned.xcarchive；不是Web窄屏截图，不是可直接安装iPhone的IPA。此前失败和skip不隐藏，不按重试次数累加通过数。
+
+Windows本轮已有完整Web build、类型检查、Node iOS HTTP契约4/4成功；后端未改，不重报旧255为新执行。最终文档提交只更新交付记录，不改变a5b65f3已通过的Swift/工程/脚本/CI。GitHub分支codex/forma-iphone-app-20261018，保留main/其它worktree/5173既有预览/源8080服务。没有付费AI、真实数据库或签名资料纳入提交。
+
+仍需本人/可用Mac：安装并首次打开Xcode、设备信任/Developer Mode、选择本人团队和唯一Bundle ID后真机签名运行；自己的设备可先用免费Personal Team，TestFlight/分发会员未确认。尚未接用户Mac或iPhone、未签名安装、未发布TestFlight/App Store、未配置实际完整HTTPS服务。HealthKit/Apple登录未接入；Web下载阻止，原生设置可导出服务端JSON，未同步内容除外；文件上传/导入/相机未真机验证。后续凭据和付费决定仍由用户本人处理。
