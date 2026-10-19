@@ -3,6 +3,42 @@ import FormaCore
 @testable import Forma
 
 final class NativeAPITests: XCTestCase {
+    @MainActor func testRealNativeTransportRoundTripsThroughTheExistingServer() async throws {
+        guard ProcessInfo.processInfo.environment["FORMA_LIVE_API"] == "YES" else {
+            throw XCTSkip("Run the ephemeral local API and pass FORMA_LIVE_API=YES to xcodebuild for this integration case.")
+        }
+        let api = NativeAPI(baseURL: try NativeAPI.server("http://127.0.0.1:3001"))
+        defer { api.invalidate() }
+        let signedIn = try await api.json("/api/auth/register", method: "POST", body: .object([
+            "email": .string("ios-\(UUID().uuidString.lowercased())@example.test"),
+            "password": .string("Synthetic native integration 2026"), "name": .string("Synthetic iPhone")
+        ]))
+        let account = try XCTUnwrap(signedIn["user"]["id"].stringValue)
+        XCTAssertNotNil(api.cookie)
+        XCTAssertTrue(api.cookie?.isHTTPOnly == true)
+        let me = try await api.json("/api/auth/me")
+        XCTAssertEqual(me["user"]["id"].stringValue, account)
+        let blank = try await api.json("/api/sync", account: account)
+        XCTAssertEqual(blank["state"]["meals"].arrayValue, [])
+        let meal = try NativeRecords.meal(name: "Synthetic live meal", date: Date(), grams: 150, kcal: 250, protein: 20, carbs: 30, fat: 5, type: "lunch")
+        let id = try XCTUnwrap(meal["id"].stringValue)
+        let mutation: JSONValue = .object([
+            "mutationId": .string(UUID().uuidString.lowercased()),
+            "changes": .array([.object(["collection": .string("meals"), "id": .string(id), "baseVersion": .number(0), "kind": .string("upsert"), "value": meal])])
+        ])
+        let saved = try await api.json("/api/sync", method: "POST", body: mutation, account: account)
+        XCTAssertEqual(saved["state"]["meals"].arrayValue, [meal])
+        let retry = try await api.json("/api/sync", method: "POST", body: mutation, account: account)
+        XCTAssertEqual(saved["revision"], retry["revision"])
+        XCTAssertEqual(retry["state"]["meals"].arrayValue?.count, 1)
+        do {
+            _ = try await api.json("/api/sync", account: UUID().uuidString.lowercased())
+            XCTFail("Cross-account hint accepted")
+        } catch NativeAPIError.http(let status, _, _) { XCTAssertEqual(status, 401) }
+        _ = try await api.json("/api/auth/logout", method: "POST", body: .object([:]), account: account)
+        let loggedOut = try await api.json("/api/auth/me")
+        XCTAssertEqual(loggedOut["user"], .null)
+    }
     @MainActor func testDisplayedMissingZeroAndSmallPositiveValuesStayDistinct() {
         XCTAssertEqual(FeatureFormat.number(nil, language: "zh"), "—")
         XCTAssertEqual(FeatureFormat.number(0, language: "en"), "0")

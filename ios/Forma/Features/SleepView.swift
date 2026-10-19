@@ -44,15 +44,41 @@ private struct SleepHistoryCard: View {
         return interval > 0 && interval <= 86400 ? interval / 3600 : nil
     }
 
+    private var summaryText: String {
+        let day = record["date"].stringValue ?? "—"
+        let duration = FeatureFormat.number(hours, language: store.language)
+        let unit = store.text(" 小时", " hours")
+        return "\(day) · \(duration)\(unit)"
+    }
+
+    private var timeRangeText: String {
+        let start = FeatureFormat.dateTime(record["start"].stringValue, language: store.language)
+        let end = FeatureFormat.dateTime(record["end"].stringValue, language: store.language)
+        return "\(start) → \(end)"
+    }
+
+    private var qualityText: String {
+        let title = store.text("睡眠感受", "Sleep quality")
+        let value = FeatureFormat.number(record["quality"].doubleValue, language: store.language)
+        return "\(title) \(value)/5"
+    }
+
+    private var energyText: String {
+        let title = store.text("精力", "Energy")
+        let value = FeatureFormat.number(record["energy"].doubleValue, language: store.language)
+        return "\(title) \(value)/5"
+    }
+
+    private var ratingsText: String { "\(qualityText) · \(energyText)" }
+    private var timezoneText: String { record["timezone"].stringValue ?? "—" }
+
     var body: some View {
         FeatureCard {
-            Text((record["date"].stringValue ?? "—") + " · " + FeatureFormat.number(hours, language: store.language) + store.text(" 小时", " hours"))
-                .font(.headline)
-            Text(FeatureFormat.dateTime(record["start"].stringValue, language: store.language) + " → " + FeatureFormat.dateTime(record["end"].stringValue, language: store.language))
-                .font(.subheadline).foregroundStyle(FeatureTheme.muted)
-            Text(store.text("睡眠感受", "Sleep quality") + " " + FeatureFormat.number(record["quality"].doubleValue, language: store.language) + "/5 · " + store.text("精力", "Energy") + " " + FeatureFormat.number(record["energy"].doubleValue, language: store.language) + "/5")
+            Text(summaryText).font(.headline)
+            Text(timeRangeText).font(.subheadline).foregroundStyle(FeatureTheme.muted)
+            Text(ratingsText)
                 .font(.footnote).foregroundStyle(FeatureTheme.muted)
-            Text(record["timezone"].stringValue ?? "—").font(.caption).foregroundStyle(FeatureTheme.muted)
+            Text(timezoneText).font(.caption).foregroundStyle(FeatureTheme.muted)
         }
     }
 }

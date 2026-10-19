@@ -11,3 +11,5 @@
 待用户决定：接入可用Mac进行真机签名/安装；Developer会员与未来TestFlight；最终Bundle ID及生产HTTPS地址。此轮不代选供应商或支出。
 
 首次Mac CI 39189719339：Core单测步骤成功，Xcode16.4/iPhone16Pro iOS18.5构建失败，原因Debug工程试图编译arm64+x86_64但本地Swift Package只有当前arm64；设置Debug ONLY_ACTIVE_ARCH=YES后重试。尚未执行UI，失败不计通过。额外修正原生小正数显示避免按一位小数四舍五入成0，并加测试；Release也另行编译核验。
+
+第二次Mac CI 39189998438：Core21/21通过；架构问题已解决，SwiftUI SleepHistoryCard长表达式触发type-check超时。页面owner已拆为显式String属性，保留相同行为后重试。增加真正Swift URLSession→临时Express API的注册/cookie/me/新增/精确重试/账户隔离/退出测试；CI仅新VM本地3001+独立临时DB，无付费AI，不触本机服务。状态仍待实际运行。

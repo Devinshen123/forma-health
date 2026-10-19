@@ -32,9 +32,14 @@ jobs:
       - name: Build native app and UI tests
         run: |
           xcodebuild build-for-testing -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaBuild.xcresult" CODE_SIGNING_ALLOWED=NO
-      - name: Run native UI tests
+      - name: Run native transport and UI tests
         run: |
-          xcodebuild test-without-building -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaUI.xcresult" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO
+          npm ci --no-audit --no-fund
+          node --import tsx scripts/ios-contract-server.mts > "$RUNNER_TEMP/FormaSyntheticAPI.log" 2>&1 &
+          FORMA_API_PID=$!
+          trap 'kill "$FORMA_API_PID" 2>/dev/null || true' EXIT
+          node --input-type=module -e 'let ready=false;for(let i=0;i<30;i++){try{let r=await fetch("http://127.0.0.1:3001/api/capabilities");if(r.ok){ready=true;break;}}catch{} await new Promise(r=>setTimeout(r,1000));}if(!ready)throw Error("Synthetic API did not start");'
+          xcodebuild test-without-building -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaUI.xcresult" -parallel-testing-enabled NO FORMA_LIVE_API=YES CODE_SIGNING_ALLOWED=NO
       - name: Check Release configuration
         run: |
           xcodebuild build -configuration Release -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
