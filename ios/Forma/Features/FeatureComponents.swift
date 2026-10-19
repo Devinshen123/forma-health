@@ -19,6 +19,10 @@ enum FeatureFormat {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = digits
         formatter.minimumFractionDigits = 0
+        let threshold = pow(10, -Double(digits))
+        if value > 0 && value < threshold {
+            return "<" + (formatter.string(from: NSNumber(value: threshold)) ?? String(threshold))
+        }
         return formatter.string(from: NSNumber(value: value)) ?? "—"
     }
 

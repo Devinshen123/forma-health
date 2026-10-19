@@ -19,6 +19,7 @@ final class AppStore {
     private var versions: [String: Int] = [:]
     private var generation = UUID()
     private var pending: (key: String, value: JSONValue, mutation: JSONValue)?
+    var hasUnconfirmedSave: Bool { pending != nil }
     let uiTesting: Bool
 
     init(uiTesting: Bool = ProcessInfo.processInfo.arguments.contains("--uitesting")) {
@@ -83,6 +84,8 @@ final class AppStore {
         let snapshot = try JSONDecoder().decode(SyncSnapshot.self, from: data)
         guard ticket == generation else { throw NativeAPIError.staleSession }
         state = snapshot.state; versions = snapshot.entityVersions; error = nil
+        if let pending, let collection = pending.key.split(separator: ":").first,
+           records(String(collection)).contains(pending.value) { self.pending = nil }
     }
 
     func refresh() async {
@@ -137,6 +140,11 @@ final class AppStore {
         api = nil; baseURL = nil
         if let client, let account { _ = try? await client.send("/api/auth/logout", method: "POST", body: .object([:]), account: account) }
         client?.invalidate()
+    }
+
+    func retryUnconfirmedSave() async throws {
+        guard let pending, let collection = pending.key.split(separator: ":").first else { return }
+        try await saveRecord(collection: String(collection), value: pending.value)
     }
 
     func exportData() async throws -> Data {

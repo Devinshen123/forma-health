@@ -35,6 +35,9 @@ jobs:
       - name: Run native UI tests
         run: |
           xcodebuild test-without-building -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaUI.xcresult" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO
+      - name: Check Release configuration
+        run: |
+          xcodebuild build -configuration Release -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
       - name: Capture demo screens
         if: success()
         run: |

@@ -3,6 +3,13 @@ import FormaCore
 @testable import Forma
 
 final class NativeAPITests: XCTestCase {
+    @MainActor func testDisplayedMissingZeroAndSmallPositiveValuesStayDistinct() {
+        XCTAssertEqual(FeatureFormat.number(nil, language: "zh"), "—")
+        XCTAssertEqual(FeatureFormat.number(0, language: "en"), "0")
+        XCTAssertEqual(FeatureFormat.number(0.000001, language: "en"), "<0.001")
+        XCTAssertEqual(FeatureFormat.number(0.04, language: "zh"), "<0.1")
+        XCTAssertEqual(FeatureFormat.number(0.1, language: "en"), "0.1")
+    }
     @MainActor func testOnlyServerOriginsCanReceiveCredentials() throws {
         XCTAssertEqual(try NativeAPI.server("https://forma.example").absoluteString, "https://forma.example")
         for invalid in ["http://forma.example", "https://name:secret@forma.example", "https://forma.example/api", "https://forma.example?token=secret", "https://forma.example#login", "file:///tmp/forma"] {

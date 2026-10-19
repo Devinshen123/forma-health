@@ -40,7 +40,8 @@ function configList(key,appTarget) {
       DEBUG_INFORMATION_FORMAT:name==='Debug'?'dwarf':'dwarf-with-dsym',
       SWIFT_OPTIMIZATION_LEVEL:name==='Debug'?'-Onone':'-O',
       SWIFT_ACTIVE_COMPILATION_CONDITIONS:name==='Debug'?'DEBUG $(inherited)':'$(inherited)',
-      ENABLE_TESTABILITY:name==='Debug'?'YES':'NO', CODE_SIGN_STYLE:'Automatic'
+      ENABLE_TESTABILITY:name==='Debug'?'YES':'NO', CODE_SIGN_STYLE:'Automatic',
+      ONLY_ACTIVE_ARCH:name==='Debug'?'YES':'NO'
     } : appTarget === true ? {
       PRODUCT_BUNDLE_IDENTIFIER:'com.formahealth.app', PRODUCT_NAME:'$(TARGET_NAME)', TARGETED_DEVICE_FAMILY:'1',
       INFOPLIST_FILE:'Config/Info.plist', GENERATE_INFOPLIST_FILE:'NO',

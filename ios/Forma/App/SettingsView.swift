@@ -31,6 +31,17 @@ struct SettingsView: View {
                     Text(store.isDemo ? store.text("演示数据", "Demo data") : (store.user?.email ?? "—"))
                     if let url = store.baseURL { Text(url.absoluteString).font(.caption).textSelection(.enabled) }
                     Button(store.text("刷新记录", "Refresh records")) { Task { await store.refresh() } }.disabled(store.isDemo)
+                    if store.hasUnconfirmedSave {
+                        Button(store.text("重试未确认的保存", "Retry unconfirmed save")) {
+                            Task {
+                                busy = true; defer { busy = false }
+                                do { try await store.retryUnconfirmedSave(); message = nil }
+                                catch { message = store.message(error) }
+                            }
+                        }
+                        Text(store.text("沿用原始记录与请求编号核对保存结果，不会新建重复记录。", "Checks the original record and request identity without creating a duplicate."))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     Button(store.text("导出我的数据", "Export my data")) {
                         Task {
                             busy = true; defer { busy = false }
