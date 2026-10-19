@@ -15,6 +15,8 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
     let dataStore: WKWebsiteDataStore
     private(set) var webView: WKWebView?
     var onFailure: (() -> Void)?
+    var onDocumentReady: (() -> Void)?
+    private(set) var lastFailure: Error?
 
     private var valid = true
     private var requestedURL: URL?
@@ -87,13 +89,14 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
     }
 
     /// Closing the sheet does not end the document, timers, local draft or media queue.
-    func detach() { onFailure = nil }
+    func detach() { onFailure = nil; onDocumentReady = nil }
 
     /// Synchronous invalidation comes before any asynchronous server/logout/profile cleanup.
     func lock() {
         guard valid else { return }
         valid = false
         onFailure = nil
+        onDocumentReady = nil
         requestedURL = nil
         cookieTask?.task.cancel()
         cookieTask = nil
@@ -101,7 +104,10 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
             web.isHidden = true
             web.stopLoading()
             web.navigationDelegate = nil
-            web.loadHTMLString("", baseURL: nil)
+            web.uiDelegate = nil
+            web.removeFromSuperview()
+            // Do not begin an asynchronous blank navigation here. That navigation can keep
+            // the supposedly released WKWebView (and its profile) alive during removal.
         }
         webView = nil
         documentFinished = false
@@ -112,6 +118,7 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
         documentFinished = false
         documentLanguage = language(of: url)
         needsReload = false
+        lastFailure = nil
         web.load(URLRequest(url: url))
     }
 
@@ -126,6 +133,7 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
         catch {
             guard valid, webView === web else { throw NativeAPIError.staleSession }
             needsReload = true
+            lastFailure = error
             onFailure?()
             throw error
         }
@@ -187,24 +195,31 @@ final class NativeWorkbenchSession: NSObject, WKNavigationDelegate {
         needsReload = false
         Task { @MainActor [weak self, weak webView] in
             guard let self, let webView, self.valid, self.webView === webView else { return }
-            _ = try? await self.updateHash(in: webView)
+            do {
+                try await self.updateHash(in: webView)
+                guard self.valid, self.webView === webView else { return }
+                let ready = self.onDocumentReady
+                self.onDocumentReady = nil
+                ready?()
+            } catch { /* updateHash reports a failure only while the session is still valid. */ }
         }
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         guard valid, self.webView === webView else { return }
-        if (error as NSError).code != NSURLErrorCancelled { needsReload = true; onFailure?() }
+        if (error as NSError).code != NSURLErrorCancelled { needsReload = true; lastFailure = error; onFailure?() }
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         guard valid, self.webView === webView else { return }
-        if (error as NSError).code != NSURLErrorCancelled { needsReload = true; onFailure?() }
+        if (error as NSError).code != NSURLErrorCancelled { needsReload = true; lastFailure = error; onFailure?() }
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         guard valid, self.webView === webView else { return }
         documentFinished = false
         needsReload = true
+        lastFailure = NSError(domain: WKErrorDomain, code: WKError.Code.webContentProcessTerminated.rawValue)
         onFailure?()
     }
 }
@@ -279,13 +294,29 @@ enum WorkbenchProfiles {
         for attempt in 0...waits.count {
             do {
                 guard cookieWrites[id] == nil else { throw WorkbenchStorageError.cleanupPending }
-                let store = WKWebsiteDataStore(forIdentifier: id)
-                await store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast)
+                await clearWebsiteData(id)
                 try await WKWebsiteDataStore.remove(forIdentifier: id)
                 return
             } catch {
-                if attempt == waits.count { throw WorkbenchStorageError.cleanupPending }
+                // The caller's production UI maps errors to a generic message. Tests may inspect
+                // the original SDK domain/code to distinguish a live profile from disk failure.
+                if attempt == waits.count { throw error }
                 try await Task.sleep(nanoseconds: waits[attempt])
+            }
+        }
+    }
+
+    private static func clearWebsiteData(_ id: UUID) async {
+        // WebKit rejects removal while a data-store object with a network process still exists,
+        // even after its last WKWebView was released. Do not retain a local `store` across the
+        // subsequent remove(forIdentifier:). The explicit pool also drains Cocoa factory returns.
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            autoreleasepool {
+                let store = WKWebsiteDataStore(forIdentifier: id)
+                store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast) {
+                    // Resume after WebKit's callback and its protected data-store reference unwind.
+                    DispatchQueue.main.async { continuation.resume() }
+                }
             }
         }
     }

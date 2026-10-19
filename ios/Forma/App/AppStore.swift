@@ -269,6 +269,7 @@ final class AppStore {
             try SessionVault.clearPendingCredentials()
             try await WorkbenchProfiles.drain()
             SessionVault.completeClear()
+            self.error = nil
         }
         catch {
             cleanupFailed = true

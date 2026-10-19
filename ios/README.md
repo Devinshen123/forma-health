@@ -11,6 +11,8 @@
 3. 真机运行前在 Signing & Capabilities 选择你自己的开发团队，并按实际团队选择唯一 Bundle Identifier。不要提交个人签名文件或证书。
 4. 个人记录使用现有 Forma 账户。在 App 首屏填写**已部署且由你信任的 HTTPS 根地址**（例如你的Forma服务域名），再登录。这里不会预填虚假的线上地址；127.0.0.1是设备自己，不是Windows电脑。服务必须完整部署现有Web/API/训练工作台与授权素材，并正确支持现有同源HTTPS验证与Secure cookie。
 
+自己的iPhone自测可先在Xcode登录Apple账户并选择Personal Team，无须先付费加入开发者计划；面向他人的TestFlight/App Store分发另需相应会员。以[Apple账户说明](https://developer.apple.com/help/account/basics/about-your-developer-account)和[计划说明](https://developer.apple.com/help/account/membership/programs-overview)为准。首次连接与信任设备、设备端Developer Mode等系统步骤由本人完成；本仓库不保存Apple密码、证书或描述文件。
+
 若新增/删除Swift文件，用已有Node运行 `node scripts/ios-generate-project.mjs` 并提交更新的工程。现有图标已提交，不需要重装依赖；更换图标时可用已有sharp运行 `node scripts/ios-create-assets.mjs`。
 
 ## 验证
@@ -28,6 +30,6 @@ URLSession使用私有内存会话与无缓存请求；会话cookie及随机WebK
 
 原生未确认保存遇会话失效时，在本次App进程内按服务和账户隔离暂存原请求；同账户重新登录先读回核对，再允许重试。退出操作先写不含健康内容的持久标记，Keychain及WebKit清理全部成功前阻止凭据恢复，避免删除失败后重启重新进入旧账户。
 
-高级工作台中Web文件下载/上传及相机在iOS WebKit尚需真机确认；原生设置可导出服务端JSON和执行删除账户。没有离线动画库下载或素材重新分发；授权动画仍由部署服务提供，GitHub不包含独立授权媒体包。
+高级工作台内的网页下载目前被导航策略拦截，请使用原生设置导出服务端JSON（包括工作台服务端原文及媒体）；未同步的本机内容不在服务端导出中。文件上传/导入及相机尚需真机确认；原生设置也可执行删除账户。没有离线动画库下载或素材重新分发；授权动画仍由部署服务提供，GitHub不包含独立授权媒体包。
 
 发布前需确定实际开发团队/Bundle ID、可访问HTTPS服务、隐私政策/支持网址与App Store数据声明，并完成真机验证。用户当前Mac可用尚未接入，开发者会员未确认。本工程不代替签名或发布审批。

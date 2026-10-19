@@ -21,3 +21,5 @@
 IOS-05 review发现非持久工作台丢active草稿，已采用账户/服务命名持久profile+保留WKWebView，同账户重登沿用Keychain UUID；退出/删除/换账户lock+持久清理队列，失败阻止进入。agent交回4项真实WebKit合成测试，待Mac执行。Library排除备份；Root窗口级遮罩覆盖sheet，取代只覆盖底层SwiftUI页面。Windows仅生成器/差异检查实际通过，不宣称Swift已编译。
 
 追加只读安全复审：Keychain删除失败原来未检查，现先持久保存仅UUID的退出标记，凭据恢复/保存均拒绝；删除仅success/notFound算通过，全部profile清理后移除标记。崩溃重启会按同一标记恢复清理。原生未确认保存遇401时，按server+account暂存原UUID/mutation；相同账户重新验证并核对sync后才恢复重试，换户或显式退出丢弃。未把原生内存pending宣称为跨重启离线队列。UI交互改精确Button/可见frame后定向滚动；卡片纯装饰边框禁hit-testing；下一轮Mac验收。
+
+第六次Mac CI 39192510261 / 376832a：Core21、原生编译、NativeAPI6全部通过；设备Release unsigned archive也实际成功。WK第一测试memory/localStorage断言通过，但模拟HTML的真实location=about:blank，hash导航被正确同源策略拦截；其后首次profile purge报cleanupPending，后3测试开头drain均受影响，不能计4项WK通过；UI当时因Native失败跳过。agent按官方WebKit源码确认：锁定后新启blank导航与clearData helper持有store均会挡remove profile，正在修复释放顺序；真实HTTP fixture改用CI-only 127.0.0.1:3002。后续UI与native独立执行，保留无skip门槛；去掉额外启动父模拟器截图步骤，直接导出原生UI测试keepAlways截图。用户已确认Xcode还未安装或不确定，Mac仍未连接。

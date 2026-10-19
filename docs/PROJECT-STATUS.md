@@ -1,5 +1,15 @@
 # FORMA 当前项目状态
 
+## 当前补充：2026-10-18 独立 iPhone App
+
+分支 `codex/forma-iphone-app-20261018`：iOS17+ SwiftUI原生今日、饮食、训练、手动睡眠与趋势五页，原生记录表单、邮箱账户、JSON导出和删除账户。完整动作库/计划/逐组训练/详细统计通过训练页内的同源WKWebView保留；不声称这些工具已经全部用Swift重写。新账户为空，演示明确标注且禁止个人保存。没有HealthKit、Apple登录或支付。
+
+原生/API采用同一Forma事实和实体版本契约，URLSession私有cookie+本机不可迁移Keychain；工作台按账户/服务使用命名持久profile，关闭保留进行中训练/待同步媒体，同账户重登恢复，换户/显式退出先锁定再清理。退出标记和清理队列跨重启保留，失败不能自动恢复旧凭据；原生未确认保存只在本次进程按账户暂存原mutation，不能称持久离线队列。窗口遮罩包含sheet，Library排除系统备份；不承诺应用层静态加密。
+
+实际验证：Windows `npm run build`与`npx tsc --noEmit`成功，新增Node真实HTTP契约4/4。GitHub Mac CI已在iPhone16Pro/iOS18.5编译原生App及测试；Core21通过，Swift网络6项曾全部通过无skip。最新持久化修复的10项原生测试和4项UI测试正在运行，最终结果尚待确认，不能计入通过。之前UI定位失败、一次live测试skip和首次架构/Sleep编译错误都保留在ios-lead状态中。
+
+本机Windows无xcrun；用户Mac可用尚未接入，Xcode还未安装或未确认，Developer会员未确认。未安装用户iPhone、未签名IPA、未发布TestFlight/App Store。模拟器.app和无签名archive不能直接装到iPhone。网页下载目前被原生工作台导航策略拦截，使用原生设置导出；文件上传/导入与相机需真机确认，HealthKit/Apple/完整HTTPS服务尚待后续。详见[Mac打开与数据边界](../ios/README.md)。未修改其它worktree、原main或源8080服务，既有5173预览保留。
+
 ## 当前补充：2026-10-18 统计入口已加入
 
 训练页“统计”及趋势页“查看训练统计”直达同一训练工作台#/stats。上方只读汇总全部Forma已保存训练；下方为工作台自身详细图表，来源范围明确且不反向改写记录。现有演示汇总可见，真实空账户不捏造记录；缺失/真实0/微量正值及公英制分别保留。
