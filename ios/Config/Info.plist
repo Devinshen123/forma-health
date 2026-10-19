@@ -16,4 +16,6 @@
 <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
 <key>UIUserInterfaceStyle</key><string>Light</string>
 <key>ITSAppUsesNonExemptEncryption</key><false/>
+<key>NSCameraUsageDescription</key><string>用于你主动拍摄并审核的训练进步照片。 Capture training progress photos that you choose and review.</string>
+<key>NSPhotoLibraryUsageDescription</key><string>用于你主动选择并上传的训练进步照片。 Select training progress photos that you choose to upload.</string>
 </dict></plist>
