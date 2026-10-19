@@ -23,6 +23,8 @@ struct ConnectionView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section(store.text("账户", "Account")) {
+                    Text(store.text("登录同一账户可恢复本地训练草稿；更换账户会清理旧账户的本机草稿。", "Sign in to the same account to recover local training drafts. Switching accounts clears the previous account’s local drafts."))
+                        .font(.caption).foregroundStyle(.secondary)
                     Toggle(store.text("创建新账户", "Create a new account"), isOn: $registering)
                     if registering { TextField(store.text("姓名", "Name"), text: $name).textContentType(.name) }
                     TextField(store.text("邮箱", "Email"), text: $email).keyboardType(.emailAddress)
@@ -41,6 +43,9 @@ struct ConnectionView: View {
                     if store.isBusy { ProgressView() }
                 }
                 if let message = message ?? store.error { Section { Text(message).foregroundStyle(.red) } }
+                if store.canRestoreSession {
+                    Section { Button(store.text("重试恢复会话", "Retry session restore")) { Task { await store.retryRestore() } } }
+                }
                 Section {
                     Button(store.text("先体验演示", "Explore the demo")) { store.enterDemo() }
                         .accessibilityIdentifier("connection.demo")

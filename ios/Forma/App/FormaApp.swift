@@ -18,17 +18,19 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if !store.isReady { ProgressView("Forma") }
+            if store.cleanupFailed {
+                ContentUnavailableView {
+                    Label(store.text("请先完成本地清理", "Finish local cleanup"), systemImage: "lock")
+                } description: { Text(store.error ?? "") }
+                actions: { Button(store.text("重试清理", "Retry cleanup")) { Task { await store.retryLocalCleanup() } } }
+            }
+            else if !store.isReady || store.isPurging { ProgressView("Forma") }
             else if store.user == nil && !store.isDemo { ConnectionView(store: store) }
             else { tabs }
         }
         .sheet(isPresented: $showSettings) { SettingsView(store: store) }
         .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await store.refresh() } } }
-        .overlay {
-            if scenePhase != .active {
-                Color(.systemBackground).overlay(Text("Forma").font(.largeTitle.bold())).ignoresSafeArea()
-            }
-        }
+        .background(AppPrivacyShield())
     }
 
     private var tabs: some View {

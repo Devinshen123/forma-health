@@ -8,6 +8,7 @@
 | IOS-02 | inspect_library：ios/Packages/FormaCore与status/ios-core.md | doing | 纯Swift JSON/请求结构/确定性营养与睡眠/记录工厂/边界测试 |
 | IOS-03 | muscle_ui：ios/Forma/Features与status/ios-features.md | doing | Today/Nutrition/Training/Sleep/Trends原生页面、真实记录表单、空态/双语 |
 | IOS-04 | qa：ios/FormaUITests、tests/ios-contract.test.ts与status/ios-qa.md | doing | 真正API契约/模拟器UI测试；不改root工程或构建依赖 |
+| IOS-05 | inspect_library：ios/Forma/Infrastructure/WorkbenchSession.swift、ios/FormaNativeTests/WorkbenchSessionTests.swift及status/ios-storage.md | doing | 账户专属持久WebKit profile，关闭重开保留进行中/未同步草稿；退出清理，真实WebKit隔离/恢复测试 |
 
 核心接口在本轮消息和ADR-ios-native-20261018.md确定；所有agent不改其他路径、不读data/.env、不自启/停止5173、不自行安装/推送/合并。只有lead整合并上传，commit前逐条确认测试结果。ios开发的完成状态与Web已有完成记录分开。
 

@@ -9,6 +9,9 @@ final class AppStore {
     var isDemo = false
     var isBusy = false
     var isReady = false
+    var isPurging = false
+    var cleanupFailed = false
+    var canRestoreSession = false
     var error: String?
     var language: String = "zh" {
         didSet { if !uiTesting { UserDefaults.standard.set(language, forKey: "forma.language") } }
@@ -16,9 +19,13 @@ final class AppStore {
     private(set) var baseURL: URL?
     private(set) var webSessionID = UUID()
     private(set) var api: NativeAPI?
+    private(set) var workbenchSession: NativeWorkbenchSession?
+    private var webProfileID: UUID?
     private var versions: [String: Int] = [:]
     private var generation = UUID()
-    private var pending: (key: String, value: JSONValue, mutation: JSONValue)?
+    private typealias PendingSave = (key: String, value: JSONValue, mutation: JSONValue)
+    private var pending: PendingSave?
+    private var parkedSave: (server: String, account: String, save: PendingSave)?
     var hasUnconfirmedSave: Bool { pending != nil }
     let uiTesting: Bool
 
@@ -33,6 +40,8 @@ final class AppStore {
     func bootstrap() async {
         guard !isReady else { return }
         if uiTesting { enterDemo(); isReady = true; return }
+        await retryLocalCleanup()
+        guard !cleanupFailed else { isReady = true; return }
         if let saved = SessionVault.load(), let url = try? NativeAPI.server(saved.server), let cookie = saved.cookie(for: url) {
             let client = NativeAPI(baseURL: url, cookie: cookie)
             baseURL = url; api = client
@@ -42,19 +51,24 @@ final class AppStore {
                 guard ticket == generation, me["user"]["id"].stringValue == saved.user.id else { throw NativeAPIError.invalidSession }
                 user = saved.user
                 try await load(client, account: saved.user.id, ticket: ticket)
+                restoreParkedSave(server: url, account: saved.user.id)
+                webProfileID = saved.webStoreID
+                canRestoreSession = false
             } catch {
                 guard ticket == generation else { return }
-                clearLocal()
-                self.error = text("会话无法恢复，请重新登录。", "Session could not be restored. Please sign in again.")
+                clearLocal(preservingDrafts: true)
+                canRestoreSession = true
+                self.error = text("会话暂时无法确认。可联网重试恢复，或登录同一账户；本地训练草稿仍被隔离保留。", "The session could not be verified. Retry online or sign in to the same account; local training drafts remain isolated.")
             }
         }
         isReady = true
     }
 
     func signIn(server: String, email: String, password: String, name: String, register: Bool) async throws {
-        guard !isBusy else { return }
+        guard !isBusy, !isPurging, !cleanupFailed else { return }
         isBusy = true; defer { isBusy = false }
-        clearLocal()
+        let previous = uiTesting ? nil : SessionVault.load()
+        clearLocal(preservingDrafts: true)
         let ticket = generation
         let url = try NativeAPI.server(server)
         let client = NativeAPI(baseURL: url)
@@ -69,12 +83,26 @@ final class AppStore {
             let me = try await client.json("/api/auth/me")
             guard ticket == generation, me["user"]["id"].stringValue == account.id else { throw NativeAPIError.invalidSession }
             try await load(client, account: account.id, ticket: ticket)
-            try SessionVault.save(SavedSession(server: url.absoluteString, user: account, token: cookie.value, expires: expiry))
+            let sameAccount = previous?.server == url.absoluteString && previous?.user.id == account.id
+            let profile = sameAccount ? previous!.webStoreID : UUID()
+            if !sameAccount, let previous {
+                WorkbenchProfiles.enqueue(previous.webStoreID)
+                do { try await WorkbenchProfiles.drain() }
+                catch { cleanupFailed = true; throw error }
+                guard ticket == generation else { throw NativeAPIError.staleSession }
+            }
+            try SessionVault.save(SavedSession(server: url.absoluteString, user: account, token: cookie.value, expires: expiry, webStoreID: profile))
             UserDefaults.standard.set(url.absoluteString, forKey: "forma.server")
             user = account
+            restoreParkedSave(server: url, account: account.id)
+            webProfileID = profile
+            canRestoreSession = false
             isDemo = false
         } catch {
-            if ticket == generation { clearLocal() }
+            if ticket == generation {
+                clearLocal(preservingDrafts: true)
+                if cleanupFailed { self.error = text("本地训练数据尚未清理完成，请重试后再切换账户。", "Local training data could not be cleared. Retry before switching accounts.") }
+            }
             throw error
         }
     }
@@ -126,7 +154,7 @@ final class AppStore {
             state = snapshot.state; versions = snapshot.entityVersions; pending = nil; self.error = nil
         } catch {
             guard ticket == generation else { throw NativeAPIError.staleSession }
-            if case let NativeAPIError.http(status, _, _) = error, (400..<500).contains(status) { pending = nil }
+            if case let NativeAPIError.http(status, _, _) = error, (400..<500).contains(status), status != 401 { pending = nil }
             handleSessionFailure(error)
             throw error
         }
@@ -135,9 +163,7 @@ final class AppStore {
     func logout() async {
         let client = api; let account = user?.id
         // Lock the UI and invalidate delayed responses before waiting for the server.
-        generation = UUID(); user = nil; state = .object([:]); versions = [:]; pending = nil
-        isDemo = false; webSessionID = UUID(); if !uiTesting { SessionVault.clear() }
-        api = nil; baseURL = nil
+        clearLocal(invalidatingClient: false)
         if let client, let account { _ = try? await client.send("/api/auth/logout", method: "POST", body: .object([:]), account: account) }
         client?.invalidate()
     }
@@ -163,15 +189,38 @@ final class AppStore {
         clearLocal()
     }
 
-    func clearLocal() {
-        generation = UUID(); api?.invalidate(); api = nil; baseURL = nil
+    func clearLocal(preservingDrafts: Bool = false, invalidatingClient: Bool = true) {
+        let profile = webProfileID ?? (uiTesting ? nil : SessionVault.load()?.webStoreID)
+        if preservingDrafts, let pending, let baseURL, let user {
+            parkedSave = (baseURL.absoluteString, user.id, pending)
+        }
+        if !preservingDrafts { parkedSave = nil }
+        workbenchSession?.lock(); workbenchSession = nil; webProfileID = nil
+        generation = UUID(); if invalidatingClient { api?.invalidate() }; api = nil; baseURL = nil
         user = nil; state = .object([:]); versions = [:]; pending = nil
         isDemo = false; webSessionID = UUID(); error = nil
-        if !uiTesting { SessionVault.clear() }
+        if !uiTesting && !preservingDrafts {
+            SessionVault.beginClear(profileID: profile); canRestoreSession = false
+            if let profile { WorkbenchProfiles.enqueue(profile) }
+            isPurging = true
+            Task { await retryLocalCleanup() }
+        }
     }
 
     private func handleSessionFailure(_ error: Error) {
-        if case NativeAPIError.http(401, _, _) = error { clearLocal() }
+        if case NativeAPIError.http(401, _, _) = error {
+            clearLocal(preservingDrafts: true)
+            canRestoreSession = !uiTesting && SessionVault.load() != nil
+        }
+    }
+
+    private func restoreParkedSave(server: URL, account: String) {
+        if let parkedSave, parkedSave.server == server.absoluteString, parkedSave.account == account {
+            let save = parkedSave.save
+            if let collection = save.key.split(separator: ":").first,
+               !records(String(collection)).contains(save.value) { pending = save }
+        }
+        parkedSave = nil
     }
 
     func message(_ error: Error) -> String {
@@ -194,7 +243,7 @@ final class AppStore {
     }
 
     func enterDemo() {
-        clearLocal(); isDemo = true
+        clearLocal(preservingDrafts: true); isDemo = true
         let now = Date()
         var sample: [String: JSONValue] = [:]
         sample["meals"] = .array((try? NativeRecords.meal(name: "Breakfast / 早餐", date: now, grams: 250, kcal: 200, protein: 10, carbs: 20, fat: 5, type: "breakfast")).map { [$0] } ?? [])
@@ -202,5 +251,37 @@ final class AppStore {
         let end = Calendar.current.startOfDay(for: now).addingTimeInterval(7 * 3600)
         sample["sleeps"] = .array((try? NativeRecords.sleep(start: end.addingTimeInterval(-8 * 3600), end: end, quality: 4, energy: 4, timezone: TimeZone.current.identifier)).map { [$0] } ?? [])
         state = .object(sample)
+    }
+
+    func leaveDemo() {
+        clearLocal(preservingDrafts: true)
+        canRestoreSession = !uiTesting && SessionVault.load() != nil
+    }
+
+    func retryRestore() async { isReady = false; await bootstrap() }
+
+    func retryLocalCleanup() async {
+        guard !uiTesting else { return }
+        isPurging = true; cleanupFailed = false
+        defer { isPurging = false }
+        do {
+            if let profile = SessionVault.pendingProfileID { WorkbenchProfiles.enqueue(profile) }
+            try SessionVault.clearPendingCredentials()
+            try await WorkbenchProfiles.drain()
+            SessionVault.completeClear()
+        }
+        catch {
+            cleanupFailed = true
+            self.error = text("本地训练数据尚未清理完成，请重试后再切换账户。", "Local training data could not be cleared. Retry before switching accounts.")
+        }
+    }
+
+    func prepareWorkbench(account: String) throws -> NativeWorkbenchSession {
+        guard account == user?.id, !isDemo, !isPurging, !cleanupFailed,
+              let baseURL, let webProfileID else { throw NativeAPIError.invalidSession }
+        if let workbenchSession { return workbenchSession }
+        let session = try NativeWorkbenchSession(id: webProfileID, origin: baseURL, accountId: account)
+        workbenchSession = session
+        return session
     }
 }

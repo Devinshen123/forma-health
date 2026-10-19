@@ -30,6 +30,7 @@ jobs:
           xcrun simctl list devices available -j > "$RUNNER_TEMP/simulators.json"
           node --input-type=module -e 'import fs from "node:fs"; const data=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/simulators.json")); const sim=Object.entries(data.devices).filter(([k])=>k.includes("iOS")).flatMap(([,v])=>v).find(x=>x.isAvailable && x.name.startsWith("iPhone")); if(!sim)throw Error("No available iPhone"); fs.appendFileSync(process.env.GITHUB_ENV,"FORMA_SIM="+sim.udid+"\n"); console.log(sim.name);'
       - name: Build native app and UI tests
+        id: build
         run: |
           xcodebuild build-for-testing -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaBuild.xcresult" FORMA_LIVE_API=YES CODE_SIGNING_ALLOWED=NO
           python3 -c 'import plistlib,glob,os; values=[]; walk=lambda x: (values.extend([x["FORMA_LIVE_API"]] if "FORMA_LIVE_API" in x else []),[walk(v) for v in x.values()]) if isinstance(x,dict) else [walk(v) for v in x] if isinstance(x,list) else None; [walk(plistlib.load(open(f,"rb"))) for f in glob.glob(os.environ["RUNNER_TEMP"]+"/FormaDerived/Build/Products/*.xctestrun")]; assert values and all(v=="YES" for v in values), "Live API environment was not expanded"; print("Native live API test environment verified")'
@@ -49,13 +50,15 @@ jobs:
           xcrun xcresulttool get test-results summary --path "$RUNNER_TEMP/FormaUI.xcresult" > "$RUNNER_TEMP/FormaTestSummary.json"
           node --input-type=module -e 'import fs from "node:fs";const s=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/FormaTestSummary.json"));if(s.skippedTests!==0||s.failedTests!==0)throw Error("Native tests must pass without skips");console.log(JSON.stringify({passed:s.passedTests,failed:s.failedTests,skipped:s.skippedTests}));'
       - name: Archive unsigned iPhone Release
+        if: always() && steps.build.outcome == 'success'
         run: |
           xcodebuild archive -configuration Release -project ios/Forma.xcodeproj -scheme Forma -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Forma-iPhone-unsigned.xcarchive" -derivedDataPath "$RUNNER_TEMP/FormaDeviceDerived" CODE_SIGNING_ALLOWED=NO
       - name: Capture demo screens
         if: always()
         run: |
           if [ -z "${FORMA_SIM:-}" ]; then exit 0; fi
-          xcrun simctl launch "$FORMA_SIM" com.formahealth.app --uitesting
+          xcrun simctl bootstatus "$FORMA_SIM" -b
+          xcrun simctl launch --terminate-running-process "$FORMA_SIM" com.formahealth.app --uitesting
           sleep 3
           xcrun simctl io "$FORMA_SIM" screenshot "$RUNNER_TEMP/Forma-iPhone.png"
       - name: Export UI evidence

@@ -82,7 +82,7 @@ struct FeatureCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
             .background(.white, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(FeatureTheme.border, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(FeatureTheme.border, lineWidth: 1).allowsHitTesting(false))
     }
 }
 

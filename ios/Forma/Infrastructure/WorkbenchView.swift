@@ -4,7 +4,7 @@ import WebKit
 struct WorkbenchView: View {
     let store: AppStore
     let route: String
-    @State private var authorized: AuthorizedWorkbench?
+    @State private var authorized: NativeWorkbenchSession?
     @State private var failed = false
     var body: some View {
         Group {
@@ -46,67 +46,31 @@ struct WorkbenchView: View {
             url.queryItems = [URLQueryItem(name: "account", value: user.id), URLQueryItem(name: "lang", value: store.language)]
             url.fragment = "/\(["home", "library", "stats"].contains(route) ? route : "home")"
             guard let destination = url.url else { throw NativeAPIError.invalidServer }
-            authorized = AuthorizedWorkbench(url: destination, origin: base, cookie: cookie)
+            let session = try store.prepareWorkbench(account: user.id)
+            _ = try await session.attach(url: destination, cookie: cookie)
+            guard generation == store.webSessionID else { return }
+            authorized = session
         } catch { if generation == store.webSessionID { failed = true } }
     }
 }
 
-struct AuthorizedWorkbench {
-    let url: URL
-    let origin: URL
-    let cookie: HTTPCookie
-}
-
 private struct AuthorizedWebView: UIViewRepresentable {
-    let session: AuthorizedWorkbench
+    let session: NativeWorkbenchSession
     @Binding var failed: Bool
-    func makeCoordinator() -> Coordinator { Coordinator(origin: session.origin, failed: $failed) }
+    func makeCoordinator() -> NativeWorkbenchSession { session }
     func makeUIView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .nonPersistent()
-        configuration.allowsInlineMediaPlayback = true
-        configuration.mediaTypesRequiringUserActionForPlayback = .all
-        configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
-        let web = WKWebView(frame: .zero, configuration: configuration)
-        web.navigationDelegate = context.coordinator
-        web.isOpaque = false
-        web.allowsBackForwardNavigationGestures = true
-        let coordinator = context.coordinator
-        configuration.websiteDataStore.httpCookieStore.setCookie(session.cookie) { [weak web, weak coordinator] in
-            guard coordinator?.active == true else { return }
-            web?.load(URLRequest(url: session.url))
-        }
-        return web
+        session.onFailure = { failed = true }
+        if let web = session.webView { return web }
+        let config = WKWebViewConfiguration()
+        config.websiteDataStore = .nonPersistent()
+        return WKWebView(frame: .zero, configuration: config)
     }
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-    static func dismantleUIView(_ web: WKWebView, coordinator: Coordinator) {
-        coordinator.active = false
-        web.stopLoading(); web.navigationDelegate = nil
-        web.loadHTMLString("", baseURL: nil)
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        if session.webView != nil { session.onFailure = { failed = true } }
     }
-
-    final class Coordinator: NSObject, WKNavigationDelegate {
-        let origin: URL
-        var active = true
-        @Binding var failed: Bool
-        init(origin: URL, failed: Binding<Bool>) { self.origin = origin; _failed = failed }
-        func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            guard active, let url = action.request.url, action.targetFrame != nil else { decisionHandler(.cancel); return }
-            let sameOrigin = url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port
-            // blob URLs are local export/download objects, never a navigation destination.
-            let allowed = sameOrigin && !action.shouldPerformDownload
-            decisionHandler(allowed ? .allow : .cancel)
-        }
-        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { if active { failed = true } }
-        func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse,
-                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            guard active, let url = response.response.url else { decisionHandler(.cancel); return }
-            let sameOrigin = url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port
-            let disposition = (response.response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Disposition") ?? ""
-            decisionHandler(sameOrigin && response.canShowMIMEType && !disposition.lowercased().contains("attachment") ? .allow : .cancel)
-        }
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if active { failed = true } }
-        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { if active { failed = true } }
+    static func dismantleUIView(_ web: WKWebView, coordinator: NativeWorkbenchSession) {
+        // The account owns this page and its pending writes; closing the sheet only detaches it.
+        // Logout/account change explicitly locks and purges it through AppStore.
+        coordinator.detach()
     }
 }

@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var password = ""
     @State private var busy = false
     @State private var message: String?
+    @State private var confirmLogout = false
     var body: some View {
         NavigationStack {
             Form {
@@ -60,7 +61,8 @@ struct SettingsView: View {
                 }
                 Section {
                     Button(store.text(store.isDemo ? "退出演示" : "退出登录", store.isDemo ? "Leave demo" : "Sign out")) {
-                        dismiss(); Task { await store.logout() }
+                        if store.isDemo { store.leaveDemo(); dismiss() }
+                        else { confirmLogout = true }
                     }
                     if !store.isDemo { Button(store.text("删除账户", "Delete account"), role: .destructive) { deleting = true } }
                 }
@@ -72,6 +74,10 @@ struct SettingsView: View {
             .fileExporter(isPresented: $exporting, document: export, contentType: .json, defaultFilename: "forma-export") { result in
                 if case .failure = result { message = store.text("导出未保存，请重试。", "The export was not saved. Please try again.") }
                 export = nil
+            }
+            .confirmationDialog(store.text("退出将移除本机训练草稿和未同步媒体，已保存的服务端记录会保留。", "Signing out removes local training drafts and unsynced media. Saved server records are retained."), isPresented: $confirmLogout, titleVisibility: .visible) {
+                Button(store.text("退出并清理本机数据", "Sign out and clear local data"), role: .destructive) { dismiss(); Task { await store.logout() } }
+                Button(store.text("取消", "Cancel"), role: .cancel) {}
             }
             .sheet(isPresented: $deleting) {
                 NavigationStack {

@@ -1,4 +1,5 @@
 import XCTest
+import CoreGraphics
 
 /// Launches an isolated, in-memory demo. No backend, saved account or Keychain is used.
 final class FormaUITests: XCTestCase {
@@ -60,14 +61,14 @@ final class FormaUITests: XCTestCase {
     func testAllTrainingWorkbenchEntrypointsRequireAnAccountInDemo() throws {
         selectTab("training", chinese: "训练", english: "Training")
         for identifier in ["training.workbench", "training.library", "training.statistics"] {
-            let entry = element(identifier)
+            let entry = button(identifier)
             reveal(entry)
             XCTAssertTrue(entry.isHittable)
             entry.tap()
             let gate = element("workbench.demo-gate")
             XCTAssertTrue(gate.waitForExistence(timeout: 5))
             XCTAssertEqual(app.webViews.count, 0, "A demo must not create an authenticated workbench")
-            let close = element("workbench.close")
+            let close = button("workbench.close")
             XCTAssertTrue(waitUntilHittable(close))
             close.tap()
             assertScreen("training")
@@ -83,7 +84,7 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Nutrition"].exists)
         assertMetric("nutrition.total.kcal", equals: 500)
 
-        let add = element("nutrition.add")
+        let add = button("nutrition.add")
         reveal(add)
         add.tap()
         XCTAssertTrue(element("demo.form").waitForExistence(timeout: 5))
@@ -98,10 +99,10 @@ final class FormaUITests: XCTestCase {
         ] {
             replaceText(identifier, with: value)
         }
-        let save = element("record.save")
+        let save = button("record.save")
         XCTAssertTrue(save.exists)
         XCTAssertFalse(save.isEnabled, "Even a valid demo form must not save personal account data")
-        let cancel = element("record.cancel")
+        let cancel = button("record.cancel")
         XCTAssertTrue(waitUntilHittable(cancel))
         cancel.tap()
         assertScreen("nutrition")
@@ -116,6 +117,10 @@ final class FormaUITests: XCTestCase {
 
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    private func button(_ identifier: String) -> XCUIElement {
+        app.buttons.matching(identifier: identifier).firstMatch
     }
 
     private func selectTab(_ key: String, chinese: String, english: String) {
@@ -190,13 +195,74 @@ final class FormaUITests: XCTestCase {
     }
 
     private func reveal(_ target: XCUIElement) {
-        if waitUntilHittable(target, timeout: 1) { return }
-        for _ in 0..<5 {
-            app.swipeUp()
-            if waitUntilHittable(target, timeout: 1) { return }
+        let scroll = activeScrollContainer()
+        for _ in 0..<8 {
+            let viewport = contentViewport(scroll)
+            if target.exists {
+                let frame = target.frame
+                if validFrame(frame) && viewport.contains(frame) {
+                    attachControlGeometry(target, viewport: viewport)
+                    XCTAssertTrue(waitUntilHittable(target), "A fully visible native control must be hittable: \(target.identifier)")
+                    return
+                }
+                // An upward-only swipe can move a top-of-page action away from
+                // the user. Read geometry first; do not ask AX to hit-test an
+                // empty/offscreen frame, which itself raises an XCTest issue.
+                if validFrame(frame) && frame.minY < viewport.minY {
+                    scroll.swipeDown()
+                } else {
+                    scroll.swipeUp()
+                }
+            } else {
+                scroll.swipeUp()
+            }
         }
-        XCTAssertTrue(target.waitForExistence(timeout: 5))
-        XCTAssertTrue(target.isHittable, "The native control must be reachable through normal scrolling")
+        attachControlGeometry(target, viewport: contentViewport(scroll))
+        XCTFail("The native control \(target.identifier) did not become fully visible through normal scrolling")
+    }
+
+    private func activeScrollContainer() -> XCUIElement {
+        let form = app.collectionViews.firstMatch
+        if form.exists { return form }
+        let scroll = app.scrollViews.firstMatch
+        return scroll.exists ? scroll : app
+    }
+
+    private func contentViewport(_ scroll: XCUIElement) -> CGRect {
+        var viewport = app.frame.intersection(scroll.frame)
+        for bar in app.navigationBars.allElementsBoundByIndex where bar.exists {
+            let frame = bar.frame
+            if validFrame(frame) && frame.intersects(viewport) {
+                let top = max(viewport.minY, frame.maxY)
+                viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
+            }
+        }
+        let banner = element("demo.banner")
+        if banner.exists && validFrame(banner.frame) && banner.frame.intersects(viewport) {
+            let top = max(viewport.minY, banner.frame.maxY)
+            viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
+        }
+        for cover in [app.tabBars.firstMatch, app.keyboards.firstMatch] where cover.exists {
+            let frame = cover.frame
+            if validFrame(frame) && frame.intersects(viewport) {
+                viewport = CGRect(x: viewport.minX, y: viewport.minY, width: viewport.width, height: max(0, min(viewport.maxY, frame.minY) - viewport.minY))
+            }
+        }
+        return viewport.insetBy(dx: 1, dy: 1)
+    }
+
+    private func validFrame(_ frame: CGRect) -> Bool {
+        !frame.isNull && !frame.isInfinite && frame.width > 0 && frame.height > 0 &&
+        [frame.minX, frame.minY, frame.width, frame.height].allSatisfy { $0.isFinite }
+    }
+
+    private func attachControlGeometry(_ target: XCUIElement, viewport: CGRect) {
+        attachScreenshot("Control \(target.identifier) before hit-test")
+        let details = "target=\(target.debugDescription)\nframe=\(target.frame)\ncontentViewport=\(viewport)\napplicationFrame=\(app.frame)\n\(app.debugDescription)"
+        let tree = XCTAttachment(string: details)
+        tree.name = "Control geometry \(target.identifier)"
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     private func replaceText(_ identifier: String, with value: String) {
@@ -209,7 +275,7 @@ final class FormaUITests: XCTestCase {
     }
 
     private func setLanguage(_ label: String) {
-        let settings = element("settings.open")
+        let settings = button("settings.open")
         XCTAssertTrue(waitUntilHittable(settings))
         settings.tap()
         let picker = app.segmentedControls.matching(identifier: "settings.language").firstMatch
@@ -217,14 +283,17 @@ final class FormaUITests: XCTestCase {
         let option = picker.buttons[label]
         XCTAssertTrue(waitUntilHittable(option))
         option.tap()
-        let done = element("settings.done")
+        let done = button("settings.done")
         XCTAssertTrue(waitUntilHittable(done))
         done.tap()
     }
 
     private func waitUntilHittable(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-            target.exists && target.isHittable
+            guard target.exists else { return false }
+            let frame = target.frame
+            guard self.validFrame(frame), self.app.frame.contains(frame) else { return false }
+            return target.isHittable
         }, object: nil)
         return XCTWaiter.wait(for: [ready], timeout: timeout) == .completed
     }

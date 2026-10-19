@@ -7,6 +7,7 @@ final class NativeAPITests: XCTestCase {
         let user = FormaUser(id: UUID().uuidString.lowercased(), email: "synthetic@example.test", name: "Synthetic")
         let saved = SavedSession(server: "https://forma.example", user: user, token: String(repeating: "a", count: 64), expires: Date().addingTimeInterval(3600))
         let restored = try JSONDecoder().decode(SavedSession.self, from: JSONEncoder().encode(saved))
+        XCTAssertEqual(restored.webStoreID, saved.webStoreID)
         let cookie = try XCTUnwrap(restored.cookie(for: URL(string: saved.server)!))
         XCTAssertTrue(cookie.isHTTPOnly)
         XCTAssertTrue(cookie.isSecure)
