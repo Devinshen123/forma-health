@@ -1,0 +1,14 @@
+{
+  "id": "e6120fc7-08d1-4db7-ae91-c8d5ddc36ad1",
+  "date": "2026-10-18",
+  "name": "Synthetic native meal",
+  "type": "lunch",
+  "grams": 150,
+  "referenceGrams": 100,
+  "kcal": 250,
+  "protein": 20,
+  "carbs": 30,
+  "fat": 5,
+  "source": "manual",
+  "createdAt": "2026-10-18T12:00:00.000Z"
+}

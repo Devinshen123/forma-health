@@ -1,0 +1,54 @@
+name: Forma iPhone
+on:
+  push:
+    branches: ['codex/forma-iphone-app-*']
+    paths: ['ios/**', 'scripts/ios*', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', 'scripts/ios*', '.github/workflows/ios.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate Xcode project
+        run: node scripts/ios-generate-project.mjs
+      - name: Core tests
+        run: swift test --package-path ios/Packages/FormaCore
+      - name: Select simulator
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/simulators.json"
+          node --input-type=module -e 'import fs from "node:fs"; const data=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/simulators.json")); const sim=Object.entries(data.devices).filter(([k])=>k.includes("iOS")).flatMap(([,v])=>v).find(x=>x.isAvailable && x.name.startsWith("iPhone")); if(!sim)throw Error("No available iPhone"); fs.appendFileSync(process.env.GITHUB_ENV,"FORMA_SIM="+sim.udid+"\n"); console.log(sim.name);'
+      - name: Build native app and UI tests
+        run: |
+          xcodebuild build-for-testing -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaBuild.xcresult" CODE_SIGNING_ALLOWED=NO
+      - name: Run native UI tests
+        run: |
+          xcodebuild test-without-building -project ios/Forma.xcodeproj -scheme Forma -destination "platform=iOS Simulator,id=$FORMA_SIM" -derivedDataPath "$RUNNER_TEMP/FormaDerived" -resultBundlePath "$RUNNER_TEMP/FormaUI.xcresult" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO
+      - name: Capture demo screens
+        if: success()
+        run: |
+          xcrun simctl launch "$FORMA_SIM" com.formahealth.app --uitesting
+          sleep 3
+          xcrun simctl io "$FORMA_SIM" screenshot "$RUNNER_TEMP/Forma-iPhone.png"
+      - name: Save test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forma-ios-simulator
+          path: |
+            ${{ runner.temp }}/FormaBuild.xcresult
+            ${{ runner.temp }}/FormaUI.xcresult
+            ${{ runner.temp }}/Forma-iPhone.png
+            ${{ runner.temp }}/FormaDerived/Build/Products/Debug-iphonesimulator/Forma.app
+          retention-days: 7

@@ -1,0 +1,13 @@
+{
+  "id": "f18be4f6-5152-4a77-9faf-325707bf690c",
+  "date": "2026-10-18",
+  "name": "Synthetic native workout",
+  "duration": 20.5,
+  "rpe": null,
+  "exercises": [
+    { "name": "Synthetic dumbbell row", "sets": 3, "reps": 8, "weight": 25 }
+  ],
+  "notes": "Synthetic user-entered summary; no individual sets recorded.",
+  "source": "manual",
+  "createdAt": "2026-10-18T14:00:00.000Z"
+}

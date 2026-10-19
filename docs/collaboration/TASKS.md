@@ -1,4 +1,17 @@
-# 2026-10-18 训练统计直接整合（当前任务）
+# 2026-10-18 独立 iPhone App（当前任务）
+
+用户明确要求独立iPhone App；采用iOS 17+ SwiftUI原生五页与现有Forma会话/API，先进训练工作台通过同源WKWebView复用。不是把网站作为整个App根界面。无HealthKit/Apple登录/支付扩围；缺失与演示规则不变。Windows无xcrun，Mac尚未连接，先用公开仓库Mac CI无签名构建与合成测试，不声称已安装真机。保留现有Web服务。
+
+| ID | owner / 本轮独占写入 | 状态 | 验收 |
+|---|---|---|---|
+| IOS-01 | lead：ios/Forma（不含Features）、ios/Forma.xcodeproj、ios/Config、scripts/ios*、.github、根文档 | doing | 原生入口/设置/登录/会话隔离/同源工作台；实际Mac构建及如实限制 |
+| IOS-02 | inspect_library：ios/Packages/FormaCore与status/ios-core.md | doing | 纯Swift JSON/请求结构/确定性营养与睡眠/记录工厂/边界测试 |
+| IOS-03 | muscle_ui：ios/Forma/Features与status/ios-features.md | doing | Today/Nutrition/Training/Sleep/Trends原生页面、真实记录表单、空态/双语 |
+| IOS-04 | qa：ios/FormaUITests、tests/ios-contract.test.ts与status/ios-qa.md | doing | 真正API契约/模拟器UI测试；不改root工程或构建依赖 |
+
+核心接口在本轮消息和ADR-ios-native-20261018.md确定；所有agent不改其他路径、不读data/.env、不自启/停止5173、不自行安装/推送/合并。只有lead整合并上传，commit前逐条确认测试结果。ios开发的完成状态与Web已有完成记录分开。
+
+# 2026-10-18 训练统计直接整合（已完成）
 
 用户要求“他这个统计的内容放进去”，按前文openGym统计整页执行。vendor统计已有活动热图、肌群/周训练量、体重、动作进步、主观强度和历史/体测入口；本轮增加Forma训练“统计”与趋势页直达入口，复用同源工作台#/stats，不重写图表或还原推测的疲劳/保留力量分数。Forma原有/投影事实单独汇总并明确范围，不能将未反向进入工作台的手动记录冒称已合并进工作台详细图表。来源继续只读。
 
