@@ -169,7 +169,7 @@ function datesEndingAt(last: string, count: number) {
   });
 }
 
-export function Trends({ state, lang }: FeatureProps) {
+export function Trends({ state, lang, onOpenTrainingStatistics }: FeatureProps & { onOpenTrainingStatistics?: () => void }) {
   const c = copy[lang];
   const [range, setRange] = useState<7 | 14>(7);
   const [metric, setMetric] = useState<Metric>("nutrition");
@@ -303,6 +303,7 @@ export function Trends({ state, lang }: FeatureProps) {
           ))}
         </div>
       </header>
+      {onOpenTrainingStatistics ? <div className="row-actions"><button type="button" className="btn btn-secondary" onClick={onOpenTrainingStatistics}><Activity size={17} />{lang === "zh" ? "查看训练统计" : "View training statistics"}</button><span className="hint">{lang === "zh" ? "活动热图、肌群训练量、体重与动作进步" : "Activity, muscle volume, body weight and exercise progress"}</span></div> : null}
       <div className="form-grid three">
         {(
           [

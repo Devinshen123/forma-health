@@ -37,6 +37,16 @@
 
 - 无新增产品决定。lead 已决定兼容投影 + 明确 warning，避免扩展全站旧数据契约或静默丢失。
 
+## STAT-03：训练统计入口与事实范围
+
+- lead 新增授权仅写 `tests/browser/training-statistics.mts` 和本状态。已读当前 AGENTS / TASKS，复用已验证的合成 createApp / 可信 5173 / 系统 Edge 流程；原始 openGym 与产品文件只读，无新增依赖、无提交。初稿完成前未启动服务；lead 明确释放自有预览后才运行专属 fixture。
+- 6 组覆盖：演示标记与实际 3 次 / 110 分钟（无逐组数据仍 —，无账户 iframe）；真实空账户汇总与图表空态；一条原生 + 一条兼容工作台完成记录在 Forma 汇总只计 2 次 / 50 分钟 / 3 组 / 1,080 kg×次，工作台详细统计仍只计自身 1 条；六种图表/历史板块可达，Time→Volume 真实保存且图例变化，Top set 30 kg→Est.1RM 36 kg；原工作台 home 与 Trends 快捷统计；中英保持账户与 #/stats、同浏览器切回空账户不采纳另一账户；390px 内外无溢出及展开/刷新控件可用。
+- 初次完整通过为外部 `statistics-20261018/browser-3`：**6/6、exit 0**，pageErrors / consoleErrors / forbiddenOrigins / apiErrors 均空，随后 `npx tsc --noEmit` 与指定 `git diff --check` exit 0。browser-1/2 原始失败日志保留：仅测试 card 对 Body weight 误取直接父 row、Muscle balance 忽略标题副标签；fixture 另补源实际保存的缓存 vol=30×6=180，避免非法精简 fixture 的 NaN 显示。
+- lead 后追加已知 0 与微量正数显示边界：空账户组子例以完整合法原生完成组先存 weight=0，再更新为 .000001，kg / imperial lb 分别验证 0 / <0.001；真实正 duration=.000001 分钟也为 <0.001，不能舍入成 0。测试末尾按当前实体版本合法删除该合成记录并恢复 metric profile，让后续空账户仍真实为空。新增子例静态 `npx tsc --noEmit` / 指定 diff check exit 0。
+- lead 修复微量格式并完成新 build 后，最终实际运行：`FORMA_TEST_OUTPUT=<外部统计证据>/browser-4 node --import tsx tests/browser/training-statistics.mts`，**6/6 通过、exit 0**，包含全部微量/已知零/公英制子例；pageErrors / consoleErrors / forbiddenOrigins / apiErrors 再次全部为 `[]`。最终原始证据目录 `C:/Users/devin/.codex/visualizations/2026/10/17/01a148dd-26a1-7812-a1fd-e10d8f096bd5/statistics-20261018/browser-4/`，同级保留 `browser-4.log`，前轮日志未覆盖。
+- 截图均遮罩 img/video，已查看桌面演示、390px 统计和边界测试时的工作台截图。微量数字由实际 DOM 断言证明；该截图的父视口停在 iframe，不能拿它作上方微量数字的视觉证据。所有证据与合成临时数据库只在外部目录，不读真实 data/.env。fixture finally 已关闭自己的浏览器/服务/数据库，显式查询 5173 无监听，时段已交回 root；脚本与本状态冻结，未改产品或再次启动服务。
+- 尚未验证 Safari/iPhone 实机、全部历史/图表数学组合；原工作台会话门禁与完整保存链另由前述 9 组覆盖，统计脚本不重复冒称全面验证。
+
 ## 待用户决定
 
 - 无新增事项。

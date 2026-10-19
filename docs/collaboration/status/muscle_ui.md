@@ -1,4 +1,29 @@
-# MUS-02 — 探索肌肉组件
+# STAT-02 — 训练统计只读汇总
+
+日期：2026-10-18（America/Los_Angeles）。Owner：muscle_ui。当前唯一写入为 `src/features/training/Statistics.tsx` 和本状态；下方肌群任务为历史交付，不再表示本轮授权写入。
+
+## 当前实施
+
+- 已读 AGENTS.md、TASKS.md 最新 STAT 所有权、自己的状态和发给本角色的请求（没有未处理请求）；已核对 `src/training/domain.ts` 的 completed/unknown/zero 语义和现有 `displayLoad` 单位 helper。
+- 新增默认导出的 `TrainingStatistics(props: FeatureProps)`，上方以所有 `state.workouts` 为范围，复用 `trainingStats(..., catalog)`，提供已保存训练次数、有效总分钟、实际完成工作/递减组、已知负重×次数容量四项。
+- 时长只累加有限正数并显示覆盖；无记录/无明细为 `—`，已有逐组记录的真实 0 容量保留 0。详细/旧汇总/未知容量组覆盖明确，不从汇总推算组数据。
+- 面板标出全时间已保存事实范围及演示数据；下方直接复用 `Workbench view="stats"`，明确其图表只含工作台原始记录，原生/其他导入未反向进入该明细。
+- 仅现有 class 和数字换行小样式，无依赖、样式表、后端、schema、服务启动或提交。
+
+## 验证与请求
+
+- lead 已补 `Workbench` view 契约。`npx tsc --noEmit` 实际执行 exit 0。
+- `git diff --check -- src/features/training/Statistics.tsx docs/collaboration/status/muscle_ui.md`：exit 0，仅状态文件已有 Windows 换行提示，无差异错误。
+- 完整构建和浏览器由 lead / QA 统一验证；本角色不宣称浏览器或构建已通过。代码及状态已冻结并交回 lead，不再写其他文件。
+- QA 已收到 `data-training-summary`、四项 `data-stat` 及中英范围、0/unknown 和单位显示契约。
+
+## 待用户决定
+
+- 无。
+
+---
+
+# MUS-02 — 探索肌肉组件（历史）
 
 日期：2026-10-18（America/Los_Angeles）。Owner：muscle_ui。
 

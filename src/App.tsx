@@ -62,6 +62,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [demo, setDemo] = useState(true);
   const [page, setPage] = useState<Page>("today");
+  const [trainingStart, setTrainingStart] = useState<"statistics" | undefined>();
   const [auth, setAuth] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -220,6 +221,7 @@ export default function App() {
     setState(demoState());
     setOnboarding(false);
     setPage("today");
+    setTrainingStart(undefined);
     setAuth(false);
   }
   async function signOut() {
@@ -254,6 +256,7 @@ export default function App() {
   function navigate(p: Page,force=false) {
     if(page==='training'&&p!=='training'&&!force){if(unsaved.busy)return;if(unsaved.dirty){setLeavePage(p);return;}}
     if(force)setUnsaved({dirty:false,busy:false});
+    setTrainingStart(undefined);
     setPage(p);
     setMenu(false);
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -398,11 +401,11 @@ export default function App() {
             {page === "nutrition" ? (
               <Nutrition key={user?.id ?? "demo"} {...props} onCreate={() => setAuth(true)} />
             ) : page === "training" ? (
-              <Suspense fallback={<div className="panel">{zh?'载入训练工具…':'Loading training tools…'}</div>}><Training key={user?.id ?? "demo"} {...props} /></Suspense>
+              <Suspense fallback={<div className="panel">{zh?'载入训练工具…':'Loading training tools…'}</div>}><Training key={user?.id ?? "demo"} {...props} initialSection={trainingStart} /></Suspense>
             ) : page === "sleep" ? (
               <Sleep {...props} />
             ) : page === "trends" ? (
-              <Trends {...props} />
+              <Trends {...props} onOpenTrainingStatistics={() => { navigate("training"); setTrainingStart("statistics"); }} />
             ) : page === "reports" ? (
               <Reports {...props} />
             ) : page === "plan" ? (
