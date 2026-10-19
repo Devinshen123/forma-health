@@ -126,6 +126,8 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(tab.waitForExistence(timeout: 5))
         XCTAssertTrue(waitUntilHittable(tab))
         tab.tap()
+        assertScreen(key)
+        attachScreenshot("Native tab \(key)")
     }
 
     private func assertScreen(_ key: String) {
@@ -133,19 +135,58 @@ final class FormaUITests: XCTestCase {
     }
 
     private func metricText(_ identifier: String) -> String {
-        let metric = element(identifier)
-        if !metric.exists { reveal(metric) }
-        XCTAssertTrue(metric.waitForExistence(timeout: 5))
-        return ((metric.value as? String) ?? metric.label).trimmingCharacters(in: .whitespacesAndNewlines)
+        readMetric(identifier).text
     }
 
     private func assertMetric(_ identifier: String, equals expected: Double) {
-        let displayed = metricText(identifier).replacingOccurrences(of: ",", with: "")
+        let reading = readMetric(identifier)
+        let displayed = numericText(reading.text)
         guard let value = Double(displayed) else {
-            XCTFail("The demo metric \(identifier) must expose a recorded numeric value")
+            attachMetricFailure(identifier)
+            XCTFail("The demo metric \(identifier) must expose a recorded numeric value. \(reading.diagnostic)")
             return
         }
-        XCTAssertEqual(value, expected, accuracy: 0.001)
+        if abs(value - expected) > 0.001 { attachMetricFailure(identifier) }
+        XCTAssertEqual(value, expected, accuracy: 0.001, "Metric \(identifier). \(reading.diagnostic)")
+    }
+
+    private func readMetric(_ identifier: String) -> (text: String, diagnostic: String) {
+        // A SwiftUI Text is a StaticText. A broad descendant query can instead
+        // resolve a containing accessibility element with an unrelated value.
+        let textQuery = app.staticTexts.matching(identifier: identifier)
+        let staticText = textQuery.firstMatch
+        let fallback = element(identifier)
+        if !staticText.exists && !fallback.exists { reveal(fallback) }
+        let metric = staticText.exists ? staticText : fallback
+        XCTAssertTrue(metric.waitForExistence(timeout: 5))
+        let label = metric.label.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawValue = metric.value
+        let value = (rawValue as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        // StaticText can expose an empty/non-numeric AX value while its actual
+        // displayed number lives in label. Never replace it with a test value.
+        let displayed = Double(numericText(value)) == nil ? label : value
+        let diagnostic = "label=\(String(reflecting: label)); value=\(String(reflecting: rawValue)); element=\(metric.debugDescription); staticTextMatches=\(textQuery.debugDescription)"
+        return (displayed, diagnostic)
+    }
+
+    private func numericText(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: "")
+    }
+
+    private func attachScreenshot(_ name: String) {
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = name
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    private func attachMetricFailure(_ identifier: String) {
+        attachScreenshot("Metric failure \(identifier)")
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "Accessibility tree \(identifier)"
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     private func reveal(_ target: XCUIElement) {

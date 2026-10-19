@@ -13,3 +13,5 @@
 首次Mac CI 39189719339：Core单测步骤成功，Xcode16.4/iPhone16Pro iOS18.5构建失败，原因Debug工程试图编译arm64+x86_64但本地Swift Package只有当前arm64；设置Debug ONLY_ACTIVE_ARCH=YES后重试。尚未执行UI，失败不计通过。额外修正原生小正数显示避免按一位小数四舍五入成0，并加测试；Release也另行编译核验。
 
 第二次Mac CI 39189998438：Core21/21通过；架构问题已解决，SwiftUI SleepHistoryCard长表达式触发type-check超时。页面owner已拆为显式String属性，保留相同行为后重试。增加真正Swift URLSession→临时Express API的注册/cookie/me/新增/精确重试/账户隔离/退出测试；CI仅新VM本地3001+独立临时DB，无付费AI，不触本机服务。状态仍待实际运行。
+
+第三次Mac CI 39190242113：App和测试build-for-testing成功。Core21通过；Native4通过，但真实HTTP case因环境未在build-for-testing展开而skip（不能计通过），现已设置TestAction独立环境/MacroExpansion、构建阶段传参并对生成xctestrun预检，结果强制无skip。UI2/4通过（五页原生及训练三gate）；数值两项在AX文本解析处失败，QA改为优先StaticText、忽略空/非数字value后读取label，保留所有原数值断言且增加截图和AX树；不修改生产数值来配合测试。新增cookie恢复的HttpOnly/Secure/域范围测试，另以真实iphoneos SDK生成无签名Release archive。下一轮待实跑。

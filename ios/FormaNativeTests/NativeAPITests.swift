@@ -3,6 +3,18 @@ import FormaCore
 @testable import Forma
 
 final class NativeAPITests: XCTestCase {
+    @MainActor func testRestoredSessionCookieIsHttpOnlySecureAndOriginScoped() throws {
+        let user = FormaUser(id: UUID().uuidString.lowercased(), email: "synthetic@example.test", name: "Synthetic")
+        let saved = SavedSession(server: "https://forma.example", user: user, token: String(repeating: "a", count: 64), expires: Date().addingTimeInterval(3600))
+        let restored = try JSONDecoder().decode(SavedSession.self, from: JSONEncoder().encode(saved))
+        let cookie = try XCTUnwrap(restored.cookie(for: URL(string: saved.server)!))
+        XCTAssertTrue(cookie.isHTTPOnly)
+        XCTAssertTrue(cookie.isSecure)
+        XCTAssertEqual(cookie.path, "/")
+        XCTAssertEqual(cookie.domain, "forma.example")
+        let expired = SavedSession(server: saved.server, user: user, token: saved.token, expires: Date().addingTimeInterval(-1))
+        XCTAssertNil(expired.cookie(for: URL(string: saved.server)!))
+    }
     @MainActor func testRealNativeTransportRoundTripsThroughTheExistingServer() async throws {
         guard ProcessInfo.processInfo.environment["FORMA_LIVE_API"] == "YES" else {
             throw XCTSkip("Run the ephemeral local API and pass FORMA_LIVE_API=YES to xcodebuild for this integration case.")
