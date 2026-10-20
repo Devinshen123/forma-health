@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, Gift, Leaf, Moon, RefreshCw, Shirt, Users, Utensils, Dumbbell } from 'lucide-react';
-import { ApiError, getCompanion, claimCompanion, restCompanion, openCompanionChest, equipCompanion, companionChallenge } from '../api';
-import { COMPANION_ITEMS, demoCompanion, type CompanionItem, type CompanionQuest, type CompanionSnapshot } from '../companion';
+import { ApiError, getCompanion, claimCompanion, restCompanion, openCompanionChest, equipCompanion, companionChallenge, selectCompanionCharacter } from '../api';
+import { COMPANION_CHARACTERS, COMPANION_CHARACTER_DETAILS, COMPANION_ITEMS, demoCompanion, type CompanionCharacter, type CompanionItem, type CompanionQuest, type CompanionSnapshot } from '../companion';
 import type { FeatureProps, Language, Page } from '../types';
 import CompanionAvatar from '../components/CompanionAvatar';
 import '../companion.css';
 
 type CompanionProps = FeatureProps & { navigate: (page: Page) => void };
-type Operation = { type: 'read' | 'claim' | 'rest' | 'create' | 'leave' } | { type: 'open'; id: string } | { type: 'equip'; item: CompanionItem | null } | { type: 'join'; code: string };
-type ViewState = { identity: string; snapshot: CompanionSnapshot | null; busy: boolean; error: string | null };
+type Operation = { type: 'read' | 'claim' | 'rest' | 'create' | 'leave' } | { type: 'open'; id: string } | { type: 'equip'; item: CompanionItem | null } | { type: 'join'; code: string } | { type: 'character'; character: CompanionCharacter };
+type ViewState = { identity: string; snapshot: CompanionSnapshot | null; busy: boolean; error: string | null; pendingCharacter: CompanionCharacter | null };
 
 function useCompanion({ accountId, demo, lang }: FeatureProps) {
   const identity = demo ? 'demo' : accountId ?? '';
@@ -22,8 +22,8 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
   const readVersion = useRef(0);
   const background = useRef<AbortController | null>(null);
   const controllers = useRef(new Set<AbortController>());
-  const [view, setView] = useState<ViewState>(() => ({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null }));
-  const [notice, setNotice] = useState<string | null>(null);
+  const [view, setView] = useState<ViewState>(() => ({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null, pendingCharacter: null }));
+  const [notice, setNotice] = useState<{ identity: string; type: Operation['type'] | 'preview' } | null>(null);
 
   const readQuietly = useCallback(async () => {
     if (demo || !accountId || !alive.current || currentIdentity.current !== identity || busy.current || background.current) return;
@@ -41,7 +41,7 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
       if (!isCurrent()) return;
       // Ordinary background failures stay silent; an expired identity must stop showing private data.
       if (error instanceof ApiError && (error.status === 401 || error.code === 'ACCOUNT_CHANGED')) {
-        setView(previous => isCurrent() ? { identity, snapshot: null, busy: false, error: error.message } : previous);
+        setView(previous => isCurrent() ? { identity, snapshot: null, busy: false, error: error.message, pendingCharacter: null } : previous);
         setNotice(previous => isCurrent() ? null : previous);
       }
     } finally {
@@ -62,7 +62,7 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
     const isCurrent = () => alive.current && generation.current === version && currentIdentity.current === identity;
     controllers.current.add(controller);
     busy.current = true;
-    setView(previous => ({ identity, snapshot: previous.identity === identity ? previous.snapshot : null, busy: true, error: null }));
+    setView(previous => isCurrent() ? { identity, snapshot: previous.identity === identity ? previous.snapshot : null, busy: true, error: null, pendingCharacter: operation.type === 'character' ? operation.character : null } : previous);
     try {
       const signal = controller.signal;
       let snapshot: CompanionSnapshot;
@@ -72,13 +72,14 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
         case 'rest': snapshot = await restCompanion(accountId, signal); break;
         case 'open': snapshot = await openCompanionChest(operation.id, accountId, signal); break;
         case 'equip': snapshot = await equipCompanion(operation.item, accountId, signal); break;
+        case 'character': snapshot = await selectCompanionCharacter(operation.character, accountId, signal); break;
         case 'join': snapshot = await companionChallenge('join', operation.code, accountId, signal); break;
         case 'create': snapshot = await companionChallenge('create', undefined, accountId, signal); break;
         case 'leave': snapshot = await companionChallenge('leave', undefined, accountId, signal); break;
       }
       if (!isCurrent()) return false;
-      setView({ identity, snapshot, busy: false, error: null });
-      setNotice(identity);
+      setView(previous => isCurrent() ? { identity, snapshot, busy: false, error: null, pendingCharacter: null } : previous);
+      setNotice(previous => isCurrent() ? { identity, type: operation.type } : previous);
       return true;
     } catch (error) {
       if (!isCurrent() || controller.signal.aborted) return false;
@@ -87,7 +88,7 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
       const message = error instanceof ApiError && error.code === 'CHALLENGE_UNAVAILABLE'
         ? (zh ? '邀请码已失效、已到期或人数已满，请核对后再试。' : 'This invite is unavailable, expired or full. Check the code and try again.')
         : error instanceof ApiError ? error.message : (zh ? '暂时无法连接，请稍后重试。' : 'Unable to connect. Please try again.');
-      setView(previous => ({ identity, snapshot: accountChanged ? null : previous.identity === identity ? previous.snapshot : null, busy: false, error: message }));
+      setView(previous => isCurrent() ? { identity, snapshot: accountChanged ? null : previous.identity === identity ? previous.snapshot : null, busy: false, error: message, pendingCharacter: null } : previous);
       if (accountChanged) setNotice(null);
       return false;
     } finally {
@@ -96,6 +97,18 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
     }
   }, [accountId, demo, identity]);
 
+  const selectCharacter = useCallback(async (character: CompanionCharacter) => {
+    if (!demo) return run({ type: 'character', character });
+    if (!alive.current || currentIdentity.current !== identity) return false;
+    const version = generation.current;
+    const isCurrent = () => alive.current && generation.current === version && currentIdentity.current === identity;
+    setView(previous => isCurrent() && previous.identity === identity && previous.snapshot
+      ? { ...previous, snapshot: { ...previous.snapshot, character } }
+      : previous);
+    setNotice(previous => isCurrent() ? { identity, type: 'preview' } : previous);
+    return true;
+  }, [demo, identity, run]);
+
   useEffect(() => {
     generation.current += 1;
     alive.current = true;
@@ -103,7 +116,7 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
     readVersion.current += 1;
     background.current = null;
     setNotice(null);
-    setView({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null });
+    setView({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null, pendingCharacter: null });
     if (!demo && accountId) void run({ type: 'read' });
     return () => {
       alive.current = false;
@@ -125,8 +138,8 @@ function useCompanion({ accountId, demo, lang }: FeatureProps) {
     return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
   }, [accountId, demo, readQuietly]);
 
-  const visible = view.identity === identity ? view : { identity, snapshot: null, busy: false, error: null };
-  return { ...visible, notice: notice === identity, run, disabled: demo || !accountId || visible.busy };
+  const visible = view.identity === identity ? view : { identity, snapshot: null, busy: false, error: null, pendingCharacter: null };
+  return { ...visible, notice: notice?.identity === identity ? notice.type : null, run, selectCharacter, disabled: demo || !accountId || visible.busy };
 }
 
 const itemNames: Record<CompanionItem, [string, string]> = {
@@ -134,6 +147,21 @@ const itemNames: Record<CompanionItem, [string, string]> = {
   scarf: ['暖暖围巾', 'Cozy scarf'], flower: ['花朵发饰', 'Flower clip'], crown: ['阳光小冠', 'Sun crown'],
 };
 const itemName = (item: CompanionItem, zh: boolean) => itemNames[item][zh ? 0 : 1];
+const unknownCharacterDetails = { zh: '伙伴', en: 'Companion', descriptionZh: '陪你走自己的节奏。', descriptionEn: 'Company at your own pace.', color: '#f0f2ef' };
+const characterDetailsFor = (character: CompanionCharacter) => COMPANION_CHARACTER_DETAILS[character] ?? unknownCharacterDetails;
+
+function useCompanionArtwork() {
+  const [art, setArt] = useState({ revision: 0, failed: false });
+  const reportError = useCallback(() => setArt(previous => previous.failed ? previous : { ...previous, failed: true }), []);
+  const retry = useCallback(() => setArt(previous => ({ revision: previous.revision + 1, failed: false })), []);
+  return { ...art, reportError, retry };
+}
+
+function ArtworkRetry({ art, zh }: { art: ReturnType<typeof useCompanionArtwork>; zh: boolean }) {
+  if (!art.failed) return null;
+  return <div className="companion-art-retry"><p role="alert">{zh ? '部分伙伴形象暂时无法显示，选择和成长仍会保留。' : 'Some companion images could not load. Your choice and progress are kept.'}</p><button type="button" className="text-button" onClick={art.retry}>{zh ? '重试形象图片' : 'Retry images'}</button></div>;
+}
+
 const questInfo: Record<CompanionQuest, { zh: string; en: string; page: Page; Icon: typeof Utensils }> = {
   nutrition: { zh: '记录一份饮食', en: 'Log a meal', page: 'nutrition', Icon: Utensils },
   movement: { zh: '记录训练或选择休息', en: 'Log training or choose rest', page: 'training', Icon: Dumbbell },
@@ -170,16 +198,45 @@ function LoadState({ model, zh, compact = false }: { model: ReturnType<typeof us
   </div>;
 }
 
+function CharacterGallery({ model, art, zh, demo, authenticated }: { model: ReturnType<typeof useCompanion>; art: ReturnType<typeof useCompanionArtwork>; zh: boolean; demo: boolean; authenticated: boolean }) {
+  if (!model.snapshot) return null;
+  const current = model.snapshot.character ?? 'sprout';
+  return <section className="panel companion-gallery" aria-labelledby="companion-gallery-title">
+    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '六位小伙伴，各有自己的可爱。' : 'Six little personalities. One at your side.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
+    <div className="companion-characters">
+      {COMPANION_CHARACTERS.map(character => {
+        const details = COMPANION_CHARACTER_DETAILS[character];
+        const name = zh ? details.zh : details.en;
+        const selected = current === character;
+        const pending = model.pendingCharacter === character;
+        const status = pending ? (zh ? '正在保存…' : 'Saving…') : selected ? (demo ? (zh ? '预览中' : 'Previewing') : (zh ? '当前伙伴' : 'Your companion')) : (demo ? (zh ? '预览伙伴' : 'Preview') : (zh ? '选择伙伴' : 'Choose'));
+        return <button key={character} type="button" className={`companion-character ${selected ? 'is-selected' : ''} ${pending ? 'is-pending' : ''}`} data-companion-character={character} aria-pressed={selected} aria-label={`${name} · ${status}`} disabled={model.busy || (!demo && !authenticated)} onClick={() => { if (!selected) void model.selectCharacter(character); }}>
+          <span className="companion-character-portrait" style={{ backgroundColor: details.color }}><CompanionAvatar character={character} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /></span>
+          <strong>{name}</strong><span className="companion-character-description">{zh ? details.descriptionZh : details.descriptionEn}</span>
+          <span className="companion-character-status">{selected && <Check size={13} aria-hidden="true" />}{status}</span>
+        </button>;
+      })}
+    </div>
+    <ArtworkRetry art={art} zh={zh} />
+    <p className="companion-gallery-note">{demo ? (zh ? '仅预览 · 登录后可保存喜欢的伙伴。' : 'Preview only · sign in to save your favorite.') : (zh ? '随时换一位伙伴，成长进度、配饰和宝箱都会保留。' : 'Switch whenever you like. Your progress, outfits and chests stay with you.')}</p>
+  </section>;
+}
+
 export function CompanionCard(props: CompanionProps) {
   const model = useCompanion(props);
+  const art = useCompanionArtwork();
   const { snapshot } = model;
   const zh = props.lang === 'zh';
+  const character = snapshot?.character ?? 'sprout';
+  const characterDetails = characterDetailsFor(character);
+  const name = zh ? characterDetails.zh : characterDetails.en;
   return <section className="panel companion-card" aria-label={zh ? '健康伙伴' : 'Health companion'}>
     <div className="companion-card-heading"><span className="companion-eyebrow"><Leaf size={16} />{zh ? '健康伙伴' : 'Health companion'}</span>{props.demo && <span className="companion-badge">{zh ? '演示数据' : 'Demo data'}</span>}</div>
     <div className="companion-card-intro">
-      <CompanionAvatar equipped={snapshot?.equipped} level={snapshot?.level} />
-      <div><h2>{zh ? '和芽芽，一起慢慢长大。' : 'Grow at your pace with Sprout.'}</h2><p>{zh ? '每一份记录，都是一次陪伴。' : 'A little company for every log.'}</p></div>
+      <CompanionAvatar character={character} equipped={snapshot?.equipped} level={snapshot?.level} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} />
+      <div><h2>{zh ? `和${name}，一起慢慢长大。` : `Grow at your pace with ${name}.`}</h2><p>{zh ? characterDetails.descriptionZh : characterDetails.descriptionEn}</p></div>
     </div>
+    <ArtworkRetry art={art} zh={zh} />
     {snapshot ? <><Progress snapshot={snapshot} zh={zh} /><Quests snapshot={snapshot} lang={props.lang} navigate={props.navigate} compact />{model.error && <div><p className="companion-inline-error" role="alert">{model.error}</p><button className="text-button" disabled={model.disabled} onClick={() => void model.run({ type: 'read' })}>{zh ? '重试' : 'Retry'}</button></div>}</> : <LoadState model={model} zh={zh} compact />}
     <p className="companion-small">{zh ? 'XP 仅代表游戏成长进度。' : 'XP is game progress only.'}</p>
     <button className="btn btn-tint companion-card-link" onClick={() => props.navigate('companion')}>{zh ? '看看伙伴成长' : 'Visit your companion'}<ArrowRight size={17} /></button>
@@ -190,6 +247,7 @@ export default function Companion(props: CompanionProps) {
   const { lang, demo, accountId, navigate } = props;
   const zh = lang === 'zh';
   const model = useCompanion(props);
+  const art = useCompanionArtwork();
   const { snapshot, run, disabled } = model;
   const [code, setCode] = useState('');
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -201,17 +259,21 @@ export default function Companion(props: CompanionProps) {
   const challengeEnded = challenge ? Date.now() >= Date.parse(challenge.endsAt) : false;
   const challengeEnd = challenge ? new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(challenge.endsAt)) : '';
   const normalizedCode = code.trim().toUpperCase();
+  const character = snapshot?.character ?? 'sprout';
+  const characterDetails = characterDetailsFor(character);
+  const name = zh ? characterDetails.zh : characterDetails.en;
 
   return <section className="companion-page" aria-label={zh ? '伙伴成长' : 'Companion growth'}>
-    <header className="companion-page-heading"><div><span className="companion-eyebrow"><Leaf size={17} />FORMA COMPANION</span><h1>{zh ? '一起，慢慢长大。' : 'A little growth, together.'}</h1><p>{zh ? '记录、休息、再出发。芽芽按你的节奏陪伴。' : 'Log, rest and begin again. Sprout moves at your pace.'}</p></div><button className="btn btn-secondary" disabled={disabled} onClick={() => void run({ type: 'claim' })}><RefreshCw size={17} />{zh ? '同步成长' : 'Sync progress'}</button></header>
-    {demo && <p className="companion-demo" role="note">{zh ? '演示数据 · 可以浏览和前往记录页面；奖励、换装与挑战不会保存。' : 'Demo data · explore and visit your logs. Rewards, outfits and challenges cannot be saved.'}</p>}
-    <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (zh ? '正在确认已保存的进度…' : 'Checking saved progress…') : model.error ? '' : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
+    <header className="companion-page-heading"><div><span className="companion-eyebrow"><Leaf size={17} />FORMA COMPANION</span><h1>{zh ? '一起，慢慢长大。' : 'A little growth, together.'}</h1><p>{zh ? '记录、休息、再出发。选一位伙伴，陪你走自己的节奏。' : 'Log, rest and begin again. Find a friend for your own pace.'}</p></div><button className="btn btn-secondary" disabled={disabled} onClick={() => void run({ type: 'claim' })}><RefreshCw size={17} />{zh ? '同步成长' : 'Sync progress'}</button></header>
+    {demo && <p className="companion-demo" role="note">{zh ? '演示数据 · 可预览不同伙伴和前往记录页面；伙伴选择、奖励、换装与挑战不会保存。' : 'Demo data · preview companions and visit your logs. Character choices, rewards, outfits and challenges cannot be saved.'}</p>}
+    <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (model.pendingCharacter ? (zh ? '正在保存伙伴…' : 'Saving your companion…') : (zh ? '正在确认已保存的进度…' : 'Checking saved progress…')) : model.error ? '' : model.notice === 'preview' ? (zh ? `正在预览${name}，登录后可保存。` : `Previewing ${name}. Sign in to save.`) : model.notice === 'character' ? (zh ? '伙伴已保存，成长与装扮已保留。' : 'Companion saved. Your progress and outfits are kept.') : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
     {model.error && snapshot && <div className="companion-error"><p role="alert">{model.error}</p><button className="text-button" disabled={disabled} onClick={() => void run({ type: 'read' })}>{zh ? '重新读取' : 'Reload progress'}</button></div>}
     {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} /></div> : <>
+      <CharacterGallery model={model} art={art} zh={zh} demo={Boolean(demo)} authenticated={Boolean(accountId)} />
       <div className="companion-main-grid">
-        <section className="panel companion-home" aria-label={zh ? '芽芽的成长' : 'Sprout’s growth'}>
-          <div className="companion-avatar-scene"><span className="companion-scene-orbit" /><CompanionAvatar equipped={snapshot.equipped} level={snapshot.level} label={zh ? '芽芽，Forma 原创植物伙伴' : 'Sprout, Forma’s original plant companion'} /><span className="companion-scene-caption">{zh ? '按自己的节奏就好' : 'Your pace is enough'}</span></div>
-          <div className="companion-home-copy"><h2>{zh ? '你好，我是芽芽。' : 'Hi, I’m Sprout.'}</h2><p>{zh ? '你回来时，我一直在。漏记不会扣分，也不会失去外观。' : 'I’m here whenever you return. Missing a log never costs XP or outfits.'}</p><Progress snapshot={snapshot} zh={zh} /><div className="companion-days"><span><strong data-testid="companion-active-days">{snapshot.activeDays}</strong> {zh ? '个成长日' : 'growth days'}</span><span>{zh ? '每 3 个成长日解锁免费宝箱' : 'A free chest every 3 growth days'}</span></div><p className="companion-small">{zh ? 'XP 和等级只代表游戏进度，不是健康评分。' : 'XP and levels show game progress, never a health score.'}</p></div>
+        <section className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
+          <div className="companion-avatar-scene"><span className="companion-scene-orbit" style={{ backgroundColor: characterDetails.color }} /><CompanionAvatar character={character} equipped={snapshot.equipped} level={snapshot.level} label={zh ? `${name}，Forma 原创伙伴的3D风格形象` : `${name}, Forma’s original companion in a 3D-style render`} unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><span className="companion-scene-caption">{zh ? characterDetails.descriptionZh : characterDetails.descriptionEn}</span></div>
+          <div className="companion-home-copy"><h2>{zh ? `你好，我是${name}。` : `Hi, I’m ${name}.`}</h2><p>{zh ? '你回来时，我一直在。漏记不会扣分，也不会失去外观。' : 'I’m here whenever you return. Missing a log never costs XP or outfits.'}</p><Progress snapshot={snapshot} zh={zh} /><div className="companion-days"><span><strong data-testid="companion-active-days">{snapshot.activeDays}</strong> {zh ? '个成长日' : 'growth days'}</span><span>{zh ? '每 3 个成长日解锁免费宝箱' : 'A free chest every 3 growth days'}</span></div><p className="companion-small">{zh ? 'XP 和等级只代表游戏进度，不是健康评分。' : 'XP and levels show game progress, never a health score.'}</p></div>
         </section>
         <section className="panel companion-daily" aria-label={zh ? '今日成长任务' : 'Today’s growth quests'}>
           <div className="companion-section-title"><div><span className="companion-eyebrow">{zh ? '一点点就很好' : 'SMALL STEPS COUNT'}</span><h2>{zh ? '今天的三份陪伴' : 'Three ways to grow today'}</h2></div><span className="companion-badge">{snapshot.day} UTC</span></div>
@@ -222,7 +284,7 @@ export default function Companion(props: CompanionProps) {
       </div>
 
       <section className="panel companion-wardrobe" aria-label={zh ? '宝箱与外观' : 'Chests and outfits'}>
-        <div className="companion-section-title"><div><span className="companion-eyebrow"><Shirt size={16} />{zh ? '给成长留个纪念' : 'LITTLE KEEPSAKES'}</span><h2>{zh ? '芽芽的衣橱' : 'Sprout’s wardrobe'}</h2></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
+        <div className="companion-section-title"><div><span className="companion-eyebrow"><Shirt size={16} />{zh ? '给成长留个纪念' : 'LITTLE KEEPSAKES'}</span><h2>{zh ? `${name}的衣橱` : `${name}’s wardrobe`}</h2></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
         <div className="companion-chests">
           <Gift size={25} aria-hidden="true" />
           <div><strong>{pendingChests.length ? (zh ? `${pendingChests.length} 个宝箱等你开启` : `${pendingChests.length} ${pendingChests.length === 1 ? 'chest is' : 'chests are'} ready`) : (zh ? `再获得 ${3 - snapshot.activeDays % 3} 个成长日解锁下个宝箱` : `${3 - snapshot.activeDays % 3} more growth ${3 - snapshot.activeDays % 3 === 1 ? 'day' : 'days'} to your next chest`)}</strong><p>{zh ? '外观按固定顺序解锁，没有付费或随机抽取。' : 'Outfits unlock in a fixed order. No purchases or random draws.'}</p></div>
@@ -231,7 +293,7 @@ export default function Companion(props: CompanionProps) {
         <div className="companion-outfits">{COMPANION_ITEMS.map(item => {
           const owned = snapshot.inventory.includes(item);
           const selected = snapshot.equipped === item;
-          return <button key={item} data-item={item} className={`companion-outfit ${selected ? 'is-equipped' : ''}`} disabled={disabled || !owned} aria-pressed={selected} aria-label={`${itemName(item, zh)} · ${selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '尚未解锁' : 'Locked')}`} onClick={() => void run({ type: 'equip', item })}><CompanionAvatar equipped={item} /><strong>{itemName(item, zh)}</strong><span>{selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '成长日解锁' : 'Unlock by growing')}</span></button>;
+          return <button key={item} data-item={item} className={`companion-outfit ${selected ? 'is-equipped' : ''}`} disabled={disabled || !owned} aria-pressed={selected} aria-label={`${itemName(item, zh)} · ${selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '尚未解锁' : 'Locked')}`} onClick={() => void run({ type: 'equip', item })}><CompanionAvatar character={character} equipped={item} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><strong>{itemName(item, zh)}</strong><span>{selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '成长日解锁' : 'Unlock by growing')}</span></button>;
         })}</div>
         <div className="companion-wardrobe-footer"><span className="companion-small">{zh ? `已开启 ${openedChests.length} 个宝箱 · 已拥有 ${snapshot.inventory.length} 款外观` : `${openedChests.length} chests opened · ${snapshot.inventory.length} outfits owned`}</span><button className="text-button" disabled={disabled || snapshot.equipped === null} onClick={() => void run({ type: 'equip', item: null })}>{zh ? '暂时不戴配饰' : 'Wear no accessory'}</button></div>
       </section>

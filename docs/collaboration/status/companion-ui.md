@@ -1,4 +1,27 @@
-# PET-03 伙伴页面
+# CHAR-03 原创伙伴选择（2026-10-20）
+
+## 已实现
+
+- 为现有伙伴页增量加入六角色画廊、3D渲染图片头像、按角色保留配饰的显示；图片由lead生图并提供，没有自画替代本体。
+- 使用共享character契约，真实选择由服务端保存；演示仅局部预览，切换身份或离开页面后复位。
+- 已读AGENTS、最新TASKS、共享契约、现有hook/API及设计系统；保留identity/generation/readVersion/abort保护，不启动服务或安装依赖。
+
+## 验证 / 阻塞
+
+- `npx tsc --noEmit`：exit 0（2026-10-20，首版六角色UI）。
+- 最终图片/缺图重试/锚点收口后再次 `npx tsc --noEmit`：exit 0（2026-10-20）。
+- `git diff --check -- src/features/Companion.tsx src/components/CompanionAvatar.tsx src/companion.css docs/collaboration/status/companion-ui.md`：exit 0（仅LF→CRLF提示，无空白错误）。
+- 已实现六角色画廊、真实串行保存/等待与错误重试、演示纯本地预览、首页/主形象/衣柜按所选伙伴渲染；沿用身份和请求版本保护，foreground状态更新内再次检查isCurrent。全部选择免费，切换不改XP或装备字段。
+- 对六张lead提供的真实3D图片逐张运行 `view_image`，据眼睛/嘴/下巴/耳朵与叶子边界重设饰品锚点；保留原SVG饰品轮廓、减轻描边并加细微明暗。原图为静态3D风格渲染，不声称可旋转模型或等级长叶动画。
+- 图片按640/192真实尺寸声明并用srcSet；未知角色使用中性说明和无图占位，不暗中显示另一只伙伴。缺图显示独立提示，画廊外重试按钮以retryKey刷新所有形象，切角色也重置图片错误。Avatar中无button，避免嵌套交互。
+- 完整build及浏览器由lead统一安排，尚未将未运行项目标为通过。
+- 产品代码可供lead完整build/CUA；本角色未启动服务、未读真实data/.env、未运行真实iPhone/Safari。
+
+## 阻塞 / 待用户决定
+
+- 无；等待lead浏览器实际衣柜效果检查，发现位置问题仍由本角色增量修正。
+
+# PET-03 伙伴页面（上一轮）
 
 ## 已交付内容
 
