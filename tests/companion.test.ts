@@ -6,7 +6,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { request as httpRequest } from 'node:http';
 import { test, type TestContext } from 'node:test';
 import { createApp } from '../server/app';
-import type { CompanionSnapshot } from '../src/companion';
+import { COMPANION_CHARACTERS, type CompanionCharacter, type CompanionSnapshot } from '../src/companion';
 import type { Meal, Profile, Sleep, SyncChange, SyncSnapshot, User, Workout } from '../src/types';
 
 const ORIGIN = 'http://127.0.0.1:5173';
@@ -80,6 +80,7 @@ test('companion reads and every mutation require the cookie account binding and 
     { path: '/api/companion/claim', body: {} },
     { path: '/api/companion/rest', body: {} },
     { path: '/api/companion/equipment', method: 'PUT', body: { item: null } },
+    { path: '/api/companion/character', method: 'PUT', body: { character: 'bunny' } },
     { path: '/api/companion/chests/' + randomUUID() + '/open', body: {} },
     { path: '/api/companion/challenges', body: { action: 'create' } },
   ];
@@ -113,6 +114,7 @@ test('same-origin HTTPS writes require explicitly trusted forwarding configurati
 test('new accounts have no invented progress and cannot inject XP, owner, dates, inventory or unknown equipment', async t => {
   const h = await harness(t), a = await h.register(), b = await h.register(), blank = await h.snapshot(a);
   assert.equal(blank.xp, 0); assert.equal(blank.level, 1); assert.equal(blank.activeDays, 0);
+  assert.equal(blank.character, 'sprout');
   assert.deepEqual(blank.inventory, []); assert.deepEqual(blank.chests, []); assert.equal(blank.equipped, null); assert.equal(blank.challenge, null);
   assert.deepEqual(blank.quests.map(q => [q.id, q.completed, q.xp]), [['nutrition', false, 10], ['movement', false, 10], ['sleep', false, 10]]);
   for (const path of ['/api/companion/claim', '/api/companion/rest']) {
@@ -126,6 +128,72 @@ test('new accounts have no invented progress and cannot inject XP, owner, dates,
   const withoutProfile = await h.register(null);
   assert.equal((await h.request('/api/companion/rest', withoutProfile, { body: {} })).status, 409);
   assert.equal((await h.snapshot(withoutProfile)).xp, 0);
+});
+
+test('all six companions are freely selectable, saved to the account, and isolated from other accounts', async t => {
+  const h = await harness(t), a = await h.register(), b = await h.register();
+  const original = await h.snapshot(a), other = await h.snapshot(b);
+  assert.equal(original.character, 'sprout');
+  for (const character of COMPANION_CHARACTERS) {
+    const selected = await h.request('/api/companion/character', a, { method: 'PUT', body: { character } });
+    assert.equal(selected.status, 200);
+    assert.deepEqual(selected.data, { ...original, character }, 'selecting a free character must not mint or reset progress');
+    assert.deepEqual(await h.snapshot(a), selected.data, 'a later independent read returns the saved choice');
+    assert.deepEqual(await h.snapshot(b), other, 'a different account retains its own default and empty progress');
+  }
+  const login = await h.request<{ user: User }>('/api/auth/login', undefined, { body: { email: a.user.email, password: PASSWORD } });
+  assert.equal(login.status, 200);
+  const cookie = login.response.headers.get('set-cookie')?.split(';')[0]; assert.ok(cookie);
+  const secondSession = { user: login.data.user, cookie };
+  assert.equal((await h.snapshot(secondSession)).character, 'seal', 'the choice belongs to the account rather than one browser session');
+  assert.equal((await h.request('/api/companion/character', secondSession, { method: 'PUT', body: { character: 'bunny' } })).status, 200);
+  assert.equal((await h.snapshot(a)).character, 'bunny');
+  const withoutProfile = await h.register(null);
+  const noProfileSelection = await h.request('/api/companion/character', withoutProfile, { method: 'PUT', body: { character: 'cloud' } });
+  assert.equal(noProfileSelection.status, 200, 'free appearances must not require filling in health information');
+  assert.equal(noProfileSelection.data.character, 'cloud'); assert.equal(noProfileSelection.data.xp, 0);
+});
+
+test('character selection rejects unsupported values and extra fields without changing the account', async t => {
+  const h = await harness(t), a = await h.register(), b = await h.register();
+  const original = await h.snapshot(a);
+  const invalid = [
+    {}, null, [], { character: null }, { character: 1 }, { character: ['bunny'] },
+    { character: '' }, { character: 'BUNNY' }, { character: 'unicorn' }, { character: '../seal' },
+    { character: 'bunny', xp: 999 }, { character: 'bunny', equipped: 'crown' },
+    { character: 'bunny', owner_id: b.user.id }, { character: 'bunny', user_id: b.user.id },
+  ];
+  for (const body of invalid) {
+    const rejected = await h.request('/api/companion/character', a, { method: 'PUT', body });
+    assert.equal(rejected.status, 400);
+    assert.deepEqual(await h.snapshot(a), original, 'invalid character bodies must not partially save or reward');
+  }
+  assert.equal((await h.snapshot(b)).character, 'sprout');
+});
+
+test('switching companions preserves earned XP, quests, equipped items, unopened chests and shared challenge consent', async t => {
+  const h = await harness(t), a = await h.register(), b = await h.register();
+  for (const date of ['2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24']) {
+    h.setTime(date + 'T12:00:00Z'); await h.rest(a);
+  }
+  const earned = await h.snapshot(a);
+  assert.equal(earned.chests.length, 2); assert.equal(earned.xp, 60);
+  assert.equal((await h.request('/api/companion/chests/' + earned.chests[0].id + '/open', a, { body: {} })).status, 200);
+  assert.equal((await h.request('/api/companion/equipment', a, { method: 'PUT', body: { item: 'leaf' } })).status, 200);
+  const created = await h.request('/api/companion/challenges', a, { body: { action: 'create' } }); assert.ok(created.data.challenge);
+  assert.equal((await h.request('/api/companion/challenges', b, { body: { action: 'join', code: created.data.challenge.code } })).status, 200);
+  await h.rest(b);
+  const original = await h.snapshot(a), other = await h.snapshot(b), facts = await h.sync(a);
+  assert.equal(original.equipped, 'leaf'); assert.equal(original.chests[1].openedAt, null);
+  assert.ok(original.challenge); assert.equal(original.challenge.participants.length, 2);
+  for (const character of ['otter', 'cloud', 'bear', 'seal', 'sprout'] satisfies CompanionCharacter[]) {
+    const selected = await h.request('/api/companion/character', a, { method: 'PUT', body: { character } });
+    assert.equal(selected.status, 200);
+    assert.deepEqual(selected.data, { ...original, character });
+    assert.deepEqual(await h.snapshot(a), selected.data);
+    assert.deepEqual(await h.snapshot(b), other, 'changing appearance neither changes the other member nor revokes consent');
+  }
+  assert.deepEqual(await h.sync(a), facts, 'appearance changes must not mutate recorded health facts or plan versions');
 });
 
 test('saving three current facts rewards ten each, regardless of amounts, and concurrent claims cannot mint XP', async t => {
@@ -376,8 +444,10 @@ test('companion export is owner scoped and account deletion removes its ledger a
   await h.save(a, upsert('meals', meal(h.today()))); await h.rest(a);
   const created = await h.request('/api/companion/challenges', a, { body: { action: 'create' } }); assert.ok(created.data.challenge);
   await h.request('/api/companion/challenges', b, { body: { action: 'join', code: created.data.challenge.code } });
-  const exported = await h.request<{ companion: { xp: number; rewards: unknown[]; challenges: { days: number }[] }; user: User }>('/api/export', a);
+  assert.equal((await h.request('/api/companion/character', a, { method: 'PUT', body: { character: 'seal' } })).status, 200);
+  const exported = await h.request<{ companion: { character: CompanionCharacter; xp: number; rewards: unknown[]; challenges: { days: number }[] }; user: User }>('/api/export', a);
   assert.equal(exported.status, 200); assert.equal(exported.data.user.id, a.user.id);
+  assert.equal(exported.data.companion.character, 'seal');
   assert.equal(exported.data.companion.xp, 20); assert.equal(exported.data.companion.rewards.length, 2); assert.equal(exported.data.companion.challenges.length, 1);
   assert.ok(!JSON.stringify(exported.data).includes(b.user.email)); assert.ok(!JSON.stringify(exported.data.companion).includes(b.user.id));
   assert.equal((await h.request('/api/account', a, { method: 'DELETE', body: { password: PASSWORD } })).status, 200);

@@ -1,4 +1,17 @@
-# PET-04 伙伴测试（QA）
+# CHAR-04 原创 3D 风格角色测试（2026-10-20）
+
+本轮只写任务板独占 QA 路径；只使用随机 loopback HTTP 端口与临时合成数据库，不读真实 data/.env，不启停3001/5173，不启动浏览器。
+
+- 已增加角色 HTTP 回归：六角色免费可选、默认sprout、独立读及第二登录会话保存、账户隔离、严格枚举与额外字段拒绝；新PUT纳入401账户绑定/403Origin门禁；已赚XP/箱子/装备/挑战/健康事实不变；导出选择及删号清理。
+- 实际运行 `node --import tsx --test --test-concurrency=1 tests/companion.test.ts`：exit0，21/21，0 skipped。`npx tsc --noEmit`：exit0。
+- 合成浏览器夹具增加 grown=otter180XP 与 friend=bunny0XP，fresh仍sprout0XP；外部JSON记录预期与已有 ended 结果窗，未启动新版夹具。
+- 六套透明WebP资源落盘后实际执行最终专项 `node --import tsx --test --test-concurrency=1 tests/companion-art.test.ts tests/companion.test.ts`：exit0，22/22，0 failed/0 skipped。12图总229,968 bytes，全部实际解码/alpha0与255/正方形/体积预算通过，六主图运行时摘要不同，无固定hash锁死。
+- 同轮最终 `npx tsc --noEmit` exit0，五个QA所有权文件的 `git diff --check` exit0（仅LF/CRLF提示）。无profile可选cloud也在最终HTTP实跑覆盖。
+- 评审及实际CUA清单见 `docs/reviews/companion-characters-20261020.md`。实际UI操作、最终全量构建及真实Claude协作由 lead 统一验证。
+
+已通知 lead 原离线静态白名单缺少companions，lead负责补白名单及内容hash。QA指定检查已通过；真实CUA、最终完整构建/全量套件、离线行为由 lead 统一执行，未替其声称通过。无需用户拍板事项。
+
+# PET-04 伙伴测试（QA，历史）
 
 2026-10-19。只使用合成账户、独立临时数据库与注入服务器时钟；不读真实 data/.env，不启停 3001/5173，不启动自动化浏览器。
 

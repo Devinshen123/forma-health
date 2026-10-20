@@ -67,11 +67,16 @@ try {
     await request('/api/sync', grown, { mutationId: randomUUID(), changes: [{ collection: 'sleeps', id, kind: 'upsert', baseVersion: 0, value: { id, date, start: new Date(now - 7 * 3600000).toISOString(), end: new Date(now).toISOString(), timezone, quality: 3, energy: 3, source: 'manual', createdAt: new Date(now).toISOString() } }] });
   }
   now = present;
+  await request('/api/companion/character', grown, { character: 'otter' }, 'PUT');
+  await request('/api/companion/character', friend, { character: 'bunny' }, 'PUT');
   const grownSnapshot = (await request<CompanionSnapshot>('/api/companion', grown)).data;
   const freshSnapshot = (await request<CompanionSnapshot>('/api/companion', fresh)).data;
+  const friendSnapshot = (await request<CompanionSnapshot>('/api/companion', friend)).data;
   const endedSnapshot = (await request<CompanionSnapshot>('/api/companion', ended)).data;
   assert.equal(grownSnapshot.xp, 180); assert.equal(grownSnapshot.activeDays, 6); assert.equal(grownSnapshot.chests.length, 2);
-  assert.equal(freshSnapshot.xp, 0);
+  assert.equal(grownSnapshot.character, 'otter');
+  assert.equal(freshSnapshot.xp, 0); assert.equal(freshSnapshot.character, 'sprout');
+  assert.equal(friendSnapshot.xp, 0); assert.equal(friendSnapshot.character, 'bunny');
   assert.ok(endedSnapshot.challenge); assert.equal(endedSnapshot.challenge.id, oldChallenge.id);
   const endedAt = Date.parse(endedSnapshot.challenge.endsAt);
   assert.ok(endedAt <= Date.now()); assert.ok(Date.now() - endedAt < 48 * 3600000);
@@ -79,13 +84,13 @@ try {
   assert.equal(endedSnapshot.challenge.participants[0].self, true); assert.equal(endedSnapshot.challenge.participants[0].days, 1);
   const accountData = [fresh, grown, friend, ended].map(({ user, email }) => ({ id: user.id, email, password }));
   const clock = { serverUTC: new Date(present).toISOString(), hostLocal: new Date(present).toString(), profileTimezone: timezone, profileDay: localDay(present), rewardDayUTC: freshSnapshot.day };
-  await writeFile(join(output, 'synthetic-accounts.json'), JSON.stringify({ base, clock, accounts: accountData, expected: { fresh: { xp: 0, activeDays: 0 }, grown: { xp: 180, level: 2, activeDays: 6, unopenedChests: 2 }, ended: { xp: 10, activeDays: 1, challengeEndsAt: endedSnapshot.challenge.endsAt, participantDays: 1 } } }, null, 2));
+  await writeFile(join(output, 'synthetic-accounts.json'), JSON.stringify({ base, clock, accounts: accountData, expected: { fresh: { character: 'sprout', xp: 0, activeDays: 0 }, grown: { character: 'otter', xp: 180, level: 2, activeDays: 6, unopenedChests: 2 }, friend: { character: 'bunny', xp: 0 }, ended: { xp: 10, activeDays: 1, challengeEndsAt: endedSnapshot.challenge.endsAt, participantDays: 1 } } }, null, 2));
   const sync = (await request<SyncSnapshot>('/api/sync', grown)).data;
   assert.equal(sync.state.meals.length, 6); assert.equal(sync.state.sleeps.length, 6);
   console.log('Synthetic companion fixture ready at ' + base);
   for (const account of accountData) console.log('Synthetic login: ' + account.email + ' / ' + account.password);
   console.log('Fixture clock: ' + JSON.stringify(clock) + '; evidence: ' + output);
-  console.log('CUA checks: demo has no private requests; fresh 0; real meal/rest/sleep rewards once; grown chest/equipment; invite/join/leave; ended results hide invite and allow a new challenge; account switch; bilingual; keyboard; 390px; reduced motion; offline retry. Mask health img/video in any saved screenshots.');
+  console.log('CUA checks: demo previews six characters without private requests; fresh Sprout 0XP; grown Peach 180XP; friend Mochi 0XP; select character and reload, wardrobe still works, account switch restores own choice; real meal/rest/sleep rewards once; grown chest/equipment; invite/join/leave; ended results hide invite and allow a new challenge; bilingual; keyboard; 390px; reduced motion; offline selection retry. Mask health img/video in any saved screenshots.');
 } catch (error) {
   await close();
   throw error;
