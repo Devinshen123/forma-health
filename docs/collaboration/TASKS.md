@@ -4,7 +4,7 @@
 
 | ID | owner / 本轮独占写入 | 状态 | 依赖、验收 |
 |---|---|---|---|
-| CHAR-01 | lead：src/companion.ts、src/api.ts、public/companions/、scripts/prepare-companion-art.mjs、scripts/build-offline-shell.mjs、tests/companion-cache.test.ts、docs/architecture/、任务板与lead状态 | review | 6个原创生图资产/真实Claude三轮exit0；最终build与297/297、合成CUA/本机3001更新通过，待精确提交推送 |
+| CHAR-01 | lead：src/companion.ts、src/api.ts、public/companions/、scripts/prepare-companion-art.mjs、scripts/build-offline-shell.mjs、tests/companion-cache.test.ts、docs/architecture/、任务板与lead状态 | done | 6原创生图/真实Claude三轮exit0；最终build与297/297、合成CUA/3001通过；02e1291已推送且ls-remote一致，实际站点/图片HTTP200 |
 | CHAR-02 | inspect_library（backend）：server/companion.ts、server/companion-router.ts、server/store.ts、server/companion.test.ts、status/companion-backend.md | done | 64c68bb；旧库默认sprout、严格会话/导出删除/保留奖励；专项13/13 |
 | CHAR-03 | muscle_ui（UI）：src/features/Companion.tsx、src/components/CompanionAvatar.tsx、src/companion.css、status/companion-ui.md | done | 02a51ba+3587352；6角色/演示/衣柜/双语/手机、缺图重试、中性加载；最终完整构建通过 |
 | CHAR-04 | qa：tests/companion.test.ts、tests/browser/companion.mts、tests/companion-art.test.ts、docs/reviews/companion-characters-20261020.md、status/companion-qa.md | done | f2d7bb6；HTTP/12透明WebP实际decode22/22、总229968bytes；root串行完整296/296 |

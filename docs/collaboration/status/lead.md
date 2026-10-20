@@ -1,5 +1,7 @@
 ## CHAR 最终验证 2026-10-20
 
+交付回执：产品整合02e12911db4f896d8f4fe28e511af8126a05c108已推送origin/codex/forma-companion-20261019，git ls-remote与本地HEAD逐字一致，未改main。push后独立HTTP检查站点与bunny.webp均200，工作区干净。实际3001演示伙伴画廊已打开并保存最终截图，所有CHAR任务done，正式公网托管仍保持先前待定。当前补记仅文档，无需重复产品测试。
+
 本轮最终产品与6角色已完成，实际执行最终npm run build exit0、完整297/297（失败/跳过/取消0，29.8秒）。工作台84文件、源码887白名单文件、离线壳ad03c32496cd84dc/104静态文件；保留已有工作台大包提示。完整验收与限制见docs/architecture/companion-characters-validation-20261020.md。backend64c68bb、QAf2d7bb6、UI02a51ba+3587352已收到，lead准备精确整合提交与push。
 
 实际Claude Code同会话三轮exit0：初始设计、最终找出P2旧缓存shadow/加载误显芽芽、修复后复核二者解决无新阻塞。新增当前cache读取/安装reload与实际worker VM回归1/1；UI无snapshot中性加载。有些建议是审美偏好，未机械扩围。
