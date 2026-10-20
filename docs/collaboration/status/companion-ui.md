@@ -21,6 +21,13 @@
 
 - 无；等待lead浏览器实际衣柜效果检查，发现位置问题仍由本角色增量修正。
 
+## 首页加载收口（Claude P2 / lead CUA反馈）
+
+- 修复首次读取和切换身份的无snapshot阶段：不画默认芽芽、不展示芽芽名字或个性描述，改用中性静态占位及“你的伙伴 / Your companion”。
+- 已登录但快照未返回时显示“正在读取伙伴… / Loading your companion…”，初始effect前也不会错误显示登录提示；错误态仍保留原重试。
+- 有真实或演示snapshot后才渲染对应头像和姓名；不改选择、XP、装备或API。
+- 本次 `npx tsc --noEmit`：exit 0；限定 `git diff --check`：exit 0（LF→CRLF提示，无空白错误）。完整重build/CUA由lead统一进行。
+
 # PET-03 伙伴页面（上一轮）
 
 ## 已交付内容

@@ -191,9 +191,9 @@ function Quests({ snapshot, lang, navigate, compact = false }: { snapshot: Compa
   </div>;
 }
 
-function LoadState({ model, zh, compact = false }: { model: ReturnType<typeof useCompanion>; zh: boolean; compact?: boolean }) {
+function LoadState({ model, zh, compact = false, authenticated = false }: { model: ReturnType<typeof useCompanion>; zh: boolean; compact?: boolean; authenticated?: boolean }) {
   return <div className={`companion-feedback ${compact ? 'companion-feedback-compact' : ''}`}>
-    {model.error ? <p role="alert">{model.error}</p> : <p role="status">{model.busy ? (zh ? '正在确认已保存的进度…' : 'Checking saved progress…') : (zh ? '登录后，伙伴会陪你从第一份记录开始。' : 'Sign in to start with your first saved record.')}</p>}
+    {model.error ? <p role="alert">{model.error}</p> : <p role="status">{model.busy || authenticated ? (zh ? '正在读取伙伴…' : 'Loading your companion…') : (zh ? '登录后，伙伴会陪你从第一份记录开始。' : 'Sign in to start with your first saved record.')}</p>}
     {model.error && <button className="btn btn-secondary" disabled={model.disabled} onClick={() => void model.run({ type: 'read' })}><RefreshCw size={15} />{zh ? '重试' : 'Retry'}</button>}
   </div>;
 }
@@ -233,11 +233,10 @@ export function CompanionCard(props: CompanionProps) {
   return <section className="panel companion-card" aria-label={zh ? '健康伙伴' : 'Health companion'}>
     <div className="companion-card-heading"><span className="companion-eyebrow"><Leaf size={16} />{zh ? '健康伙伴' : 'Health companion'}</span>{props.demo && <span className="companion-badge">{zh ? '演示数据' : 'Demo data'}</span>}</div>
     <div className="companion-card-intro">
-      <CompanionAvatar character={character} equipped={snapshot?.equipped} level={snapshot?.level} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} />
-      <div><h2>{zh ? `和${name}，一起慢慢长大。` : `Grow at your pace with ${name}.`}</h2><p>{zh ? characterDetails.descriptionZh : characterDetails.descriptionEn}</p></div>
+      {snapshot ? <><CompanionAvatar character={character} equipped={snapshot.equipped} level={snapshot.level} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><div><h2>{zh ? `和${name}，一起慢慢长大。` : `Grow at your pace with ${name}.`}</h2><p>{zh ? characterDetails.descriptionZh : characterDetails.descriptionEn}</p></div></> : <><span className="companion-card-placeholder" aria-hidden="true" /><div><h2>{zh ? '你的伙伴' : 'Your companion'}</h2></div></>}
     </div>
-    <ArtworkRetry art={art} zh={zh} />
-    {snapshot ? <><Progress snapshot={snapshot} zh={zh} /><Quests snapshot={snapshot} lang={props.lang} navigate={props.navigate} compact />{model.error && <div><p className="companion-inline-error" role="alert">{model.error}</p><button className="text-button" disabled={model.disabled} onClick={() => void model.run({ type: 'read' })}>{zh ? '重试' : 'Retry'}</button></div>}</> : <LoadState model={model} zh={zh} compact />}
+    {snapshot && <ArtworkRetry art={art} zh={zh} />}
+    {snapshot ? <><Progress snapshot={snapshot} zh={zh} /><Quests snapshot={snapshot} lang={props.lang} navigate={props.navigate} compact />{model.error && <div><p className="companion-inline-error" role="alert">{model.error}</p><button className="text-button" disabled={model.disabled} onClick={() => void model.run({ type: 'read' })}>{zh ? '重试' : 'Retry'}</button></div>}</> : <LoadState model={model} zh={zh} compact authenticated={Boolean(props.accountId)} />}
     <p className="companion-small">{zh ? 'XP 仅代表游戏成长进度。' : 'XP is game progress only.'}</p>
     <button className="btn btn-tint companion-card-link" onClick={() => props.navigate('companion')}>{zh ? '看看伙伴成长' : 'Visit your companion'}<ArrowRight size={17} /></button>
   </section>;
@@ -268,7 +267,7 @@ export default function Companion(props: CompanionProps) {
     {demo && <p className="companion-demo" role="note">{zh ? '演示数据 · 可预览不同伙伴和前往记录页面；伙伴选择、奖励、换装与挑战不会保存。' : 'Demo data · preview companions and visit your logs. Character choices, rewards, outfits and challenges cannot be saved.'}</p>}
     <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (model.pendingCharacter ? (zh ? '正在保存伙伴…' : 'Saving your companion…') : (zh ? '正在确认已保存的进度…' : 'Checking saved progress…')) : model.error ? '' : model.notice === 'preview' ? (zh ? `正在预览${name}，登录后可保存。` : `Previewing ${name}. Sign in to save.`) : model.notice === 'character' ? (zh ? '伙伴已保存，成长与装扮已保留。' : 'Companion saved. Your progress and outfits are kept.') : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
     {model.error && snapshot && <div className="companion-error"><p role="alert">{model.error}</p><button className="text-button" disabled={disabled} onClick={() => void run({ type: 'read' })}>{zh ? '重新读取' : 'Reload progress'}</button></div>}
-    {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} /></div> : <>
+    {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} authenticated={Boolean(accountId)} /></div> : <>
       <CharacterGallery model={model} art={art} zh={zh} demo={Boolean(demo)} authenticated={Boolean(accountId)} />
       <div className="companion-main-grid">
         <section className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
