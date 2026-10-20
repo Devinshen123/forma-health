@@ -7,7 +7,7 @@ import { emptyState } from "../src/types";
 import { AiError } from './ai-errors';
 import { normalizedState, entityValues, changedEntityKeys, mutationHash, entityKey, applySyncChanges, SyncConflict } from './sync';
 import { WorkbenchConflict, WorkbenchError, WORKBENCH_MEDIA_QUOTA, workbenchPlannerSnapshot, workbenchReferencedHashes, type WorkbenchMedia, type WorkbenchMediaMime, type WorkbenchReceipt, type WorkbenchSnapshot, type WorkbenchWarning, type WorkbenchWrite } from './training-workbench-data';
-import type { CompanionItem } from '../src/companion';
+import type { CompanionCharacter, CompanionItem } from '../src/companion';
 import { CompanionError, CompanionLedger } from './companion';
 
 export interface Account extends User {
@@ -487,6 +487,9 @@ export class Store {
   }
   equipCompanion(ownerId: string, item: CompanionItem | null) {
     return this.transaction(() => this.companion.equip(ownerId, item, this.snapshot(ownerId).state, new Date(this.companionNow())));
+  }
+  selectCompanionCharacter(ownerId: string, character: CompanionCharacter) {
+    return this.transaction(() => this.companion.selectCharacter(ownerId, character, this.snapshot(ownerId).state, new Date(this.companionNow())));
   }
   companionChallenge(ownerId: string, action: 'create' | 'join' | 'leave', code?: string) {
     const now = new Date(this.companionNow());

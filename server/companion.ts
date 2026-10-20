@@ -1,10 +1,11 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import type { AppState } from '../src/types';
-import { COMPANION_ITEMS, COMPANION_RULE_VERSION, companionLevel, type CompanionChest, type CompanionItem, type CompanionQuest, type CompanionSnapshot, type CompanionChallenge } from '../src/companion';
+import { COMPANION_ITEMS, COMPANION_RULE_VERSION, companionLevel, type CompanionCharacter, type CompanionChest, type CompanionItem, type CompanionQuest, type CompanionSnapshot, type CompanionChallenge } from '../src/companion';
 import { companionDay, companionFacts, companionLocalDay, companionRecords, type CompanionFact } from './companion-rules';
 
 const QUESTS: readonly CompanionQuest[] = ['nutrition', 'movement', 'sleep'];
+const CHARACTER_COLUMN = "character TEXT NOT NULL DEFAULT 'sprout' CHECK(character IN ('sprout','bunny','otter','cloud','bear','seal'))";
 interface RewardRow { id: number; utc_day: string; local_day: string; quest: CompanionQuest; rule_version: number; xp: number; source_kind: string; source_id: string; awarded_at: string }
 interface ChestRow { id: string; milestone: number; item: CompanionItem | null; opened_at: string | null }
 interface ChallengeRow { id: string; code: string; starts_at: string; ends_at: string; revoked_at: string | null }
@@ -17,7 +18,7 @@ export class CompanionError extends Error {
 export class CompanionLedger {
   constructor(private readonly db: DatabaseSync) {
     db.exec(`
-      CREATE TABLE IF NOT EXISTS companion_profiles(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,equipped TEXT);
+      CREATE TABLE IF NOT EXISTS companion_profiles(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,equipped TEXT,${CHARACTER_COLUMN});
       CREATE TABLE IF NOT EXISTS companion_seen_facts(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,source_kind TEXT NOT NULL,source_id TEXT NOT NULL,first_seen_at TEXT NOT NULL,PRIMARY KEY(owner_id,source_kind,source_id));
       CREATE TABLE IF NOT EXISTS companion_rewards(
         id INTEGER PRIMARY KEY AUTOINCREMENT,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -30,6 +31,16 @@ export class CompanionLedger {
       CREATE INDEX IF NOT EXISTS companion_members_owner ON companion_challenge_members(owner_id);
       CREATE TABLE IF NOT EXISTS companion_challenge_attempts(owner_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,window_start INTEGER NOT NULL,attempts INTEGER NOT NULL);
     `);
+    // Expand the existing profile table in place; old accounts keep all game data and
+    // receive the same default as new accounts. A second startup rechecks under the lock.
+    const hasCharacter = () => (db.prepare('PRAGMA table_info(companion_profiles)').all() as { name: string }[]).some(column => column.name === 'character');
+    if (!hasCharacter()) {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        if (!hasCharacter()) db.exec(`ALTER TABLE companion_profiles ADD COLUMN ${CHARACTER_COLUMN}`);
+        db.exec('COMMIT');
+      } catch (error) { db.exec('ROLLBACK'); throw error; }
+    }
   }
   /** Observe new saved facts only. Existing data, date edits and time-zone changes never backfill XP. */
   settle(ownerId: string, previous: AppState, state: AppState, now: Date): void {
@@ -97,9 +108,9 @@ export class CompanionLedger {
     const day = companionDay(now), localDay = companionLocalDay(state, now);
     const totals = this.db.prepare('SELECT COALESCE(SUM(xp),0) AS xp,COUNT(DISTINCT utc_day) AS days FROM companion_rewards WHERE owner_id=?').get(ownerId) as { xp: number; days: number };
     const completed = this.db.prepare('SELECT DISTINCT quest FROM companion_rewards WHERE owner_id=? AND (utc_day=? OR local_day=?)').all(ownerId, day, localDay) as unknown as { quest: CompanionQuest }[];
-    const profile = this.db.prepare('SELECT equipped FROM companion_profiles WHERE owner_id=?').get(ownerId) as { equipped: CompanionItem | null } | undefined;
+    const profile = this.db.prepare('SELECT equipped,character FROM companion_profiles WHERE owner_id=?').get(ownerId) as { equipped: CompanionItem | null; character: CompanionCharacter } | undefined;
     const chests = this.chests(ownerId);
-    return { ruleVersion: COMPANION_RULE_VERSION, day, xp: totals.xp, level: companionLevel(totals.xp), activeDays: totals.days,
+    return { ruleVersion: COMPANION_RULE_VERSION, character: profile?.character ?? 'sprout', day, xp: totals.xp, level: companionLevel(totals.xp), activeDays: totals.days,
       equipped: profile?.equipped ?? null, inventory: COMPANION_ITEMS.filter(item => chests.some(chest => chest.item === item)),
       quests: QUESTS.map(id => ({ id, completed: completed.some(row => row.quest === id), xp: 10 })), chests, challenge: this.challengeSnapshot(ownerId, now) };
   }
@@ -116,6 +127,10 @@ export class CompanionLedger {
     if (item !== null && !this.db.prepare('SELECT 1 FROM companion_chests WHERE owner_id=? AND item=? AND opened_at IS NOT NULL').get(ownerId, item))
       throw new CompanionError(409, 'ITEM_NOT_OWNED', 'Open the matching milestone chest before equipping this item');
     this.db.prepare('INSERT INTO companion_profiles(owner_id,equipped) VALUES (?,?) ON CONFLICT(owner_id) DO UPDATE SET equipped=excluded.equipped').run(ownerId, item);
+    return this.snapshot(ownerId, state, now);
+  }
+  selectCharacter(ownerId: string, character: CompanionCharacter, state: AppState, now: Date): CompanionSnapshot {
+    this.db.prepare('INSERT INTO companion_profiles(owner_id,character) VALUES (?,?) ON CONFLICT(owner_id) DO UPDATE SET character=excluded.character').run(ownerId, character);
     return this.snapshot(ownerId, state, now);
   }
   /** Persist attempt counters in their own transaction, including failed guesses. Leaving is never limited. */
@@ -162,7 +177,7 @@ export class CompanionLedger {
     const observed = this.db.prepare('SELECT source_kind,source_id,first_seen_at FROM companion_seen_facts WHERE owner_id=? ORDER BY first_seen_at,source_kind,source_id').all(ownerId) as unknown as { source_kind: string; source_id: string; first_seen_at: string }[];
     const challenges = this.db.prepare('SELECT c.id,c.code,c.starts_at,c.ends_at,c.revoked_at,m.joined_at,m.after_reward_id FROM companion_challenges c JOIN companion_challenge_members m ON m.challenge_id=c.id WHERE m.owner_id=? ORDER BY c.starts_at,c.id').all(ownerId) as unknown as (ChallengeRow & MemberRow)[];
     // Never export another participant's identifiers, progress or records.
-    return { ruleVersion: snapshot.ruleVersion, xp: snapshot.xp, level: snapshot.level, activeDays: snapshot.activeDays, equipped: snapshot.equipped, inventory: snapshot.inventory, chests: snapshot.chests,
+    return { ruleVersion: snapshot.ruleVersion, character: snapshot.character, xp: snapshot.xp, level: snapshot.level, activeDays: snapshot.activeDays, equipped: snapshot.equipped, inventory: snapshot.inventory, chests: snapshot.chests,
       rewards: rewards.map(row => ({ day: row.utc_day, localDay: row.local_day, quest: row.quest, ruleVersion: row.rule_version, xp: row.xp, sourceKind: row.source_kind, sourceId: row.source_id, awardedAt: row.awarded_at })),
       observedFacts: observed.map(row => ({ sourceKind: row.source_kind, sourceId: row.source_id, firstSeenAt: row.first_seen_at })),
       challenges: challenges.map(row => ({ id: row.id, code: row.code, startsAt: row.starts_at, endsAt: row.ends_at, revokedAt: row.revoked_at, joinedAt: row.joined_at, days: this.participantDays(row, { ...row, owner_id: ownerId }) })) };

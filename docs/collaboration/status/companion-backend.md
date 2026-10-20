@@ -1,4 +1,30 @@
-# PET-02 companion backend — 2026-10-19
+# CHAR-02 companion character backend — 2026-10-20
+
+Owner: character_backend / backend. This round writes only `server/companion.ts`, `server/companion-router.ts`, `server/store.ts`, the new `server/companion.test.ts`, and this status file. Read current AGENTS, TASKS, prior status and the addressed backend request; applied database-migrations and security-review skills.
+
+## Implemented this round
+
+- Added `PUT /api/companion/character`, strictly accepting only `{ character }` from the shared six-value enum. It inherits the existing companion router authentication, route-bound account header, JSON and origin protections; account identity comes exclusively from the authenticated session.
+- Added the selected character to snapshots and account exports. New and existing accounts default to `sprout`; selecting a character returns the complete snapshot. Selection and equipment use separate upsert columns, preserving the other preference.
+- Fresh databases create the profile character column with `NOT NULL DEFAULT 'sprout'` and a six-value `CHECK`. Existing two-column profile tables receive the same additive column in an immediate transaction, rechecking under the writer lock. No table rebuild, reward recalculation, historical health write or destructive production migration is used.
+- Character changes are Store transactions and retain XP, active days, quest results, chests, inventory, equipment, challenge and health state/revision. Existing account foreign-key deletion cascades remove the preference; exports contain only the caller's selected character.
+- Rollback strategy is to redeploy the prior code while retaining the extra column. Prior equipment writes use explicit columns and continue to work. Do not drop the column or reconstruct production profiles to roll back this cosmetic preference.
+
+## Actual validation this round
+
+- `node --import tsx --test server/companion.test.ts server/companion-store.test.ts`: **13 passed, 0 failed, 0 skipped**, including four new tests for all six choices/reopen/idempotence and unchanged game/health state; exact old two-column schema upgrade and repeated startup; account-specific export/delete; forced profile-write rollback. The original nine reward/challenge/transaction regressions also passed.
+- The old-schema fixture is synthetic and preserves existing synthetic rewards, chests, equipment and challenge across the upgrade. It checks both pre-existing profile rows and accounts with no row, as well as rejected invalid/null database values.
+- `npx tsc --noEmit`: exit 0. This is a TypeScript check, not a claim that the full asset/build pipeline ran.
+- `git diff --check -- server/companion.ts server/companion-router.ts server/store.ts server/companion.test.ts`: exit 0, with only existing LF/CRLF normalization notices.
+- Full `npm test`, `npm run build`, independent HTTP coverage and browser validation are explicitly coordinated by lead/QA and remain pending at this handoff. No production data or `.env` was read, no user service started/stopped, no dependencies installed, and no GitHub push performed by this role.
+
+## Requests / decisions / limits
+
+- Shared character union and HTTP shape were provided by lead in current TASKS; backend did not alter those contracts.
+- Migration is additive and tested on synthetic prior-schema fixtures, not a copy of the user's health database. Backup and controlled local server restart belong to lead.
+- No additional user decision is required for this server preference. Artwork, captions, 3D rendering and UI selection are owned by other roles.
+
+# PET-02 companion backend — 2026-10-19 (historical)
 
 Owner: inspect_library / backend. Only server/ except server/index.ts and this status file are written.
 
