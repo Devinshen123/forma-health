@@ -28,3 +28,15 @@
 lead 可用现有 IAB CUA 验证首页入口、演示不调用私人接口/禁领奖、空账户、休息与真实记录保存、开箱与装备、双人创建加入退出、切换账户、双语、键盘、390px、减少动态、断网重试。截图中的健康图片/视频需遮罩；植物 SVG 可见。
 
 本 QA 未启动夹具或自动化浏览器，不把上述 UI 项目称为已通过。HTTP 不能证明跨账户迟到响应、布局、键盘焦点或减少动态正确；实际 UI 结论由 lead 的 CUA 证据补充。未验证真实 iPhone/Safari、生产代理/正式托管环境、负载与备份恢复。
+
+lead 后续报告已实际通过 CUA 桌面/390px/中英、空账户0XP、休息、宝箱/装备、邀请加入退出，控制台 warn/error 0。统一完整 build 和 281/281 测试通过。本 QA 不把该转交结果称为自己重复操作。
+
+## 本机生产镜像验收
+
+实际执行 `node tests/companion-container.mjs`，最终 exit 0。只启动本次 UUID 名称/双 label 的容器与卷，外露端口限制在 127.0.0.1 随机端口；现有 3001/5173/openGym 服务均未改动。
+
+本机镜像 `forma-companion:20261019`（c152a82db6aa…）实际运行 Node v24.22.0、UID 1000，production 与独立持久卷 `/var/lib/forma`、trust proxy 1。镜像 `/app` 无 .env 文件且无 `/app/data`。初始和 restart 后 Docker health 均 healthy、末次检查 exit 0。真实请求模拟可信 TLS 终结代理的 Host/Origin/Forwarded-Proto，安全 cookie 注册和当前时区档案保存成功；休息获得10XP；restart 原 cookie 继续有效且10XP持久，再次休息仍10；导出本人恰一条 movement 奖励；删号后旧 cookie 401。
+
+证据外置 `C:/Users/devin/AppData/Local/Temp/forma-companion-20261019/container-OW7ZHi/report.json`。初轮随机 HostPort 重启变化导致 readiness 失败的记录保留在同目录 `container-nBIfb7/report.json`；修复测试读取重启后实际映射端口，第二轮可见62439→51773。两轮 finally 均先核对 name/label 后删除仅本次自建容器与数据卷，report cleanup 两项 true。未输出密码、cookie 或健康记录原文。
+
+上述结果证明本机镜像运行与卷持久性，不代表实际公网 HTTPS/证书、正式托管商代理配置、远程部署或备份恢复已验收。没有重跑全套测试或浏览器。
