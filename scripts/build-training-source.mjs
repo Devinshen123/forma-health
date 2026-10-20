@@ -5,6 +5,7 @@ import { existsSync, lstatSync, readdirSync, readFileSync, writeFileSync } from 
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { zipStore } from '../vendor/opengym/frontend/src/lib/zip.js';
+import { sourceFileAllowed } from './source-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = join(root, 'dist/training-workbench/source.zip');
@@ -16,6 +17,7 @@ const roots = [
   'vendor/opengym/LICENSE', 'vendor/opengym/NOTICE.md',
   'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'index.html',
   'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', '.env.example', 'public/favicon.svg',
+  'Dockerfile', '.dockerignore',
   'docs/architecture/training-source-log.md',
   'docs/collaboration/decisions/ADR-training-workbench-20261018.md',
 ];
@@ -32,6 +34,7 @@ const walk = name => {
   }
   const normalized = relative(root, path).split(sep).join('/');
   if (/(^|\/)(node_modules|dist|data|reference-sources|\.git|\.wb-tmp)(\/|$)/i.test(normalized) || /^\.env/.test(basename(path)) && normalized !== '.env.example' || /\.(?:db|sqlite|sqlite3|wal|shm|mp4|webp|png|jpe?g|gif)$/i.test(normalized)) throw Error('A private or binary file reached the source allowlist');
+  if (!sourceFileAllowed(normalized)) throw Error(`Unexpected non-source file in the source archive: ${normalized}`);
   files.set(normalized, readFileSync(path));
 };
 for (const name of roots) walk(name);

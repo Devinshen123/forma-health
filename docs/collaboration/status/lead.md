@@ -1,3 +1,25 @@
+## PET 最终本机验收 2026-10-19
+
+功能与计划已完成：原创伙伴/今日卡/当日记录成长/六外观/免费固定宝箱/私密双人挑战/到期48h结果，复用健康保存事实，XP只为游戏进度；原生UI与设备接入未扩围。已收到backend8a40c94+d29dfbf、features07cee5c+a0dd0b1、QA43d1545/82cfc55/25accc2/8c3b6af及各归档回复。lead新增shared契约/API/App入口/部署配置、Docker与源包严格白名单/中文错误提示。
+
+实际最终 npm run build exit0，5632动作/11328内容媒体校验通过，工作台84文件、对应源码883文件、离线shell edf89e724a325ab6。串行Node完整288/288，失败/跳过/取消0，约31.7s；临时证据TEMP/forma-companion-20261019/{build-final,tests-final}.log。既有工作台大包与动态导入提示未扩修。
+
+root真实CUA：独立合成fixture（旧1275173、新localhost5173），账号0XP、键盘rest10且禁重、双宝箱解锁/小帽装备、换账户180XP隔离、邀请码第二人加入/退出确认废止、双语；390x844无横向溢出（scrollWidth375<=390），桌面/手机截图外置visualizations/.../companion-20261019/cua-1。最终补测 ended账户结果1天、当日新rest仍不改已结束结果、失效邀请码不显示、静默刷新后按钮仍可用且aria-live文本不变、从结果直接新建成功；控制台error/warn0。没有浏览器框架覆盖或空白，键盘Enter休息可用；未模拟离线故障、未做真机Safari/iPhone，减少动态为CSS静态核对。测试已退出合成账户；真实健康内容未读，未调用识图AI。
+
+Claude Code真实同会话57ee7120-a0d2-437c-acdf-08046360d14f两轮只读评审exit0，最终无阻塞。修复其提出的后台POST/忙碌、旅行睡眠、过期结果、源码目录误收导出风险；代理默认安全0，部署必须显式可信跳数。未把静态评审称作其运行测试。
+
+Docker实际完整构建通过，最终镜像manifest522c0d93e0fe7bcd75730b0d99d9676e379aa4ffa9dafae2ba3a8b208a9c39cc；最终镜像已真实复测exit0：Node24.22.0/UID1000/production、无/app/.env或/app/data、Secure HttpOnly会话、rest10、容器restart原cookie继续读10/再次rest仍10、自己导出1reward、删测试账号后旧cookie401；容器和持久卷均核对本次label后清理。证据TEMP/forma-companion-20261019/container-G0z0e7/report.json。已有容器smoke通过且重启端口变化harness修正及原失败记录保留；容器/卷仅自建label匹配后清理。无付费供应商购买或公开镜像上传。
+
+本机3001为本聊天拥有的npm start服务，先受控停止并在私有data/backups保存DB/WAL/SHM文件快照（未打印内容），再启动新版；没有操作其他项目服务或源码来源。GitHub最终lead文件待本次提交/推送记录。正式公网未部署：现无用户指定服务商/主机/域名/预算，异步问题仍待回复；不可将localhost、镜像构建或代理模拟等同上线。
+
+待用户决定：已有部署服务/项目，或供应商与费用范围。开发/测试/GitHub不因此停工；提供主机后可按companion-deployment-20261019.md发布此版本并验真实HTTPS。
+## 2026-10-19 PET 伙伴养成（进行中）
+
+用户要求视频功能方案、实现、GitHub并上线，实际Claude协作授权。已核对111秒完整讲解，重点为宠物、装扮、宝箱与好友竞争；不是已有设备健康分数。方案/契约/分工已落盘，backend/UI/QA并行。shared contract/API helpers/App懒加载入口已写，公开部署需持久数据与HTTPS，Docker/运行参数准备中。尚未运行本轮build/test，不能声称完成。
+
+已读并使用frontend-testing-debugging、security-review，数据库迁移指南用于增量表与回退设计；React best practices用于懒加载/异步身份保护。真实Claude已登录订阅，当前会话57ee7120-a0d2-437c-acdf-08046360d14f只读评审进行中，回执外置TEMP/forma-companion-20261019。既有3001 PID5344保留，无真实data/.env读取。
+
+待用户决定：正式上线的既有服务商/项目与预算；已异步询问，开发/测试/GitHub无需等待，不购买付费资源。HealthKit、WHOOP/Oura、真机分发仍未接入。
 # Codex lead 状态
 
 ## 最新：协调真实Claude Code三任务

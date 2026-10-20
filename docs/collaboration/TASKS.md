@@ -1,3 +1,17 @@
+# 2026-10-19 伙伴养成与部署（当前任务）
+
+用户要求实现 reel DeoTnV0B6Il 的功能并上线，授权真实 Claude Code 合作。方案见 docs/architecture/companion-plan-20261019.md，契约 src/companion.ts。当前表覆盖下方历史冻结；不读取真实 data/.env、不修改来源、不停止既有3001，lead安排浏览器与统一全套测试/推送。
+
+| ID | owner / 本轮独占写入 | 状态 | 依赖、验收 |
+|---|---|---|---|
+| PET-01 | lead：src/companion.ts、src/api.ts、src/types.ts、src/App.tsx、配置/scripts/部署入口、tests/source-policy.test.ts、CLAUDE.md、docs/architecture、任务板/lead状态 | doing | 方案/契约/路由集成、构建、真实Claude评审、GitHub提交和部署产物准备 |
+| PET-02 | inspect_library（backend）：server/（含新增规则文件，除server/index.ts）、.env.example、status/companion-backend.md | done | 会话隔离服务器奖励账本、原子结算、防重/装备/宝箱/双人挑战/导出删除；针对测试交QA，全套lead运行 |
+| PET-03 | muscle_ui（features+shell）：src/features/Companion.tsx、src/features/Dashboard.tsx、src/components/CompanionAvatar.tsx、src/companion.css、status/companion-ui.md | done | 原创SVG、双语今日卡/成长页/换装宝箱私密挑战、演示/空错误/减少动态/手机；不写App或shared contracts |
+| PET-04 | qa：tests/companion.test.ts、tests/browser/companion.mts、tests/companion-container.mjs、status/companion-qa.md、docs/reviews/companion-20261019.md | done | 独立合成HTTP回归/浏览器验收；不修改产品、不启停用户服务；专项运行前和lead协调 |
+
+| PET-05 | lead：正式部署与HTTPS验收 | blocked | 等用户提供已有服务器/托管项目或供应商/预算选择；当前仅本机与已验证私有镜像，不冒称公网链接 |
+
+API契约以方案为准，新增契约由lead维护。各角色只提交自己路径，按需提交请求文件；本轮不复制视频角色/外观、不付费部署或AI、不声称已连接设备或安装原生。健康记录保持原逻辑；XP是游戏进度，好友仅邀请码双人参与天数。正式供应商/预算待用户回复，不擅自付费。
 # 2026-10-18 独立 iPhone App（当前任务）
 
 用户明确要求独立iPhone App；采用iOS 17+ SwiftUI原生五页与现有Forma会话/API，先进训练工作台通过同源WKWebView复用。不是把网站作为整个App根界面。无HealthKit/Apple登录/支付扩围；缺失与演示规则不变。Windows无xcrun，Mac尚未连接，先用公开仓库Mac CI无签名构建与合成测试，不声称已安装真机。保留现有Web服务。

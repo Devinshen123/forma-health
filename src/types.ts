@@ -6,6 +6,7 @@ export type Page =
   | "sleep"
   | "trends"
   | "reports"
+  | "companion"
   | "settings"
   | "plan";
 export interface Profile {

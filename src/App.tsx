@@ -11,6 +11,7 @@ import {
   X,
   Menu,
   Info,
+  Sprout,
 } from "lucide-react";
 import type { AppState, Language, Page, User } from "./types";
 import { demoState } from "./demo";
@@ -24,6 +25,7 @@ import Trends from "./features/Trends";
 import Plan from "./features/Plan";
 import Onboarding from "./features/Onboarding";
 import Settings from "./features/Settings";
+import Companion from "./features/Companion";
 import { Auth } from "./components/Auth";
 import SyncPanel from "./components/SyncPanel";
 import { SyncEngine, type SyncStatus } from "./sync/engine";
@@ -43,6 +45,7 @@ const navigation = [
     Icon: ChartNoAxesColumnIncreasing,
   },
   { page: "reports", zh: "报告", en: "Reports", Icon: FileText },
+  { page: "companion", zh: "伙伴", en: "Companion", Icon: Sprout },
 ] as const;
 function Brand() {
   return (
@@ -410,6 +413,8 @@ export default function App() {
               <Reports {...props} />
             ) : page === "plan" ? (
               <Plan {...props} />
+            ) : page === "companion" ? (
+              <Companion {...props} navigate={navigate} />
             ) : (
               <Settings
                 {...props}

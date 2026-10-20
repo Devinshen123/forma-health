@@ -1,4 +1,5 @@
 import type { AppState, User, Capabilities, FoodPhotoDraft, Language, SyncSnapshot, SyncMutation } from "./types";
+import type { CompanionSnapshot, CompanionItem } from "./companion";
 export interface Snapshot {
   state: AppState;
   revision: number;
@@ -20,6 +21,10 @@ export function setAccountHint(id: string | null) {
 function errorMessage(message: string, status: number, code?: string) {
   if (localStorage.getItem("forma-language") === "en") return message;
   const aiMessages: Record<string, string> = {
+    PROFILE_REQUIRED: "请先完成个人档案，再确认休息日。",
+    ITEM_NOT_OWNED: "请先开启对应宝箱，再佩戴这款外观。",
+    CHALLENGE_ACTIVE: "你已有进行中的挑战，请先退出，再加入其他挑战。",
+    CHALLENGE_RATE_LIMIT: "邀请操作较频繁，请稍后再试；仍可退出挑战。",
     SYNC_CONFLICT: "这条记录在两个设备上都发生了变化，请选择要保留的版本。",
     SYNC_MUTATION_REUSED: "同步请求编号不一致，请重新审核待同步记录。",
     AI_NOT_CONFIGURED: "识图服务尚未配置密钥，可先手动记录。",
@@ -91,6 +96,14 @@ export const register = (email: string, password: string, name: string) =>
 export const logout = () =>
   request("/auth/logout", { method: "POST", body: "{}" });
 export const getState = () => request<Snapshot>("/state");
+const companionRequest = (path: string, accountId: string, options: RequestInit = {}) =>
+  request<CompanionSnapshot>(`/companion${path}`, { ...options, headers: { 'X-Forma-Account': accountId } });
+export const getCompanion = (accountId: string, signal?: AbortSignal) => companionRequest('', accountId, { signal });
+export const claimCompanion = (accountId: string, signal?: AbortSignal) => companionRequest('/claim', accountId, { method: 'POST', body: '{}', signal });
+export const restCompanion = (accountId: string, signal?: AbortSignal) => companionRequest('/rest', accountId, { method: 'POST', body: '{}', signal });
+export const openCompanionChest = (id: string, accountId: string, signal?: AbortSignal) => companionRequest(`/chests/${encodeURIComponent(id)}/open`, accountId, { method: 'POST', body: '{}', signal });
+export const equipCompanion = (item: CompanionItem | null, accountId: string, signal?: AbortSignal) => companionRequest('/equipment', accountId, { method: 'PUT', body: JSON.stringify({ item }), signal });
+export const companionChallenge = (action: 'create' | 'join' | 'leave', code: string | undefined, accountId: string, signal?: AbortSignal) => companionRequest('/challenges', accountId, { method: 'POST', body: JSON.stringify({ action, ...(code === undefined ? {} : { code }) }), signal });
 export const getSync = (expectedAccount?:string) => request<SyncSnapshot>("/sync", {headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
 export const syncMutation = (mutation: SyncMutation, expectedAccount?:string) => request<SyncSnapshot>("/sync", {method:"POST",body:JSON.stringify(mutation),headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
 export const putState = (state: AppState, revision: number, expectedAccount = accountHint) =>
