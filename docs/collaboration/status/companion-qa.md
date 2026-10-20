@@ -4,7 +4,7 @@
 
 ## 已交付
 
-- 独立 HTTP 测试 16 案已编写并实际运行。
+- 首次独立 HTTP 测试 16 案实际通过；最终 Claude 收口后扩为 18 案并实际通过。
 - 覆盖账户/Origin、禁止注入、三项日奖励、防重、编辑删除重建、UTC 与本地日、防时区刷、失败原子性、工作台投影、固定宝箱/并发重放、双人挑战隐私与导出删除。
 - `--serve-only` 合成 UI 验收服务已编写；仅由 lead 启动并在现有 IAB 操作。以启动时真实 Date.now 与主机时区建档，外部记录 UTC/本地/档案日期；包含 fresh 0、grown 180XP/6日/2箱、friend 0 三个合成账户。未启动此服务。
 
@@ -32,3 +32,11 @@
 - 第二轮证据：`C:/Users/devin/AppData/Local/Temp/forma-companion-20261019/container-OW7ZHi/report.json`；初轮：同父目录 `container-nBIfb7/report.json`。日志不写 cookie、密码或健康导出原文。
 - 两轮退出前均 inspect 精确 name/label 归属后删除自建容器/卷，cleanup 两项 true。未删改任何既有资源。
 - 这是本机生产镜像验收，未证明公网 TLS/证书、正式服务器代理、备份恢复或远程部署上线。
+
+## Claude 最后收口后的独立 HTTP 回归
+
+- backend 将睡眠资格改为记录自身 timezone 的醒来日与 now 在该区的日期一致；挑战结果结束后保留少于48h只读、可新建和退出。QA 未修改产品。
+- 新增出差时区正/反两例：LA 档案、Tokyo 记录；profile 日期跨界不再丢失真正 Tokyo 当日睡眠，也不能用 LA 的同日巧合替 Tokyo 旧醒来日领奖。
+- 新增挑战结束精确时刻、结束后奖励不再改变比赛结果、结果窗口中可新建、旧成员清除结果不撤销创建者的新比赛、48h前1ms可读与 exact48h隐藏。
+- 实际命令 `node --import tsx --test --test-concurrency=1 tests/companion.test.ts`：exit0，18/18，0 skipped。`npx tsc --noEmit` exit0。
+- 容器提交 `82cfc55` 的真实结果保留，使用的是当时镜像 c152a82db6aa…。lead 会在这些产品改动重建新镜像后复跑容器窄验收；本 QA 未把旧镜像结果当作新镜像已验证。

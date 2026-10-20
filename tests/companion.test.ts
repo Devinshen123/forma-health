@@ -210,6 +210,22 @@ test('claims cannot promote historical records after timezone changes, date edit
   assert.equal((await h.snapshot(a)).xp, 10, 'a genuinely new current save still works after rejected backfills');
 });
 
+test('travel sleep rewards use the recorded timezone wake day without borrowing the profile timezone day', async t => {
+  const h = await harness(t), stale = await h.register('America/Los_Angeles'), current = await h.register('America/Los_Angeles');
+  h.setTime('2026-10-20T00:30:00Z');
+  // In LA both instants are October 19; in Tokyo the wake is yesterday and now is October 20.
+  const priorTokyoDay: Sleep = { ...sleep('2026-10-19'), timezone: 'Asia/Tokyo', start: '2026-10-19T07:30:00Z', end: '2026-10-19T14:30:00Z' };
+  await h.save(stale, upsert('sleeps', priorTokyoDay));
+  assert.equal((await h.snapshot(stale)).xp, 0, 'a stale recorded-zone wake day cannot gain eligibility from profile-zone coincidence');
+  h.setTime('2026-10-20T08:30:00Z');
+  // In Tokyo both instants are October 20; in LA the wake is October 19 and now is October 20.
+  const currentTokyoDay: Sleep = { ...sleep('2026-10-20'), timezone: 'Asia/Tokyo', start: '2026-10-19T23:30:00Z', end: '2026-10-20T06:30:00Z' };
+  await h.save(current, upsert('sleeps', currentTokyoDay));
+  assert.equal((await h.snapshot(current)).xp, 10, 'a genuine current recorded-zone sleep is eligible while traveling');
+  assert.equal((await h.request('/api/companion/claim', current, { body: {} })).data.xp, 10);
+  const saved = await h.sync(current); assert.equal(saved.state.sleeps[0].timezone, 'Asia/Tokyo'); assert.equal(saved.state.sleeps[0].date, '2026-10-20');
+});
+
 test('validation and optimistic concurrency failures commit neither a new fact nor its reward', async t => {
   const h = await harness(t), a = await h.register();
   const invalid = await h.request('/api/sync', a, { body: mutation(upsert('meals', { ...meal(h.today()), assetId: randomUUID() })) });
@@ -304,9 +320,35 @@ test('two-person challenges expose only participation days, reject a third perso
   assert.equal((await h.request('/api/companion/challenges', c, { body: { action: 'join', code } })).status, 404);
   const next = await h.request('/api/companion/challenges', a, { body: { action: 'create' } }); assert.equal(next.status, 200); assert.ok(next.data.challenge); assert.notEqual(next.data.challenge.code, code);
   h.setTime('2026-10-27T12:00:00Z');
-  assert.equal((await h.snapshot(a)).challenge, null);
+  assert.equal((await h.snapshot(a)).challenge?.id, next.data.challenge.id, 'ended results remain visible during the 48-hour result window');
   assert.equal((await h.request('/api/companion/challenges', c, { body: { action: 'join', code: next.data.challenge.code } })).status, 404);
   assert.equal((await h.request('/api/companion/challenges', a, { body: { action: 'create' } })).status, 200);
+});
+
+test('ended challenges freeze participation for 48 hours and allow a new challenge or explicit dismissal', async t => {
+  const h = await harness(t), a = await h.register(), b = await h.register(), c = await h.register();
+  const first = await h.request('/api/companion/challenges', a, { body: { action: 'create' } }); assert.ok(first.data.challenge);
+  const solo = await h.request('/api/companion/challenges', c, { body: { action: 'create' } }); assert.ok(solo.data.challenge);
+  assert.equal((await h.request('/api/companion/challenges', b, { body: { action: 'join', code: first.data.challenge.code } })).status, 200);
+  await h.rest(a); await h.rest(b);
+  const end = Date.parse(first.data.challenge.endsAt);
+  assert.equal(Date.parse(solo.data.challenge.endsAt), end);
+  h.setTime(new Date(end).toISOString());
+  const ended = (await h.snapshot(a)).challenge; assert.ok(ended); assert.equal(ended.id, first.data.challenge.id);
+  assert.deepEqual(ended.participants.map(item => item.days), [1, 1]);
+  h.setTime(new Date(end + 3600000).toISOString());
+  await h.rest(a);
+  assert.equal((await h.snapshot(a)).xp, 20, 'post-challenge activity still earns normal game progress');
+  assert.deepEqual((await h.snapshot(a)).challenge?.participants.map(item => item.days), [1, 1], 'post-end rewards do not rewrite the ended result');
+  const replacement = await h.request('/api/companion/challenges', a, { body: { action: 'create' } });
+  assert.equal(replacement.status, 200); assert.ok(replacement.data.challenge); assert.notEqual(replacement.data.challenge.id, ended.id);
+  const dismissed = await h.request('/api/companion/challenges', b, { body: { action: 'leave' } }); assert.equal(dismissed.status, 200); assert.equal(dismissed.data.challenge, null);
+  assert.equal((await h.snapshot(a)).challenge?.id, replacement.data.challenge.id, 'dismissing the old result cannot revoke a different new challenge');
+  h.setTime(new Date(end + 48 * 3600000 - 1).toISOString());
+  assert.equal((await h.snapshot(c)).challenge?.id, solo.data.challenge.id);
+  h.setTime(new Date(end + 48 * 3600000).toISOString());
+  assert.equal((await h.snapshot(c)).challenge, null, 'results expire at the exact 48-hour boundary');
+  const afterWindow = await h.request('/api/companion/challenges', c, { body: { action: 'create' } }); assert.equal(afterWindow.status, 200); assert.ok(afterWindow.data.challenge); assert.notEqual(afterWindow.data.challenge.id, solo.data.challenge.id);
 });
 
 test('challenge consent excludes pre-join rewards and invalid-code limits are scoped to the requesting account', async t => {

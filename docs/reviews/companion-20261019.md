@@ -6,7 +6,7 @@
 
 `node --import tsx --test --test-concurrency=1 tests/companion.test.ts`
 
-最终实际 16/16 通过，0 skipped；`npx tsc --noEmit` exit 0。16 个用例覆盖：
+首次交付实际 16/16 通过，0 skipped；`npx tsc --noEmit` exit 0。首次16个用例覆盖：
 
 - GET 和所有修改需要有效会话及匹配的账户头；写请求需要可信 Origin；可显式信任的 HTTPS 代理与未信任代理分别允许/拒绝。
 - 新账户 0 XP、一级、空装备与宝箱；禁止请求体注入 owner/XP/日期/背包，未知外观与未拥有外观失败。
@@ -40,3 +40,9 @@ lead 后续报告已实际通过 CUA 桌面/390px/中英、空账户0XP、休息
 证据外置 `C:/Users/devin/AppData/Local/Temp/forma-companion-20261019/container-OW7ZHi/report.json`。初轮随机 HostPort 重启变化导致 readiness 失败的记录保留在同目录 `container-nBIfb7/report.json`；修复测试读取重启后实际映射端口，第二轮可见62439→51773。两轮 finally 均先核对 name/label 后删除仅本次自建容器与数据卷，report cleanup 两项 true。未输出密码、cookie 或健康记录原文。
 
 上述结果证明本机镜像运行与卷持久性，不代表实际公网 HTTPS/证书、正式托管商代理配置、远程部署或备份恢复已验收。没有重跑全套测试或浏览器。
+
+## 最后契约收口回归
+
+backend 完成睡眠自身时区归日、结束挑战48h结果与新建/清除行为后，独立 HTTP 专项新增两组并重新实际执行：18/18，0 skipped，exit0；TypeScript 检查 exit0。正反出差例区分 LA 档案日期与 Tokyo 醒来日，验证不能错误借用档案时区，也不漏真正记录时区当天的睡眠。结束结果于 endsAt 可读，后续普通奖励不改变它；窗口中可以新建、旧成员可清除旧结果且不伤害另一人的新挑战；<48h与 exact48h 边界均通过。
+
+已有容器成功证据对应 c152a82db6aa…镜像；这些产品收口后的新镜像需 lead 重建并复跑窄烟测，未混称已经验证。没有再次启动浏览器或运行全套测试。
