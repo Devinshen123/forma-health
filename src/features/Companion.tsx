@@ -10,7 +10,7 @@ type CompanionProps = FeatureProps & { navigate: (page: Page) => void };
 type Operation = { type: 'read' | 'claim' | 'rest' | 'create' | 'leave' } | { type: 'open'; id: string } | { type: 'equip'; item: CompanionItem | null } | { type: 'join'; code: string };
 type ViewState = { identity: string; snapshot: CompanionSnapshot | null; busy: boolean; error: string | null };
 
-function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
+function useCompanion({ accountId, demo, lang }: FeatureProps) {
   const identity = demo ? 'demo' : accountId ?? '';
   const currentIdentity = useRef(identity);
   currentIdentity.current = identity;
@@ -19,18 +19,44 @@ function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
   const generation = useRef(0);
   const alive = useRef(false);
   const busy = useRef(false);
-  const queued = useRef<'read' | 'claim' | null>(null);
+  const readVersion = useRef(0);
+  const background = useRef<AbortController | null>(null);
   const controllers = useRef(new Set<AbortController>());
-  const records = useRef([state.meals, state.workouts, state.sleeps]);
   const [view, setView] = useState<ViewState>(() => ({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null }));
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const readQuietly = useCallback(async () => {
+    if (demo || !accountId || !alive.current || currentIdentity.current !== identity || busy.current || background.current) return;
+    const version = generation.current;
+    const read = readVersion.current;
+    const controller = new AbortController();
+    const isCurrent = () => alive.current && generation.current === version && currentIdentity.current === identity && readVersion.current === read && !controller.signal.aborted;
+    background.current = controller;
+    controllers.current.add(controller);
+    try {
+      const snapshot = await getCompanion(accountId, controller.signal);
+      if (!isCurrent()) return;
+      setView(previous => !isCurrent() || previous.identity !== identity || JSON.stringify(previous.snapshot) === JSON.stringify(snapshot) ? previous : { ...previous, snapshot });
+    } catch (error) {
+      if (!isCurrent()) return;
+      // Ordinary background failures stay silent; an expired identity must stop showing private data.
+      if (error instanceof ApiError && (error.status === 401 || error.code === 'ACCOUNT_CHANGED')) {
+        setView(previous => isCurrent() ? { identity, snapshot: null, busy: false, error: error.message } : previous);
+        setNotice(previous => isCurrent() ? null : previous);
+      }
+    } finally {
+      controllers.current.delete(controller);
+      if (background.current === controller) background.current = null;
+    }
+  }, [accountId, demo, identity]);
 
   const run = useCallback(async function perform(operation: Operation): Promise<boolean> {
     if (demo || !accountId || !alive.current || currentIdentity.current !== identity) return false;
-    if (busy.current) {
-      if (operation.type === 'claim') queued.current = 'claim';
-      else if (operation.type === 'read' && !queued.current) queued.current = 'read';
-      return false;
-    }
+    if (busy.current) return false;
+    // A user action always takes priority over a quiet read, including its late response.
+    readVersion.current += 1;
+    background.current?.abort();
+    background.current = null;
     const version = generation.current;
     const controller = new AbortController();
     const isCurrent = () => alive.current && generation.current === version && currentIdentity.current === identity;
@@ -52,6 +78,7 @@ function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
       }
       if (!isCurrent()) return false;
       setView({ identity, snapshot, busy: false, error: null });
+      setNotice(identity);
       return true;
     } catch (error) {
       if (!isCurrent() || controller.signal.aborted) return false;
@@ -61,15 +88,11 @@ function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
         ? (zh ? '邀请码已失效、已到期或人数已满，请核对后再试。' : 'This invite is unavailable, expired or full. Check the code and try again.')
         : error instanceof ApiError ? error.message : (zh ? '暂时无法连接，请稍后重试。' : 'Unable to connect. Please try again.');
       setView(previous => ({ identity, snapshot: accountChanged ? null : previous.identity === identity ? previous.snapshot : null, busy: false, error: message }));
+      if (accountChanged) setNotice(null);
       return false;
     } finally {
       controllers.current.delete(controller);
-      if (isCurrent()) {
-        busy.current = false;
-        const next = queued.current;
-        queued.current = null;
-        if (next) void perform({ type: next });
-      }
+      if (isCurrent()) busy.current = false;
     }
   }, [accountId, demo, identity]);
 
@@ -77,8 +100,9 @@ function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
     generation.current += 1;
     alive.current = true;
     busy.current = false;
-    queued.current = null;
-    records.current = [state.meals, state.workouts, state.sleeps];
+    readVersion.current += 1;
+    background.current = null;
+    setNotice(null);
     setView({ identity, snapshot: demo ? demoCompanion() : null, busy: false, error: null });
     if (!demo && accountId) void run({ type: 'read' });
     return () => {
@@ -86,34 +110,23 @@ function useCompanion({ accountId, demo, state, lang }: FeatureProps) {
       generation.current += 1;
       controllers.current.forEach(controller => controller.abort());
       controllers.current.clear();
-      queued.current = null;
+      readVersion.current += 1;
+      background.current = null;
     };
-    // Records are reconciled separately; a local edit never awards XP itself.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identity, demo, accountId, run]);
 
   useEffect(() => {
-    const next = [state.meals, state.workouts, state.sleeps];
-    const changed = next.some((value, index) => value !== records.current[index]);
-    records.current = next;
-    if (changed && !demo) void run({ type: 'claim' });
-  }, [state.meals, state.workouts, state.sleeps, demo, run]);
-
-  useEffect(() => {
     if (demo || !accountId) return;
-    let utcDay = new Date().toISOString().slice(0, 10);
-    const refresh = () => { if (document.visibilityState === 'visible') void run({ type: 'read' }); };
-    const timer = window.setInterval(() => {
-      const today = new Date().toISOString().slice(0, 10);
-      if (today !== utcDay) { utcDay = today; refresh(); }
-    }, 60_000);
+    // Health saves settle rewards on the server. Polling only reads, independently of array identity.
+    const refresh = () => { if (document.visibilityState === 'visible') void readQuietly(); };
+    const timer = window.setInterval(refresh, 15_000);
     window.addEventListener('focus', refresh);
     document.addEventListener('visibilitychange', refresh);
     return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
-  }, [accountId, demo, run]);
+  }, [accountId, demo, readQuietly]);
 
   const visible = view.identity === identity ? view : { identity, snapshot: null, busy: false, error: null };
-  return { ...visible, run, disabled: demo || !accountId || visible.busy };
+  return { ...visible, notice: notice === identity, run, disabled: demo || !accountId || visible.busy };
 }
 
 const itemNames: Record<CompanionItem, [string, string]> = {
@@ -192,7 +205,7 @@ export default function Companion(props: CompanionProps) {
   return <section className="companion-page" aria-label={zh ? '伙伴成长' : 'Companion growth'}>
     <header className="companion-page-heading"><div><span className="companion-eyebrow"><Leaf size={17} />FORMA COMPANION</span><h1>{zh ? '一起，慢慢长大。' : 'A little growth, together.'}</h1><p>{zh ? '记录、休息、再出发。芽芽按你的节奏陪伴。' : 'Log, rest and begin again. Sprout moves at your pace.'}</p></div><button className="btn btn-secondary" disabled={disabled} onClick={() => void run({ type: 'claim' })}><RefreshCw size={17} />{zh ? '同步成长' : 'Sync progress'}</button></header>
     {demo && <p className="companion-demo" role="note">{zh ? '演示数据 · 可以浏览和前往记录页面；奖励、换装与挑战不会保存。' : 'Demo data · explore and visit your logs. Rewards, outfits and challenges cannot be saved.'}</p>}
-    <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (zh ? '正在确认已保存的进度…' : 'Checking saved progress…') : model.error ? '' : snapshot ? (zh ? `已确认 ${snapshot.xp} XP · 等级 ${snapshot.level}` : `${snapshot.xp} XP confirmed · Level ${snapshot.level}`) : ''}</div>
+    <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (zh ? '正在确认已保存的进度…' : 'Checking saved progress…') : model.error ? '' : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
     {model.error && snapshot && <div className="companion-error"><p role="alert">{model.error}</p><button className="text-button" disabled={disabled} onClick={() => void run({ type: 'read' })}>{zh ? '重新读取' : 'Reload progress'}</button></div>}
     {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} /></div> : <>
       <div className="companion-main-grid">
@@ -227,9 +240,9 @@ export default function Companion(props: CompanionProps) {
         <div className="companion-section-title"><div><span className="companion-eyebrow"><Users size={16} />{zh ? '邀请一位朋友' : 'BRING A FRIEND'}</span><h2>{zh ? '七日，一起出现。' : 'Show up together for seven days.'}</h2></div><span className="companion-badge">{zh ? '仅限两人' : 'Just two people'}</span></div>
         <p className="companion-challenge-description">{zh ? '彼此只看到有奖励的参与天数，每天最多计 1 天。不分享姓名、邮箱或任何健康记录。并列就是共同完成。' : 'Share only rewarded participation days, at most one per day. Names, emails and health records stay private. A tie is a shared finish.'}</p>
         {challenge ? <div className="companion-challenge-active">
-          <div className="companion-invite"><label htmlFor="companion-invite">{zh ? '私密邀请码 · 仅分享给受邀朋友' : 'Private invite · share only with your friend'}</label><input id="companion-invite" value={challenge.code} readOnly onFocus={event => event.currentTarget.select()} /><span className="companion-small">{challengeEnded ? (zh ? '本次挑战已结束' : 'This challenge has ended') : (zh ? '结束时间' : 'Ends')} · {challengeEnd} UTC</span></div>
-          <div className="companion-participants">{challenge.participants.map((participant, index) => <div key={`${participant.self}-${index}`}><span>{participant.self ? (zh ? '你' : 'You') : (zh ? '同行伙伴' : 'Your partner')}</span><strong>{participant.days} <small>/ 7 {zh ? '天' : 'days'}</small></strong></div>)}{challenge.participants.length < 2 && <div className="companion-waiting"><span>{zh ? '等待朋友加入' : 'Waiting for a friend'}</span><strong>—</strong></div>}</div>
-          {confirmLeave ? <div className="companion-leave-confirm" role="group" aria-label={zh ? '确认退出挑战' : 'Confirm leaving challenge'}><p>{zh ? '退出后，本次挑战和邀请码将对双方失效。已有 XP 与外观保留。' : 'Leaving ends this challenge and invalidates the invite for both people. Your XP and outfits stay.'}</p><button className="btn btn-secondary" disabled={disabled} onClick={() => { setConfirmLeave(false); void run({ type: 'leave' }); }}>{zh ? '确认退出' : 'Confirm leave'}</button><button className="text-button" onClick={() => setConfirmLeave(false)}>{zh ? '继续同行' : 'Keep going together'}</button></div> : <button className="text-button" disabled={disabled} onClick={() => setConfirmLeave(true)}>{zh ? '退出并废止邀请码' : 'Leave and invalidate invite'}</button>}
+          {challengeEnded ? <div className="companion-result"><h3>{zh ? '本次七日结果' : 'Your seven-day results'}</h3><p>{challenge.participants.length === 2 && challenge.participants[0].days === challenge.participants[1].days ? (zh ? '并列，一起完成。' : 'A tie. A shared finish.') : (zh ? '每一次出现，都值得纪念。' : 'Every day you showed up counts.')}</p><span className="companion-small">{zh ? '已结束' : 'Ended'} · {challengeEnd} UTC</span><p className="companion-small">{zh ? '结果在结束后保留展示 48 小时。此邀请码已失效。' : 'Results remain visible for 48 hours after the end. This invite has expired.'}</p><button className="btn btn-primary" disabled={disabled} onClick={() => { setConfirmLeave(false); void run({ type: 'create' }); }}>{zh ? '开始新的七日挑战' : 'Start a new seven-day challenge'}<ArrowRight size={17} /></button></div> : <div className="companion-invite"><label htmlFor="companion-invite">{zh ? '私密邀请码 · 仅分享给受邀朋友' : 'Private invite · share only with your friend'}</label><input id="companion-invite" value={challenge.code} readOnly onFocus={event => event.currentTarget.select()} /><span className="companion-small">{zh ? '结束时间' : 'Ends'} · {challengeEnd} UTC</span></div>}
+          <div className="companion-participants">{challenge.participants.map((participant, index) => <div key={`${participant.self}-${index}`}><span>{participant.self ? (zh ? '你' : 'You') : (zh ? '同行伙伴' : 'Your partner')}</span><strong>{participant.days} <small>/ 7 {zh ? '天' : 'days'}</small></strong></div>)}{challenge.participants.length < 2 && <div className="companion-waiting"><span>{challengeEnded ? (zh ? '本次没有同行伙伴' : 'No partner joined this time') : (zh ? '等待朋友加入' : 'Waiting for a friend')}</span><strong>—</strong></div>}</div>
+          {confirmLeave ? <div className="companion-leave-confirm" role="group" aria-label={challengeEnded ? (zh ? '确认清除结果' : 'Confirm clearing results') : (zh ? '确认退出挑战' : 'Confirm leaving challenge')}><p>{challengeEnded ? (zh ? '清除本次挑战结果，已有 XP 与外观保留。' : 'Clear this challenge result. Your XP and outfits stay.') : (zh ? '退出后，本次挑战和邀请码将对双方失效。已有 XP 与外观保留。' : 'Leaving ends this challenge and invalidates the invite for both people. Your XP and outfits stay.')}</p><button className="btn btn-secondary" disabled={disabled} onClick={() => { setConfirmLeave(false); void run({ type: 'leave' }); }}>{challengeEnded ? (zh ? '确认清除' : 'Confirm clear') : (zh ? '确认退出' : 'Confirm leave')}</button><button className="text-button" onClick={() => setConfirmLeave(false)}>{challengeEnded ? (zh ? '保留结果' : 'Keep results') : (zh ? '继续同行' : 'Keep going together')}</button></div> : <button className="text-button" disabled={disabled} onClick={() => setConfirmLeave(true)}>{challengeEnded ? (zh ? '清除本次结果' : 'Clear these results') : (zh ? '退出并废止邀请码' : 'Leave and invalidate invite')}</button>}
         </div> : <div className="companion-challenge-start"><div><h3>{zh ? '发出一份邀请' : 'Start with an invitation'}</h3><p>{zh ? '创建后开始计时，由你选择分享给谁。' : 'The seven days start when you create it. You choose who receives the code.'}</p><button className="btn btn-primary" disabled={disabled} onClick={() => void run({ type: 'create' })}>{zh ? '创建七日挑战' : 'Create seven-day challenge'}<ArrowRight size={17} /></button></div><form onSubmit={event => { event.preventDefault(); if (/^[A-F0-9]{16}$/.test(normalizedCode) && !disabled) void run({ type: 'join', code: normalizedCode }); }}><label htmlFor="companion-join">{zh ? '已有朋友的邀请码？' : 'Have a friend’s invite?'}</label><div className="companion-join-row"><input id="companion-join" name="code" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={24} value={code} onChange={event => setCode(event.target.value)} placeholder={zh ? '16 位邀请码' : '16-character invite'} disabled={disabled} aria-describedby="companion-join-hint" /><button type="submit" className="btn btn-secondary" disabled={disabled || !/^[A-F0-9]{16}$/.test(normalizedCode)}>{zh ? '加入' : 'Join'}</button></div><p id="companion-join-hint" className="companion-small">{zh ? '加入即向对方展示你的参与天数，随时可以退出。' : 'Joining shares your participation days with them. You can leave at any time.'}</p></form></div>}
       </section>
       <p className="companion-footnote">{zh ? '免费陪伴，不催促、不惩罚。游戏奖励不会改变饮食、训练或睡眠建议。' : 'Free company, without pressure or penalties. Game rewards never change nutrition, training or sleep guidance.'}</p>

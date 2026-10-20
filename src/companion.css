@@ -87,6 +87,9 @@
 .companion-challenge-active { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(230px, 1fr); align-items: start; gap: 24px; }
 .companion-invite input { display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 16px; letter-spacing: .04em; width: 100%; max-width: 330px; background: #f7f9f3; }
 .companion-invite > span { margin-top: 9px; }
+.companion-result h3 { font-size: 16px; font-weight: 600; }
+.companion-result > p { margin: 9px 0; font-size: 13px; color: #737985; }
+.companion-result > .btn { margin-top: 8px; }
 .companion-participants { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .companion-participants > div { border: 1px solid #e9ecf0; padding: 16px; border-radius: 12px; }
 .companion-participants span { display: block; font-size: 12px; color: #737985; }
