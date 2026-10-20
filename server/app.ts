@@ -24,6 +24,8 @@ import { FoodPhotoService, type FoodPhotoAiConfig } from './food-photo';
 import { AiError } from './ai-errors';
 import { trainingWorkbenchRouter } from './training-workbench';
 import { WorkbenchConflict, WorkbenchError } from './training-workbench-data';
+import { companionRouter } from './companion-router';
+import { CompanionError } from './companion';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -133,9 +135,11 @@ export interface AppOptions {
   ai?: FoodPhotoAiConfig;
   aiFetch?: typeof fetch;
   aiNow?: () => number;
+  companionNow?: () => number;
+  trustProxy?: number;
 }
 export function createApp(options: AppOptions) {
-  const store = new Store(options.dataDir),
+  const store = new Store(options.dataDir, options.companionNow),
     app = express();
   const foodPhoto = new FoodPhotoService(store, options.ai, options.aiFetch, options.aiNow);
   const secureCookies =
@@ -147,6 +151,7 @@ export function createApp(options: AppOptions) {
     path: "/",
   };
   app.disable("x-powered-by");
+  app.set('trust proxy', options.trustProxy ?? false);
   app.use((_req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "no-referrer");
@@ -229,6 +234,7 @@ export function createApp(options: AppOptions) {
   // Browser images and download navigation cannot attach custom headers. The
   // read route still resolves each attachment by its session-derived owner.
   const assetReadAuth = authenticate(false);
+  app.use('/api/companion', companionRouter(store, auth));
   app.use('/training-workbench', (_req, res, next) => {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
@@ -440,6 +446,7 @@ export function createApp(options: AppOptions) {
       aiUsage: store.aiUsage(account.id),
       aiReservations: store.aiReservations(account.id),
       trainingWorkbench: store.exportWorkbench(account.id),
+      companion: store.exportCompanion(account.id),
     });
   });
   app.delete("/api/account", auth, rateLimit, async (req, res) => {
@@ -467,6 +474,10 @@ export function createApp(options: AppOptions) {
   }
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      if (error instanceof CompanionError) {
+        if (error.retryAfter !== undefined) res.setHeader('Retry-After', String(error.retryAfter));
+        return res.status(error.status).json({ error: error.message, code: error.code });
+      }
       if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
       if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });

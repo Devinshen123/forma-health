@@ -7,6 +7,8 @@ import { emptyState } from "../src/types";
 import { AiError } from './ai-errors';
 import { normalizedState, entityValues, changedEntityKeys, mutationHash, entityKey, applySyncChanges, SyncConflict } from './sync';
 import { WorkbenchConflict, WorkbenchError, WORKBENCH_MEDIA_QUOTA, workbenchPlannerSnapshot, workbenchReferencedHashes, type WorkbenchMedia, type WorkbenchMediaMime, type WorkbenchReceipt, type WorkbenchSnapshot, type WorkbenchWarning, type WorkbenchWrite } from './training-workbench-data';
+import type { CompanionItem } from '../src/companion';
+import { CompanionError, CompanionLedger } from './companion';
 
 export interface Account extends User {
   password_hash: string;
@@ -24,7 +26,8 @@ export class Store {
   readonly db: DatabaseSync;
   readonly dataDir: string;
   private readonly uploadsDir: string;
-  constructor(dataDir: string) {
+  private readonly companion: CompanionLedger;
+  constructor(dataDir: string, private readonly companionNow: () => number = Date.now) {
     this.dataDir = resolve(dataDir);
     this.uploadsDir = join(this.dataDir, "uploads");
     mkdirSync(this.uploadsDir, { recursive: true, mode: 0o700 });
@@ -58,6 +61,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS workbench_projection_links(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,workout_id TEXT NOT NULL,payload_hash TEXT NOT NULL,PRIMARY KEY(owner_id,workout_id));
       CREATE TABLE IF NOT EXISTS workbench_media(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,hash TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,hash));
     `);
+    this.companion = new CompanionLedger(this.db);
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -137,7 +141,10 @@ export class Store {
           "UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=? AND revision=?",
         )
         .run(JSON.stringify(state), ownerId, revision).changes === 1;
-      if (saved) this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+      if (saved) {
+        this.touchEntities(ownerId, changedEntityKeys(previous.state, state), state);
+        this.companion.settle(ownerId, previous.state, state, new Date(this.companionNow()));
+      }
       return saved;
     });
   }
@@ -172,6 +179,7 @@ export class Store {
       const state = validate(snapshot.state, applySyncChanges(snapshot.state, mutation.changes));
       this.db.prepare('UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=?').run(JSON.stringify(state), ownerId);
       this.touchEntities(ownerId, mutation.changes.map(entityKey), state);
+      this.companion.settle(ownerId, snapshot.state, state, new Date(this.companionNow()));
       const createdAt = new Date().toISOString();
       this.db.prepare('INSERT INTO sync_mutations VALUES (?,?,?,?)').run(ownerId, mutation.mutationId, hash, createdAt);
       // Record exactly which of this owner's attachments the commit stopped referencing, so a replay
@@ -323,7 +331,10 @@ export class Store {
     // Deleting files first prevents a failed filesystem cleanup from being reported as complete.
     rmSync(folder, { recursive: true, force: true });
     rmSync(this.workbenchMediaFolder(ownerId), { recursive: true, force: true });
-    this.db.prepare("DELETE FROM accounts WHERE id=?").run(ownerId);
+    this.transaction(() => {
+      this.companion.revokeForAccount(ownerId, new Date(this.companionNow()));
+      this.db.prepare("DELETE FROM accounts WHERE id=?").run(ownerId);
+    });
   }
 
   workbenchSnapshot(ownerId: string): WorkbenchSnapshot {
@@ -357,6 +368,7 @@ export class Store {
         this.db.prepare('UPDATE states SET state_json=?,revision=revision+1 WHERE owner_id=?').run(JSON.stringify(next), ownerId);
         this.touchEntities(ownerId, changed, next);
       }
+      this.companion.settle(ownerId, before.state, next, new Date(this.companionNow()));
       const rev = current.rev + 1, wid = randomBytes(8).toString('hex');
       const lineage = Array.isArray(current.state?._wids) ? current.state._wids.filter(value => typeof value === 'string') : [];
       const state = { ...write.state, _rev: rev, _wid: wid, _wids: [...lineage, ...(current.wid ? [current.wid] : [])].slice(-64) };
@@ -448,6 +460,35 @@ export class Store {
       revisions: revisions.map(row => ({ kind: 'planner', rev: row.revision, state: JSON.parse(row.state_json), wid: row.wid, createdAt: row.created_at })),
       media: this.workbenchMediaList(ownerId).map(media => ({ hash: media.hash, mime: media.mime, size: media.size, createdAt: media.created_at, base64: this.workbenchMediaBytes(media).toString('base64') })),
     };
+  }
+
+  companionSnapshot(ownerId: string) {
+    return this.transaction(() => this.companion.snapshot(ownerId, this.snapshot(ownerId).state, new Date(this.companionNow())));
+  }
+  claimCompanion(ownerId: string, rest = false) {
+    return this.transaction(() => {
+      const state = this.snapshot(ownerId).state, now = new Date(this.companionNow());
+      if (rest && !state.profile) throw new CompanionError(409, 'PROFILE_REQUIRED', 'Complete your profile before confirming a rest day');
+      // Health-write transactions already settle observed new facts atomically. Claim is a safe
+      // refresh, never a sweep of old snapshots in a newly selected time zone or reward day.
+      if (rest) this.companion.rest(ownerId, state, now);
+      return this.companion.snapshot(ownerId, state, now);
+    });
+  }
+  openCompanionChest(ownerId: string, chestId: string) {
+    return this.transaction(() => this.companion.openChest(ownerId, chestId, this.snapshot(ownerId).state, new Date(this.companionNow())));
+  }
+  equipCompanion(ownerId: string, item: CompanionItem | null) {
+    return this.transaction(() => this.companion.equip(ownerId, item, this.snapshot(ownerId).state, new Date(this.companionNow())));
+  }
+  companionChallenge(ownerId: string, action: 'create' | 'join' | 'leave', code?: string) {
+    const now = new Date(this.companionNow());
+    if (action !== 'leave' && !this.transaction(() => this.companion.challengeAttempt(ownerId, now)))
+      throw new CompanionError(429, 'CHALLENGE_RATE_LIMIT', 'Too many challenge requests. Try again later.', 3600 - Math.floor(now.getTime() / 1000) % 3600);
+    return this.transaction(() => this.companion.challenge(ownerId, action, code, this.snapshot(ownerId).state, now));
+  }
+  exportCompanion(ownerId: string) {
+    return this.transaction(() => this.companion.export(ownerId, this.snapshot(ownerId).state, new Date(this.companionNow())));
   }
 }
 const attachmentIds = (state: AppState) =>
