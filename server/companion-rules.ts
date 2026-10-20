@@ -27,7 +27,7 @@ export function companionFacts(state: AppState, now: Date): CompanionFact[] {
   for (const sleep of state.sleeps) {
     const start = Date.parse(sleep.start), end = Date.parse(sleep.end);
     if (Number.isFinite(start) && Number.isFinite(end) && end > start && end - start <= 86400000 && end <= now.getTime()
-      && localDateOf(new Date(end), state.profile.timezone) === day)
+      && localDateOf(new Date(end), sleep.timezone) === localDateOf(now, sleep.timezone))
       facts.push({ quest: 'sleep', kind: 'sleep', id: sleep.id });
   }
   return facts;

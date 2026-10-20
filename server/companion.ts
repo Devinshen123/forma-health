@@ -76,12 +76,18 @@ export class CompanionLedger {
   private activeChallenge(ownerId: string, now: Date): ChallengeRow | undefined {
     return this.db.prepare('SELECT c.id,c.code,c.starts_at,c.ends_at,c.revoked_at FROM companion_challenges c JOIN companion_challenge_members m ON m.challenge_id=c.id WHERE m.owner_id=? AND c.revoked_at IS NULL AND c.ends_at>? ORDER BY c.starts_at DESC LIMIT 1').get(ownerId, now.toISOString()) as unknown as ChallengeRow | undefined;
   }
+  private displayedChallenge(ownerId: string, now: Date): ChallengeRow | undefined {
+    const active = this.activeChallenge(ownerId, now);
+    if (active) return active;
+    const cutoff = new Date(now.getTime() - 48 * 3600000).toISOString();
+    return this.db.prepare('SELECT c.id,c.code,c.starts_at,c.ends_at,c.revoked_at FROM companion_challenges c JOIN companion_challenge_members m ON m.challenge_id=c.id WHERE m.owner_id=? AND c.revoked_at IS NULL AND c.ends_at<=? AND c.ends_at>? ORDER BY c.ends_at DESC,c.starts_at DESC LIMIT 1').get(ownerId, now.toISOString(), cutoff) as unknown as ChallengeRow | undefined;
+  }
   private participantDays(challenge: ChallengeRow, member: MemberRow): number {
     const row = this.db.prepare('SELECT COUNT(DISTINCT utc_day) AS days FROM companion_rewards WHERE owner_id=? AND id>? AND awarded_at>=? AND awarded_at<?').get(member.owner_id, member.after_reward_id, challenge.starts_at, challenge.ends_at) as { days: number };
     return row.days;
   }
   private challengeSnapshot(ownerId: string, now: Date): CompanionChallenge | null {
-    const challenge = this.activeChallenge(ownerId, now);
+    const challenge = this.displayedChallenge(ownerId, now);
     if (!challenge) return null;
     const members = this.db.prepare('SELECT owner_id,joined_at,after_reward_id FROM companion_challenge_members WHERE challenge_id=? ORDER BY joined_at,owner_id').all(challenge.id) as unknown as MemberRow[];
     return { id: challenge.id, code: challenge.code, startsAt: challenge.starts_at, endsAt: challenge.ends_at,
@@ -122,7 +128,8 @@ export class CompanionLedger {
   challenge(ownerId: string, action: 'create' | 'join' | 'leave', code: string | undefined, state: AppState, now: Date): CompanionSnapshot {
     const active = this.activeChallenge(ownerId, now);
     if (action === 'leave') {
-      if (active) this.db.prepare('UPDATE companion_challenges SET revoked_at=? WHERE id=?').run(now.toISOString(), active.id);
+      const displayed = active ?? this.displayedChallenge(ownerId, now);
+      if (displayed) this.db.prepare('UPDATE companion_challenges SET revoked_at=? WHERE id=?').run(now.toISOString(), displayed.id);
       return this.snapshot(ownerId, state, now);
     }
     if (action === 'create') {

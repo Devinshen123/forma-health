@@ -4,10 +4,11 @@ import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { Store } from './store';
 import { CompanionError } from './companion';
 import { SyncConflict } from './sync';
-import { emptyState, type AppState, type Profile, type Meal, type Workout } from '../src/types';
+import { emptyState, type AppState, type Profile, type Meal, type Workout, type Sleep } from '../src/types';
 
 const profile: Profile = { name: 'Synthetic', goal: 'habits', experience: 'new', trainingDays: 3, timeMinutes: 30, equipment: 'home', allergies: '', restrictions: '', language: 'en', units: 'metric', timezone: 'UTC', sleepGoal: 8, cloudConsent: false, aiConsent: false };
 const meal = (day: string, id = randomUUID()): Meal => ({ id, date: day, name: 'Synthetic meal', type: 'lunch', grams: 100, referenceGrams: 100, kcal: 50, protein: 2, carbs: 4, fat: 1, source: 'manual', createdAt: `${day}T12:00:00.000Z` });
@@ -131,4 +132,56 @@ test('challenge counts only post-join rewards, exports self only, and member del
   assert.equal(h.store.companionSnapshot(h.owner).challenge, null);
   assert.throws(() => h.store.companionChallenge(h.owner, 'join', created.code), (error: unknown) => error instanceof CompanionError && error.status === 404);
   assert.equal((h.store.db.prepare('SELECT COUNT(*) AS count FROM companion_seen_facts WHERE owner_id=?').get(b.id) as { count: number }).count, 0);
+});
+
+test('travel sleep eligibility follows the sleep record wake zone while reward quotas follow profile-local and UTC days', t => {
+  const h = harness(t); h.setNow('2026-10-20T00:30:00.000Z');
+  const travelProfile = { ...profile, timezone: 'America/Los_Angeles' };
+  const sleep: Sleep = { id: randomUUID(), date: '2026-10-20', start: '2026-10-19T16:00:00.000Z', end: '2026-10-20T00:00:00.000Z', timezone: 'Asia/Tokyo', quality: 3, energy: 3, source: 'manual', createdAt: '2026-10-20T00:01:00.000Z' };
+  h.save({ ...emptyState(), profile: travelProfile, sleeps: [sleep] });
+  assert.equal(h.store.companionSnapshot(h.owner).xp, 10);
+  const [reward] = h.store.exportCompanion(h.owner).rewards;
+  assert.equal(reward.day, '2026-10-20'); assert.equal(reward.localDay, '2026-10-19');
+  const b = h.store.createAccount('stale-travel@companion-store.test', 'Synthetic stale sleep', 'unused', 'unused');
+  const stale = { ...sleep, id: randomUUID(), date: '2026-10-19', start: '2026-10-19T06:00:00.000Z', end: '2026-10-19T14:00:00.000Z' };
+  h.store.save(b.id, { ...emptyState(), profile: travelProfile, sleeps: [stale] }, 0);
+  assert.equal(h.store.companionSnapshot(b.id).xp, 0);
+});
+
+test('ended challenge results remain read-only for 48 hours, permit a new challenge and can be dismissed', t => {
+  const h = harness(t); h.save({ ...emptyState(), profile });
+  const first = h.store.companionChallenge(h.owner, 'create').challenge!;
+  h.store.claimCompanion(h.owner, true);
+  h.setNow(first.endsAt);
+  const ended = h.store.companionSnapshot(h.owner).challenge!;
+  assert.equal(ended.id, first.id); assert.equal(ended.participants[0].days, 1);
+  h.store.claimCompanion(h.owner, true);
+  assert.equal(h.store.companionSnapshot(h.owner).challenge!.participants[0].days, 1);
+  h.setNow('2026-10-27T23:59:59.999Z');
+  assert.equal(h.store.companionSnapshot(h.owner).challenge!.id, first.id);
+  h.setNow('2026-10-28T00:00:00.000Z');
+  assert.equal(h.store.companionSnapshot(h.owner).challenge, null);
+  const second = h.store.companionChallenge(h.owner, 'create').challenge!;
+  assert.notEqual(second.id, first.id);
+  h.setNow(second.endsAt);
+  assert.equal(h.store.companionSnapshot(h.owner).challenge!.id, second.id);
+  assert.equal(h.store.companionChallenge(h.owner, 'leave').challenge, null);
+  const third = h.store.companionChallenge(h.owner, 'create').challenge!;
+  h.setNow(third.endsAt);
+  const fourth = h.store.companionChallenge(h.owner, 'create').challenge!;
+  assert.notEqual(fourth.id, third.id);
+  assert.equal(h.store.companionSnapshot(h.owner).challenge!.id, fourth.id);
+});
+
+test('snapshot and non-rest claim use deferred reads while an independent WAL connection holds the writer', t => {
+  const h = harness(t); h.save({ ...emptyState(), profile });
+  const writer = new DatabaseSync(join(h.directory, 'forma.sqlite'));
+  h.store.db.exec('PRAGMA busy_timeout=0');
+  writer.exec('PRAGMA busy_timeout=0; BEGIN IMMEDIATE');
+  try {
+    assert.equal(h.store.companionSnapshot(h.owner).xp, 0);
+    assert.equal(h.store.claimCompanion(h.owner).xp, 0);
+    assert.throws(() => h.store.claimCompanion(h.owner, true), /locked/);
+  } finally { writer.exec('ROLLBACK'); writer.close(); }
+  assert.equal(h.store.claimCompanion(h.owner, true).xp, 10);
 });

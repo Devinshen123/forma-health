@@ -220,6 +220,11 @@ export class Store {
     try { const result = operation(); this.db.exec('COMMIT'); return result; }
     catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
+  private readTransaction<T>(operation: () => T): T {
+    this.db.exec('BEGIN');
+    try { const result = operation(); this.db.exec('COMMIT'); return result; }
+    catch (error) { this.db.exec('ROLLBACK'); throw error; }
+  }
   beginAiRequest(ownerId: string, now: number, dailyLimit: number, leaseMs: number): string {
     return this.transaction(() => {
       const lock = this.db.prepare('SELECT expires_ms FROM ai_locks WHERE owner_id=?').get(ownerId) as { expires_ms: number } | undefined;
@@ -463,15 +468,17 @@ export class Store {
   }
 
   companionSnapshot(ownerId: string) {
-    return this.transaction(() => this.companion.snapshot(ownerId, this.snapshot(ownerId).state, new Date(this.companionNow())));
+    return this.readTransaction(() => this.companion.snapshot(ownerId, this.snapshot(ownerId).state, new Date(this.companionNow())));
   }
   claimCompanion(ownerId: string, rest = false) {
+    // Refresh reads the already committed ledger and must not reserve the SQLite writer.
+    if (!rest) return this.companionSnapshot(ownerId);
     return this.transaction(() => {
       const state = this.snapshot(ownerId).state, now = new Date(this.companionNow());
-      if (rest && !state.profile) throw new CompanionError(409, 'PROFILE_REQUIRED', 'Complete your profile before confirming a rest day');
+      if (!state.profile) throw new CompanionError(409, 'PROFILE_REQUIRED', 'Complete your profile before confirming a rest day');
       // Health-write transactions already settle observed new facts atomically. Claim is a safe
       // refresh, never a sweep of old snapshots in a newly selected time zone or reward day.
-      if (rest) this.companion.rest(ownerId, state, now);
+      this.companion.rest(ownerId, state, now);
       return this.companion.snapshot(ownerId, state, now);
     });
   }
