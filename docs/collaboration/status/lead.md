@@ -1,3 +1,25 @@
+## CHAR 最终验证 2026-10-20
+
+本轮最终产品与6角色已完成，实际执行最终npm run build exit0、完整297/297（失败/跳过/取消0，29.8秒）。工作台84文件、源码887白名单文件、离线壳ad03c32496cd84dc/104静态文件；保留已有工作台大包提示。完整验收与限制见docs/architecture/companion-characters-validation-20261020.md。backend64c68bb、QAf2d7bb6、UI02a51ba+3587352已收到，lead准备精确整合提交与push。
+
+实际Claude Code同会话三轮exit0：初始设计、最终找出P2旧缓存shadow/加载误显芽芽、修复后复核二者解决无新阻塞。新增当前cache读取/安装reload与实际worker VM回归1/1；UI无snapshot中性加载。有些建议是审美偏好，未机械扩围。
+
+root真实CUA：demo月月预览/离开复位；成长账号桃桃180→两宝箱/晴空帽→糯糯/蜜蜜/云云，刷新仍保留；新账号芽芽0且无装扮串号，Enter选月月后刷新0；停自有合成服务时选角色失败、旧选择保持，恢复同一合成库后读取/重选成功。中英、390px scrollWidth375、1440px1425，实际图与浏览器截图view_image配对复看。手机为模拟，缺图回退为静态复核，未冒称真机/浏览器全站离线。临时截图override不稳定，默认尺寸截图最终成功，未伪造手机截图。
+
+实际本机3001已后台更新为PID89868，日志/独立端口确认；先停止自有旧84036并备份静止DB/WAL/SHM到私有data/backups/pre-characters-20261020-123736，再启动加列迁移，无健康内容读取/输出。合成服务5173的原fixture及恢复PID101112已结束，合成账户登出；实际3001 demo伙伴页已打开并标交付。图片229968 bytes在public/companions，完整实际prompt和工具方式已归档；具体image模型ID未回传，不能声称确认image2版本。此前Docker镜像未重建，不冒称含新角色。
+
+待用户决定：正式托管供应商/预算仍待定，不阻塞本机形象交付。本轮精确提交推送后补回执。
+
+## CHAR 执行记录 2026-10-20
+
+用户要求更多可爱3D伙伴、生图与实际Claude Code合作。已定义6角色枚举/快照字段、明确账号API helper、ADR与美术brief，生成6张原创透明3D风格图片并仅缩放压缩为12个WebP，共229,968 bytes，入public/companions。完整实际prompt和原始PNG文件名已归档docs/architecture/companion-art-prompts-20261020.md，内置工具未回传具体模型ID，不能冒称验证了image2版本。公开静态离线壳追加固定12图且内容参与版本，API仍排除。
+
+真实Claude Code CLI会话826b9919-5460-4699-bc61-f41bca9c5af2设计只读评审exit0；源码权限限制Read/Glob/Grep和指定文件，不读data/.env。其角色动态文案、饰品face-safe、未知值/缺图回退、演示不调API等意见已发UI/QA落实；最终代码复审待执行。
+
+backend已提交64c68bb：旧库默认sprout迁移、strict角色PUT、会话隔离/保留进度/导出删除；实际专项13/13。QA已提交f2d7bb6：HTTP与透明WebP实际decode22/22、tsc0、diffcheck0。root已view_image复看优化后桃桃图；全部6张原始图已在工具输出检查轮廓/透明/风格。当前尚未执行本轮完整build/全套/CUA，不记完成。3001仍原本聊天PID84036，5173尚空；不读健康内容，不启用付费部署。
+
+待用户决定：既有正式托管项目/服务商与预算，保持此前待定，不阻塞本机形象功能。
+
 ## PET 交付补记 2026-10-20
 
 产品提交4cafb0298da14e9c7ca2cfbf1f0f03791bd6f565已推送到origin/codex/forma-companion-20261019，ls-remote与本地SHA逐字核对一致，未改main。最终288/288与构建、Docker镜像522c0d93及重启/会话/10XP防重持久实测均通过；正式公网服务仍未部署，等待用户选定服务商或提供已有项目。

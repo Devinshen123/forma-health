@@ -1,4 +1,17 @@
-# 2026-10-19 伙伴养成与部署（当前任务）
+# 2026-10-20 原创 3D 风格伙伴（当前任务）
+
+用户要求更多可爱形象，偏好3D风格、生图，并授权真实Claude Code合作。本轮增量扩展伙伴页；采用原创透明背景3D渲染图片，不冒称实时3D模型。保留已有芽芽，新增糯糯兔、桃桃獭、云朵、蜜蜜熊、月月海豹，共6个可选伙伴。所有角色免费可选，切换不重置XP、装扮或奖励。来源/真实健康数据不输入AI，不读取data/.env。以下表优先于历史所有权。
+
+| ID | owner / 本轮独占写入 | 状态 | 依赖、验收 |
+|---|---|---|---|
+| CHAR-01 | lead：src/companion.ts、src/api.ts、public/companions/、scripts/prepare-companion-art.mjs、scripts/build-offline-shell.mjs、tests/companion-cache.test.ts、docs/architecture/、任务板与lead状态 | review | 6个原创生图资产/真实Claude三轮exit0；最终build与297/297、合成CUA/本机3001更新通过，待精确提交推送 |
+| CHAR-02 | inspect_library（backend）：server/companion.ts、server/companion-router.ts、server/store.ts、server/companion.test.ts、status/companion-backend.md | done | 64c68bb；旧库默认sprout、严格会话/导出删除/保留奖励；专项13/13 |
+| CHAR-03 | muscle_ui（UI）：src/features/Companion.tsx、src/components/CompanionAvatar.tsx、src/companion.css、status/companion-ui.md | done | 02a51ba+3587352；6角色/演示/衣柜/双语/手机、缺图重试、中性加载；最终完整构建通过 |
+| CHAR-04 | qa：tests/companion.test.ts、tests/browser/companion.mts、tests/companion-art.test.ts、docs/reviews/companion-characters-20261020.md、status/companion-qa.md | done | f2d7bb6；HTTP/12透明WebP实际decode22/22、总229968bytes；root串行完整296/296 |
+
+共享契约：COMPANION_CHARACTERS = ['sprout','bunny','otter','cloud','bear','seal']；CompanionCharacter为该联合；CompanionSnapshot.character为必填，旧档默认sprout。PUT /api/companion/character严格接收{character}并返回完整snapshot。src/api.ts新增selectCompanionCharacter(character,accountId,signal?)。资产路径/文案统一由src/companion.ts的COMPANION_CHARACTER_DETAILS提供，full /companions/<id>.webp，thumb /companions/<id>-thumb.webp；均正方形透明背景。预览只写UI局部状态，切账号/离开后复位；真实选择由服务端保存，所有既有并发保护继续适用。lead独占资产；UI不画替代3D角色，装饰沿用原SVG配件并合理定位。
+
+# 2026-10-19 伙伴养成与部署（已完成/正式托管待定）
 
 用户要求实现 reel DeoTnV0B6Il 的功能并上线，授权真实 Claude Code 合作。方案见 docs/architecture/companion-plan-20261019.md，契约 src/companion.ts。当前表覆盖下方历史冻结；不读取真实 data/.env、不修改来源、不停止其他人的服务；lead可受控重启本聊天拥有的3001，并统一安排浏览器/测试/推送。
 

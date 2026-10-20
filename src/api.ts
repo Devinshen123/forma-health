@@ -1,5 +1,5 @@
 import type { AppState, User, Capabilities, FoodPhotoDraft, Language, SyncSnapshot, SyncMutation } from "./types";
-import type { CompanionSnapshot, CompanionItem } from "./companion";
+import type { CompanionSnapshot, CompanionItem, CompanionCharacter } from "./companion";
 export interface Snapshot {
   state: AppState;
   revision: number;
@@ -103,6 +103,7 @@ export const claimCompanion = (accountId: string, signal?: AbortSignal) => compa
 export const restCompanion = (accountId: string, signal?: AbortSignal) => companionRequest('/rest', accountId, { method: 'POST', body: '{}', signal });
 export const openCompanionChest = (id: string, accountId: string, signal?: AbortSignal) => companionRequest(`/chests/${encodeURIComponent(id)}/open`, accountId, { method: 'POST', body: '{}', signal });
 export const equipCompanion = (item: CompanionItem | null, accountId: string, signal?: AbortSignal) => companionRequest('/equipment', accountId, { method: 'PUT', body: JSON.stringify({ item }), signal });
+export const selectCompanionCharacter = (character: CompanionCharacter, accountId: string, signal?: AbortSignal) => companionRequest('/character', accountId, { method: 'PUT', body: JSON.stringify({ character }), signal });
 export const companionChallenge = (action: 'create' | 'join' | 'leave', code: string | undefined, accountId: string, signal?: AbortSignal) => companionRequest('/challenges', accountId, { method: 'POST', body: JSON.stringify({ action, ...(code === undefined ? {} : { code }) }), signal });
 export const getSync = (expectedAccount?:string) => request<SyncSnapshot>("/sync", {headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});
 export const syncMutation = (mutation: SyncMutation, expectedAccount?:string) => request<SyncSnapshot>("/sync", {method:"POST",body:JSON.stringify(mutation),headers:expectedAccount?{"X-Forma-Account":expectedAccount}:{}});

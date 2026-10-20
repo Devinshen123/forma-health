@@ -1,0 +1,51 @@
+# 角色生图最终 Prompt
+
+2026-10-20，使用内置image_gen，每张transparent_background=true，无参考图、无用户数据。工具未返回具体模型标识，不把用户提到的image2写作已核实模型版本。六图均独立生成并目视检查；以下为完整实际prompt。原始PNG保留在Codex生成目录，项目用640px / 192px透明WebP，见public/companions。
+
+### sprout
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Sprout, a tiny joyful lime-green seedling living in a round pale cream ceramic planter. The seedling's plump green oval face/body grows organically from the pot, with two thick rounded little leaves sprouting from the top and tiny rounded green arms. Small simple black eyes and subtle happy mouth on the green face, rosy cheeks. Minimal tiny pot feet. Original, gentle and reassuring. Face around y45%, leaves may rise to y15%, round planter ends at y88%.
+```
+
+原始生成文件：exec-4971bcdd-1555-4c84-af36-f6ae881634d3.png
+
+### bunny
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Mochi, an original cuddly cream-white pear-shaped bunny toy, broad rounded head blending into a plump seated body, two thick pillowy upright ears with soft peach interiors, tiny paws and large rounded feet, very short arms. Bunny ears top at y12%, eyes at y44%, body bottom y89%. Warm ivory body with pale peach cheeks. Quiet happy expression. No leaf, no plant, no pot.
+```
+
+原始生成文件：exec-7ba2a6e5-a7c2-47f2-ac45-b42d92ae3b92.png
+
+### otter
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Peach, an original tiny seated peach-apricot river otter toy. Rounded head with small round side ears, creamy muzzle/cheeks and creamy oval belly, small dark brown oval nose, tiny paws held close to the belly, little flat rounded feet, a short rounded otter tail visible at one side near the base. Wide endearing oval head, not a bear, not a cat. Body from y23% to y89%, eyes around y44%. Gentle smile.
+```
+
+原始生成文件：exec-432c1d9c-c375-45ca-aa8f-9556ad329b61.png
+
+### cloud
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Nimbus, an original small living fluffy pale sky-blue cloud toy. One plump cloud-shaped body made of five broad smoothly fused rounded lobes, cheerful little central face, two short tiny rounded arms and two small stubby feet. Wide, softly asymmetrical cloud silhouette, no ears or tail. Central eyes around y44%, top of cloud y23%, feet bottom at y89%. Matte subtly velvety clay, not transparent glass, softly modeled in 3D, delicate light-blue with white highlights.
+```
+
+原始生成文件：exec-38634600-8162-4025-bbaf-30b26cf6b033.png
+
+### bear
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Honey, an original tiny seated honey-golden bear cub toy, broad rounded head, two small thick circular ears, little cream oval muzzle, small dark oval nose, plump body with a soft cream belly, short hugging arms and two pillowy round feet. Warm buttery yellow and muted caramel, not saturated orange. Gentle black bead eyes at y44%, top ears y19%, feet bottom y89%. No outfit, no hat, no food, no object.
+```
+
+原始生成文件：exec-e4069ddf-83dd-45a8-9375-e9a13826e6ac.png
+
+### seal
+
+```text
+Use case: stylized-concept. Asset type: original character cutout for the Forma habit companion web app. Create ONE premium cute 3D soft-clay designer toy character, isolated with genuine transparent background. Full body, mostly front-facing, just a slight three-quarter angle. Rounded chunky silhouette, tiny dark bead eyes with a gentle smile, subtle blush, little rounded hands/feet. Tactile matte velvety clay, convincing three-dimensional form, beautiful soft studio key light upper left and subtle ambient occlusion on the body, soft specular highlights, coherent pastel palette. Square canvas; whole character centered, the body fits within x 18%-82%, bottom at 89%, face centered around x50% y45%; leave clear margins and headroom for accessories. No clothing or worn accessories; no props, objects, text, letters, logos, watermark, floor, plinth, scenery or cast shadow outside the character. Strongly original character design with simple charming features, avoid resemblance to any existing branded mascot, game character or cartoon. The rendering should look like a collectible soft toy photographed at eye level, not a flat illustration or emoji. Subject: Luna, an original tiny lavender baby harbor seal toy sitting upright. Smooth rounded head blends into a plump pear-shaped body, pale lilac color with light cream oval muzzle and belly, tiny dark nose and three subtle short whisker dimples on each cheek, short rounded side flippers and two small broad rear flippers at base. No external ears, no legs like a bear, no horns. Calm awake smile, tiny black eyes around y44%, head top y23%, base y89%. Soft clay, not glossy wet skin.
+```
+
+原始生成文件：exec-8b4bd82e-843b-4544-939c-6bacc48c0670.png
