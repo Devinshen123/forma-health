@@ -257,7 +257,7 @@ export default function App() {
     return () => window.removeEventListener("storage", changed);
   }, [user, lang]);
   function navigate(p: Page,force=false) {
-    if(page==='training'&&p!=='training'&&!force){if(unsaved.busy)return;if(unsaved.dirty){setLeavePage(p);return;}}
+    if(p!==page&&!force){if(unsaved.busy)return;if(unsaved.dirty){setLeavePage(p);return;}}
     if(force)setUnsaved({dirty:false,busy:false});
     setTrainingStart(undefined);
     setPage(p);
@@ -455,7 +455,7 @@ export default function App() {
           onAuthenticated={authenticated}
         />
       )}{" "}
-      {leavePage&&<Modal title={zh?'训练还有未保存输入':'Unsaved training entries'} onClose={()=>setLeavePage(null)} footer={<><button className="btn btn-primary" onClick={()=>setLeavePage(null)}>{zh?'返回训练':'Return to training'}</button><button className="btn btn-secondary" onClick={()=>{navigate(leavePage,true);setLeavePage(null);}}>{zh?'放弃未保存输入并离开':'Discard unsaved entries and leave'}</button></>}><p>{zh?'已保存的进度会保留。当前尚未点击保存的输入将丢失；可以返回训练点击“保存进度”。':'Saved progress is retained. Entries you have not saved will be lost. Return to the session and choose Save progress.'}</p></Modal>}
+      {leavePage&&<Modal title={page==='training' ? zh?'训练还有未保存输入':'Unsaved training entries' : zh?'还有未保存的输入':'Unsaved entries'} onClose={()=>setLeavePage(null)} footer={<><button className="btn btn-primary" onClick={()=>setLeavePage(null)}>{page==='training' ? zh?'返回训练':'Return to training' : zh?'继续编辑':'Keep editing'}</button><button className="btn btn-secondary" onClick={()=>{navigate(leavePage,true);setLeavePage(null);}}>{zh?'放弃未保存输入并离开':'Discard unsaved entries and leave'}</button></>}><p>{zh?'当前表单输入将丢失。已保存的记录和待同步的更改会保留；离开不会撤销已提交的保存。':'Current form entries will be lost. Saved records and pending sync changes remain; leaving does not undo a submitted save.'}</p></Modal>}
       {toast && (
         <div className="toast" role="status">
           <span>{toast}</span>

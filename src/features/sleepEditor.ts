@@ -1,5 +1,6 @@
 import { uid, type Sleep } from "../types";
 import { toSleepTimeInput } from "./sleepTime";
+import { shiftRecordingDay } from './recordingDates';
 
 export type SleepDraft = {
   id: string;
@@ -15,7 +16,7 @@ export type SleepDraft = {
 };
 
 /** Allocate the identity when the editor opens, before any uncertain save. */
-export const createSleepDraft = (timezone: string, sleep?: Sleep): SleepDraft =>
+export const createSleepDraft = (timezone: string, sleep?: Sleep, wakeDay?: string): SleepDraft =>
   sleep ? {
     id: sleep.id,
     existing: true,
@@ -31,8 +32,8 @@ export const createSleepDraft = (timezone: string, sleep?: Sleep): SleepDraft =>
     id: uid(),
     existing: false,
     createdAt: new Date().toISOString(),
-    start: "",
-    end: "",
+    start: wakeDay ? shiftRecordingDay(wakeDay, -1) + 'T' : "",
+    end: wakeDay ? wakeDay + 'T' : "",
     quality: "",
     energy: "",
     timezone,

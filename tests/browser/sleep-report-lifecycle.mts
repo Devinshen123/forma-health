@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { Server } from 'node:http';
+import { createServer as createNetServer } from 'node:net';
 import { createApp } from '../../server/app';
 
 // Component integration harness: real Sleep/Reports, SyncEngine, API and SQLite.
@@ -62,11 +63,14 @@ function Harness() {
 createRoot(document.getElementById('root')).render(<Harness/>);
 `;
 let vite: any;
+const portProbe = createNetServer(); await new Promise<void>(done => portProbe.listen(0, '127.0.0.1', done));
+const portAddress = portProbe.address(); assert.ok(portAddress && typeof portAddress !== 'string');
+await new Promise<void>(done => portProbe.close(() => done()));
 try {
 vite = await createServer({ root: repo, configFile: false, cacheDir: join(out, 'vite-cache'),
   resolve: { alias: { 'react-dom': resolve(repo, 'node_modules/react-dom') }, dedupe: ['react', 'scheduler'] },
   esbuild: { jsx: 'automatic' }, optimizeDeps: { noDiscovery: true, include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'lucide-react'] },
-  server: { host: '127.0.0.1', port: 0, proxy: { '/api': { target: apiBase,
+  server: { host: '127.0.0.1', port: portAddress.port, strictPort: true, proxy: { '/api': { target: apiBase,
     configure: (proxy: any) => proxy.on('proxyReq', (request: any) => request.setHeader('Origin', 'http://127.0.0.1:5173')) } } },
   plugins: [{ name: 'synthetic-sleep-report-fixture',
     resolveId(id: string) { if (id === entry) return id; },
@@ -132,6 +136,11 @@ async function openEdit(h: any, kind: string) {
 const saveLabel = (kind: string) => kind === 'sleeps' ? 'Save sleep' : 'Review and save';
 const deleteLabel = (kind: string) => kind === 'sleeps' ? 'Delete sleep' : 'Delete report';
 const deleteOpen = (kind: string) => kind === 'sleeps' ? 'Delete this sleep' : 'Delete Synthetic report';
+async function cancelEditor(h: any, dialog: any, kind: string) {
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  if (kind === 'sleeps') await h.p.getByRole('dialog', { name: 'Discard unsaved entries?', exact: true }).getByRole('button', { name: 'Discard entries and close', exact: true }).click();
+  await expect(h.p.getByRole('dialog')).toHaveCount(0);
+}
 async function check(name: string, kind: string, run: (h: any) => Promise<any>) {
   if (process.env.FORMA_QA_MATCH && !new RegExp(process.env.FORMA_QA_MATCH).test(name)) return;
   const h = await account(kind);
@@ -154,7 +163,7 @@ try {
       assert.deepEqual(actual, change === 'delete' ? [] : [remote], 'old editor must preserve the remote correction or deletion');
       await expect(dialog.getByRole('alert')).toContainText('changed');
       await h.p.screenshot({ path: join(out, kind + '-stale-edit-' + change + '-guard.png'), animations: 'disabled' });
-      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
+      await cancelEditor(h, dialog, kind);
       return { remotePreserved: true, cancelSafe: true };
     });
     await check(kind + '-stale-delete-confirmation', kind, async h => {
@@ -171,7 +180,7 @@ try {
     });
     await check(kind + '-cancel-unrelated-and-reopen', kind, async h => {
       let dialog = await openEdit(h, kind); const before = await h.snap();
-      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
+      await cancelEditor(h, dialog, kind);
       assert.equal((await h.snap()).revision, before.revision, 'cancel must not write');
       dialog = await openEdit(h, kind);
       const other = kind === 'sleeps' ? sleep({ start: '2026-10-17T13:00:00.000Z', end: '2026-10-17T14:00:00.000Z' }) : report({ name: 'Other synthetic report' });
@@ -239,7 +248,7 @@ try {
       assert.deepEqual((await h.snap()).state[kind], [remote], 'retry after own accepted write must not overwrite a later remote change');
       await expect(dialog.getByRole('alert')).toContainText('changed');
       await h.p.screenshot({ path: join(out, kind + '-own-uncertain-then-remote-guard.png'), animations: 'disabled' });
-      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(dialog).toHaveCount(0);
+      await cancelEditor(h, dialog, kind);
       if (kind === 'reports') assert.equal((await h.ctx.request.get(base + '/api/assets/' + h.item.assetId)).status(), 200, 'referenced attachment kept');
       return { ownWriteAccepted: true, laterRemotePreserved: true, cancelSafe: true };
     });

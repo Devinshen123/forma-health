@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Camera, Check, Pencil, Plus, RefreshCw, Square, Trash2, Utensils } from "lucide-react";
+import { Camera, Check, Copy, Pencil, Plus, RefreshCw, Square, Trash2, Utensils } from "lucide-react";
 import { analyzeFoodPhoto, ApiError, assetUrl, getCapabilities, request, uploadFile } from "../api";
 import { Modal } from "../components/Modal";
+import { RecordingDatePicker } from '../components/RecordingDatePicker';
+import { RecordDiscardDialog } from '../components/RecordDiscardDialog';
+import { recordingToday } from './recordingDates';
+import { useRecordGuard } from './useRecordGuard';
+import { mealDraftTotals, newMealDraft, recentReusableMeals, reuseMealDraft, type MealDraft } from './mealEditor';
 import { AttachmentLifecycle } from "./attachmentLifecycle";
 import { RecordBatchDraft, RecordDraft } from "./recordDraft";
 import {
-  localDate,
   mealTotals,
   uid,
   type FeatureProps,
@@ -15,24 +19,6 @@ import {
   type Meal,
 } from "../types";
 
-type MealDraft = {
-  id: string;
-  existing?: boolean;
-  date: string;
-  name: string;
-  type: Meal["type"];
-  grams: string;
-  referenceGrams: string;
-  kcal: string;
-  protein: string;
-  carbs: string;
-  fat: string;
-  source: Meal["source"];
-  assetId?: string;
-  aiDraftId?: string;
-  aiItemIndex?: number;
-  createdAt: string;
-};
 type ReviewItem = { index: number; mealId: string; name: string; grams: string; kcal: string; protein: string; carbs: string; fat: string };
 const asReviewItem = (item: FoodPhotoItem, index: number): ReviewItem => ({
   index, mealId: uid(), name: item.name, grams: item.grams === null ? "" : String(item.grams),
@@ -76,21 +62,6 @@ const photoError = (cause: unknown, zh: boolean) => {
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const newDraft = (date: string): MealDraft => ({
-  id: uid(),
-  createdAt: new Date().toISOString(),
-  date,
-  name: "",
-  type: "lunch",
-  grams: "100",
-  referenceGrams: "100",
-  kcal: "",
-  protein: "",
-  carbs: "",
-  fat: "",
-  source: "manual",
-});
-
 function Photo({
   file,
   assetId,
@@ -129,10 +100,16 @@ export default function Nutrition({
   demo,
   accountId,
   onCreate,
+  onUnsavedChange,
 }: FeatureProps & { onCreate?: () => void }) {
   const zh = lang === "zh";
-  const [date, setDate] = useState(localDate);
+  const [date, setDate] = useState(() => recordingToday(state.profile?.timezone));
   const [draft, setDraft] = useState<MealDraft | null>(null);
+  const initialDraft = useRef('');
+  const initialFile = useRef<File | null>(null);
+  const [attempted, setAttempted] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+  const [choosingReuse, setChoosingReuse] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploadedId, setUploadedId] = useState<string | null>(null);
   const [demoPhotos, setDemoPhotos] = useState<Record<string, File>>({});
@@ -167,6 +144,10 @@ export default function Nutrition({
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const focusedDraftId = useRef<string | null>(null);
   const working = busy || analyzing;
+  const dirty = !!draft && (attempted || JSON.stringify(draft) !== initialDraft.current || file !== initialFile.current || !!aiDraft || aiSubmitted);
+  useRecordGuard(dirty, working, onUnsavedChange);
+  const reusableMeals = recentReusableMeals(state.meals);
+  const previewValues = draft ? mealDraftTotals(draft) : null;
   const rememberUpload = (id: string | null) => { uploads.current.stage(id); setUploadedId(id); };
   const refreshCapabilities = async () => {
     const sequence = ++capabilitySequence.current;
@@ -276,15 +257,22 @@ export default function Nutrition({
       if (mounted.current) setBusy(false);
     }
   };
-  const open = (meal?: Meal) => {
-    if (!mounted.current) return;
+  const requestClose = () => {
+    if (!mounted.current || busy) return;
+    if (dirty) setDiscarding(true);
+    else void close();
+  };
+  const open = (meal?: Meal, reuse?: Meal) => {
+    if (!mounted.current || working) return;
     editRecord.current = new RecordDraft(meal);
     invalidateAnalysis();
     setError("");
     setMode("manual");
     rememberUpload(null);
-    setFile(meal ? (demoPhotos[meal.id] ?? null) : null);
-    setDraft(
+    const nextFile = meal ? (demoPhotos[meal.id] ?? null) : null;
+    initialFile.current = nextFile;
+    setFile(nextFile);
+    const next: MealDraft =
       meal
         ? {
             ...meal,
@@ -297,8 +285,12 @@ export default function Nutrition({
             fat: String(meal.fat),
             source: meal.source,
           }
-        : newDraft(date),
-    );
+        : reuse ? reuseMealDraft(reuse, date) : newMealDraft(date);
+    initialDraft.current = JSON.stringify(reuse ? { ...next, name: '' } : next);
+    setAttempted(false);
+    setDiscarding(false);
+    setChoosingReuse(false);
+    setDraft(next);
   };
   const patch = (change: Partial<MealDraft>) =>
     setDraft((current) => (current ? { ...current, ...change } : null));
@@ -423,6 +415,7 @@ export default function Nutrition({
       // Keep this attachment even if save rejects: it may already be in the
       // account's outbox, or the server may have accepted a timed-out request.
       uploads.current.retainForSave(attachment);
+      setAttempted(true);
       editRecord.current.submittedValue(meal);
       await save({
         ...state,
@@ -480,7 +473,7 @@ export default function Nutrition({
       setError(
         photoError(cause, zh),
       );
-      notify("未能删除饮食记录", "Could not delete meal");
+      notify("删除暂未确认，请查看同步状态后重试", "Deletion is not confirmed. Check sync status before retrying.");
     } finally {
       if (mounted.current) setBusy(false);
     }
@@ -560,6 +553,7 @@ export default function Nutrition({
       }
       const reviewedIds = new Set(reviewedMeals.map(meal => meal.id));
       uploads.current.retainForSave(aiDraft.assetId);
+        setAttempted(true);
       aiRecords.current.submittedValues(reviewedMeals);
       await save({ ...state, meals: [...state.meals.filter(meal => !reviewedIds.has(meal.id)), ...reviewedMeals] });
       if (!mounted.current) return;
@@ -576,30 +570,6 @@ export default function Nutrition({
     const value = reviewTotals(item)!;
     return { kcal: sum.kcal + value.kcal, protein: sum.protein + value.protein, carbs: sum.carbs + value.carbs, fat: sum.fat + value.fat };
   }, { kcal: 0, protein: 0, carbs: 0, fat: 0 }) : null;
-  const previewValues =
-    draft &&
-    [
-      draft.grams,
-      draft.referenceGrams,
-      draft.kcal,
-      draft.protein,
-      draft.carbs,
-      draft.fat,
-    ].every((value) => value.trim() && Number.isFinite(Number(value))) &&
-    Number(draft.referenceGrams) > 0
-      ? mealTotals({
-          ...draft,
-          grams: Number(draft.grams),
-          referenceGrams: Number(draft.referenceGrams),
-          kcal: Number(draft.kcal),
-          protein: Number(draft.protein),
-          carbs: Number(draft.carbs),
-          fat: Number(draft.fat),
-          id: draft.id,
-          createdAt: draft.createdAt,
-        })
-      : null;
-
   return (
     <div className="stack">
       <div className="page-heading">
@@ -611,24 +581,17 @@ export default function Nutrition({
               : "Confirm your food and portion. Log what you ate."}
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => open()}>
+        <div className="row-actions"><button className="btn btn-secondary" disabled={!reusableMeals.length || working} onClick={() => setChoosingReuse(true)}>
+          <Copy size={17} />{zh ? '复用最近饮食' : 'Reuse a recent meal'}
+        </button><button className="btn btn-primary" onClick={() => open()}>
           <Plus size={18} />
           {zh ? "记录一餐" : "Log a meal"}
-        </button>
+        </button></div>
       </div>
       <div className="panel">
         <div className="section-title">
           <h2>{zh ? "每日摄入" : "Daily intake"}</h2>
-          <label className="field">
-            <span className="muted">{zh ? "日期" : "Date"}</span>
-            <input
-              className="input"
-              type="date"
-              value={date}
-              onInput={(event) => setDate(event.currentTarget.value)}
-              onChange={(event) => setDate(event.target.value)}
-            />
-          </label>
+          <RecordingDatePicker value={date} onChange={setDate} label={zh ? '日期' : 'Date'} lang={lang} timezone={state.profile?.timezone} />
         </div>
         <div className="form-grid four">
           <div>
@@ -754,13 +717,13 @@ export default function Nutrition({
               ? "营养按标定重量填写，摄入按实际重量计算。"
               : "Enter nutrition for the reference weight. Intake scales to the weight you ate."
           }
-          onClose={close}
+          onClose={requestClose}
           footer={
             <>
               <button
                 className="btn btn-secondary"
                 disabled={busy}
-                onClick={close}
+                onClick={requestClose}
               >
                 {analyzing ? zh ? "停止等待并关闭" : "Stop waiting and close" : zh ? "取消" : "Cancel"}
               </button>
@@ -1127,6 +1090,14 @@ export default function Nutrition({
           ) : null}
         </Modal>
       ) : null}
+      {choosingReuse ? <Modal title={zh ? '复用最近饮食' : 'Reuse a recent meal'} description={zh ? '添加到 ' + date : 'Add to ' + date} onClose={() => setChoosingReuse(false)}>
+        <p className="hint">{zh ? '仅复用手动或标签记录的营养数值。不会复制照片；请核对本次份量，确认后才保存。' : 'Reuse nutrition from a manual or label record. Photos are not copied. Check this portion before saving.'}</p>
+        {reusableMeals.map(meal => <div className="record-row" key={meal.id}>
+          <div className="row-main"><strong>{meal.name}</strong><p className="muted">{meal.date} · {typeLabel(meal.type)} · {meal.grams} g · {sourceLabel(meal.source)}</p></div>
+          <button className="btn btn-secondary" onClick={() => open(undefined, meal)} aria-label={(zh ? '复用 ' : 'Reuse ') + meal.name}>{zh ? '选择' : 'Choose'}</button>
+        </div>)}
+      </Modal> : null}
+      {discarding ? <RecordDiscardDialog lang={lang} onKeep={() => setDiscarding(false)} onDiscard={() => { setDiscarding(false); void close(); }} /> : null}
     </div>
   );
 }

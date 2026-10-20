@@ -6,6 +6,22 @@
 
 # Backend 状态
 
+## 2026-10-19 睡眠与饮食记录体验
+
+- 用户直接要求继续完善睡眠和饮食，并选择“补录、编辑、删除、保存与同步”；随后明确授权本聊天在独立分支负责本轮前后端及共享同步相关改动，以已集成的网站版本为基线。此明确授权覆盖本轮原 backend 的只读前端限制，不延伸到其他工作区。
+- 当前目录 `C:\Users\devin\.codex\worktrees\7f7e\健康网站`；分支 `codex/forma-sleep-nutrition-records-20261019`，基线 `fc7363ef149983e66b6c77cf4d81ea8717da9600`。旧接手 HEAD `bb6f0f4` 留在 `codex/forma-backend-handoff-20261017`；没有改原目录或其他角色 checkout，也没有合并远端 main。
+- 实现：两页共用前一天／后一天／今天的日期导航，“今天”按档案时区；睡眠补录预填前一晚及所选醒来日，时间和主观感受保持空白，编辑既有记录保留原时刻与隐藏精度；饮食可复用最近八种手动／标签记录，分配新 ID、采用所选日期，审核后才保存，不复制照片或 AI 关联；份量预览校验完整值、单位基准和服务器既有上限，已知 0 与缺失分开。
+- 保护：睡眠和饮食表单接入未保存输入／刷新保护，关闭、Escape 或跨页需明确放弃；保存中禁止误关闭或跨页。关闭草稿明确说明不会撤销已提交保存，既有 RecordDraft、附件生命周期和账户绑定 SyncEngine 继续负责旧记录冲突、幂等回执和离线队列。删除响应不确定时提示先核对同步状态。
+- 本轮没有变更 API、types、数据库 schema、后端、独立 rules 或原生 iOS；没有新增依赖。只在自己的忽略路径建立现有依赖及授权训练媒体的只读使用 junction，未安装或改写其源文件。
+- 已实际运行：`node --import tsx --test tests/recording-experience.test.ts tests/editor-lifecycle.test.ts tests/record-draft.test.ts` 25/25；完整 `npm test` 264/264、0 fail/skip；`node node_modules/typescript/bin/tsc --noEmit` 通过；完整 `npm run build` 通过（保留既有训练大分包与动态导入提示）；`git diff --check` 通过。
+- 新的外部浏览器验证 `browser.mts <repo> <output>`：完整 React App＋真实 SyncEngine＋隔离 HTTP/SQLite，11/11 场景通过；桌面 1440×1000、手机视口 390×844，中英，页面异常及非预期 console error/warning 均为 0。覆盖日期补录、编辑/保留/删除、复用份量、Escape/刷新/跨页草稿保护、保存中禁止退出、响应已落库但丢失后的稳定 mutation 重放、过期编辑与删除拒绝、照片保留，以及实际账户 IndexedDB 中的睡眠/饮食两批离线队列、重连和刷新后读回。
+- 既有浏览器回归：`FORMA_QA_MATCH='^sleeps' node --import tsx tests/browser/sleep-report-lifecycle.mts` 8/8；`FORMA_QA_MATCH='meal|mobile-record-editor' node --import tsx tests/browser/record-flows.mts` 5/5。两套脚本已适配明确放弃确认，使用临时数据与随机端口；静态页面记录测试不承担 service worker 离线壳覆盖。
+- 证据根目录：`C:\Users\devin\.codex\visualizations\2026\10\17\01a148dd-3a73-7261-b95c-433fb7d3bbc6\sleep-nutrition-20261019`。有效新场景为 `browser-final/results.json` 与截图；旧场景为 `legacy-sleep/results.json`、`legacy-meals-confirmed/results.json`；Node 结果为 `tests-final.log`。早期夹具存在依赖预构建、设置入口、确认式 checkbox 和随机端口 Origin 适配失败，保留其失败产物，不作为产品通过证据。
+- 阻塞：无。本轮合成服务及自有浏览器均已退出；不占用固定服务端口，不读取真实 data/.env，不调用付费 AI。未验证 Safari／iPhone 真机或真实 AI；没有推送、PR、部署或修改 GitHub 可见性。只作本地提交，待后续明确集成任务。
+- 发出请求／待用户决定：本轮无新增；既有生产部署、供应商与预算决定保持各自独立范围。
+
+---
+
 ## 2026-10-17 CO-03 当前聊天接手
 
 正在做：接手盘点已完成，等待 lead 派发后续任务。本轮只读产品源码；下方 2026-10-14 的测试与功能声明保留为历史，不当作本轮实测。

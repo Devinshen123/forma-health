@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Clock3, Moon, Pencil, Plus, Sun, Trash2 } from "lucide-react";
 import { Modal } from "../components/Modal";
+import { RecordingDatePicker } from '../components/RecordingDatePicker';
+import { RecordDiscardDialog } from '../components/RecordDiscardDialog';
+import { recordingToday } from './recordingDates';
+import { useRecordGuard } from './useRecordGuard';
 import { resolveSleepTime } from "./sleepTime";
 import { createSleepDraft, sleepEntryFromDraft, sleepOverlaps, upsertSleep, type SleepDraft } from "./sleepEditor";
 import { RecordDraft } from "./recordDraft";
 import {
-  localDate,
   sleepHours,
   type FeatureProps,
   type Sleep as SleepEntry,
@@ -33,7 +36,7 @@ const clockHour = (instant: string, timezone: string) => {
   );
 };
 
-export default function Sleep({ state, lang, save, notify }: FeatureProps) {
+export default function Sleep({ state, lang, save, notify, onUnsavedChange }: FeatureProps) {
   const mounted = useRef(false);
   useEffect(() => {
     mounted.current = true;
@@ -42,8 +45,11 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     };
   }, []);
   const zh = lang === "zh";
-  const [date, setDate] = useState(localDate);
+  const [date, setDate] = useState(() => recordingToday(state.profile?.timezone));
   const [draft, setDraft] = useState<SleepDraft | null>(null);
+  const initialDraft = useRef('');
+  const [attempted, setAttempted] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
   const [deleting, setDeleting] = useState<SleepEntry | null>(null);
   const editRecord = useRef<RecordDraft<SleepEntry> | null>(null);
   const deleteRecord = useRef<RecordDraft<SleepEntry> | null>(null);
@@ -52,6 +58,8 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
   }, [state.sleeps, draft?.id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const dirty = !!draft && (attempted || JSON.stringify(draft) !== initialDraft.current);
+  useRecordGuard(dirty, busy, onUnsavedChange);
   const records = state.sleeps
     .filter((sleep) => sleep.date === date)
     .sort((a, b) => b.start.localeCompare(a.start));
@@ -81,13 +89,22 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     if (!mounted.current || busy) return;
     editRecord.current = new RecordDraft(sleep);
     setError("");
-    setDraft(createSleepDraft(browserTimezone, sleep));
+    const next = createSleepDraft(browserTimezone, sleep, date);
+    initialDraft.current = JSON.stringify(next);
+    setAttempted(false);
+    setDiscarding(false);
+    setDraft(next);
   };
   const close = () => {
     if (!busy) {
       setDraft(null);
       setError("");
     }
+  };
+  const requestClose = () => {
+    if (busy) return;
+    if (dirty) setDiscarding(true);
+    else close();
   };
   const patch = (change: Partial<SleepDraft>) =>
     setDraft((current) => (current ? { ...current, ...change } : null));
@@ -193,6 +210,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
             ? endResolution.instant
             : end.toISOString(),
       );
+      setAttempted(true);
       editRecord.current.submittedValue(sleep);
       await save({
         ...state,
@@ -237,14 +255,14 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
     } catch (cause) {
       if (!mounted.current) return;
       setError(
-        (zh ? "删除失败：" : "Could not delete: ") +
+        (zh ? "删除暂未确认：" : "Deletion not confirmed: ") +
           (cause instanceof Error
             ? cause.message
             : zh
               ? "请重试。"
               : "Please try again."),
       );
-      notify("未能删除睡眠记录", "Could not delete sleep");
+      notify("删除暂未确认，请查看同步状态后重试", "Deletion is not confirmed. Check sync status before retrying.");
     } finally {
       if (mounted.current) setBusy(false);
     }
@@ -269,16 +287,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
       <div className="panel">
         <div className="section-title">
           <h2>{zh ? "醒来这一天" : "Wake-up day"}</h2>
-          <label className="field">
-            <span className="muted">{zh ? "醒来日期" : "Wake-up date"}</span>
-            <input
-              className="input"
-              type="date"
-              value={date}
-              onInput={(event) => setDate(event.currentTarget.value)}
-              onChange={(event) => setDate(event.target.value)}
-            />
-          </label>
+          <RecordingDatePicker value={date} onChange={setDate} label={zh ? '醒来日期' : 'Wake-up date'} lang={lang} timezone={state.profile?.timezone} />
         </div>
         <div className="form-grid three">
           <div>
@@ -459,13 +468,13 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
               ? "跨午夜时，醒来日期选择次日。"
               : "For overnight sleep, choose the next date for wake-up."
           }
-          onClose={close}
+          onClose={requestClose}
           footer={
             <>
               <button
                 className="btn btn-secondary"
                 disabled={busy}
-                onClick={close}
+                onClick={requestClose}
               >
                 {zh ? "取消" : "Cancel"}
               </button>
@@ -493,33 +502,18 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
               className="stack"
             >
               <div className="form-grid">
-                <label className="field">
-                  {zh ? "开始日期与时间" : "Start date and time"}
-                  <input
-                    className="input"
-                    type="datetime-local"
-                    required
-                    value={draft.start}
-                    onInput={(event) =>
-                      patch({ start: event.currentTarget.value })
-                    }
-                    onChange={(event) => patch({ start: event.target.value })}
-                  />
-                </label>
-                <label className="field">
-                  {zh ? "醒来日期与时间" : "Wake-up date and time"}
-                  <input
-                    className="input"
-                    type="datetime-local"
-                    required
-                    value={draft.end}
-                    onInput={(event) =>
-                      patch({ end: event.currentTarget.value })
-                    }
-                    onChange={(event) => patch({ end: event.target.value })}
-                  />
-                </label>
+                {(['start', 'end'] as const).map(boundary => <div className="stack" key={boundary}>
+                  <label className="field">
+                    {boundary === 'start' ? zh ? '开始日期' : 'Start date' : zh ? '醒来日期' : 'Wake-up date'}
+                    <input className="input" type="date" required value={draft[boundary].split('T')[0]} onChange={event => patch({ [boundary]: event.target.value + 'T' + (draft[boundary].split('T')[1] ?? '') })} />
+                  </label>
+                  <label className="field">
+                    {boundary === 'start' ? zh ? '开始时间' : 'Start time' : zh ? '醒来时间' : 'Wake-up time'}
+                    <input className="input" type="time" required value={draft[boundary].split('T')[1] ?? ''} onChange={event => patch({ [boundary]: (draft[boundary].split('T')[0] ?? '') + 'T' + event.target.value })} />
+                  </label>
+                </div>)}
               </div>
+              {!draft.existing ? <p className="hint">{zh ? '已按所选醒来日期预填前一晚和当天。请填写实际时间；午睡或其他时段可修改开始日期。' : 'Dates start with the previous evening and the selected wake-up day. Enter the actual times; change the start date for a nap or other rest.'}</p> : null}
               <p className="hint">
                 {zh
                   ? "时间按本机时区输入："
@@ -650,6 +644,7 @@ export default function Sleep({ state, lang, save, notify }: FeatureProps) {
           ) : null}
         </Modal>
       ) : null}
+      {discarding ? <RecordDiscardDialog lang={lang} onKeep={() => setDiscarding(false)} onDiscard={() => { setDiscarding(false); close(); }} /> : null}
     </div>
   );
 }
