@@ -17,12 +17,14 @@ import {
   type Page,
 } from "../types";
 import { assetUrl } from "../api";
+import { CompanionCard } from "./Companion";
 export default function Dashboard({
   state,
   lang,
   save,
   notify,
   demo,
+  accountId,
   navigate,
   onCreate,
 }: { navigate: (p: Page) => void; onCreate: () => void } & FeatureProps) {
@@ -335,6 +337,7 @@ export default function Dashboard({
           </section>
         </div>
         <aside className="dashboard-rail">
+          <CompanionCard state={state} lang={lang} save={save} notify={notify} demo={demo} accountId={accountId} navigate={navigate} />
           <section className="panel week-panel">
             <div className="section-heading">
               <h2>{zh ? "本周节奏" : "Weekly rhythm"}</h2>
