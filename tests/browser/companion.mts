@@ -53,6 +53,11 @@ try {
   const fresh = await register('companion-fresh@example.test', 'Synthetic fresh companion');
   const grown = await register('companion-qa@example.test', 'Synthetic grown companion');
   const friend = await register('companion-friend@example.test', 'Synthetic friend companion');
+  const ended = await register('companion-ended@example.test', 'Synthetic ended challenge');
+  now = present - 7 * 86400000;
+  const oldChallenge = (await request<CompanionSnapshot>('/api/companion/challenges', ended, { action: 'create' })).data.challenge;
+  assert.ok(oldChallenge);
+  await request('/api/companion/rest', ended, {});
   for (let offset = 5; offset >= 0; offset--) {
     now = present - offset * 86400000;
     const date = localDay(now), mealId = randomUUID();
@@ -64,17 +69,23 @@ try {
   now = present;
   const grownSnapshot = (await request<CompanionSnapshot>('/api/companion', grown)).data;
   const freshSnapshot = (await request<CompanionSnapshot>('/api/companion', fresh)).data;
+  const endedSnapshot = (await request<CompanionSnapshot>('/api/companion', ended)).data;
   assert.equal(grownSnapshot.xp, 180); assert.equal(grownSnapshot.activeDays, 6); assert.equal(grownSnapshot.chests.length, 2);
   assert.equal(freshSnapshot.xp, 0);
-  const accountData = [fresh, grown, friend].map(({ user, email }) => ({ id: user.id, email, password }));
+  assert.ok(endedSnapshot.challenge); assert.equal(endedSnapshot.challenge.id, oldChallenge.id);
+  const endedAt = Date.parse(endedSnapshot.challenge.endsAt);
+  assert.ok(endedAt <= Date.now()); assert.ok(Date.now() - endedAt < 48 * 3600000);
+  assert.equal(endedAt, Date.parse(new Date(present).toISOString().slice(0, 10) + 'T00:00:00Z'));
+  assert.equal(endedSnapshot.challenge.participants[0].self, true); assert.equal(endedSnapshot.challenge.participants[0].days, 1);
+  const accountData = [fresh, grown, friend, ended].map(({ user, email }) => ({ id: user.id, email, password }));
   const clock = { serverUTC: new Date(present).toISOString(), hostLocal: new Date(present).toString(), profileTimezone: timezone, profileDay: localDay(present), rewardDayUTC: freshSnapshot.day };
-  await writeFile(join(output, 'synthetic-accounts.json'), JSON.stringify({ base, clock, accounts: accountData, expected: { fresh: { xp: 0, activeDays: 0 }, grown: { xp: 180, level: 2, activeDays: 6, unopenedChests: 2 } } }, null, 2));
+  await writeFile(join(output, 'synthetic-accounts.json'), JSON.stringify({ base, clock, accounts: accountData, expected: { fresh: { xp: 0, activeDays: 0 }, grown: { xp: 180, level: 2, activeDays: 6, unopenedChests: 2 }, ended: { xp: 10, activeDays: 1, challengeEndsAt: endedSnapshot.challenge.endsAt, participantDays: 1 } } }, null, 2));
   const sync = (await request<SyncSnapshot>('/api/sync', grown)).data;
   assert.equal(sync.state.meals.length, 6); assert.equal(sync.state.sleeps.length, 6);
   console.log('Synthetic companion fixture ready at ' + base);
   for (const account of accountData) console.log('Synthetic login: ' + account.email + ' / ' + account.password);
   console.log('Fixture clock: ' + JSON.stringify(clock) + '; evidence: ' + output);
-  console.log('CUA checks: demo has no private requests; fresh 0; real meal/rest/sleep rewards once; grown chest/equipment; invite/join/leave; account switch; bilingual; keyboard; 390px; reduced motion; offline retry. Mask health img/video in any saved screenshots.');
+  console.log('CUA checks: demo has no private requests; fresh 0; real meal/rest/sleep rewards once; grown chest/equipment; invite/join/leave; ended results hide invite and allow a new challenge; account switch; bilingual; keyboard; 390px; reduced motion; offline retry. Mask health img/video in any saved screenshots.');
 } catch (error) {
   await close();
   throw error;

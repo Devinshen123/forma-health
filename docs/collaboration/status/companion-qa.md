@@ -40,3 +40,9 @@
 - 新增挑战结束精确时刻、结束后奖励不再改变比赛结果、结果窗口中可新建、旧成员清除结果不撤销创建者的新比赛、48h前1ms可读与 exact48h隐藏。
 - 实际命令 `node --import tsx --test --test-concurrency=1 tests/companion.test.ts`：exit0，18/18，0 skipped。`npx tsc --noEmit` exit0。
 - 容器提交 `82cfc55` 的真实结果保留，使用的是当时镜像 c152a82db6aa…。lead 会在这些产品改动重建新镜像后复跑容器窄验收；本 QA 未把旧镜像结果当作新镜像已验证。
+
+## 结束挑战 UI 夹具补充
+
+- lead 授权增加第四个 `companion-ended@example.test` 合成账户，同原合成密码；在 present-7UTC 日创建并休息一次，还原 present 后应得到当日 UTC 午夜结束、48h结果窗中的本人1参与天。
+- `--serve-only` 启动时断言结果已结束、未过48h、参与1天，并写入外部凭据/预期值、输出清单。QA 未启动/重启5173，实际UI由 lead 受控启动验收。
+- 此次 `npx tsc --noEmit` exit0、`git diff --check` exit0，只静态检查夹具，不重跑已通过18项接口。
