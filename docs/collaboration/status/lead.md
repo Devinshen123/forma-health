@@ -1,5 +1,13 @@
 # Codex lead 状态
 
+2026-10-20 AR-01 done。用户指定 improve-codebase-architecture，实际找到并读取 `D:/AI-tools/skills/_shared/improve-codebase-architecture/SKILL.md`、HTML-REPORT 与 codebase-design。回看25次提交，读取当前AGENTS/TASKS/发给lead的请求及相关ADR；未找到GLOSSARY.md或docs/adr，采用types及实际decisions。按skill启用一名只读子代理复核账户同步与训练版本，无写入、无派生或其他聊天消息。四项候选：计划调整、账户工作区、日/周汇总、训练计划版本；报告含前后图、精确证据、deletion test、seam/adapter/locality/leverage与测试缺口，首选计划调整。不把文件长度、已有同步复杂度或分包提示直接当作架构缺陷，保留FoodPhoto和缓存现有depth。
+
+验证：`npm test`实际155/155、0失败；`npm run build`实际exit0，保留训练分包>500kB提示。临时脚本 `node --import tsx C:/Users/devin/AppData/Local/Temp/forma-architecture-probe-20261020.mjs` exit0：固定2026-10-17T06:30Z、浏览器LA/档案Shanghai，首页算法10-16、趋势算法10-17（未挂载浏览器）；随机端口+独立临时账户，以最新revision=3接受旧base建议，PUT/state与POST/sync实际均400，revision仍3、建议未接受、无追加版本。临时数据库在确认目标位于OS temp且有专用前缀后清理；不使用固定开发端口或现有账户。上述与20261017两个既有请求一致，本轮未修复，不更改契约或标记请求解决。
+
+产物：`C:/Users/devin/AppData/Local/Temp/architecture-review-20261020-210829.html`（20,015 bytes），已调用Start-Process打开；Codex文件面板返回queued，不将其称为渲染截图验收。报告内容和基础CSS内嵌，Tailwind/Mermaid按skill使用CDN。只修改本轮TASKS/lead状态；产品源码、依赖、ADR未改。既有public/demo-meal.png删除与未跟踪文件保持原样，不纳入提交。报告生成完成后按skill等待用户选择深入方向；本轮分析请求已完成，不据此自动实施重构。
+
+待用户决定：本轮无新增市场、预算或供应商决定；历史待决项保持原状态。
+
 2026-10-17 WT-01 done。用户先选择当前聊天子代理，随后明确改为“项目下三个独立聊天，各用 Git worktree 隔离”。已经在运动健康网站项目实际创建Forma前端开发、Forma后端开发、Forma代码审查，各自worktree为bdd7/7f7e/9260；三个聊天均返回就绪无阻塞，已完成首轮并等待具体任务。准确threadId、路径和提交见ADR-project-worktrees-20261017。工具实际采用detached HEAD，不称其为命名分支。总控也已调用项目归属工具加入该项目。原三个子代理已经结束，未建立自动化。
 
 验证：CO轮qa实际串行npm test155/155（exit0）及npm run build（exit0），有限范围报告见docs/reviews/2026-10-17-three-agent-baseline.md；三个新聊天只提交自己的接手状态，没有重复运行或宣称其自身实测。lead核实git worktree list的三个独立目录与聊天projectId；本轮产品源码未改，其他隔离修复不合并。根目录原AGENTS/skills/handoff等未跟踪文件保持原状，仅向新worktree同步项目规则和当前任务板。静态时区差异与语义旧base状态码差异已记录请求，尚未修复/运行复现；没有新增用户待决。
