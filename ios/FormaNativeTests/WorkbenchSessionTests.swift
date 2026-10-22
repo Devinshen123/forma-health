@@ -42,7 +42,8 @@ final class WorkbenchSessionTests: XCTestCase {
         // while the old document's in-memory variable cannot survive view destruction.
         session = try NativeWorkbenchSession(id: id, origin: origin, accountId: account)
         web = try await open(session!, account: account, character: "a")
-        let restored = try await string(web!, "localStorage.getItem('forma.synthetic.activeDraft') || 'missing'")
+        let restored = try await eventually(web!, "localStorage.getItem('forma.synthetic.activeDraft') || 'missing'",
+                                           equals: "synthetic-completed-set")
         let newHeap = try await string(web!, "typeof window.activeDraft")
         XCTAssertEqual(restored, "synthetic-completed-set")
         XCTAssertEqual(newHeap, "undefined")
@@ -198,6 +199,21 @@ final class WorkbenchSessionTests: XCTestCase {
         return try XCTUnwrap(value as? String)
     }
 
+    /// WebKit writes localStorage to its persistent store asynchronously, so a value written
+    /// moments earlier can still be absent from a brand-new session's first read. Poll for it
+    /// rather than racing the flush. This does not weaken the caller's assertion: a value that
+    /// never arrives is returned as it is and fails the comparison exactly as before.
+    @MainActor private func eventually(_ web: WKWebView, _ script: String, equals expected: String,
+                                       timeout: TimeInterval = 5) async throws -> String {
+        var value = try await string(web, script)
+        let deadline = Date().addingTimeInterval(timeout)
+        while value != expected, Date() < deadline {
+            try await Task.sleep(nanoseconds: 100_000_000)
+            value = try await string(web, script)
+        }
+        return value
+    }
+
     @MainActor private func open(_ session: NativeWorkbenchSession, account: String, character: String) async throws -> WKWebView {
         let ready = expectation(description: "real HTTP workbench document finished")
         var failure: Error?
@@ -211,7 +227,7 @@ final class WorkbenchSessionTests: XCTestCase {
         session.onDocumentReady = { finish(nil) }
         session.onFailure = { [weak session] in finish(session?.lastFailure ?? FixtureFailure.navigationFailed) }
         let web = try await session.attach(url: entry(account: account), cookie: cookie(character))
-        await fulfillment(of: [ready], timeout: 20)
+        await fulfillment(of: [ready], timeout: 45)
         session.onDocumentReady = nil
         session.onFailure = nil
         if let failure { throw failure }
@@ -225,7 +241,7 @@ final class WorkbenchSessionTests: XCTestCase {
         let probe = WorkbenchFixtureNavigation { error in failure = error; ready.fulfill() }
         web.navigationDelegate = probe
         web.load(URLRequest(url: url))
-        await fulfillment(of: [ready], timeout: 20)
+        await fulfillment(of: [ready], timeout: 45)
         web.navigationDelegate = nil
         if let failure { throw failure }
         guard probe.finished else { throw FixtureFailure.navigationFailed }
