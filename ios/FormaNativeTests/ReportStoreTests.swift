@@ -76,8 +76,11 @@ final class ReportStoreTests: XCTestCase {
 
     @MainActor func testAMalformedAttachmentIdIsNeverRequested() async {
         let store = makeStore(demo: false)
-        XCTAssertNil(await store.attachmentData("not-an-id"))
-        XCTAssertNil(await store.attachmentData(""))
+        // XCTAssertNil takes an autoclosure, so the await has to happen before the assertion.
+        let malformed = await store.attachmentData("not-an-id")
+        XCTAssertNil(malformed)
+        let empty = await store.attachmentData("")
+        XCTAssertNil(empty)
     }
 
     // MARK: - Refusals read as something a person can act on
