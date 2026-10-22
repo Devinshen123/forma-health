@@ -1,4 +1,56 @@
+# 2026-10-21｜GITHUB-MAC-01：GitHub候选与Mac接手
+
+执行者01 lead；checkout C:/Users/devin/健康网站；配置前main/e4c6a1b。用户明确要求将已做工作同步GitHub，供另一台Mac操作。本轮将configuration-files.json精确136项配置及历史依赖作为候选，保留原public/demo-meal.png删除、其他员工未交付内容及外置Skills。没有启动其他员工、增员、业务重构或部署。远端候选分支codex/mac-handoff-20261021；远端main保持原状态，候选待06独立审查。
+
+本轮实测：Git精确暂存成功exit0（旧index.lock权限阻塞已解除）；node scripts/verify-forma-team.cjs与--portable各15项通过exit0；node scripts/forma-skills.cjs verify为12技能/110资源通过exit0，保留缺trigger脚本警告；npm.cmd test 155/155 exit0；npm.cmd run build exit0，保留Training分包提示；两项变更脚本node --check和git diff --check通过。独立临时目录配置副本portable检查15项通过；本机路径覆盖读取成功exit0，缺技能读取明确exit1；POSIX路径模拟通过。这些都由Windows lead执行，不是Mac实机验证或06审查。
+
+GitHub API和gh repo view一致确认仓库当前PUBLIC；本轮不修改可见性，旧“私有仓库”表述作为历史。候选文件按路径和常见凭据格式检查，未发现匹配；不包含.env、数据库、附件、node_modules、dist、第三方未核对Skills正文。Mac接手/运行/单writer步骤在WORKSPACES；本机技能路径映射在Git忽略的.forma-local/skills-paths.json，不全局替换Windows记忆。
+
+收到02请求20261021-1835：其转述用户选择07 iOS/08 Android原生岗位，并报告另装5项技能。本次上传不处理该增员/技能登记请求，也不把本聊天此前React Native建议当正式架构决定；原请求与草案仍保留在Windows未提交内容中。后续先核对具名来源再排期。
+
+当前阶段：候选验证完成，待本轮精确提交与推送后追加远端SHA回执；Windows lead交付后等待，Mac接手先确认同身份只有一个写入者。尚未在Mac运行，不宣称健康数据或本机工具已同步。
+
+暂存快照导出复验：发现Git换行转换影响YAML入口解析与报告原始字节；已使入口解析兼容CRLF/LF，并通过.gitattributes保留vendor资源和归档报告原始字节，精确renormalize这些路径后，实际暂存导出portable15/15及vendor读取exit0。git diff --cached --check对活动文件通过；历史archive及原报告保留原始Markdown硬换行/混合行尾，因此仍有既有空白提示，不改写历史快照。
+
+---
+
+# 2026-10-21｜CHAT-PROMPTS-01：准备新对话
+
+用户要求每位员工独立Prompt。已生成agent-prompts/launch/00至06七份完整Prompt，并更新START-PROMPTS标题/平台索引。首轮只读身份确认，可以读取主目录未提交配置，独立checkout缺失仅阻塞工程写入；本轮不写其他员工记忆、不启动会话。01当前会话继续作为lead，避免同身份双writer。
+
+实际验证：7份Prompt的编号/ID、任务、MD/记忆/状态路径和只读边界检查通过；无业务源码变化，本轮不重复构建或产品测试。Git元数据仍为只读，不重复失败暂存，不声称提交/同步。对话创建数0、员工启动数0；用户可复制各Prompt建立相应Dot/Codex/Claude Code对话。CHAT-PROMPTS-01处于review。
+
+下一步：用户逐一打开对话并粘贴Prompt，员工报告实际已读/未知/阻塞；待可写Git与旧writer审计后才安排工程任务。
+
+---
+
+# 01｜Codex项目主管 · 本轮配置交付
+
+2026-10-21；执行者lead；TEAM7-CONFIG-01 blocked。主仓库继续C:/Users/devin/健康网站；main/e4c6a1b（未提交配置）。七人MD/入口/独立记忆/状态、共享FORMA、唯一TASKS、Skills矩阵与显式读取脚本、七份启动Prompt、历史归档和报告副本已生成。
+
+实际执行：node scripts/verify-forma-team.cjs exit0（15项）；node scripts/forma-skills.cjs verify exit0（12技能/110已登记资源哈希一致，有agent-development缺test-agent-trigger.sh警告）；显式team-composition人数规划读取小场景通过；npm.cmd run build exit0；git diff --check exit0（换行提示）。server/src未改，未跑npm test或浏览器验收；历史155/155不算本轮。
+
+阻塞：git add -- docs/collaboration/decisions/ADR-team-seven-c-drive-20261021.md exit1，.git/index.lock Permission denied；未提交/推送/同步。其他worktree git status权限拒绝，源码交接冻结；Claude2.1.293该cwd会话查询[]，不能据此证明全机无writer。技能原生触发与Dot连接未验证，上游commit/许可部分未知。
+
+下一步：审查configuration-files.json精确清单，具备Git权限后精确提交经独立审查的配置；核对旧writer后逐人接手。不自动启动会话、开发架构候选或派工。完整结果见CONFIGURATION-RESULTS.md。待用户决定：无新增预算/供应商/法律事项。
+
+---
+
+## 保留的历史配置与交接
+
+# 01｜Codex项目主管 · 当前配置状态
+
+2026-10-21；01按TEAM7-CONFIG-01一次性添加身份元数据。员工尚未报告ONBOARD-01接手；下方原状态保留历史，不把旧任务视为仍派发。后续仅本人维护，当前任务以TASKS为准。
+
+---
+
 # Codex lead 状态
+
+2026-10-20 TEAM-EXP-01 blocked（配置与校验完成，Git提交受限）。用户明确要求增加员工并给任务；已读取team-composition-patterns v1.0.2及当前AGENTS/TASKS/本人记忆、启动说明和相关请求。在当前main（e4c6a1b）登记11角色员工池，新增dot/product/ux/research/security/release；保留既有源码owner、会话/worktree和未提交内容。新增六角色仅获专属deliverables/status/memory权限，已写启动说明和一次性记忆种子；给原角色与新角色共10项首次任务，含路径、验收和依赖。任务均未开始，UX/Release依赖阻塞；未启动代理、通知外部会话、跨目录同步、部署或新增依赖。
+
+本轮实测：执行者lead，2026-10-20，根main/e4c6a1b+未提交配置。`node C:/Users/devin/AppData/Local/Temp/forma-team-expansion-validate.cjs` exit0：11角色、10项未开始任务、50个相对链接均通过，UX/Release依赖状态符合任务板；`npm.cmd run build` exit0（tsc/Vite/offline shell通过；现有训练分包>500kB提示保留）；`git diff --check`通过（仅LF/CRLF提示）。文档修改未触及server/，未重跑npm test，不引用历史测试为本轮结果。
+
+提交阻塞：精确尝试 `git add -- docs/collaboration/decisions/ADR-team-expansion-20261020.md` 返回exit1，无法创建 `.git/index.lock`（Permission denied）。本轮未提交/未推送/未同步，保留文件和既有工作；须由具备仓库写权限的会话审查精确文件后提交，不改权限、不绕过限制。旧MEM-01保持原doing，不因扩展而标记完成。待用户决定：无新增预算、供应商或市场决定。
 
 2026-10-20 AR-01 done。用户指定 improve-codebase-architecture，实际找到并读取 `D:/AI-tools/skills/_shared/improve-codebase-architecture/SKILL.md`、HTML-REPORT 与 codebase-design。回看25次提交，读取当前AGENTS/TASKS/发给lead的请求及相关ADR；未找到GLOSSARY.md或docs/adr，采用types及实际decisions。按skill启用一名只读子代理复核账户同步与训练版本，无写入、无派生或其他聊天消息。四项候选：计划调整、账户工作区、日/周汇总、训练计划版本；报告含前后图、精确证据、deletion test、seam/adapter/locality/leverage与测试缺口，首选计划调整。不把文件长度、已有同步复杂度或分包提示直接当作架构缺陷，保留FoodPhoto和缓存现有depth。
 

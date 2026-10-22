@@ -1,0 +1,28 @@
+ M docs/collaboration/TASKS.md
+ M docs/collaboration/status/lead.md
+ D public/demo-meal.png
+?? .agents/
+?? .claude/
+?? AGENTS.md
+?? docs/collaboration/agent-prompts/01-lead.md
+?? docs/collaboration/agent-prompts/02-backend.md
+?? docs/collaboration/agent-prompts/03-rules.md
+?? docs/collaboration/agent-prompts/04-shell.md
+?? docs/collaboration/agent-prompts/05-features.md
+?? docs/collaboration/agent-prompts/06-qa.md
+?? docs/collaboration/agent-prompts/README.md
+?? docs/collaboration/agent-prompts/TEAM-ROSTER.md
+?? docs/collaboration/agent-prompts/current/
+?? docs/collaboration/decisions/ADR-agent-memory-20261020.md
+?? docs/collaboration/decisions/ADR-team-expansion-20261020.md
+?? docs/collaboration/memory/
+?? docs/collaboration/status/dot.md
+?? docs/collaboration/status/product.md
+?? docs/collaboration/status/release.md
+?? docs/collaboration/status/research.md
+?? docs/collaboration/status/security.md
+?? docs/collaboration/status/ux.md
+?? docs/handoff/
+?? docs/predevelopment/
+?? scripts/configure-forma-team.cjs
+?? skills-lock.json

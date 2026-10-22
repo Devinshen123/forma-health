@@ -1,0 +1,812 @@
+{
+  "date": "2026-10-21",
+  "method": "single shared body per registered skill; no user-level links changed; content snapshots only",
+  "skills": [
+    {
+      "name": "agent-development",
+      "directory": "C:/Users/devin/Desktop/Skills/agent-development",
+      "source": "本机Desktop Skills；声明来源anthropics/claude-code/plugins/plugin-dev/skills/agent-development，但正文与当前上游blob不同",
+      "version": "0.1.0（本机变体）",
+      "license": "未附独立许可；当前anthropics/claude-code根LICENSE.md为Anthropic商业条款，不能假定MIT；仅引用现有本机副本",
+      "knownMissing": [
+        "scripts/test-agent-trigger.sh"
+      ],
+      "when": "编写/审查员工触发场景、第二人称职责、流程/输出/质量和Claude适配；本机变体上游差异保留。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "examples/agent-creation-prompt.md",
+          "bytes": 9838,
+          "sha256": "a299652c1bba7b43736cc72a14ada464baccc80c6431e5fa3a55bd13129ac54c",
+          "gitBlob": "24da66aebebc8a1c202209cb2661a13688eba527"
+        },
+        {
+          "path": "examples/complete-agent-examples.md",
+          "bytes": 13916,
+          "sha256": "8321e9933dd0033c46bf5ae831e7cf7dc79783c80fb9b5ea1b66c74f4ac2b337",
+          "gitBlob": "439615dbb649e86571949a2145473ac2ffc71116"
+        },
+        {
+          "path": "references/agent-creation-system-prompt.md",
+          "bytes": 9749,
+          "sha256": "c56e7fafb84bcbeff69ecd61b1f68ca380e8ba4177dc57c6ceeecd3aa8a83d7b",
+          "gitBlob": "756d29988682cac092a6a4f4ee0e2b43e7315bdf"
+        },
+        {
+          "path": "references/system-prompt-design.md",
+          "bytes": 9998,
+          "sha256": "eaac53eaaf8326ac04428987280fb5041920b7571477ad41742517c5aac683fc",
+          "gitBlob": "6efa85468905d83f156d3d89d7ae5804dcb7eff4"
+        },
+        {
+          "path": "references/triggering-examples.md",
+          "bytes": 8868,
+          "sha256": "b8ff47692b007b19b36df81ebd0562476202a21d67db80eeca9c3ee05528cb10",
+          "gitBlob": "240442e0a881147edc6bc142874244dc26f00392"
+        },
+        {
+          "path": "scripts/validate-agent.sh",
+          "bytes": 5796,
+          "sha256": "d22e1292f997169fb745793dc50ebe3e9c6631603e1d77f04c2e79bb1fc63cba",
+          "gitBlob": "ca4dfd4b92d9e40bd7218803b8e0930ff5ee17d5"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 11168,
+          "sha256": "6a2826571320828cc6f8f21ccd8e6eefd2bced62000c8c5e43a712c12e2d83a1",
+          "gitBlob": "f4ea78d89bcee2febcce2285d9d41b3d17df3656"
+        }
+      ]
+    },
+    {
+      "name": "team-composition-patterns",
+      "directory": "docs/collaboration/skills/vendor/team-composition-patterns",
+      "source": "wshobson/agents/plugins/agent-teams/skills/team-composition-patterns；三文件Git blob与上游目录核对一致",
+      "version": "1.0.2",
+      "license": "MIT（已核对上游并附LICENSE）",
+      "knownMissing": [],
+      "when": "拆分有依赖的跨岗位任务、选按需人数与边界；不是安装Agent Teams运行时，不启动全员。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "LICENSE",
+          "bytes": 1068,
+          "sha256": "8ceaab71b527eb5db43810b74afc618ee36556197d2d51c45fd00aac483988c1",
+          "gitBlob": "bb4f2d1c335cf1ac9f77bb720d3e8470779f32d8"
+        },
+        {
+          "path": "references/agent-type-selection.md",
+          "bytes": 3546,
+          "sha256": "55a19d72af4b4dd4d94c72ead428f9b5dedebbd67944e85c49e1cdc5824d7dbb",
+          "gitBlob": "05ca6e0fed956757c60b6fc59c67df3d0e5710bd"
+        },
+        {
+          "path": "references/preset-teams.md",
+          "bytes": 9116,
+          "sha256": "40c072b475b56a33da10cb0fbf14b1296dfeb454828d84c1655257f1fda8edfc",
+          "gitBlob": "39cbe0053f4eb8fbfd8c289c4e790e1f2ccd4a30"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 8168,
+          "sha256": "e158dd0e38d875f7efd8d22fc00f800293585c9a44cce7c0715715f87feb164a",
+          "gitBlob": "fc9ae1c523630d9ac00c692d17c0a101c0523d85"
+        }
+      ]
+    },
+    {
+      "name": "find-skills",
+      "directory": "D:/AI-tools/skills/_shared/find-skills",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "存在明确能力缺口时查来源/版本/许可，不凭下载数当质量结论；本轮不额外搜索或安装无关技能。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "SKILL.md",
+          "bytes": 5472,
+          "sha256": "c00eeea0e13e74fe4a9d84ba0a8542205a1b736d65f13134fe1a6647eb14976f",
+          "gitBlob": "a41bdd074bb587afd861332cf2f473f3154de4d7"
+        }
+      ]
+    },
+    {
+      "name": "handoff",
+      "directory": "D:/AI-tools/skills/_shared/handoff",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "阶段结束或换会话时形成有来源、脱敏的交接；项目持久HANDOFF优先于技能的OS临时目录默认。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 141,
+          "sha256": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28",
+          "gitBlob": "6e1d8da121beceddc2f9ec7fa8714c1d914dd11a"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 940,
+          "sha256": "4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3",
+          "gitBlob": "a224edc643a20ddb989f9bca1547440169159810"
+        }
+      ]
+    },
+    {
+      "name": "improve-codebase-architecture",
+      "directory": "D:/AI-tools/skills/_shared/improve-codebase-architecture",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "以后正式架构探索任务才执行完整流程；本次只读取要求并转录已存在四候选，不重复启动子代理。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 166,
+          "sha256": "c8cb20f68ebf0edb4e497bc11ae5fcaa196004e661cd189015b04f4109ced7f1",
+          "gitBlob": "706fdca096da5937fe57875a9154017d50668c42"
+        },
+        {
+          "path": "HTML-REPORT.md",
+          "bytes": 6641,
+          "sha256": "581e8bb5a521e46bbda8ca7e19b15948bed882187108092ebb90c62513b77528",
+          "gitBlob": "e39e8255b8797cf8257d014fb6658fb533f3a399"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 6000,
+          "sha256": "552240a5ab5cec6b67c15dd1ad6e9f6962b1bca6ce870059a8c2713760c20392",
+          "gitBlob": "44cc7d3136c44534d68ac523fa6cd37e759d2846"
+        }
+      ]
+    },
+    {
+      "name": "codebase-design",
+      "directory": "D:/AI-tools/skills/_shared/codebase-design",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "以后定义模块外部接口、隐藏调用顺序/不变量、deletion test；本次不设计或实施新接口。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 102,
+          "sha256": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f",
+          "gitBlob": "3180715edb37f6e96bec42f92f00169faa8886ef"
+        },
+        {
+          "path": "DEEPENING.md",
+          "bytes": 2553,
+          "sha256": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+          "gitBlob": "cd94075cfd754d147555c5d747a16431ed4c7dd8"
+        },
+        {
+          "path": "DESIGN-IT-TWICE.md",
+          "bytes": 2665,
+          "sha256": "52b52e75655a27aea59c6966b410bac82448968ad46ef1ebb9f07c274e3ae010",
+          "gitBlob": "d0990138c35c800bd821289a73115e52680c1620"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 6446,
+          "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+          "gitBlob": "3f63c8146dd2604b419c929e9876b90c30d410e9"
+        }
+      ]
+    },
+    {
+      "name": "domain-modeling",
+      "directory": "D:/AI-tools/skills/_shared/domain-modeling",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "产品流程和术语有歧义时用场景定义；只有真正改概念才维护词汇，不把技术状态写成产品事实。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "ADR-FORMAT.md",
+          "bytes": 2733,
+          "sha256": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+          "gitBlob": "d7e61f30a9fd8ca70d9ee68f019c2a9ebf2d13f7"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 101,
+          "sha256": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b",
+          "gitBlob": "7f1522d2f11506ee205275ab7c282aa52366ecf6"
+        },
+        {
+          "path": "GLOSSARY-FORMAT.md",
+          "bytes": 2300,
+          "sha256": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801",
+          "gitBlob": "9c0b4c7a2e8507c23cbb5e0baa66d81699321cc6"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 3346,
+          "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+          "gitBlob": "a4438c6879c517d1a08e2b5fbca049b632688dfe"
+        }
+      ]
+    },
+    {
+      "name": "frontend-design",
+      "directory": "D:/AI-tools/skills/_shared/frontend-design",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机LICENSE.txt：Apache License 2.0；未据此宣称上游已核对",
+      "knownMissing": [],
+      "when": "已派发页面任务的视觉/交互选择；Forma现有design-system优先，不另造品牌或字体体系。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "LICENSE.txt",
+          "bytes": 10174,
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "gitBlob": "f433b1a53f5b830a205fd2df78e2b34974656c7b"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 9390,
+          "sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+          "gitBlob": "a5333457c414d20d625f307df945842c0952ecc3"
+        }
+      ]
+    },
+    {
+      "name": "security-review",
+      "directory": "D:/AI-tools/skills/_shared/security-review",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "会话/账户隔离/上传/服务端AI与审查；按Express/SQLite适配，不引入Supabase/支付，不自动npm audit fix。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "cloud-infrastructure-security.md",
+          "bytes": 10171,
+          "sha256": "7d9a83852475a9396e04c59c73df84ac24ee0f41322016de7c11c62138c2a8ca",
+          "gitBlob": "12634421765e25f961913dd380190ebfa970dd64"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 12493,
+          "sha256": "fe6f9151fb15c1dffd47a55080c3ad147af7c95dd0ad3714735dec6824b060b7",
+          "gitBlob": "0846d70a19224cc6cf81f75bda23a7c8f4265033"
+        }
+      ]
+    },
+    {
+      "name": "tdd",
+      "directory": "D:/AI-tools/skills/_shared/tdd",
+      "source": "本机既有共享技能库；旧清单只有本机路径，上游仓库与commit待核验",
+      "version": "未锁定commit；以本清单SHA256快照标识",
+      "license": "本机未附独立LICENSE；待核验",
+      "knownMissing": [],
+      "when": "后端正式实现时在已确认外部接口按一条失败行为→最小实现逐步验证；使用node:test，不在配置阶段写产品测试。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 87,
+          "sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+          "gitBlob": "651b838a7663e027b1b8884491e867f26bb9a021"
+        },
+        {
+          "path": "mocking.md",
+          "bytes": 1481,
+          "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+          "gitBlob": "71cbfee674d93244ce81d1830b930ca9a69200bd"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 3629,
+          "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0",
+          "gitBlob": "01eadaa34e7c9a63a67d6dc3cce1cc81b0e49985"
+        },
+        {
+          "path": "tests.md",
+          "bytes": 2214,
+          "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+          "gitBlob": "7ab86479f925a1f9e8ba680af33cb3b12e015381"
+        }
+      ]
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "directory": ".agents/skills/vercel-react-best-practices",
+      "source": "skills-lock.json：vercel-labs/agent-skills，skills/react-best-practices/SKILL.md",
+      "version": "1.0.0；锁文件computedHash=6b526d013e28073246a36f99b529bc43745d30832ecfa8217b359c34f260ca6b",
+      "license": "SKILL声明MIT；本机没有独立LICENSE，待上游复核",
+      "knownMissing": [],
+      "when": "前端方案、React交付与独立审查；仅采用适配Vite React的条目，不引入Next.js/RSC。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 112071,
+          "sha256": "5640053923e5f36448c53e50b74069ea7c1477101e645e852bc61a84db328855",
+          "gitBlob": "8f7335417953ec3acaf75df7cbebb8610893eb6c"
+        },
+        {
+          "path": "README.md",
+          "bytes": 3483,
+          "sha256": "2e7e6cbe3952689bf9c00b9a7032f1bffb263cde2d01635f0aa49d3375c33ff5",
+          "gitBlob": "0a8e374cf3a8b5def8cdfdf1fdb1eac4cce9d34a"
+        },
+        {
+          "path": "rules/advanced-effect-event-deps.md",
+          "bytes": 1858,
+          "sha256": "d6b0ca8ba2982602b736e931c9a8d7a11e0b22cd501ef17c732979fb9ceeb8b2",
+          "gitBlob": "baabefa0ccf1e3caaacc2f91518e3f7bdfcdb4f7"
+        },
+        {
+          "path": "rules/advanced-event-handler-refs.md",
+          "bytes": 1538,
+          "sha256": "029f0c929c665fb9263b8c72a44e50610caf94a6e22a8142821a84482eda825d",
+          "gitBlob": "02294646db96b1367a3d1c3b1241c5dfffdc6625"
+        },
+        {
+          "path": "rules/advanced-init-once.md",
+          "bytes": 1000,
+          "sha256": "3d209bc4b17c2a503fdbb53b39261bc5ee824703a8b387daef3f53bad1f32ce4",
+          "gitBlob": "7a3e0d17de2505b5ff1c0c21ad1b87a675d2f33c"
+        },
+        {
+          "path": "rules/advanced-use-latest.md",
+          "bytes": 1111,
+          "sha256": "84b3504ef0dc85f171c6aa0c5d15ac6d252ba72e38fc4e87872c0a3b1728345f",
+          "gitBlob": "f687c1f73e5d75a7211e8f2781bbaf647a867078"
+        },
+        {
+          "path": "rules/async-api-routes.md",
+          "bytes": 1163,
+          "sha256": "adf38ea4f34fa74b275b908e49aa20de20af9d9935b4a656314a49217b182663",
+          "gitBlob": "bf63a35fe5e2594cb68d8f02dd3904106eb04443"
+        },
+        {
+          "path": "rules/async-cheap-condition-before-await.md",
+          "bytes": 1257,
+          "sha256": "8677605b94a5ed704873d8013bda2b690ff09fe8757fd472d9047cc848cf4019",
+          "gitBlob": "5742a5a075205ff08c13db282d5b52fefa24fa53"
+        },
+        {
+          "path": "rules/async-defer-await.md",
+          "bytes": 2290,
+          "sha256": "eaa4f64d04eac1023fb61ed27712a81397989d86c126b987fa90baf4da02cc33",
+          "gitBlob": "15b9074fad2643a3d032e44193ac60217b713df5"
+        },
+        {
+          "path": "rules/async-dependencies.md",
+          "bytes": 1344,
+          "sha256": "4901341bd7f7b7036eb8d98b243515ce294e6e4079370b3187c1514c3e597ec6",
+          "gitBlob": "3c684d6f9e381f2a4ff7c85a5a5de148146bbaec"
+        },
+        {
+          "path": "rules/async-parallel.md",
+          "bytes": 682,
+          "sha256": "ff95abbb67b62a889d7ef71f1d06834238c47ecd3d49483f7823b4cd17d92680",
+          "gitBlob": "f23570f201e134f1bdcca9b1c696e1190acc107b"
+        },
+        {
+          "path": "rules/async-suspense-boundaries.md",
+          "bytes": 2609,
+          "sha256": "8a6e88c6e5190e10d3e3ebca89a1bc4fefc4bdb0cbc9c6f406ce02452a5759df",
+          "gitBlob": "0006120f2c6223a82f2bb31c4cec5248666d2a1c"
+        },
+        {
+          "path": "rules/bundle-analyzable-paths.md",
+          "bytes": 2445,
+          "sha256": "32260f587900a89d642b805a4824bf8e6a197c2c6f62aec76522775d0a2f41ab",
+          "gitBlob": "bfe2497dc32427598d5e5aeb38d7cfeb910a9fe5"
+        },
+        {
+          "path": "rules/bundle-barrel-imports.md",
+          "bytes": 2855,
+          "sha256": "ceae03eb1cfad7e82019aeb297f87dc895eca14221c66f724e0801393d4da21f",
+          "gitBlob": "cabe92377d5da563c162f87cf4ef15b9f5079ab4"
+        },
+        {
+          "path": "rules/bundle-conditional.md",
+          "bytes": 980,
+          "sha256": "16992beeaf9bdd1e7ff20989b8672cfffc8b918deb0783c058560c7a233dd37c",
+          "gitBlob": "bb4b23e0acd462481ecbbefbc4215bc8f70c5a03"
+        },
+        {
+          "path": "rules/bundle-defer-third-party.md",
+          "bytes": 969,
+          "sha256": "64de0f01dfe58b4d3a3865baa623f743ef1b8c363106c7dfaf2b2867f69b96d4",
+          "gitBlob": "48d34d7377b706cdd30621a846a9a638627cfb12"
+        },
+        {
+          "path": "rules/bundle-dynamic-imports.md",
+          "bytes": 826,
+          "sha256": "0fb947cdfec5ce0e95a894c6b68220f88983eff73ce65b98e4f00c885ebd9b36",
+          "gitBlob": "3f847ef726d62ac1d64d1fe21d065855192d47ae"
+        },
+        {
+          "path": "rules/bundle-preload.md",
+          "bytes": 1199,
+          "sha256": "b673a49f4cf4bf385ddf6956ca704139ec2915802bade1925134f8cfabb2278c",
+          "gitBlob": "70348f772bbfb70268727a454447f49c3a695bad"
+        },
+        {
+          "path": "rules/client-event-listeners.md",
+          "bytes": 2043,
+          "sha256": "e2229c8e121dfdd6bad8063ba6c41213ff612e19e077f17ba805b70d48151775",
+          "gitBlob": "aa31eb29ab6eb7d7a1e6a90b4ad91d6935498ae6"
+        },
+        {
+          "path": "rules/client-localstorage-schema.md",
+          "bytes": 2021,
+          "sha256": "f9d177a557f4bd4bd1a81f30f841f75041821dd88f706a6b8c4eac86c7472e05",
+          "gitBlob": "3961be7c3a6ed662836ed346e7d9fca51b157d41"
+        },
+        {
+          "path": "rules/client-passive-event-listeners.md",
+          "bytes": 1692,
+          "sha256": "277118e32363381459bc7439fa942966da668d2c128d93968f9a289f0bb32861",
+          "gitBlob": "9ab715c7bc9e85920e01895b01758c1c95c456e6"
+        },
+        {
+          "path": "rules/client-swr-dedup.md",
+          "bytes": 1215,
+          "sha256": "866e6cc267f06df39129c44c68c5e6a2e62faa554bc8cdb6ada1f58afe4bcbbe",
+          "gitBlob": "5dd2eb495fdad31464a259ae7f11aa6ca6744dcd"
+        },
+        {
+          "path": "rules/js-batch-dom-css.md",
+          "bytes": 3373,
+          "sha256": "d7343005afc6a9c7e86368e22318f49b88492973e673f7b0ba2eb65697597143",
+          "gitBlob": "f30ac050a5a82f9ef77ace9d34a929e2571319c2"
+        },
+        {
+          "path": "rules/js-cache-function-results.md",
+          "bytes": 2029,
+          "sha256": "bbef6423ad250227e8c73a5d9be6fd687707dd187ef50236fd5b6883a41d49b6",
+          "gitBlob": "de53aa27926a853fad1277fa683d540ee4337ebf"
+        },
+        {
+          "path": "rules/js-cache-property-access.md",
+          "bytes": 560,
+          "sha256": "bbecc553a5b51caab2ddc90423a23d4c3245669439ff91e5204e48d62aaf1c5e",
+          "gitBlob": "3f55289ef7101f01dc31928d93a265ccdf612980"
+        },
+        {
+          "path": "rules/js-cache-storage.md",
+          "bytes": 1721,
+          "sha256": "7710a2ceb421d9b6d3828d7f38ec8a093af4a372c2b3b4ea2299d5df2518f770",
+          "gitBlob": "9b16a2615c145c0225d187d8a959c04c65b8971c"
+        },
+        {
+          "path": "rules/js-combine-iterations.md",
+          "bytes": 785,
+          "sha256": "c43a02979586d39f341fa6da7fc61bdd6a6917fa0c4f9c926091fa540cdf8022",
+          "gitBlob": "adb91893d10020ecc8cab0be66857f8f49b90f08"
+        },
+        {
+          "path": "rules/js-early-exit.md",
+          "bytes": 1183,
+          "sha256": "b6b967ab80d2a5fc19851d9db9464cf8e4d0e57dccb607a474b8f7818015951d",
+          "gitBlob": "c24cfe3e79c40948ef55232775e7ddc240d4bb27"
+        },
+        {
+          "path": "rules/js-flatmap-filter.md",
+          "bytes": 1471,
+          "sha256": "acfa11d07d7982ec565e4d8cfb410d477ffb73a7b41a532b938bcdb15c6ba51f",
+          "gitBlob": "9dd484767aaf639d65d4cb835c192d5239286355"
+        },
+        {
+          "path": "rules/js-hoist-regexp.md",
+          "bytes": 1073,
+          "sha256": "86f4772c5d732c1f5f0656412713c6dc919360f0f3ea32bb1a45937eaaa5866e",
+          "gitBlob": "647a885d311b2107d8ceea1aa09ca31202ef64ca"
+        },
+        {
+          "path": "rules/js-index-maps.md",
+          "bytes": 874,
+          "sha256": "752dd0803a7394a70e8d437b7eb025d1e085566e30ad733e75b9d2e04cc6c4d9",
+          "gitBlob": "7a5321a81bec5665008852a198789186aea51409"
+        },
+        {
+          "path": "rules/js-length-check-first.md",
+          "bytes": 1796,
+          "sha256": "9e57362d76e57ea6a2ff8cd137cf2a87b094aaff152eac61758305acb450a25c",
+          "gitBlob": "62d99481bd116b893fddf42dcea99e936c7561e8"
+        },
+        {
+          "path": "rules/js-min-max-loop.md",
+          "bytes": 2372,
+          "sha256": "f0054bcd1c3168ea8a6474df33c398bc0066eb1e813d59ae57fe36806ec900b6",
+          "gitBlob": "74c79ae06cacc48a0c0063d89b873c1a79d8d9b7"
+        },
+        {
+          "path": "rules/js-request-idle-callback.md",
+          "bytes": 2752,
+          "sha256": "cefb8938f833f4747546d8c4fbe2c8c9938a5bfe27e087636048adef3fd8d719",
+          "gitBlob": "9121ec6988deccf8a047d6ba7b76de65a2ec4154"
+        },
+        {
+          "path": "rules/js-set-map-lookups.md",
+          "bytes": 556,
+          "sha256": "7143f8d7b71cdbc77a171fc801bdcf5e7a209e0f471ff17bb669acc986a6b064",
+          "gitBlob": "208f1fc434d8c7f31c267d9fa2e82893586a562e"
+        },
+        {
+          "path": "rules/js-tosorted-immutable.md",
+          "bytes": 1839,
+          "sha256": "2722514cac46990f3361fa35ee20d499a12da2539362e7871b670978664d158a",
+          "gitBlob": "afa61eaf536710d10639bb08b7d7ee1461535412"
+        },
+        {
+          "path": "rules/rendering-activity.md",
+          "bytes": 590,
+          "sha256": "e23dd494d955db99d376b5bf62a59ce7df9f14576d94094f2e53cfdc388453a0",
+          "gitBlob": "0d61dbc5e5086140f8a67fd8b2aefe06a34d43b2"
+        },
+        {
+          "path": "rules/rendering-animate-svg-wrapper.md",
+          "bytes": 1232,
+          "sha256": "dca7f0251244489b3bbb6f5aaf7d70f280d91dc13de8ebd24403286f382ec0f4",
+          "gitBlob": "f1a9f1582bddf664539ffea671a3c514f966f50f"
+        },
+        {
+          "path": "rules/rendering-conditional-render.md",
+          "bytes": 1020,
+          "sha256": "6db58f36c8b080c35e91f6504281f85ea2dbd133030610c860e60181d6d9556a",
+          "gitBlob": "286355fd69b6351eb2ccda33e9b2517bd83c388a"
+        },
+        {
+          "path": "rules/rendering-content-visibility.md",
+          "bytes": 853,
+          "sha256": "45437e9594857ee1066ee061e946ed129731cf2e80f7e08f3cc621fa0554c567",
+          "gitBlob": "45c2b6f345ff968259b65ed6b05cef7975630835"
+        },
+        {
+          "path": "rules/rendering-hoist-jsx.md",
+          "bytes": 1085,
+          "sha256": "c5fa7274f067ce3760107196a9416df333a7b4187254ef66c547fad7c45cd8d3",
+          "gitBlob": "03dcb6a8e8749623adebe9f7e4a672472821b73d"
+        },
+        {
+          "path": "rules/rendering-hydration-no-flicker.md",
+          "bytes": 2390,
+          "sha256": "bfedc3a73f9687c7836acf915165fb845880453b6dfcf2fa6475dfec96b23027",
+          "gitBlob": "217799cb268fd73524b620e56e1cd1f123bbe911"
+        },
+        {
+          "path": "rules/rendering-hydration-suppress-warning.md",
+          "bytes": 902,
+          "sha256": "7ec1623c69e1a82b09b8b5a6028005e3eb8485741898447af1bcaed8ff8c0139",
+          "gitBlob": "eadde13ce9d639b9454b32a2f2246e557fcce566"
+        },
+        {
+          "path": "rules/rendering-resource-hints.md",
+          "bytes": 2634,
+          "sha256": "03ffeb3c26ae514bd24ea8683621d67a4b8432926ef7ee8d3296f82ae5c1b6ab",
+          "gitBlob": "8cddcd910486ccca23e67cbb9ee8c59d08a387dc"
+        },
+        {
+          "path": "rules/rendering-script-defer-async.md",
+          "bytes": 1936,
+          "sha256": "28ef87814467a4758645889dcbb0ccb9a9e2387c4cebbd8cd4dfa33435e3e5d8",
+          "gitBlob": "77a36fc3840947acdb29d0a7e49582ab61346017"
+        },
+        {
+          "path": "rules/rendering-svg-precision.md",
+          "bytes": 616,
+          "sha256": "d57cdfaaaf660a28a9a5d6d10e97202a5eb13e1bc1675e024cb1ccbfa8bb2c32",
+          "gitBlob": "f0df96b4a033f05fcc1177b1c6557acae759cece"
+        },
+        {
+          "path": "rules/rendering-usetransition-loading.md",
+          "bytes": 2149,
+          "sha256": "c2186f944b60630c67d42222f60ecb12b5a85395e7f31f193982f85983165720",
+          "gitBlob": "5a125decbaa32d51acab06df803136a2ba534463"
+        },
+        {
+          "path": "rules/rerender-defer-reads.md",
+          "bytes": 1012,
+          "sha256": "bb98d9b7c7622641887df6407406a8c4f61510af9cc1bd275574ebee71bac8c8",
+          "gitBlob": "939b8756a0c0fd6ec6313f7ac97b8c6d763d23e6"
+        },
+        {
+          "path": "rules/rerender-dependencies.md",
+          "bytes": 869,
+          "sha256": "4f0a1806694c2391c0b5b79bb4dee89fdf2c02ee322acf308509c17542240446",
+          "gitBlob": "4e457d48c4cb775d8c6d1f5129b5b0371db9eac9"
+        },
+        {
+          "path": "rules/rerender-derived-state-no-effect.md",
+          "bytes": 1241,
+          "sha256": "1d50f7b1b86d24f987c557415590f79b06250e3ec1ca552da981e31a31f9edb9",
+          "gitBlob": "480860f99bb15e2d63be59fb0386997bf30da2c2"
+        },
+        {
+          "path": "rules/rerender-derived-state.md",
+          "bytes": 757,
+          "sha256": "6a501211aa53036905df7531deaf25fdb8582697366fd071d4c2607828662dcb",
+          "gitBlob": "69158d746e1eac4e61bab9940c754c8a872928c6"
+        },
+        {
+          "path": "rules/rerender-functional-setstate.md",
+          "bytes": 3042,
+          "sha256": "e46096d4c2c8fc89ab717bd7e56b8a884b612a88013a99b0c63e7dfc45d8cf25",
+          "gitBlob": "faef5ded15d67ec1ef32cfc44fd80389bf76ac20"
+        },
+        {
+          "path": "rules/rerender-lazy-state-init.md",
+          "bytes": 2074,
+          "sha256": "b8b9e6b6001a1e94979776e744eb38a98432858dd2369995731c9a095ecd1d2e",
+          "gitBlob": "34cefb9729480787daa5da2e9015bbe38f1420fc"
+        },
+        {
+          "path": "rules/rerender-memo-with-default-value.md",
+          "bytes": 1211,
+          "sha256": "e69d637687b85967554df7d5fcfd83cc6fbb89237e9b80d10fbea7916244aa8b",
+          "gitBlob": "1b48e87e0999a84837366887039ac0079aa3b346"
+        },
+        {
+          "path": "rules/rerender-memo.md",
+          "bytes": 1192,
+          "sha256": "8cc2d062f22ae762f7f5f93baf2bfc374c917079131896559721f9dfbd402a7c",
+          "gitBlob": "bc868f51b074bcebdd41aca441d06784bde6a04f"
+        },
+        {
+          "path": "rules/rerender-move-effect-to-event.md",
+          "bytes": 1313,
+          "sha256": "00f5eaf8d4380c736c9177b67583f6b33f6b1f84addc252653cd6dea9551ad8d",
+          "gitBlob": "7bc504771ac94aa807c5ff68e67712b813ac243c"
+        },
+        {
+          "path": "rules/rerender-no-inline-components.md",
+          "bytes": 2217,
+          "sha256": "381ec0a4224c20c57545b6c44a65ffcaf0ed520fad97f3d0f8abcb7389de602f",
+          "gitBlob": "35d209e670ff1a4c456a44c9bec4cf050c416fdf"
+        },
+        {
+          "path": "rules/rerender-simple-expression-in-memo.md",
+          "bytes": 1053,
+          "sha256": "1e41299336d72ce42ffe0b4d397496e520eae13ea544b1412b83761555f4e631",
+          "gitBlob": "53ec8d80ac66d961d09f47519651976699fdf670"
+        },
+        {
+          "path": "rules/rerender-split-combined-hooks.md",
+          "bytes": 1908,
+          "sha256": "93543c1987b8bb639302a4598f1444bc9ed02d200ea7ad0e47e890ff3fa8cf21",
+          "gitBlob": "b9c20ed29800d55bb7a6fb159c7b8b0b163f9cfc"
+        },
+        {
+          "path": "rules/rerender-transitions.md",
+          "bytes": 1095,
+          "sha256": "b51a82fb6b223d13c585dfddaeb753c79d7da0524da87b708f61fd6939600ab6",
+          "gitBlob": "af892e4517c7774e19b9fc8730d9019129ec7cf0"
+        },
+        {
+          "path": "rules/rerender-use-deferred-value.md",
+          "bytes": 1905,
+          "sha256": "2c393cc085e9ae6285ee9e71f4db86ddd0120a41b84c6a1d659f46e8c7684db5",
+          "gitBlob": "6c4c74f501bb63eeeb312ec005eaace379760f99"
+        },
+        {
+          "path": "rules/rerender-use-ref-transient-values.md",
+          "bytes": 1815,
+          "sha256": "26ddded1d59cc04cddf7c1412ffb05315dd1f358510edcce3c3474d5acb63f32",
+          "gitBlob": "d0e367c8810eabaef776a38a82b455019933f183"
+        },
+        {
+          "path": "rules/server-after-nonblocking.md",
+          "bytes": 2085,
+          "sha256": "86c8670ad8e6285753645c2cebd164c56baf6f0fa74f914c0ca496d0a0156bcc",
+          "gitBlob": "6351d55ad7bc61742dfc1671c0f21458db94959e"
+        },
+        {
+          "path": "rules/server-auth-actions.md",
+          "bytes": 2745,
+          "sha256": "a413aba63b73f7f82cf2482646c8c1598eaa75753c8f73f33055b8508de99fea",
+          "gitBlob": "55829bb1181ce9ff53bcb776d490e3fa0ff6a0d1"
+        },
+        {
+          "path": "rules/server-cache-lru.md",
+          "bytes": 1394,
+          "sha256": "19d844eebd1fb7ef5f43f4d1e85baf1fc0160547400ab838ba4d40226eb891b9",
+          "gitBlob": "e9fbff31866c79452de02d3e68edfcf31434a01a"
+        },
+        {
+          "path": "rules/server-cache-react.md",
+          "bytes": 2304,
+          "sha256": "7448470adc9f0066455f9cf45b658f5c3f1884a7990c89f880fbb272a4028b05",
+          "gitBlob": "2e17af22244c0f90d42337fdce0596cbf22c6106"
+        },
+        {
+          "path": "rules/server-dedup-props.md",
+          "bytes": 2125,
+          "sha256": "5c4d4c9930812d3ab98e28ad97ca2f5af778effbf9b50b6a7558c18abf2e98b5",
+          "gitBlob": "d478103e14b6aa1bcffcade32af5a7a2421fb19c"
+        },
+        {
+          "path": "rules/server-hoist-static-io.md",
+          "bytes": 4572,
+          "sha256": "92665f53454156ccc59f115455cf3cbf9c3cbd88dcb5b84b14037f200ab990c5",
+          "gitBlob": "ed2c659500cda91e1267374f21d98076d74f59bf"
+        },
+        {
+          "path": "rules/server-no-shared-module-state.md",
+          "bytes": 1816,
+          "sha256": "9c2b6ee5b418c35f8b0ce466d0d1352e25c85e6b7ebbe4495b81791f10f915dc",
+          "gitBlob": "63c418e1402bfce6375837b103e4f1965851e8ca"
+        },
+        {
+          "path": "rules/server-parallel-fetching.md",
+          "bytes": 1637,
+          "sha256": "f8f275fea2378e7707a50f2df4af6a2f65fe1fa84edb3ffc4720af805ebabe42",
+          "gitBlob": "4d0aa0a6937cda5f4364748648714b12ac0fa8a6"
+        },
+        {
+          "path": "rules/server-parallel-nested-fetching.md",
+          "bytes": 1026,
+          "sha256": "1e59763bbec3d6d74b8457c3d82f1a319b483fe5497b665652d8cba69fdda002",
+          "gitBlob": "c1654d09eedac874e2cc0b13512994d9c16179c2"
+        },
+        {
+          "path": "rules/server-serialization.md",
+          "bytes": 1034,
+          "sha256": "567ce457f775d4e03e2a6ef7bf67213fee35c6c3b9d1bcfa783007d1df414d4b",
+          "gitBlob": "00ea5679a99565e13ba7f2d8afaded0bce80e25e"
+        },
+        {
+          "path": "rules/_sections.md",
+          "bytes": 1600,
+          "sha256": "f352f75b84d6c6ee644c3fade99eaf2186bdfdc1d9e5b598bae436f32b3bce4f",
+          "gitBlob": "77ff33b8cc264e6f1148f303d86ae043c3395900"
+        },
+        {
+          "path": "rules/_template.md",
+          "bytes": 659,
+          "sha256": "21231af1b4c70cfe6f07625830d982934295c735f91fddd9741b3a8e3688d735",
+          "gitBlob": "e687fe00a141188381dab5d9a398f85b8bb3692c"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 7400,
+          "sha256": "3286ace648b4d740317b9c1cb7fbd38600eaacc62a8b57ea5e06fd2992b5582e",
+          "gitBlob": "8b3f01768d6e1187218ba404fbf022057fc4a594"
+        }
+      ]
+    },
+    {
+      "name": "i18n-expert",
+      "directory": ".agents/skills/i18n-expert",
+      "source": "skills-lock.json：daymade/claude-code-skills/i18n-expert",
+      "version": "锁文件computedHash=3d059508e0c60ae95c34b83fb8aabc19a6edeb8a778ffa8bdeeacd102fdd1179",
+      "license": "本机未附独立LICENSE；待上游复核",
+      "knownMissing": [],
+      "when": "中英字符串、错误、焦点标签、日期/数字格式核对；当前是内联双语，JSON审计脚本不能直接证明完整覆盖，不自动安装i18next。",
+      "status": "可读取；已配置显式读取入口；未验证工具原生加载",
+      "resources": [
+        {
+          "path": "scripts/i18n_audit.py",
+          "bytes": 5075,
+          "sha256": "c6c9e9d70c7a48f23d0c27a88728b993d07920e3218727e0051c019705dffb18",
+          "gitBlob": "8b5691f5e04d1769e777a4f94bde3bdd5ce9fc91"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 5391,
+          "sha256": "bdea772279d97a32090258c0631793786cdc7a51da68465a79ecb0c054b706b2",
+          "gitBlob": "8bd0674fc4cb031fa9d303a8ca2451f42f041ef3"
+        }
+      ]
+    }
+  ]
+}

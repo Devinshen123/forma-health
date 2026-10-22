@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forma · Architecture Review · 2026-10-20</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:true,theme:'neutral',securityLevel:'strict',themeVariables:{fontFamily:'Segoe UI, Microsoft YaHei, sans-serif',primaryColor:'#eef2ef',primaryTextColor:'#1c2925',lineColor:'#73847c'}});
+</script>
+<style>
+:root{--ink:#182923;--muted:#62736b;--line:#dbe3dc;--paper:#f5f5ef;--green:#1b604b;--red:#a24133;--amber:#795b23}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Segoe UI,Microsoft YaHei,sans-serif;line-height:1.65}main{max-width:1180px;margin:auto;padding:54px 30px 65px}header{border-top:5px solid var(--ink);padding-top:25px;margin-bottom:42px}h1{font-size:clamp(34px,6vw,64px);font-weight:620;letter-spacing:-1.5px;line-height:1.1;margin:10px 0 20px}h2{font-size:27px;line-height:1.35;font-weight:620;margin:8px 0 15px}h3{font-size:16px;margin:0 0 10px}.eyebrow,.label{font-size:11px;letter-spacing:1.7px;text-transform:uppercase;color:var(--muted);font-weight:700}.meta,.legend{display:flex;gap:12px 24px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.legend{margin-top:22px}.key{display:inline-block;width:13px;height:13px;border:1px solid var(--ink);vertical-align:-2px;margin-right:6px}.key.dash{border-style:dashed}.key.solid{background:var(--ink)}.key.red{background:var(--red);border-color:var(--red)}nav{display:flex;gap:9px;flex-wrap:wrap;margin:25px 0}nav a{border:1px solid var(--line);border-radius:30px;padding:6px 13px;font-size:13px;color:var(--ink);text-decoration:none;background:#fff}article{background:#fff;border:1px solid var(--line);padding:28px;margin:24px 0 35px;scroll-margin-top:25px}.cardhead{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.number{font-size:13px;color:var(--green);font-weight:700}.badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.badge{display:inline-block;font-size:11px;font-weight:650;padding:3px 9px;border-radius:4px;background:#eef1ed;color:#4a5c53}.strong{background:#e6f3ec;color:#19533e}.worth{background:#f7edd9;color:#75521c}.files{font-family:Consolas,monospace;font-size:12px;color:#57685f;line-height:1.8;word-break:break-word;background:#f7f8f4;padding:12px 15px}.visuals{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.visual{background:#f7f8f5;border:1px solid var(--line);padding:17px;min-height:270px;overflow:auto}.visual.after{background:#f0f5f1}.stack{display:grid;gap:8px;margin-top:16px}.box{padding:11px 13px;border:1px solid #b8c6bd;background:#fff;font-size:13px}.leak{border-left:3px solid var(--red);color:#7d382d}.deep{padding:17px;background:var(--ink);color:white;border:3px solid var(--ink);font-size:14px;line-height:1.8}.inside{color:#c0d2c6;font-size:12px;border-top:1px dashed #668375;margin-top:10px;padding-top:10px}.seam{border-top:2px dashed #8caa98;text-align:center;font-size:11px;color:var(--green);padding-top:4px;margin:10px 0}.arrow{text-align:center;color:var(--muted);font-size:16px;line-height:1.15}.redtext{color:var(--red)}.flowrow{display:flex;gap:7px;align-items:center;justify-content:center}.flowrow .box{flex:1;text-align:center}.prose{display:grid;grid-template-columns:70px 1fr;gap:7px 13px;font-size:14px}.prose dt{font-size:12px;color:var(--muted);font-weight:650}.prose dd{margin:0}.wins{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:17px 0}.wins li{background:#f0f4ee;padding:5px 10px;font-size:12px}.note{font-size:12px;color:var(--muted);border-left:3px solid #bbc9bf;padding:8px 12px;margin-top:12px}.warning{border-color:#b79652;background:#fcf8ed;color:#705623}.proof{display:flex;gap:12px;flex-wrap:wrap;margin:13px 0 0}.proof span{padding:6px 10px;border:1px solid var(--line);font-size:12px}.small{font-size:12px;color:var(--muted)}.top{background:var(--ink);color:#fff;padding:30px;margin:35px 0}.top a{color:#bfe8cd}.top .eyebrow{color:#bed0c3}.top p{margin:0;font-size:15px}.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.check{border-top:2px solid #aebcaf;padding-top:12px;font-size:13px}.check strong{display:block;margin-bottom:6px;font-size:17px}.mermaid{font-family:Consolas,monospace;font-size:12px;margin:12px 0 0;white-space:pre-wrap}.mermaid svg{max-width:100%!important}footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;margin-top:30px}@media(max-width:760px){main{padding:25px 15px}article{padding:20px 15px}.visuals,.checks{grid-template-columns:1fr}.cardhead{display:block}.prose{grid-template-columns:58px 1fr}.visual{min-height:220px}}@media print{script,nav{display:none}body{background:white}main{max-width:none;padding:0}article{break-inside:avoid}.visuals{grid-template-columns:1fr 1fr}.top{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">Forma / architecture review / 01</div><h1>把复杂规则，收回它们所属的地方。</h1>
+<div class="meta"><span>2026-10-20 · America/Los_Angeles</span><span>基线 ac56b65</span><span>25 次提交回看 · 四个候选</span><span>分析完成 · 产品代码未修改</span></div>
+<div class="legend"><span><i class="key"></i>module</span><span><i class="key dash"></i>seam</span><span><i class="key red"></i>知识泄漏 / 重复约束</span><span><i class="key solid"></i>deep module</span></div>
+<nav><a href="#plan">01 计划调整</a><a href="#workspace">02 账户工作区</a><a href="#calendar">03 日与周汇总</a><a href="#routine">04 训练计划版本</a><a href="#validation">验证与保留项</a></nav>
+</header>
+<section id="candidates">
+<article id="plan"><div class="cardhead"><div><span class="number">01 / 首选</span><h2>深化计划调整 module</h2></div><div class="badges"><span class="badge strong">Strong</span><span class="badge">in-process + local persistence</span></div></div>
+<div class="files">src/features/Plan.tsx:248–417 · src/types.ts:208–217<br>server/validation.ts:359–477 · server/app.ts:293–351,448<br>server/rules/plan.ts:56–106 · server/rules/engine.ts:339–365</div>
+<div class="visuals"><div class="visual"><div class="label">Before · interface 暴露多处一致性要求</div><pre class="mermaid">flowchart TD
+  P[Plan 页面拼接状态] --> V[历史与状态转换校验]
+  P --> T[profile + planVersions + currentPlanId + suggestions]
+  V --> S[Store 原子写入]
+  R[规则纯函数] -.尚未接入运行流程.-> V
+  classDef risk fill:#fff1ea,stroke:#a24133,color:#743a2b;
+  class P,T risk;
+</pre></div>
+<div class="visual after"><div class="label">After · 用户意图与审核跨一处 seam</div><div class="stack"><div class="box">页面：展示草稿 / 用户确认 / 显示结果</div><div class="seam">同一 interface · 同一 test surface</div><div class="deep">计划调整 module<div class="inside">候选与证据 → base 复核 → 追加版本<br>状态转换 + 补偿撤销 + profile 投影<br>结构化冲突 + 原子持久化</div></div><div class="arrow">↓</div><div class="box">既有同步与 SQLite adapter</div></div></div></div>
+<dl class="prose"><dt>Problem</dt><dd>调用者须拼接四处状态；规则 module 已有实现，实际流程却另写一套，interface 负担大。</dd><dt>Solution</dt><dd>集中候选、接受、撤销的完整 implementation；先处理训练调整，保留现有传输与兼容写入。</dd><dt>Depth</dt><dd>depth 来自隐藏一致性要求；不以新增目录或薄转发 module 代替深化。</dd><dt>Deletion test</dt><dd>不能删除后端校验；应把调用者重复掌握的规则集中到 deep module，否则复杂度只会搬家。</dd><dt>Adapter</dt><dd>保留当前 SQLite adapter；暂无第二种存储需求，不引入通用存储框架。</dd><dt>Tests</dt><dd>已有 HTTP 接受/撤销与纯规则测试；缺少覆盖完整候选生成、证据传递及旧 base 分类的同一 test surface。</dd></dl>
+<ul class="wins"><li>locality：状态转换集中</li><li>leverage：编辑、接受、撤销共用</li><li>interface：隐藏多实体拼接</li></ul>
+<div class="note warning">实测：最新 revision=3，尝试接受旧 base 建议；快照写入与实体同步均返回 400，revision 保持 3、零写入。拒绝有效，冲突分类与项目要求的 409 不一致。已有请求 20261017-0054-backend-to-lead-plan-base-conflict-status.md。</div>
+<div class="note">ADR-M0-local-web 与 ADR-training-sync 已要求后续服务端规则和追加版本；本候选延续决定，不删除历史、不改饮食或训练事实。规则引擎证据尚未进入 Suggestion 契约；需同步改严格校验与展示，不能只接入 evaluate。营养阈值不在本次建议的启用范围。</div>
+</article>
+<article id="workspace"><div class="cardhead"><div><span class="number">02 / 账户与竞态</span><h2>深化账户工作区 module</h2></div><div class="badges"><span class="badge strong">Strong</span><span class="badge">browser + local-substitutable</span></div></div>
+<div class="files">src/App.tsx:89–136,176–227 · src/api.ts:16–18,52–105<br>src/sync/engine.ts:14–34,105–107 · src/sync/storage.ts:52–130<br>tests/sync-client.test.ts:71–125,130–299</div>
+<div class="visuals"><div class="visual"><div class="label">Before · App 掌握隐藏顺序</div><div class="stack"><div class="box leak">验证账户 → 设置 accountHint → 获取 snapshot</div><div class="box leak">读取缓存 → 再核对 active-account + epoch</div><div class="box leak">停止旧引擎 → 恢复队列 → 重新验证</div><div class="box leak">退出 / 删除 / 跨标签：分别编排清理与保留</div><div class="small redtext">正确调用还需理解 stop(clear, force)、generation 与 pending。</div></div></div>
+<div class="visual after"><div class="label">After · 编排成为内部 implementation</div><div class="stack"><div class="box">App：呈现账户与同步状态</div><div class="seam">工作区 interface · 生命周期 seam</div><div class="deep">账户工作区 module<div class="inside">启动 / 切换 / 恢复 / 退出<br>身份固定 + epoch + 同意撤销<br>内部保留 SyncEngine 与原子缓存</div></div><div class="flowrow"><div class="box">浏览器事件 adapter</div><div class="box">IndexedDB adapter</div></div></div></div></div>
+<dl class="prose"><dt>Problem</dt><dd>账户生命周期知识分散在 App、请求上下文与同步缓存，顺序属于隐含 interface，缺少 locality。</dd><dt>Solution</dt><dd>将生命周期编排集中到一个 module；保留 SyncEngine 与 storage 已验证的 implementation。</dd><dt>Depth</dt><dd>depth 来自调用者无需了解恢复与停止顺序；继续拆小 hooks 而保留同样知识，会留下 shallow interface。</dd><dt>Deletion test</dt><dd>这些保护不可删除：删除编排后，复杂度会回到登录、退出、恢复等调用点；应集中隐藏。</dd><dt>Adapter</dt><dd>事件与存储各司其职；现有测试替身用于控制竞态，尚不足以证明需要多种生产持久化 adapter。</dd><dt>Tests</dt><dd>已有丢响应、双标签、账户切换、同意撤销测试；harness 直接创建 SyncEngine，尚未自动执行 App 的 boot/authenticated/resetSession 编排。</dd></dl>
+<ul class="wins"><li>locality：账户竞态集中</li><li>leverage：五条生命周期流程</li><li>interface：显式生命周期结果</li></ul>
+<div class="note">保持 ADR-training-sync：账户隔离、显式离线同意、generation、CAS、稳定 mutationId、receipt、待同步记录保留。当前未发现可据此断言的数据泄漏；这是结构性改进，不将同步说成未测试。</div>
+</article>
+<article id="calendar"><div class="cardhead"><div><span class="number">03 / 数据含义</span><h2>深化日与周汇总 module</h2></div><div class="badges"><span class="badge strong">Strong</span><span class="badge">in-process</span></div></div>
+<div class="files">src/types.ts:265–282 · src/features/Dashboard.tsx:30–58<br>src/features/Trends.tsx:141–168,178–218 · src/features/Sleep.tsx:38–60,195<br>server/rules/days.ts:19–65,88–131 · server/rules/weekly.ts:81–144</div>
+<div class="visuals"><div class="visual"><div class="label">Before · 各调用者自己决定“今天”</div><div class="stack"><div class="box leak">Dashboard → 浏览器日期 + 自行汇总</div><div class="box leak">Trends → 档案时区 + 自行归并</div><div class="box">Sleep → 记录自己的醒来时区</div><div class="box">rules → 明确时区、完整度、未知值</div><div class="small">同一 instant：2026-10-16 ≠ 2026-10-17</div></div></div>
+<div class="visual after"><div class="label">After · 共享计算含义，保留事实日期</div><pre class="mermaid">flowchart TD
+  F[已记录事实 + 明确日期策略] --> D[日与周汇总 module]
+  D --> H[今日呈现]
+  D --> W[趋势与周回顾]
+  D --> E[规则候选]
+  classDef deep fill:#182923,stroke:#182923,color:#ffffff;
+  class D deep;
+</pre><div class="seam">同一纯计算 seam · 同一 test surface</div></div></div>
+<dl class="prose"><dt>Problem</dt><dd>时区、归日、舍入和完整度在调用者间重复，统计含义缺少 locality。</dd><dt>Solution</dt><dd>集中日/周窗口与汇总策略，逐步复用已有规则 implementation；展示只格式化结果。</dd><dt>Depth</dt><dd>depth 包含未知值、跨午夜、完整度和睡眠归并；只抽日期格式化函数仍是 shallow 改动。</dd><dt>Deletion test</dt><dd>删掉重复归日与窗口计算，可把复杂度集中到既有纯函数附近；删掉完整度语义会损失行为。</dd><dt>Adapter</dt><dd>核心为 in-process 计算，无须新增 transport 或存储 adapter；保留现有浏览器/服务端调用。</dd><dt>Tests</dt><dd>已有 days/weekly 纯函数测试；增加今日、趋势、周回顾共用口径的回归，同时保留已记录日期。</dd></dl>
+<ul class="wins"><li>locality：日期与完整度集中</li><li>leverage：三类汇总共用</li><li>interface：明确未知与已记录</li></ul>
+<div class="note warning">已运行固定时刻计算：2026-10-17T06:30:00Z，浏览器 America/Los_Angeles，档案 Asia/Shanghai；首页算法=10-16，趋势算法=10-17。该复现未挂载浏览器页面。已有请求 20261017-0054-frontend-to-lead-date-timezone.md。</div>
+<div class="note">不可直接把 server/rules 全部打包进浏览器。按当前双端需要选择纯计算 seam，并在部署阶段让服务端负责权威汇总。先明确“当前视图日期”和“记录归属日期”，不追溯改写旅行记录；重叠睡眠的归并与当前拒绝策略也需一起对齐。</div>
+</article>
+<article id="routine"><div class="cardhead"><div><span class="number">04 / 最小试点</span><h2>深化训练计划版本 module</h2></div><div class="badges"><span class="badge strong">Strong</span><span class="badge">in-process · two callers</span></div></div>
+<div class="files">src/features/training/Routines.tsx:20–29<br>src/features/training/Progress.tsx:18–25 · src/training/domain.ts<br>server/sync.test.ts:177–191 · tests/training-domain.test.ts:57–101</div>
+<div class="visuals"><div class="visual"><div class="label">Before · 两条路径复制完整变更</div><div class="flowrow" style="margin-top:18px"><div class="box leak">手工编辑<br>新 UUID<br>追加版本<br>重指 schedules<br>时间取最大值</div><div class="box leak">接受进阶<br>新 UUID<br>追加版本<br>重指 schedules<br>时间直接用 now</div></div><div class="arrow" style="margin:16px">↓　　↓</div><div class="box">同一个同步提交 module</div></div>
+<div class="visual after"><div class="label">After · 两个调用者共享变更含义</div><div class="flowrow"><div class="box">手工编辑审核</div><div class="box">进阶证据审核</div></div><div class="seam">同一版本变更 seam</div><div class="deep">训练计划版本 module<div class="inside">追加版本 + 旧历史保留<br>引用迁移 + 时间规则 + 完整变更</div></div><div class="arrow">↓</div><div class="box">既有同步 adapter · 批次原子提交</div></div></div>
+<dl class="prose"><dt>Problem</dt><dd>相同业务变更出现两份 implementation，且更新时间处理已有静态差异。</dd><dt>Solution</dt><dd>集中追加版本与日程重指；编辑校验和进阶证据要求各自保留，不混成通用状态机。</dd><dt>Depth</dt><dd>depth 来自隐藏完整变更不变量；只抽 UUID 或 now 小函数会保留 shallow interface。</dd><dt>Deletion test</dt><dd>删除重复构造可集中到一处 implementation；两个真实调用者立即受益。</dd><dt>Adapter</dt><dd>不新增 adapter；现有同步 adapter 继续执行 CAS 和原子提交。</dd><dt>Tests</dt><dd>目前服务器测试手工构造正确变更，领域测试覆盖候选；需覆盖实际接受变更、引用迁移、证据失效和失败零写入。</dd></dl>
+<ul class="wins"><li>locality：版本变更集中</li><li>leverage：两个真实调用者</li><li>interface：隐藏引用迁移</li></ul>
+<div class="note">与 ADR-training-sync 一致：旧 routine 不改删，用户确认后追加新版本，同批更新日程，不修改已记录训练。更新时间分歧为静态发现，未据此宣称已复现用户故障。</div>
+</article>
+</section>
+<section class="top" id="top-recommendation"><div class="eyebrow">Top recommendation</div><h2>先做计划调整 module</h2><p>它直接承载“记录 → 理由 → 审核 → 调整 → 撤销”的产品主流程，且已有规则实现和真实冲突分类分歧；先对齐行为，再逐步深化。<a href="#plan">查看候选 01 ↑</a></p></section>
+<section id="validation"><div class="eyebrow">Evidence / scope</div><h2>验证结果与应保留的设计</h2>
+<div class="checks"><div class="check"><strong>155 / 155</strong>npm test 实际通过，0 失败；运行包含后端、规则、同步、训练导入与账户上传测试。</div><div class="check"><strong>Build passed</strong>npm run build 实际通过；训练分包仍有大于 500kB 的提示，未做加载性能测量，未据此列为首要架构问题。</div><div class="check"><strong>2 个定向复现</strong>固定时刻日期分歧；随机端口临时账户复现旧 base 的 400 与零写入。临时数据已清理，未触碰现有服务或账户。</div></div>
+<div class="note">保留：FoodPhoto 的供应商调用、超时重试、Zod 校验、预算预留与独立草稿已经集中；同步缓存的 generation/receipt 也已有实质 depth。不为文件变短而继续抽薄 module，不引入微服务、换框架或多数据库。</div>
+<div class="note">扫描：最近 25 次提交；重点为计划调整、账户同步、日/周汇总、训练版本。没有 GLOSSARY.md 或 docs/adr/；采用现有 types、项目词汇和 docs/collaboration/decisions/ 的 ADR。此为有范围的架构分析，不代表完整安全或全部运行场景验收。</div>
+<div class="note">本轮未设计新的 interface 形状，未改产品源码、依赖或 ADR。后续实施按 TASKS 所有权派发，保留已存在的未提交文件。HTML 内包含全部报告内容和基础样式；Tailwind 与 Mermaid 使用 CDN，图形增强需要联网。</div>
+</section>
+<footer><b>Architecture vocabulary.</b> module：含 interface 与 implementation 的模块；depth：少量调用知识换取完整行为；seam：可替换行为的位置；adapter：该位置的具体实现；leverage：调用者收益；locality：修改与验证集中。<br>Generated for Forma · analysis only · 2026-10-20</footer>
+</main></body></html>

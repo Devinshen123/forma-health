@@ -8,3 +8,6 @@ reference-sources/
 test-results/
 playwright-report/
 docs/collaboration/*response.json
+
+# Local coordination outputs; no formal health data
+.forma-local/

@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "date": "2026-10-21",
+  "projectRoot": "C:\\Users\\devin\\健康网站",
+  "baseline": "e4c6a1b98761e88ceda84b89ae9688343610b2c5",
+  "taskWriter": "lead",
+  "roles": [
+    {
+      "number": "00",
+      "id": "dot",
+      "slug": "00-dot",
+      "name": "Dot总协调",
+      "tool": "Dot（羊羊）",
+      "manager": "用户；汇总01与02的证据汇报",
+      "skills": [
+        "handoff",
+        "find-skills"
+      ],
+      "md": "docs/collaboration/agent-prompts/00-dot.md",
+      "current": "docs/collaboration/agent-prompts/current/dot.md",
+      "memory": "docs/collaboration/memory/dot",
+      "status": "docs/collaboration/status/dot.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": null
+    },
+    {
+      "number": "01",
+      "id": "lead",
+      "slug": "01-codex-lead",
+      "name": "Codex项目主管",
+      "tool": "Codex",
+      "manager": "向Dot与用户汇报；协调03与05，接收02的请求",
+      "skills": [
+        "team-composition-patterns",
+        "agent-development",
+        "improve-codebase-architecture",
+        "codebase-design",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/01-codex-lead.md",
+      "current": "docs/collaboration/agent-prompts/current/lead.md",
+      "memory": "docs/collaboration/memory/lead",
+      "status": "docs/collaboration/status/lead.md",
+      "checkoutStatus": "current",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站"
+    },
+    {
+      "number": "02",
+      "id": "claude-lead",
+      "slug": "02-claude-lead",
+      "name": "Claude Code项目主管",
+      "tool": "Claude Code",
+      "manager": "向Dot与用户汇报；协调04与06，向01请求正式任务与契约调整",
+      "skills": [
+        "team-composition-patterns",
+        "agent-development",
+        "vercel-react-best-practices",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/02-claude-lead.md",
+      "current": "docs/collaboration/agent-prompts/current/claude-lead.md",
+      "memory": "docs/collaboration/memory/claude-lead",
+      "status": "docs/collaboration/status/claude-lead.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\02-claude-lead"
+    },
+    {
+      "number": "03",
+      "id": "product",
+      "slug": "03-product",
+      "name": "产品经理",
+      "tool": "Codex独立会话（建议）",
+      "manager": "01协调；与02核对体验要求，向Dot澄清目标",
+      "skills": [
+        "domain-modeling",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/03-product.md",
+      "current": "docs/collaboration/agent-prompts/current/product.md",
+      "memory": "docs/collaboration/memory/product",
+      "status": "docs/collaboration/status/product.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\03-product"
+    },
+    {
+      "number": "04",
+      "id": "frontend",
+      "slug": "04-frontend",
+      "name": "前端工程师",
+      "tool": "Claude Code独立会话（建议）",
+      "manager": "02协调；契约变更交01；与03核对体验",
+      "skills": [
+        "frontend-design",
+        "vercel-react-best-practices",
+        "i18n-expert",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/04-frontend.md",
+      "current": "docs/collaboration/agent-prompts/current/frontend.md",
+      "memory": "docs/collaboration/memory/frontend",
+      "status": "docs/collaboration/status/frontend.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\04-frontend"
+    },
+    {
+      "number": "05",
+      "id": "backend",
+      "slug": "05-backend",
+      "name": "后端工程师",
+      "tool": "Codex独立会话（建议）",
+      "manager": "01协调；领域行为由03定义，06独立验证",
+      "skills": [
+        "security-review",
+        "tdd",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/05-backend.md",
+      "current": "docs/collaboration/agent-prompts/current/backend.md",
+      "memory": "docs/collaboration/memory/backend",
+      "status": "docs/collaboration/status/backend.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\05-backend"
+    },
+    {
+      "number": "06",
+      "id": "qa",
+      "slug": "06-reviewer",
+      "name": "独立审查员",
+      "tool": "Claude Code独立会话（建议）",
+      "manager": "02安排；可直接向01、02、Dot报告，独立于实现会话",
+      "skills": [
+        "security-review",
+        "vercel-react-best-practices",
+        "i18n-expert",
+        "handoff"
+      ],
+      "md": "docs/collaboration/agent-prompts/06-reviewer.md",
+      "current": "docs/collaboration/agent-prompts/current/qa.md",
+      "memory": "docs/collaboration/memory/qa",
+      "status": "docs/collaboration/status/qa.md",
+      "checkoutStatus": "not-adopted",
+      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\06-reviewer"
+    }
+  ],
+  "retired": [
+    "rules",
+    "ux",
+    "research",
+    "security",
+    "release"
+  ]
+}

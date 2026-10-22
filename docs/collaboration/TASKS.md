@@ -1,113 +1,91 @@
-# Forma 协作任务板
+# Forma 唯一正式任务板
 
-更新：2026-10-17，America/Los_Angeles。当前人类授权先做网站并添加AI识图，密钥稍后配置；已确认 US$20/月和已有Mac/iPhone。付费开通、生产发布和iPhone/TestFlight未据此自动获准。早期predevelopment的C08/G01是旧阶段快照，不能覆盖后续人类指令。运行事实以根README、实际API和用户最新指令为准。
+更新2026-10-21；唯一写入者01（lead）。主仓库继续留C盘原位置。共享规则见根FORMA.md，员工表见TEAM-ROSTER。此处任务是配置与后续规划，不表示员工会话已经启动。
 
-## 本里程碑所有权（优先于 AGENTS 默认角色表）
+## 当前唯一所有权表
 
-| 参与者 | 当前可写范围 | 状态 |
+所有路径相对本人checkout。未明确授权的路径只读；外部会话未同步前不能说已采用。路径冲突按最具体路径裁定，每个路径仅一个写入者。
+
+| owner | 路径 | 条件 |
 |---|---|---|
-| Codex root / lead（当前集成者） | src/types.ts、src/api.ts、src/sync/（不含storage.ts）、scripts/、根构建配置/依赖、README、docs/PRODUCT-PLAN.md、API-CONTRACT.md、COSTS.md、VALIDATION.md、architecture/、collaboration任务/决定/agent-prompts新增文件/lead状态；独立浏览器验收 | WT-01 done；负责契约与集成 |
-| 项目聊天 Forma 前端开发（合并 shell + features） | 自己worktree内 src/App.tsx、src/main.tsx、src/styles.css、src/demo.ts、src/components/、src/i18n/、src/features/、src/catalog/、index.html、public/、status/frontend.md | WT-02 done；接手就绪，等待具体任务 |
-| 项目聊天 Forma 后端开发 | 自己worktree内 server/（含现有*.test.ts，不含rules/）、.env.example、src/sync/storage.ts、status/backend.md | WT-03 done；接手就绪，等待具体任务 |
-| 项目聊天 Forma 代码审查（qa） | 自己worktree内 tests/、docs/reviews/、status/qa.md | WT-04 done；接手就绪，产品源码只读 |
-| lead 暂管领域函数 | src/training/ | 本轮只读；有修改需要先单独派发 |
-| 本机独立 Claude Code（rules） | server/rules/、docs/rules/、docs/safety/、status/rules.md及自己的请求/评审 | 已交付独立纯函数与42项测试并提交；lead纳入测试，运行对接留M1 |
+| lead（01） | FORMA.md、AGENTS.md、CLAUDE.md、README.md、package.json/package-lock.json、tsconfig.json、vite.config.ts、.gitignore、.gitattributes、scripts/、src/types.ts、src/api.ts、src/sync/engine.ts、src/sync/changes.ts、docs/architecture/、docs/PRODUCT-PLAN.md、docs/API-CONTRACT.md、docs/COSTS.md、docs/VALIDATION.md、docs/collaboration/{TASKS.md,TEAM-ROSTER.md,SKILLS-MATRIX.md,START-PROMPTS.md,WORKSPACES.md,ARCHITECTURE-BACKLOG.md,CONFIGURATION-RESULTS.md,team-config.json,configuration-baseline.json,configuration-files.json}、docs/collaboration/{skills/,decisions/,agent-prompts/,archive/,memory/README.md}、.claude/agents/ | 花括号逐项展开为仓库相对路径；配置与集成，本轮产品源码只读 |
+| claude-lead（02） | docs/collaboration/deliverables/claude-lead/（含dispatch.md） | 调度仅引用正式任务，不构成第二块任务板 |
+| product（03） | docs/product/、docs/collaboration/deliverables/product/ | 定义行为与验收；原docs/product如有旧writer，先HANDOVER-01核对 |
+| frontend（04） | src/App.tsx、src/main.tsx、src/styles.css、src/demo.ts、src/components/、src/features/、src/catalog/、index.html、public/、docs/collaboration/deliverables/frontend/ | 当前源码没有src/i18n/目录，未来新增先由01登记；不因路径名猜权限 |
+| backend（05） | server/（含现有*.test.ts，server/rules/除外见下一行）、.env.example、src/sync/storage.ts、docs/collaboration/deliverables/backend/ | 不改共享类型/API；storage和engine明确分属05/01 |
+| backend（05，交接冻结） | server/rules/（含测试）、src/training/domain.ts、src/training/import.ts、docs/rules/、docs/safety/ | 目标owner已登记；HANDOVER-01确认旧rules/lead写入者、提交与未提交内容前禁止写入；不能暗中接管 |
+| qa（06） | tests/、docs/reviews/、docs/collaboration/deliverables/qa/ | 产品源码和现有server测试只读；新的独立测试写tests/ |
+| dot（00） | docs/collaboration/deliverables/dot/ | 连接未验证时仅草稿；01可注明来源导入，不能伪造Dot接手 |
+| 每位本人 | docs/collaboration/memory/<本人ID>/、docs/collaboration/status/<本人ID>.md、本人发起requests | 相同ID同时一名writer；请求回复仅接收方追加 |
 
-外部新建的 docs/predevelopment、handoff、agent-prompts、AGENTS.md、.agents/.claude Skills 等保持其原所有者；root不整体覆盖或删除。接下来重新分工必须先更新本表，不让两个工作会话同时改同一产品文件。
+TEAM7-CONFIG-01一次性例外：用户明确要求重设员工MD与独立记忆，01可为七人更新编号/配置引用及首次交接元数据；已有正文保留历史，不伪造本人接手、经验或实测。初始化结束后不得日常代写。现有退休员工memory/status/deliverables只读保留；其current入口由01改为退休指针并归档旧定义。
 
-## 任务
+## 本轮配置与接手
 
-## 2026-10-20 架构分析（用户指定 improve-codebase-architecture）
+2026-10-21用户新增明确任务：将已有工作同步GitHub供另一台Mac操作。仅提交经清单核对的配置候选与Mac接手说明，推到`codex/mac-handoff-20261021`供获取，尚未独立审查的配置不合入远端main。此前Git索引拒绝已在本轮精确暂存时解除；旧记录保留历史，源码交接与独立审查仍未解除。02新增07/08原生岗位的请求已收到，但本次同步不等于批准增员、安装技能或启动客户端开发。
 
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
+| ID | owner | 状态 | 依赖 / 文件 | 验收标准 |
 |---|---|---|---|---|
-| AR-01 | lead；skill 要求的一名只读复核子代理 | done | 当前 ac56b65 基线、最近25次提交、现有 ADR；产品源码只读；只写 TASKS/lead 状态，HTML 与复现脚本在 OS temp | 四项深化候选均含代码证据、deletion test、前后图、测试范围与 ADR 约束；HTML 已生成并调用系统打开；npm test155/155、build通过；固定时刻日期分歧与旧base双入口400/零写入已实际复现 |
+| GITHUB-MAC-01 | lead | doing | 用户授权；configuration-files.json精确清单、README、FORMA、WORKSPACES、技能读取/配置检查脚本及本人状态/交接 | 候选提交推送到GitHub并核对远端SHA；Mac克隆/运行/单writer接手步骤可读；外置Skills缺失如实报告；不夹带原有图片删除、数据库、密钥或其他员工未交付内容；不冒充Mac实机或06审查 |
+| CHAT-PROMPTS-01 | lead | review | 用户要求逐人生成Prompt并准备新对话；START-PROMPTS.md、agent-prompts/launch/、scripts/prepare-forma-chat-prompts.cjs、lead状态/交接 | 00—06各一份可复制Prompt，编号/ID/MD/记忆/Skills入口对应；现有01优先复用；首轮只读登记，不把缺worktree当成不能读取配置，不生成额外writer；新对话由用户打开，未启动/未提交不伪称完成 |
+| TEAM7-CONFIG-01 | lead | review | 文件已生成；本轮Windows/portable配置各15项通过，12项技能/110资源校验通过（agent-development有已知缺失脚本）；155测试与构建通过；Git索引精确暂存已可写 | 配置候选经GITHUB-MAC-01推送供Mac获取；仍待06独立审查、技能原生触发和各员工实际接手，不标全部完成；历史权限拒绝保留来源 |
+| HANDOVER-01 | lead | blocked | 旧writer与worktree状态读取权限；server/rules、src/training、docs/product及退休角色路径 | 核对所有旧写入者、SHA和未提交工作，确认停写/交接后再启用目标owner；不得假定无活跃会话 |
+| ONBOARD-00 | dot | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；具名报告草稿 | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-01 | lead | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-02 | claude-lead | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-03 | product | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-04 | frontend | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-05 | backend | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| ONBOARD-06 | qa | todo | TEAM7-CONFIG-01审查提交、本人独立checkout与技能入口；本人MD/三份记忆/status | 只读取规则并核对编号、目录/分支/SHA/未提交、技能路径和读取方式、可写范围/依赖/验收；向主管报告已知/未知/阻塞；不开发或启动其他员工 |
+| SKILL-PROVENANCE-01 | lead | todo | SKILLS-MATRIX、来源与许可证待核对条目 | 对未知上游commit/本机agent变体/缺失脚本给出证据；不覆盖同名版本、不擅改第三方技能 |
+| TOOL-LOAD-01 | claude-lead | blocked | ONBOARD-02；本人checkout与明确单会话测试时机 | 只在实际启动获安排后验证02/04/06原生发现及技能触发，记录版本与实际结果；本轮不启动员工 |
+| WORKTREE-SYNC-01 | lead | blocked | 可写Git元数据、旧writer审计、已独立审查配置提交 | 复用或创建各自不同分支/checkout；显式同步已审查SHA，重新读取配置；不覆盖脏工作区 |
 
-报告：`C:\Users\devin\AppData\Local\Temp\architecture-review-20261020-210829.html`。首选计划调整 module，其余为账户工作区、日/周汇总、训练计划版本；只作分析，未设计新 interface 形状、未改产品实现、未向其他项目聊天派发工作。两项已存在请求仍未修复，不标记解决；后续实施继续按原所有权与契约协议派发。只读复核子代理未取得任何写入权且已结束。
+## 架构后续任务（本轮未执行）
 
-## 2026-10-17 项目级聊天与独立 worktree（最新人类选择）
+以下均以已审查配置、本人ONBOARD和必要交接为前提；实现任务只有明确依赖通过后才能开工。细化验收见ARCHITECTURE-BACKLOG.md。
 
-用户随后明确要求放在整个项目里，并选择“项目下三个独立聊天，各用 Git worktree 隔离”。此选择覆盖下方CO阶段的当前聊天子代理模式；原三个子代理已经结束，不再承担后台写入。总控聊天也已归入“运动健康网站”项目。三个新聊天使用本机托管worktree，每个角色仅可写自己checkout，不写原目录或其他worktree；共享契约由lead集成，不自行合并其他修复分支。
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
+| ID | owner | 状态 | 依赖 / 文件 | 验收标准 |
 |---|---|---|---|---|
-| WT-01 | lead | done | 项目工具、TASKS、decisions、lead状态 | 三个聊天已实际创建于正确项目，独立目录且各自返回就绪；身份/路径见ADR-project-worktrees-20261017 |
-| WT-02 | Forma 前端开发 | done | bdd7 worktree；status/frontend.md | cfa66ce；确认路径/detached HEAD/所有权，仅提交接手状态，等待具体任务 |
-| WT-03 | Forma 后端开发 | done | 7f7e worktree；status/backend.md | ecb5012；确认路径/detached HEAD/所有权，仅提交接手状态，等待具体任务 |
-| WT-04 | Forma 代码审查 | done | 9260 worktree；status/qa.md | 835f53d；确认路径/detached HEAD/只读范围，引用已有基线，等待具体任务 |
+| A-PRODUCT | product | todo | ONBOARD-03；docs/product/plan-adjustment.md | 定义训练调整接受/撤销、可见状态、旧base冲突与证据；不启用新营养阈值 |
+| A-CONTRACT | lead | todo | A-PRODUCT、当前checkout复验；src/types.ts、src/api.ts、docs/API-CONTRACT.md、decisions/ | 确认400/409分类及错误形状，登记单一owner/测试接口与原子性；本轮不改代码 |
+| A-BACKEND | backend | todo | A-CONTRACT、HANDOVER-01；server/、src/training仅按正式分配 | 训练切片集中候选/证据、base复核、追加/撤销恢复版本、状态转换与原子保存；失败零写入、事实不变 |
+| A-FRONTEND | frontend | todo | A-CONTRACT、02调度；src/features/ | 展示证据、差异、确认、冲突与撤销；不重复领域校验，不改后端或共享类型 |
+| A-REVIEW | qa | todo | A-BACKEND/A-FRONTEND同一候选SHA；tests/、docs/reviews/ | 正常接受/撤销、最新revision加旧base、400/409、零写入、历史事实、跨账户实际验证 |
+| B-PRODUCT | product | todo | A评估后由01排期；docs/product/account-workspace.md | 定义启动/切换/恢复/退出/删除/撤回离线同意与未同步记录行为 |
+| B-CONTRACT | lead | todo | B-PRODUCT；src/App.tsx、src/sync只读分析、decisions/ | 保留当前引擎与storage能力，先定生命周期编排和路径归属，不整体替换 |
+| B-BACKEND | backend | todo | B-CONTRACT；src/sync/storage.ts、server/ | 保留IDB原子/CAS、稳定mutationId/receipt、幂等及账户数据约束 |
+| B-ENGINE | lead | todo | B-CONTRACT；src/sync/engine.ts、changes.ts、共享契约 | 保留账户绑定/epoch/generation/停止旧引擎，集中必要编排 |
+| B-FRONTEND | frontend | todo | B-CONTRACT、B-ENGINE；src/App.tsx、src/features/ | 只表达用户意图与恢复/退出确认，保留未同步记录、清理私有缓存与错误状态 |
+| B-REVIEW | qa | todo | B实施同一候选SHA；tests/、docs/reviews/ | 跨账户、双标签、离线恢复/重试、撤回同意、退出/删除且不丢未同步数据 |
+| C-PRODUCT | product | todo | ONBOARD-03；docs/product/day-week-summary.md | 确定当前视图日期与记录归属、睡眠醒来日、时区/缺失/完整度/舍入 |
+| C-CONTRACT | lead | todo | C-PRODUCT；types/api与日期调用点静态复核、decisions/ | 定义共享日期与聚合接口及归属；不导入整个server/rules到浏览器 |
+| C-BACKEND | backend | todo | C-CONTRACT、HANDOVER-01；server/ | 确定性聚合、缺失排除与完整度，原记录日期不追溯改写 |
+| C-FRONTEND | frontend | todo | C-CONTRACT；Dashboard/Trends及相关页面 | 使用确认后的窗口与显示含义，旅行记录保持原归属 |
+| C-REVIEW | qa | todo | C实施同一候选SHA；tests/、docs/reviews/ | 固定时刻LA/Shanghai算法与真实页面复核；同区对照、跨时区/缺失与舍入 |
+| D-PRODUCT | product | todo | ONBOARD-03；docs/product/training-versions.md | 手改和接受进阶的共同版本行为、独立证据要求与训练事实保持 |
+| D-CONTRACT | lead | todo | D-PRODUCT；src/types.ts、decisions/ | 明确追加版本/日程引用/时间/原子性；不泛化通用状态机 |
+| D-BACKEND | backend | todo | D-CONTRACT、HANDOVER-01；server/、src/training/ | 版本历史、手改与进阶各自校验、引用迁移同事务，旧训练事实不改 |
+| D-FRONTEND | frontend | todo | D-CONTRACT；src/features/training/实际相关组件 | 共用确认语义，展示版本/日程变化，保留用户编辑 |
+| D-REVIEW | qa | todo | D实施同一候选SHA；tests/、docs/reviews/ | 编辑与进阶、重复接受/旧base、版本不可变、日程引用迁移、失败原子性 |
 
-CO基线由qa实际运行：npm test155/155、npm run build成功。尚未运行复现的两项静态发现（日期时区口径与语义旧base的400/409差异）已经写请求，不据此自动扩大本轮设置任务。
+## 旧任务逐项迁移
 
-## 2026-10-17 当前聊天三子代理接手
+旧任务原状态与完整正文保留在[历史任务板](archive/20261021-seven-role-transition/docs/collaboration/TASKS.md)，不把替代或取消写成done。
 
-用户直接选择“当前聊天里的三个子代理”。本轮仅建立协作与接手检查，不自动实施新功能或合并其他隔离目录的修复。上述新分工替代原已结束角色的本目录写入权；独立 Claude rules 保持原范围。其他聊天的 worktree 不受本表重新分工影响，不修改其文件、分支或进程。
+| 旧任务 | 本轮处理 | 后继 |
+|---|---|---|
+| TEAM-EXP-01、MEM-01 | 旧方案由七人配置替代，原blocked/doing保留历史，未标完成 | TEAM7-CONFIG-01 |
+| TEAM-DOT-01 | 旧首次任务取消（未执行），改先接手 | ONBOARD-00 |
+| TEAM-PRODUCT-01 | 旧首次任务取消（未执行），范围按新正式任务重排 | ONBOARD-03、A/B/C/D-PRODUCT |
+| TEAM-UX-01 | 退休，原blocked未执行；体验责任转03/04 | ONBOARD-03/04与后续FRONTEND任务 |
+| TEAM-RESEARCH-01 | 退休，原todo未执行；研究按需归03/主管 | ONBOARD及SKILL-PROVENANCE-01 |
+| TEAM-FRONTEND-01 | 原todo未执行，日期复验后续保留 | ONBOARD-04、C-REVIEW |
+| TEAM-BACKEND-01 | 原todo未执行，旧base复验保留 | ONBOARD-05、A-CONTRACT/A-REVIEW |
+| TEAM-QA-01 | 原todo未执行，不沿用历史155项作本轮结果 | ONBOARD-06及独立REVIEW |
+| TEAM-RULES-01 | 退休，原todo未执行；交接后05实现/03定义/06验证 | HANDOVER-01、A/C/D |
+| TEAM-SECURITY-01 | 退休，原todo未执行；审查归06 | ONBOARD-06、B-REVIEW |
+| TEAM-RELEASE-01 | 退休，原blocked未执行；发布职责归主管，本轮不部署 | 以后另派正式发布任务 |
+| AR-01/WT/CO/G/T等历史任务 | 保留原完成状态与证据，不重跑初始化，不冒充当前验证 | 历史任务板、现有ADR |
 
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| CO-01 | lead | done | TASKS、decisions、agent-prompts新增文件、status/lead.md | 三个子代理实际启动并返回接手结果；所有权无交叉；汇总实际基线和阻塞；仅提交自己路径 |
-| CO-02 | frontend | done | AGENTS、本任务板、设计规格、frontend新prompt；status/frontend.md | 已完成源码接手与时区请求；未改产品源码；基线由qa统一运行 |
-| CO-03 | backend | done | AGENTS、本任务板、backend状态及请求、backend新prompt；status/backend.md | 已完成15路由及数据边界盘点、旧base状态码请求；未改产品源码 |
-| CO-04 | code_review（qa） | done | AGENTS、本任务板、qa状态及请求、review新prompt；docs/reviews/、status/qa.md | 实际串行npm test155/155与build通过；有限只读审查报告已交付 |
-
-各子代理不再派生代理。跨角色改动依AGENTS §5创建请求。每个角色只提交自己的文档，不能纳入既有未跟踪文件。后续新增实现须由lead在任务板明确派发；接手完成不代表整个产品或完整代码审查已完成。
-
-## 2026-10-15 GitHub 源码托管（人类直接授权）
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| G-01 | lead；qa只读审查 | done | 现有main、GitHub CLI、README/lead状态 | 检查全部可推送历史；创建Devinshen123/forma-health私有仓库；仅推送产品已跟踪代码与文档，排除.env/真实数据/参考仓库/本机工具；验证远端main与本机HEAD一致 |
-
-已实际创建并推送：https://github.com/Devinshen123/forma-health ，PRIVATE、默认分支main；GitHub API核验远端提交与本机HEAD一致。原有19次提交完整保留，qa检查208个历史blob未发现真实凭据/私有数据路径；npm test155/155与npm run build通过。README提供克隆与启动说明，本机其他所有者的未跟踪文件保持不变。
-
-本次授权为GitHub代码托管。按最小公开范围创建私有仓库，不据此部署公网服务、开通付费资源或上传本机健康记录。没有改写历史或强制推送。
-
-## 2026-10-14 完整训练增量（人类直接授权）
-
-契约：decisions/ADR-training-sync.md 和 src/types.ts。所有旧训练保留摘要，不能编造逐组事实。完整指完整引入所选获准文字数据库，不声称覆盖世界所有动作或包含 openGym 的 5,632 项。教学示意原创，有可用性标识。外部收费/公网上线未启用。
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| T-01 | lead | done | types/api、sync、App/CSS、catalog、原创教学组件、docs | 账户隔离的 IndexedDB/outbox、静态离线壳、重连/冲突审核；合法全文字库和原创播放/暂停；桌面/手机实际验证 |
-| T-02 | backend | done | T-01、server/ | 训练严格校验、实体版本/墓碑/幂等同步、旧PUT互操作、原子冲突、原计划/AI隔离安全测试 |
-| T-03 | features | done | T-01契约、T-04函数、Training/training | 库筛选→星期/循环模板→逐组/超级/递减/倒计时→确认完成→PR/进阶/肌群→CSV预览确认，双语/空状态/编辑 |
-| T-04 | qa/domain | done | types、src/training/、tests/ | 完成组统计、e1RM适用范围/进阶草稿、时间/单位/缺失/重复CSV、计划日期纯函数；独立同步与流程审查 |
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| M0-01 | root＋研究代理 | done | research/、Cal AI官方文字、Apple文档 | 固定仓库SHA与许可、已验证/未验证界限 |
-| M0-02 | root | done | design/、Image Gen | 完整桌面、移动与饮食审核概念，独立资产 |
-| M0-03 | 后端代理→root | done | server/ | 账户隔离、上传、持久化、版本、CSRF、跨标签身份，11项测试 |
-| M0-04 | 页面代理→root | done | src/features/ | 真实记录、份量、训练、睡眠、报告人工校正；未接AI明确显示 |
-| M0-05 | 计划代理→root | done | 引导、计划、趋势 | 确认、接受、拒绝、补偿撤销；无缺失填零 |
-| M0-06 | root | done | 完整网页、3001构建后服务 | IAB完整主流程与导出/退出；1440/390及原概念1505×1045截图原尺寸复查，无页面溢出；构建后控制台零错误，重启持久化核对通过 |
-| M0-07 | root | done | 当前请求与ADR-M0 | 接受Claude评审的真实架构边界，更新阶段冲突 |
-| M1-01 | backend / rules候选，尚未派发 | todo | ADR-M0、预算/地区/认证供应商确认 | 实体资源API、增量同步、服务端规则与营养聚合、独立身份；公开邀请前必做 |
-| M1-02 | root / Claude qa候选，尚未派发 | todo | 真实服务配置与明确授权 | AI/OCR真实调用、失败/费用/健康数据同意测试 |
-| I1-01 | SwiftUI角色候选，尚未派发 | todo | Mac连接、Apple会员/签名确认 | HealthKit原生真机与TestFlight，不能用Web替代 |
-
-M1不是已经完成的后台任务，未创建自动化或偷偷启用账单。当前本机网站有真实功能，但并非完整AI/双端MVP。
-
-训练终验：T-01至T-04已交付。npm test155/155、npm run build通过；实际IAB完成模板/逐组/超级递减/暂停刷新/PR/导入去重/进阶版本/离线刷新/重连合并/冲突审核，1440与390px双语通过。前端a94dffc，领域e633a21，QA8f3a6a3/c0ce4da；root整合记录见VALIDATION。M1-01中的实体同步部分已由本轮交付，其余服务端建议、正式身份和云部署仍未交付。
-
-## 2026-10-14 AI 识图增量
-
-用户明确要求添加识图；密钥“稍后配置”。契约为 decisions/ADR-AI-food-photo.md，src/types.ts；不阻塞代码实现，不伪称真实推理完成。各角色先读 AGENTS、任务板、自己状态和请求。所有新依赖由 lead 安装。
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| AI-01 | lead | done | types/api、配置/Sharp、样式、说明 | .env安全加载；最终build成功，IAB与Edge1440/390交互/焦点/失败手动保存通过，实际3001已运行 |
-| AI-02 | backend | done | AI-01契约；server/、.env.example | Responses/Zod、私有不可变草稿、provenance、同意、超时重试、两级持久额度；46AI测试通过，未live调用 |
-| AI-03 | features | done | AI-01契约；Nutrition/Settings；1300审核焦点 | 逐图同意→校正/移除→确认保存，未知空值、失败手动、取消/账户隔离、双语/审核焦点，已实际验收 |
-| AI-04 | qa | done | AI-02；tests/、review | 独立44项全部通过，真实HTTPparser而非已解析结果注入；全仓加rules后99/99，build通过 |
-
-终验记录见docs/VALIDATION.md。未配置真实密钥，capabilities.reason=not_configured；live质量/供应商账户可用性待用户配置。临时fixture服务/账号已核验清理，真实3001服务不含fakeprovider。
-
-## 2026-10-14 预算核对
-
-用户直接选择“先保持当前测试限额，预算稍后确认”，见decisions/ADR-budget-test-limits.md。维持10次/账户/UTC日及现有账户/全局预留护栏；Claude转述的75/月、1.5/人/月、15次/日不是已确认的新配置。
-
-| ID | owner | 状态 | 依赖 / 路径 | 验收 |
-|---|---|---|---|---|
-| B-01 | lead | done | 用户直接答复；decisions、TASKS、lead状态、COSTS、Claude请求回复 | 文档一致、程序配置维持、diff检查通过 |
-
-T-02补充分工：自现在起 src/sync/storage.ts 唯一写入者为source_audit/backend（增加离线同意generation、原子clear与有序merge）；root只读此文件，继续engine/API/App。tests仍qa单写。
+旧请求20261017-0054的计划base错误分类和日期时区仍未修复，分别纳入A/C，不在此虚假回复为解决。

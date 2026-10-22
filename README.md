@@ -1,12 +1,14 @@
 # Forma · 本机健康与健身网站
 
+项目继续保留在 `C:\Users\devin\健康网站`。团队入口：[共享手册](FORMA.md)、[七人员工表](docs/collaboration/TEAM-ROSTER.md)、[启动Prompt](docs/collaboration/START-PROMPTS.md)、[配置实测与限制](docs/collaboration/CONFIGURATION-RESULTS.md)。员工配置不表示会话已启动。
+
 当前版本将饮食、训练、手动睡眠和趋势放在同一个网页里，提供简体中文与英文界面。已实现本机账号、首次计划、记录编辑删除、私有照片/PDF附件、计划调整审核与版本历史、周复盘和 JSON 导出。
 
 这是**本机开发与体验版本，尚未生产发布**。AI 食物照片识别已接入服务端接口与审核流程，须配置 OpenAI API 密钥后才可调用。训练和离线同步机制已实现；手机跨设备使用仍需要可访问的共享 HTTPS 服务。OCR、Apple 登录、HealthKit、iPhone App/TestFlight 和收费仍未接入。配置状态由 `/api/capabilities` 如实返回，不代表供应商连接已验证。
 
 ## 启动
 
-源码托管在私有仓库 [Devinshen123/forma-health](https://github.com/Devinshen123/forma-health)。有权限的账户可克隆后按下方命令运行：
+源码托管在 [Devinshen123/forma-health](https://github.com/Devinshen123/forma-health)。2026-10-21通过GitHub API与CLI核对，仓库当前为公开；此前“私有”是历史状态，本次没有更改可见性。Mac接手和配置候选分支见[WORKSPACES](docs/collaboration/WORKSPACES.md#mac接手2026-10-21)。克隆后按下方命令运行：
 
 ```powershell
 git clone https://github.com/Devinshen123/forma-health.git

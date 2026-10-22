@@ -1,0 +1,48 @@
+worktree C:/Users/devin/健康网站
+HEAD e4c6a1b98761e88ceda84b89ae9688343610b2c5
+branch refs/heads/main
+
+worktree C:/Users/devin/.codex/worktrees/7f7e/健康网站
+HEAD ef47edb2602f721e2db35469a98cd518f7b4936a
+branch refs/heads/codex/forma-sleep-nutrition-records-20261019
+
+worktree C:/Users/devin/.codex/worktrees/9260/健康网站
+HEAD 45ba1b7ab4a163a6f5354e40d801d56d59333c29
+detached
+
+worktree C:/Users/devin/.codex/worktrees/bdd7/健康网站
+HEAD 1557a7e62a09b1c56e337e4969feda493779907c
+branch refs/heads/codex/forma-companion-20261019
+
+worktree C:/Users/devin/Documents/Codex/2026-10-16/task-2/forma-confirmation-boundaries
+HEAD 2976a870f72cd1468aa56fdc2c9fde3623416702
+branch refs/heads/codex/forma-docs-skills-20261017
+
+worktree C:/Users/devin/Documents/Codex/2026-10-16/task-2/forma-health
+HEAD 13db7f030096da9e277ca7893484f78bd9f2e5a0
+branch refs/heads/codex/forma-crash-matrix-20261018
+
+worktree C:/Users/devin/Documents/Codex/2026-10-16/task-2/forma-record-flows
+HEAD a013b0fa52772b27b5e3aebd4698f3d8fa1c7362
+branch refs/heads/codex/forma-attachment-ui-20261018
+
+worktree C:/Users/devin/Documents/Codex/2026-10-16/task-2/forma-review-recovery
+HEAD 9826ed3d5ba5d353b411122710fb296aa037ae29
+branch refs/heads/codex/forma-durable-deletion-20261018
+
+worktree C:/Users/devin/健康网站-worktrees/backend
+HEAD 1fa39bca85762f9ffbdbf7028b63072d335ac36e
+branch refs/heads/claude/backend
+
+worktree C:/Users/devin/健康网站-worktrees/frontend
+HEAD 28e096fe1304d64ed7f49fd784ca91d5ac4bc7dd
+branch refs/heads/claude/frontend
+
+worktree C:/Users/devin/健康网站-worktrees/review
+HEAD ac56b65e15adc2f89f9ceb2962bef876b11eef8b
+branch refs/heads/claude/review
+
+worktree D:/CodexTaskData/claude-forma-docs-20261019
+HEAD fc7363ef149983e66b6c77cf4d81ea8717da9600
+branch refs/heads/claude/forma-release-checklist-20261020
+
