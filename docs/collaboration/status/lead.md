@@ -1,3 +1,7 @@
+# 2026-10-22 发布整合
+
+本轮将已完成产品和完整5,632动画动作更新GitHub默认main与当前网站。以1557a7e产品合并91509d4的Mac/团队配置，保留主worktree未提交文件。验证与发布完成前不记完成。此前AGENTS.md已被用户撤销，下方为历史记录。
+
 ## CHAR 最终验证 2026-10-20
 
 交付回执：产品整合02e12911db4f896d8f4fe28e511af8126a05c108已推送origin/codex/forma-companion-20261019，git ls-remote与本地HEAD逐字一致，未改main。push后独立HTTP检查站点与bunny.webp均200，工作区干净。实际3001演示伙伴画廊已打开并保存最终截图，所有CHAR任务done，正式公网托管仍保持先前待定。当前补记仅文档，无需重复产品测试。
@@ -166,3 +170,108 @@ Q-17：forma-health / codex/forma-three-direction-review-20261017，提交579d90
 
 待用户决定：外部服务月预算与供应商/服务地区、健康摘要或原始上云范围、Apple会员/签名；这些不阻塞本机记录体验，但阻止擅自启用付费与声明双端MVP完成。
 
+
+
+# 合入的 Mac / 团队配置历史记录（91509d4）
+
+# 2026-10-21｜GITHUB-MAC-01：GitHub候选与Mac接手
+
+执行者01 lead；checkout C:/Users/devin/健康网站；配置前main/e4c6a1b。用户明确要求将已做工作同步GitHub，供另一台Mac操作。本轮将configuration-files.json精确136项配置及历史依赖作为候选，保留原public/demo-meal.png删除、其他员工未交付内容及外置Skills。没有启动其他员工、增员、业务重构或部署。远端候选分支codex/mac-handoff-20261021；远端main保持原状态，候选待06独立审查。
+
+本轮实测：Git精确暂存成功exit0（旧index.lock权限阻塞已解除）；node scripts/verify-forma-team.cjs与--portable各15项通过exit0；node scripts/forma-skills.cjs verify为12技能/110资源通过exit0，保留缺trigger脚本警告；npm.cmd test 155/155 exit0；npm.cmd run build exit0，保留Training分包提示；两项变更脚本node --check和git diff --check通过。独立临时目录配置副本portable检查15项通过；本机路径覆盖读取成功exit0，缺技能读取明确exit1；POSIX路径模拟通过。这些都由Windows lead执行，不是Mac实机验证或06审查。
+
+GitHub API和gh repo view一致确认仓库当前PUBLIC；本轮不修改可见性，旧“私有仓库”表述作为历史。候选文件按路径和常见凭据格式检查，未发现匹配；不包含.env、数据库、附件、node_modules、dist、第三方未核对Skills正文。Mac接手/运行/单writer步骤在WORKSPACES；本机技能路径映射在Git忽略的.forma-local/skills-paths.json，不全局替换Windows记忆。
+
+收到02请求20261021-1835：其转述用户选择07 iOS/08 Android原生岗位，并报告另装5项技能。本次上传不处理该增员/技能登记请求，也不把本聊天此前React Native建议当正式架构决定；原请求与草案仍保留在Windows未提交内容中。后续先核对具名来源再排期。
+
+推送回执：候选bbc9024cb6c2915b1863af66dcecf1e40acaafba已成功推送origin/codex/mac-handoff-20261021；git ls-remote确认远端SHA一致，远端main仍eb6b559790f3d08e35ebeae9557d68bec6e09e90。首个commit因本机未配置作者失败；核对此前6次提交后，本轮仅用命令级Codex <codex@local.invalid>沿用已有作者，不改全局配置。GITHUB-MAC-01已完成，本回执随后同分支提交。Windows lead结束交付后等待，Mac接手先确认同身份只有一个写入者；未在Mac运行，不宣称健康数据或本机工具已同步。
+
+暂存快照导出复验：发现Git换行转换影响YAML入口解析与报告原始字节；已使入口解析兼容CRLF/LF，并通过.gitattributes保留vendor资源和归档报告原始字节，精确renormalize这些路径后，实际暂存导出portable15/15及vendor读取exit0。git diff --cached --check对活动文件通过；历史archive及原报告保留原始Markdown硬换行/混合行尾，因此仍有既有空白提示，不改写历史快照。
+
+远端克隆复验：Windows在Git忽略的.forma-local/runtime/github-clone-verify中实际从GitHub clone候选bbc9024，portable15/15、vendor读取exit0，git status干净；证明已上传的快照可独立获取，仍不是Mac实机执行。
+
+---
+
+# 2026-10-21｜CHAT-PROMPTS-01：准备新对话
+
+用户要求每位员工独立Prompt。已生成agent-prompts/launch/00至06七份完整Prompt，并更新START-PROMPTS标题/平台索引。首轮只读身份确认，可以读取主目录未提交配置，独立checkout缺失仅阻塞工程写入；本轮不写其他员工记忆、不启动会话。01当前会话继续作为lead，避免同身份双writer。
+
+实际验证：7份Prompt的编号/ID、任务、MD/记忆/状态路径和只读边界检查通过；无业务源码变化，本轮不重复构建或产品测试。Git元数据仍为只读，不重复失败暂存，不声称提交/同步。对话创建数0、员工启动数0；用户可复制各Prompt建立相应Dot/Codex/Claude Code对话。CHAT-PROMPTS-01处于review。
+
+下一步：用户逐一打开对话并粘贴Prompt，员工报告实际已读/未知/阻塞；待可写Git与旧writer审计后才安排工程任务。
+
+---
+
+# 01｜Codex项目主管 · 本轮配置交付
+
+2026-10-21；执行者lead；TEAM7-CONFIG-01 blocked。主仓库继续C:/Users/devin/健康网站；main/e4c6a1b（未提交配置）。七人MD/入口/独立记忆/状态、共享FORMA、唯一TASKS、Skills矩阵与显式读取脚本、七份启动Prompt、历史归档和报告副本已生成。
+
+实际执行：node scripts/verify-forma-team.cjs exit0（15项）；node scripts/forma-skills.cjs verify exit0（12技能/110已登记资源哈希一致，有agent-development缺test-agent-trigger.sh警告）；显式team-composition人数规划读取小场景通过；npm.cmd run build exit0；git diff --check exit0（换行提示）。server/src未改，未跑npm test或浏览器验收；历史155/155不算本轮。
+
+阻塞：git add -- docs/collaboration/decisions/ADR-team-seven-c-drive-20261021.md exit1，.git/index.lock Permission denied；未提交/推送/同步。其他worktree git status权限拒绝，源码交接冻结；Claude2.1.293该cwd会话查询[]，不能据此证明全机无writer。技能原生触发与Dot连接未验证，上游commit/许可部分未知。
+
+下一步：审查configuration-files.json精确清单，具备Git权限后精确提交经独立审查的配置；核对旧writer后逐人接手。不自动启动会话、开发架构候选或派工。完整结果见CONFIGURATION-RESULTS.md。待用户决定：无新增预算/供应商/法律事项。
+
+---
+
+## 保留的历史配置与交接
+
+# 01｜Codex项目主管 · 当前配置状态
+
+2026-10-21；01按TEAM7-CONFIG-01一次性添加身份元数据。员工尚未报告ONBOARD-01接手；下方原状态保留历史，不把旧任务视为仍派发。后续仅本人维护，当前任务以TASKS为准。
+
+---
+
+# Codex lead 状态
+
+2026-10-20 TEAM-EXP-01 blocked（配置与校验完成，Git提交受限）。用户明确要求增加员工并给任务；已读取team-composition-patterns v1.0.2及当前AGENTS/TASKS/本人记忆、启动说明和相关请求。在当前main（e4c6a1b）登记11角色员工池，新增dot/product/ux/research/security/release；保留既有源码owner、会话/worktree和未提交内容。新增六角色仅获专属deliverables/status/memory权限，已写启动说明和一次性记忆种子；给原角色与新角色共10项首次任务，含路径、验收和依赖。任务均未开始，UX/Release依赖阻塞；未启动代理、通知外部会话、跨目录同步、部署或新增依赖。
+
+本轮实测：执行者lead，2026-10-20，根main/e4c6a1b+未提交配置。`node C:/Users/devin/AppData/Local/Temp/forma-team-expansion-validate.cjs` exit0：11角色、10项未开始任务、50个相对链接均通过，UX/Release依赖状态符合任务板；`npm.cmd run build` exit0（tsc/Vite/offline shell通过；现有训练分包>500kB提示保留）；`git diff --check`通过（仅LF/CRLF提示）。文档修改未触及server/，未重跑npm test，不引用历史测试为本轮结果。
+
+提交阻塞：精确尝试 `git add -- docs/collaboration/decisions/ADR-team-expansion-20261020.md` 返回exit1，无法创建 `.git/index.lock`（Permission denied）。本轮未提交/未推送/未同步，保留文件和既有工作；须由具备仓库写权限的会话审查精确文件后提交，不改权限、不绕过限制。旧MEM-01保持原doing，不因扩展而标记完成。待用户决定：无新增预算、供应商或市场决定。
+
+2026-10-20 AR-01 done。用户指定 improve-codebase-architecture，实际找到并读取 `D:/AI-tools/skills/_shared/improve-codebase-architecture/SKILL.md`、HTML-REPORT 与 codebase-design。回看25次提交，读取当前AGENTS/TASKS/发给lead的请求及相关ADR；未找到GLOSSARY.md或docs/adr，采用types及实际decisions。按skill启用一名只读子代理复核账户同步与训练版本，无写入、无派生或其他聊天消息。四项候选：计划调整、账户工作区、日/周汇总、训练计划版本；报告含前后图、精确证据、deletion test、seam/adapter/locality/leverage与测试缺口，首选计划调整。不把文件长度、已有同步复杂度或分包提示直接当作架构缺陷，保留FoodPhoto和缓存现有depth。
+
+验证：`npm test`实际155/155、0失败；`npm run build`实际exit0，保留训练分包>500kB提示。临时脚本 `node --import tsx C:/Users/devin/AppData/Local/Temp/forma-architecture-probe-20261020.mjs` exit0：固定2026-10-17T06:30Z、浏览器LA/档案Shanghai，首页算法10-16、趋势算法10-17（未挂载浏览器）；随机端口+独立临时账户，以最新revision=3接受旧base建议，PUT/state与POST/sync实际均400，revision仍3、建议未接受、无追加版本。临时数据库在确认目标位于OS temp且有专用前缀后清理；不使用固定开发端口或现有账户。上述与20261017两个既有请求一致，本轮未修复，不更改契约或标记请求解决。
+
+产物：`C:/Users/devin/AppData/Local/Temp/architecture-review-20261020-210829.html`（20,015 bytes），已调用Start-Process打开；Codex文件面板返回queued，不将其称为渲染截图验收。报告内容和基础CSS内嵌，Tailwind/Mermaid按skill使用CDN。只修改本轮TASKS/lead状态；产品源码、依赖、ADR未改。既有public/demo-meal.png删除与未跟踪文件保持原样，不纳入提交。报告生成完成后按skill等待用户选择深入方向；本轮分析请求已完成，不据此自动实施重构。
+
+待用户决定：本轮无新增市场、预算或供应商决定；历史待决项保持原状态。
+
+2026-10-17 WT-01 done。用户先选择当前聊天子代理，随后明确改为“项目下三个独立聊天，各用 Git worktree 隔离”。已经在运动健康网站项目实际创建Forma前端开发、Forma后端开发、Forma代码审查，各自worktree为bdd7/7f7e/9260；三个聊天均返回就绪无阻塞，已完成首轮并等待具体任务。准确threadId、路径和提交见ADR-project-worktrees-20261017。工具实际采用detached HEAD，不称其为命名分支。总控也已调用项目归属工具加入该项目。原三个子代理已经结束，未建立自动化。
+
+验证：CO轮qa实际串行npm test155/155（exit0）及npm run build（exit0），有限范围报告见docs/reviews/2026-10-17-three-agent-baseline.md；三个新聊天只提交自己的接手状态，没有重复运行或宣称其自身实测。lead核实git worktree list的三个独立目录与聊天projectId；本轮产品源码未改，其他隔离修复不合并。根目录原AGENTS/skills/handoff等未跟踪文件保持原状，仅向新worktree同步项目规则和当前任务板。静态时区差异与语义旧base状态码差异已记录请求，尚未修复/运行复现；没有新增用户待决。
+
+提交协议偏差：CO轮qa提交66a0f00误纳入frontend同时暂存的两份文档，未含产品源码；frontend在ddbd4bd补记，保留历史。新worktree独立索引；lead仅按精确路径提交本轮自有文档，git diff --check通过。
+
+2026-10-15 G-01 done。人类直接要求将网站放在GitHub；已使用登录的Devinshen123账号创建私有仓库https://github.com/Devinshen123/forma-health ，HTTPS origin与main上游已设置，git push成功，GitHub API确认PRIVATE/非空/默认main且远端SHA与本机HEAD一致。未改写历史或force push。README新增仓库链接、克隆和运行说明。
+
+验证：原main全部19次提交、134历史路径、208唯一blob（200文本＋8PNG）独立只读审查，无真实secret、非.example环境文件、数据库、uploads或reference-sources路径；无SQLite签名，PNG无嵌入文本/EXIF元数据，既有截图来源为演示/合成记录，本轮没有新增像素OCR。候选均为测试夹具/属性而非真实凭据。git check-ignore确认.env/data/reference-sources/node_modules/dist排除；npm test155/155、npm run build通过（现有训练分包大小提示），git diff --check通过。
+
+本次只上传源码/测试/文档和公开演示素材，不上传本机账户记录、附件、真实密钥或其他所有者未跟踪工具文件。GitHub代码托管没有启用公网网站部署或付费资源。
+
+2026-10-14 T-01 done。用户直接授权五组训练能力，本轮在原网站增量集成884条动作文字与8项原创示意、星期/循环模板、实际逐组/超级/递减/可恢复休息、PR/e1RM/人审进阶/肌群统计、审核导入及实体同步。来源许可证记录、REA部分覆盖、API契约与当前限制已写入文档，未复制openGym代码或媒体。
+
+验证：npm run build成功（训练按需分包187.69KB gzip有大小提示）；npm test155/155、0失败。实际IAB合成账户完成计划→逐组→计时暂停刷新→核对结束→CSV去重→证据进阶，停止本次自有服务证明断服务刷新与队列持久化，恢复后与另一客户端记录合并，同记录40/55冲突由人审选择。1440/390px中英通过、无横向溢出、90秒首帧和未保存跨页提示已复验。完整记录见docs/VALIDATION.md。最终只读审查补上离线IDB返回后二次核对active-account marker、在线boot固定账户；静态壳当前版本fallback也已修正，重新build通过，npm test再次155/155；退出浏览器并精确核验后清理唯一合成验收账户，本机服务恢复运行，交付训练演示入口。
+
+当前界限：8项原创示意不等于884个动画；其余有文字。共享服务同步机制已验，本机监听不等于手机跨设备部署。供应商CSV格式限定，未验证全部真实文件；iPhone/Safari/VoiceOver、公开HTTPS托管、Apple登录/HealthKit/TestFlight尚未实测或实现。真实AI密钥未配置，没有付费调用。
+
+待用户决定：运营预算/服务地区/供应商、后续部署与Apple会员签名。用户已选保持当前测试额度，维持10次/账户/UTC日，不能采纳Claude转述为新预算。上述决定不阻塞本机网站交付。
+
+以下是此前交付的历史记录。
+
+2026-10-14 AI-01 done。用户要求AI识图，选择“先完成接入，稍后配置密钥”。服务端真实Responses adapter与独立草稿、逐图同意/校正保存、双语状态、持久账户/项目预留已集成。AbortSignal上传冻结账户标记，Nutrition按账户重建，.env仅后端加载。Claude Code真实设计brief评审已采用费用/同意凭证建议；另一个独立Claude rules纯函数交付已纳入测试，尚未运行对接。
+
+验证实际运行：npm install sharp成功/audit0；npm test99/99（原11+AI46+rules42）；最终npm run build TypeScript/Vite成功；git diff --check无错误。IAB真实夹具闭环200g/260kcal与AI来源，Edge1440/390证明未知保留、原草稿不改、失败手动保存，pageerror0/无横向溢出。截图发现审核区不醒目、checkbox缩水后修复focus/sticky/18px并重跑同一流程通过。实际127.0.0.1:3001已启动，capabilities not_configured，IAB入口可见控制台空。临时fixture进程/数据核验后清理，未碰人类数据。官方视觉/StructuredOutputs/模型页已打开，固定5.4-mini快照，未输出或设置真实密钥。
+
+2026-10-14预算核对已收到直接答复：“先保持当前测试限额，预算稍后确认”。已记录ADR-budget-test-limits并回写Claude请求、TASKS和COSTS；程序默认10次/UTC日、账户US$0.40/日、项目US$2/日预留均维持。本次只更新文档，git diff --check通过，不重复运行未受影响的程序测试。
+
+待用户决定：密钥稍后配置到本机.env，真实服务地区与运营月预算仍待决定。Claude转述75美元/月、1.5美元每人AI/月、15次/日未成为已确认预算。M1优先实体/会话/服务端提议契约与rule evidence对接；真实模型照片质量仍待实测。
+
+2026-10-13。本机网站M0已实现，最终3001构建后运行和截图验收已完成。TypeScript/Vite构建通过；后端代理最新11个HTTP/SQLite测试通过（含跨标签身份绑定）。内置浏览器已用合成账户实际保存引导、半份260kcal＋私有照片、45分钟训练、跨午夜7.5小时睡眠、30分钟候选接受/补偿撤销、周复盘及原报告符号<0.5；英文切换通过。
+
+修复：409重载、sessionEpoch阻断旧请求、跨标签请求身份header＋storage通知、boot异步身份检查、删除后二次注销、上传取消清理、日期输入即时事件、手机hero断行、h1默认字号。已读共享Claude评审并在其请求回复，M1架构迁移与M0真实性边界记录ADR。
+
+当时阻塞/未实现（M0历史快照）：AI/OCR、云同步、Apple登录、iPhone/HealthKit/TestFlight、正式发信、地区与预算。当前未购买资源或发布生产。无需再问是否允许先做网站，已有明确人类授权。
+
+待用户决定：外部服务月预算与供应商/服务地区、健康摘要或原始上云范围、Apple会员/签名；这些不阻塞本机记录体验，但阻止擅自启用付费与声明双端MVP完成。

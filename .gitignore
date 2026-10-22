@@ -12,7 +12,6 @@ playwright-report/
 public/exercise-media/opengym/
 vendor/opengym/.wb-tmp/
 docs/collaboration/*response.json
-
 # Local Apple build products and developer signing selections.
 ios/**/.build/
 ios/**/.swiftpm/
@@ -22,3 +21,5 @@ ios/**/*.xcuserstate
 ios/**/*.xcresult/
 ios/**/*.ipa
 ios/**/*.xcarchive/
+# Local coordination outputs; no formal health data
+.forma-local/

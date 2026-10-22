@@ -1,2 +1,6 @@
 public/exercise-content/opengym/*.json text eol=lf
 src/catalog/opengym*.json text eol=lf
+
+# Preserve exact bytes for registered skill resources and the archived source report.
+/docs/collaboration/skills/vendor/** -text
+/docs/architecture/reviews/architecture-review-20261020-210829.html -text
