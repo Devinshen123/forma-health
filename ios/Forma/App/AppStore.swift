@@ -13,6 +13,10 @@ final class AppStore {
     var cleanupFailed = false
     var canRestoreSession = false
     var error: String?
+    /// The companion game snapshot. Separate from health facts and from the sync error banner.
+    var companion: CompanionSnapshot?
+    var companionError: String?
+    var companionBusy = false
     var language: String = "zh" {
         didSet { if !uiTesting { UserDefaults.standard.set(language, forKey: "forma.language") } }
     }
@@ -125,7 +129,9 @@ final class AppStore {
             guard ticket == generation else { return }
             handleSessionFailure(error)
             self.error = message(error)
+            return
         }
+        if companion != nil { await loadCompanion() }
     }
 
     func saveRecord(collection: String, value: JSONValue) async throws {
@@ -198,6 +204,7 @@ final class AppStore {
         workbenchSession?.lock(); workbenchSession = nil; webProfileID = nil
         generation = UUID(); if invalidatingClient { api?.invalidate() }; api = nil; baseURL = nil
         user = nil; state = .object([:]); versions = [:]; pending = nil
+        companion = nil; companionError = nil; companionBusy = false
         isDemo = false; webSessionID = UUID(); error = nil
         if !uiTesting && !preservingDrafts {
             SessionVault.beginClear(profileID: profile); canRestoreSession = false
@@ -251,6 +258,7 @@ final class AppStore {
         let end = Calendar.current.startOfDay(for: now).addingTimeInterval(7 * 3600)
         sample["sleeps"] = .array((try? NativeRecords.sleep(start: end.addingTimeInterval(-8 * 3600), end: end, quality: 4, energy: 4, timezone: TimeZone.current.identifier)).map { [$0] } ?? [])
         state = .object(sample)
+        companion = demoCompanion()
     }
 
     func leaveDemo() {
@@ -275,6 +283,145 @@ final class AppStore {
             cleanupFailed = true
             self.error = text("本地训练数据尚未清理完成，请重试后再切换账户。", "Local training data could not be cleared. Retry before switching accounts.")
         }
+    }
+
+    // MARK: - Companion
+
+    /// Reads the companion snapshot. Never sends health facts; the service derives rewards itself.
+    func loadCompanion() async {
+        if isDemo {
+            if companion == nil { companion = demoCompanion() }
+            return
+        }
+        await companionRequest("")
+    }
+
+    func claimCompanion(rest: Bool = false) async {
+        guard !isDemo else {
+            companionError = text("演示模式不会把进度保存到真实账户。登录后可领取今天的奖励。",
+                                  "Demo mode never saves progress to a real account. Sign in to claim today’s reward.")
+            return
+        }
+        await companionRequest(rest ? "/rest" : "/claim", method: "POST", body: .object([:]))
+    }
+
+    func openCompanionChest(id: String) async {
+        guard let encoded = Self.companionPathComponent(id) else {
+            companionError = text("这个宝箱已不可用，请刷新伙伴页。", "This chest is no longer available. Refresh your companion.")
+            return
+        }
+        if isDemo {
+            guard let snapshot = companion,
+                  let opened = snapshot.openingChest(id: id) else { return }
+            companion = opened
+            companionError = nil
+            return
+        }
+        await companionRequest("/chests/\(encoded)/open", method: "POST", body: .object([:]))
+    }
+
+    func equipCompanion(_ item: CompanionItem?) async {
+        if isDemo {
+            guard let snapshot = companion else { return }
+            guard let updated = snapshot.replacingEquipped(item) else {
+                companionError = text("先打开对应里程碑的宝箱，才能换上这件装扮。",
+                                      "Open the matching milestone chest before equipping this item.")
+                return
+            }
+            companion = updated
+            companionError = nil
+            return
+        }
+        let value: JSONValue = item.map { .string($0.rawValue) } ?? .null
+        await companionRequest("/equipment", method: "PUT", body: .object(["item": value]))
+    }
+
+    /// Every character is free; switching never resets XP, the wardrobe or rewards.
+    func selectCompanionCharacter(_ character: CompanionCharacter) async {
+        if isDemo {
+            guard let snapshot = companion else { return }
+            companion = snapshot.replacingCharacter(character)
+            companionError = nil
+            return
+        }
+        await companionRequest("/character", method: "PUT", body: .object(["character": .string(character.rawValue)]))
+    }
+
+    enum CompanionChallengeAction { case create, join(String), leave }
+
+    func companionChallenge(_ action: CompanionChallengeAction) async {
+        guard !isDemo else {
+            companionError = text("演示模式不能加入双人挑战。", "Demo mode cannot join a shared challenge.")
+            return
+        }
+        var body: JSONValue
+        switch action {
+        case .create: body = .object(["action": .string("create")])
+        case .leave: body = .object(["action": .string("leave")])
+        case .join(let raw):
+            guard let code = Self.companionChallengeCode(raw) else {
+                companionError = text("邀请码是 16 位十六进制字符（0-9、A-F）。",
+                                      "An invitation code is 16 hexadecimal characters (0-9, A-F).")
+                return
+            }
+            body = .object(["action": .string("join"), "code": .string(code)])
+        }
+        await companionRequest("/challenges", method: "POST", body: body)
+    }
+
+    /// Normalises an invitation exactly as the service does before its own check.
+    static func companionChallengeCode(_ raw: String) -> String? {
+        let code = raw.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        // Exactly the service's /^[0-9A-F]{16}$/; `isHexDigit` would also accept other Unicode digits.
+        let hex = Set("0123456789ABCDEF")
+        guard code.count == 16, code.allSatisfy(hex.contains) else { return nil }
+        return code
+    }
+
+    /// Keeps a service-supplied id from reshaping the request path.
+    static func companionPathComponent(_ id: String) -> String? {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        guard !id.isEmpty, id.unicodeScalars.allSatisfy(allowed.contains) else { return nil }
+        return id
+    }
+
+    private func companionRequest(_ path: String, method: String = "GET", body: JSONValue? = nil) async {
+        guard !isDemo, !isPurging, !cleanupFailed, let api, let user, !companionBusy else { return }
+        companionBusy = true
+        defer { companionBusy = false }
+        let ticket = generation
+        do {
+            let data = try await api.send("/api/companion" + path, method: method, body: body, account: user.id)
+            let snapshot = try JSONDecoder().decode(CompanionSnapshot.self, from: data)
+            guard ticket == generation else { return }
+            companion = snapshot
+            companionError = nil
+        } catch {
+            guard ticket == generation else { return }
+            handleSessionFailure(error)
+            companionError = companionMessage(error)
+        }
+    }
+
+    func companionMessage(_ error: Error) -> String {
+        if case let NativeAPIError.http(_, code, _) = error {
+            switch code {
+            case "CHEST_NOT_FOUND":
+                return text("这个宝箱已不可用，请刷新伙伴页。", "This chest is no longer available. Refresh your companion.")
+            case "ITEM_NOT_OWNED":
+                return text("先打开对应里程碑的宝箱，才能换上这件装扮。",
+                            "Open the matching milestone chest before equipping this item.")
+            case "CHALLENGE_ACTIVE":
+                return text("先离开当前挑战，再加入新的。", "Leave your current challenge before joining another.")
+            case "CHALLENGE_UNAVAILABLE":
+                return text("这个邀请码无效或已过期。", "This invitation is unavailable or has expired.")
+            case "CHALLENGE_RATE_LIMIT":
+                return text("挑战操作过于频繁，请稍后再试。", "Too many challenge requests. Please try again later.")
+            default:
+                break
+            }
+        }
+        return message(error)
     }
 
     func prepareWorkbench(account: String) throws -> NativeWorkbenchSession {

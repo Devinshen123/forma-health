@@ -115,6 +115,88 @@ final class FormaUITests: XCTestCase {
         assertMetric("nutrition.total.kcal", equals: 500)
     }
 
+    func testCompanionGrowthPageIsNativeAndDemoProgressNeverReachesAnAccount() throws {
+        selectTab("today", chinese: "今日", english: "Today")
+
+        let card = element("companion.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must show the companion card")
+        let summary = element("companion.card.summary").label
+        XCTAssertTrue(summary.contains("2"), "The demo companion is level 2: \(summary)")
+        reveal(card)
+        card.tap()
+
+        assertScreen("companion")
+        attachScreenshot("Native companion page")
+        XCTAssertEqual(app.webViews.count, 0, "The companion page must not be a website wrapper")
+        XCTAssertTrue(element("record.demo.notice").waitForExistence(timeout: 5),
+                      "A page that can change things must say it is a demo")
+        XCTAssertTrue(element("companion.level").label.contains("2"))
+        XCTAssertTrue(element("companion.activeDays").label.contains("6"))
+
+        // XP is game progress. The page must say so rather than read as a health score.
+        let xpBefore = element("companion.xp").label
+        XCTAssertTrue(xpBefore.contains("140"), "Demo XP is 140: \(xpBefore)")
+
+        // The three demo quests are shown with their real completed state, not as zero.
+        for quest in ["nutrition", "movement", "sleep"] {
+            XCTAssertTrue(element("companion.quest.\(quest)").exists, "\(quest) task is missing")
+        }
+
+        // Claiming in a demo must refuse and must not invent progress.
+        let claim = button("companion.claim")
+        reveal(claim)
+        claim.tap()
+        XCTAssertTrue(element("companion.error").waitForExistence(timeout: 5),
+                      "A demo claim must explain that nothing is saved")
+        XCTAssertEqual(element("companion.xp").label, xpBefore, "A demo claim must not change XP")
+
+        // Opening the milestone-6 chest awards exactly the contract's second item.
+        let chest = button("companion.chest.demo-6.open")
+        reveal(chest)
+        chest.tap()
+        let cap = element("companion.item.cap")
+        XCTAssertTrue(cap.waitForExistence(timeout: 5), "Opening day 6 must award the second accessory")
+        reveal(cap)
+        cap.tap()
+        XCTAssertTrue(waitUntilSelected(cap), "The newly awarded accessory must be wearable")
+
+        // Every character is free, and switching keeps XP, the wardrobe and rewards.
+        let seal = element("companion.character.seal")
+        reveal(seal)
+        seal.tap()
+        XCTAssertTrue(waitUntilSelected(seal), "Choosing a character must take effect")
+        XCTAssertEqual(element("companion.xp").label, xpBefore, "Switching character must not reset XP")
+        XCTAssertTrue(element("companion.activeDays").label.contains("6"))
+        XCTAssertTrue(element("companion.item.cap").exists, "The wardrobe survives a character switch")
+        attachScreenshot("Companion after switching character")
+    }
+
+    func testCompanionInviteCodeIsRefusedUntilItMatchesTheServiceFormat() throws {
+        selectTab("today", chinese: "今日", english: "Today")
+        let card = element("companion.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        reveal(card)
+        card.tap()
+        assertScreen("companion")
+
+        // `isEnabled` is read from the accessibility tree, so these checks do not depend on the
+        // on-screen keyboard having moved out of the way.
+        let join = button("companion.challenge.join")
+        XCTAssertTrue(join.waitForExistence(timeout: 5))
+        XCTAssertFalse(join.isEnabled, "An empty invitation cannot be submitted")
+        replaceText("companion.challenge.code", with: "0123456789ABCDE")
+        XCTAssertFalse(join.isEnabled, "A 15-character invitation cannot be submitted")
+        replaceText("companion.challenge.code", with: "0123456789ABCDEF")
+        XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted")
+    }
+
+    private func waitUntilSelected(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            target.exists && target.isSelected
+        }, object: nil)
+        return XCTWaiter.wait(for: [ready], timeout: timeout) == .completed
+    }
+
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
