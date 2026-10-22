@@ -4,6 +4,7 @@ import { ApiError, getCompanion, claimCompanion, restCompanion, openCompanionChe
 import { COMPANION_CHARACTERS, COMPANION_CHARACTER_DETAILS, COMPANION_ITEMS, demoCompanion, type CompanionCharacter, type CompanionItem, type CompanionQuest, type CompanionSnapshot } from '../companion';
 import type { FeatureProps, Language, Page } from '../types';
 import CompanionAvatar from '../components/CompanionAvatar';
+import CompanionGrowth from '../components/CompanionGrowth';
 import '../companion.css';
 
 type CompanionProps = FeatureProps & { navigate: (page: Page) => void };
@@ -271,7 +272,7 @@ export default function Companion(props: CompanionProps) {
       <CharacterGallery model={model} art={art} zh={zh} demo={Boolean(demo)} authenticated={Boolean(accountId)} />
       <div className="companion-main-grid">
         <section className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
-          <div className="companion-avatar-scene"><span className="companion-scene-orbit" style={{ backgroundColor: characterDetails.color }} /><CompanionAvatar character={character} equipped={snapshot.equipped} level={snapshot.level} label={zh ? `${name}，Forma 原创伙伴的3D风格形象` : `${name}, Forma’s original companion in a 3D-style render`} unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><span className="companion-scene-caption">{zh ? characterDetails.descriptionZh : characterDetails.descriptionEn}</span></div>
+          <CompanionGrowth key={props.demo ? 'demo' : props.accountId} snapshot={snapshot} identity={props.demo ? 'demo' : props.accountId ?? ''} zh={zh} />
           <div className="companion-home-copy"><h2>{zh ? `你好，我是${name}。` : `Hi, I’m ${name}.`}</h2><p>{zh ? '你回来时，我一直在。漏记不会扣分，也不会失去外观。' : 'I’m here whenever you return. Missing a log never costs XP or outfits.'}</p><Progress snapshot={snapshot} zh={zh} /><div className="companion-days"><span><strong data-testid="companion-active-days">{snapshot.activeDays}</strong> {zh ? '个成长日' : 'growth days'}</span><span>{zh ? '每 3 个成长日解锁免费宝箱' : 'A free chest every 3 growth days'}</span></div><p className="companion-small">{zh ? 'XP 和等级只代表游戏进度，不是健康评分。' : 'XP and levels show game progress, never a health score.'}</p></div>
         </section>
         <section className="panel companion-daily" aria-label={zh ? '今日成长任务' : 'Today’s growth quests'}>

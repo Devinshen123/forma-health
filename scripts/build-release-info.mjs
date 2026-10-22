@@ -18,7 +18,7 @@ const info = {
   sourceCommit,
   builtAt: new Date().toISOString(),
   exerciseLibrary: { source: manifest.source, sourceCommit: manifest.sourceCommit, exercises: manifest.primaryCount, videos: manifest.videoCount, files: manifest.files.length, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex') },
-  companions: { characters: portraits, imageCount: portraits.length * 2 },
+  companions: { characters: portraits, imageCount: portraits.length * 2, renderMode: 'realtime-webgl', growthMilestones: [1, 3, 5, 10] },
 };
 writeFileSync('dist/release-info.json', JSON.stringify(info, null, 2) + '\n');
 console.log(`Release identity: ${sourceCommit ?? 'unavailable'}; ${manifest.primaryCount} animated exercises, ${portraits.length} companions.`);
