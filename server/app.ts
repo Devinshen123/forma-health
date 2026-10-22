@@ -454,6 +454,9 @@ export function createApp(options: AppOptions) {
       account: Account = res.locals.account;
     if (!(await verifyPassword(password, account)))
       return res.status(401).json({ error: "Password is incorrect" });
+    // Password verification yields: the original request's session may have been revoked meanwhile.
+    if (sessionOf(req)?.account?.id !== account.id)
+      return res.status(401).json({ error: 'Account changed. Sign in again before deleting your account.', code: 'ACCOUNT_CHANGED' });
     foodPhoto.cancelAccount(account.id);
     store.deleteAccount(account.id);
     res.clearCookie(COOKIE, cookieOptions);
