@@ -192,7 +192,7 @@ extension CompanionTests {
         let instant = try XCTUnwrap(RecordDates.parseInstant("2026-10-22T00:00:00Z"))
         let opened = try XCTUnwrap(demo.openingChest(id: "demo-6", at: instant))
         XCTAssertEqual(opened.chests[1].item, .cap, "Milestone 6 rewards the second item")
-        XCTAssertEqual(opened.chests[1].openedAt, companionInstant(instant))
+        XCTAssertEqual(opened.chests[1].openedAt, wireInstant(instant))
         XCTAssertTrue(opened.chests[1].openedAt?.hasPrefix("2026-10-22T00:00:00") ?? false)
         XCTAssertEqual(opened.inventory, [.leaf, .cap])
         XCTAssertNil(opened.openingChest(id: "demo-6"),

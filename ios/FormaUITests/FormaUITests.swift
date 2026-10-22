@@ -197,6 +197,54 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted, lower case included")
     }
 
+    func testPlanPageIsNativeAndADemoPlanCannotBeSaved() throws {
+        selectTab("today", chinese: "今日", english: "Today")
+
+        let card = element("plan.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must link to the plan")
+        XCTAssertTrue(element("plan.card.summary").label.contains("3"),
+                      "The demo plan is 3 days a week: \(element("plan.card.summary").label)")
+        reveal(card, attempts: 24)
+        card.tap()
+
+        assertScreen("plan")
+        attachScreenshot("Native plan page")
+        XCTAssertEqual(app.webViews.count, 0, "The plan page must not be a website wrapper")
+        XCTAssertTrue(element("record.demo.notice").waitForExistence(timeout: 5),
+                      "A page that can change things must say it is a demo")
+
+        // The demo plan's own values, and its unset targets shown as missing rather than zero.
+        XCTAssertEqual(element("plan.trainingDays").label, "3")
+        XCTAssertEqual(element("plan.trainingMinutes").label, "45")
+        XCTAssertEqual(element("plan.sleepHours").label, "8")
+        XCTAssertEqual(element("plan.calorieTarget").label, "—", "An unset target must never read as 0")
+        XCTAssertEqual(element("plan.proteinTarget").label, "—", "An unset target must never read as 0")
+        XCTAssertTrue(element("plan.suggestions.empty").exists, "The demo has nothing awaiting a decision")
+        XCTAssertTrue(element("plan.history.count").label.contains("1"), "One version so far")
+
+        // Editing refuses an unchanged or out-of-range plan before anything is sent.
+        let edit = button("plan.edit")
+        reveal(edit, attempts: 24)
+        edit.tap()
+        let save = button("plan.editor.save")
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertTrue(save.isEnabled, "The starting values are themselves valid")
+        replaceText("plan.editor.sleepHours", with: "20")
+        XCTAssertFalse(save.isEnabled, "Sleep outside 4–12 hours cannot be saved")
+        replaceText("plan.editor.sleepHours", with: "7")
+        XCTAssertTrue(save.isEnabled, "A valid change can be submitted")
+
+        // A demo save must be refused in words, and must not pretend to have saved.
+        save.tap()
+        XCTAssertTrue(element("plan.editor.error").waitForExistence(timeout: 5),
+                      "A demo plan save must explain that nothing is stored")
+        let cancel = button("plan.editor.cancel")
+        XCTAssertTrue(waitUntilHittable(cancel))
+        cancel.tap()
+        XCTAssertTrue(element("plan.trainingDays").waitForExistence(timeout: 5))
+        XCTAssertEqual(element("plan.sleepHours").label, "8", "The refused demo edit changed nothing")
+    }
+
     private func waitUntilSelected(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             target.exists && target.isSelected

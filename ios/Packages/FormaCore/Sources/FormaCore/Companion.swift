@@ -257,7 +257,7 @@ public extension CompanionSnapshot {
         let item = chest.item ?? companionChestItem(milestone: chest.milestone)
         var updated = chests
         updated[index] = CompanionChest(id: chest.id, milestone: chest.milestone, item: item,
-                                        openedAt: companionInstant(instant))
+                                        openedAt: wireInstant(instant))
         let owned = CompanionItem.allCases.filter { candidate in updated.contains { $0.item == candidate } }
         return CompanionSnapshot(ruleVersion: ruleVersion, character: character, day: day, xp: xp, level: level,
                                  activeDays: activeDays, equipped: equipped, inventory: owned,
@@ -267,7 +267,7 @@ public extension CompanionSnapshot {
 
 /// The wire instant format the service uses, formatted here so callers outside this package
 /// never need the package's internal date helpers.
-public func companionInstant(_ date: Date = Date()) -> String {
+public func wireInstant(_ date: Date = Date()) -> String {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     formatter.timeZone = TimeZone(secondsFromGMT: 0)

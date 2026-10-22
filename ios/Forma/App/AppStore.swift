@@ -17,6 +17,7 @@ final class AppStore {
     var companion: CompanionSnapshot?
     var companionError: String?
     var companionBusy = false
+    var planError: String?
     var language: String = "zh" {
         didSet { if !uiTesting { UserDefaults.standard.set(language, forKey: "forma.language") } }
     }
@@ -31,6 +32,10 @@ final class AppStore {
     private var pending: PendingSave?
     private var parkedSave: (server: String, account: String, save: PendingSave)?
     var hasUnconfirmedSave: Bool { pending != nil }
+    /// A plan write spans several collections at once, so its unconfirmed state is tracked apart
+    /// from the single-record slot. Retrying reuses the same mutation id and adds no second version.
+    private var pendingPlan: (key: String, mutation: JSONValue, confirm: (JSONValue) -> Bool)?
+    var hasUnconfirmedPlanSave: Bool { pendingPlan != nil }
     let uiTesting: Bool
 
     init(uiTesting: Bool = ProcessInfo.processInfo.arguments.contains("--uitesting")) {
@@ -118,6 +123,7 @@ final class AppStore {
         state = snapshot.state; versions = snapshot.entityVersions; error = nil
         if let pending, let collection = pending.key.split(separator: ":").first,
            records(String(collection)).contains(pending.value) { self.pending = nil }
+        if let pendingPlan, pendingPlan.confirm(state) { self.pendingPlan = nil }
     }
 
     func refresh() async {
@@ -205,6 +211,7 @@ final class AppStore {
         generation = UUID(); if invalidatingClient { api?.invalidate() }; api = nil; baseURL = nil
         user = nil; state = .object([:]); versions = [:]; pending = nil
         companion = nil; companionError = nil; companionBusy = false
+        pendingPlan = nil; planError = nil
         isDemo = false; webSessionID = UUID(); error = nil
         if !uiTesting && !preservingDrafts {
             SessionVault.beginClear(profileID: profile); canRestoreSession = false
@@ -257,6 +264,16 @@ final class AppStore {
         sample["workouts"] = .array((try? NativeRecords.workout(name: "Strength / 力量训练", date: now, duration: 30, exerciseName: "Squat / 深蹲", sets: 3, reps: 8, weight: 40, notes: "")).map { [$0] } ?? [])
         let end = Calendar.current.startOfDay(for: now).addingTimeInterval(7 * 3600)
         sample["sleeps"] = .array((try? NativeRecords.sleep(start: end.addingTimeInterval(-8 * 3600), end: end, quality: 4, energy: 4, timezone: TimeZone.current.identifier)).map { [$0] } ?? [])
+        // The same starting plan the website's demo shows: both nutrition targets stay unset,
+        // so the page has to render them as missing rather than zero.
+        let planId = "demo-plan-1"
+        sample["planVersions"] = .array([.object([
+            "id": .string(planId), "parentId": .null, "createdAt": .string(wireInstant(now)),
+            "reason": .string("onboarding.initial"),
+            "trainingMinutes": .number(45), "trainingDays": .number(3), "sleepHours": .number(8),
+            "calorieTarget": .null, "proteinTarget": .null,
+        ])])
+        sample["currentPlanId"] = .string(planId)
         state = .object(sample)
         companion = demoCompanion()
     }
@@ -282,6 +299,166 @@ final class AppStore {
         catch {
             cleanupFailed = true
             self.error = text("本地训练数据尚未清理完成，请重试后再切换账户。", "Local training data could not be cleared. Retry before switching accounts.")
+        }
+    }
+
+    // MARK: - Plan
+
+    /// The only collections a plan write may touch. A document outside this set is refused here,
+    /// before anything is sent, so this path can never become a general state editor.
+    static let planCollections: Set<String> = ["planVersions", "currentPlanId", "suggestions", "profile"]
+
+    var currentPlan: PlanVersionView? { PlanState.currentPlan(state) }
+    var planVersions: [PlanVersionView] { PlanState.versions(state) }
+    var proposedSuggestions: [SuggestionView] { PlanState.proposed(state) }
+    var undoableSuggestion: SuggestionView? { PlanState.undoableSuggestion(state) }
+
+    func editPlan(_ fields: PlanFields) async {
+        guard let plan = currentPlan else { return }
+        await applyPlan(key: "edit") { [state] newId in
+            try PlanOperations.edit(state: state, fields: fields, baseVersionId: plan.id, newId: newId)
+        }
+    }
+
+    func acceptSuggestion(_ id: String) async {
+        await applyPlan(key: "accept:\(id)") { [state] newId in
+            try PlanOperations.accept(state: state, suggestionId: id, newId: newId)
+        }
+    }
+
+    func rejectSuggestion(_ id: String) async {
+        await applyPlan(key: "reject:\(id)") { [state] _ in
+            try PlanOperations.reject(state: state, suggestionId: id)
+        }
+    }
+
+    func undoSuggestion() async {
+        await applyPlan(key: "undo") { [state] newId in
+            try PlanOperations.undo(state: state, newId: newId)
+        }
+    }
+
+    /// Builds one atomic mutation for the whole set of documents. Every change carries its own
+    /// baseVersion, so a plan the service has moved on from returns 409 for the user to review
+    /// rather than being overwritten.
+    private func applyPlan(key: String, build: (String) throws -> [PlanDocument]) async {
+        guard !isDemo else {
+            planError = text("演示模式不会把计划保存到真实账户。", "Demo mode never saves a plan to a real account.")
+            return
+        }
+        guard let api, let user, !isBusy, !isPurging, !cleanupFailed else { return }
+        isBusy = true
+        defer { isBusy = false }
+
+        let mutation: JSONValue
+        let confirm: (JSONValue) -> Bool
+        if let pendingPlan, pendingPlan.key == key {
+            // The exact same action, retried: reuse the mutation so the service deduplicates it.
+            mutation = pendingPlan.mutation
+            confirm = pendingPlan.confirm
+        } else if pendingPlan != nil {
+            planError = text("上一次计划保存还没有确认。请先重试或刷新核对，再做新的调整。",
+                             "The previous plan save is not confirmed yet. Retry or refresh before making another change.")
+            return
+        } else {
+            let newId = UUID().uuidString.lowercased()
+            let documents: [PlanDocument]
+            do { documents = try build(newId) }
+            catch { planError = planMessage(error); return }
+            guard !documents.isEmpty else { planError = planMessage(PlanError.noChanges); return }
+            guard documents.allSatisfy({ Self.planCollections.contains($0.collection) }) else {
+                planError = planMessage(PlanError.planChangedElsewhere)
+                return
+            }
+            mutation = Self.planMutation(documents: documents, versions: versions,
+                                         mutationId: UUID().uuidString.lowercased())
+            confirm = Self.planConfirmation(documents)
+        }
+
+        pendingPlan = (key, mutation, confirm)
+        let ticket = generation
+        do {
+            let data = try await api.send("/api/sync", method: "POST", body: mutation, account: user.id)
+            let snapshot = try JSONDecoder().decode(SyncSnapshot.self, from: data)
+            guard ticket == generation else { return }
+            state = snapshot.state
+            versions = snapshot.entityVersions
+            pendingPlan = nil
+            planError = nil
+            error = nil
+        } catch {
+            guard ticket == generation else { return }
+            // A refusal the service has already decided on leaves nothing unconfirmed.
+            if case let NativeAPIError.http(status, _, _) = error, (400..<500).contains(status), status != 401 {
+                pendingPlan = nil
+            }
+            handleSessionFailure(error)
+            planError = planMessage(error)
+        }
+    }
+
+    /// One atomic mutation for the whole set. Each change carries the baseVersion this client last
+    /// saw for that entity, so a plan the service has moved on from comes back as 409 instead of
+    /// being overwritten. A document this client has never seen starts at 0, which the service
+    /// treats as "must not exist yet".
+    static func planMutation(documents: [PlanDocument], versions: [String: Int],
+                             mutationId: String) -> JSONValue {
+        .object([
+            "mutationId": .string(mutationId),
+            "changes": .array(documents.map { document -> JSONValue in
+                .object([
+                    "collection": .string(document.collection),
+                    "id": .string(document.id),
+                    "baseVersion": .number(Double(versions["\(document.collection):\(document.id)"] ?? 0)),
+                    "kind": .string("upsert"),
+                    "value": document.value,
+                ])
+            }),
+        ])
+    }
+
+    /// Whether a later snapshot already contains this write, so an unconfirmed retry can stop.
+    private static func planConfirmation(_ documents: [PlanDocument]) -> (JSONValue) -> Bool {
+        let expected = documents
+            .filter { $0.collection != "profile" }
+            .map { ($0.collection, $0.id, $0.value) }
+        return { state in
+            expected.allSatisfy { collection, id, value in
+                if collection == "currentPlanId" { return state[collection] == value }
+                return (state[collection].arrayValue ?? []).contains { $0["id"].stringValue == id && $0 == value }
+            }
+        }
+    }
+
+    func retryUnconfirmedPlanSave() async {
+        guard let pendingPlan else { return }
+        await applyPlan(key: pendingPlan.key) { _ in [] }
+    }
+
+    func planMessage(_ error: Error) -> String {
+        switch error {
+        case PlanError.missingCurrentPlan:
+            return text("还没有计划可以调整。先完成引导，生成第一版计划。",
+                        "There is no plan to adjust yet. Finish onboarding to create the first version.")
+        case PlanError.planChangedElsewhere:
+            return text("计划已在别处更新。请刷新核对最新版本，再确认这次调整。",
+                        "The plan changed elsewhere. Refresh and review the latest version before confirming.")
+        case PlanError.invalidValues:
+            return text("请填写有效值：训练 1–7 天、10–180 分钟，睡眠 4–12 小时；能量 500–8000 kcal，蛋白质 1–400 g。",
+                        "Enter valid values: training 1–7 days and 10–180 minutes, sleep 4–12 hours; energy 500–8000 kcal, protein 1–400 g.")
+        case PlanError.noChanges:
+            return text("没有需要保存的变化。", "There is nothing to save.")
+        case PlanError.suggestionUnavailable:
+            return text("这条建议已经处理过或不再可用，请刷新查看。",
+                        "This suggestion has already been handled or is no longer available. Refresh to see it.")
+        case PlanError.missingBaseVersion:
+            return text("找不到可恢复的上一版计划，所以无法撤销。历史记录没有被改动。",
+                        "The version to restore is missing, so this cannot be undone. No history was changed.")
+        case NativeAPIError.http(409, _, _):
+            return text("计划已在别处更新。请刷新核对后再确认，本次没有保存。",
+                        "The plan changed elsewhere. Refresh and review before confirming; nothing was saved.")
+        default:
+            return message(error)
         }
     }
 
