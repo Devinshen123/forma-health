@@ -242,12 +242,22 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must link to reports")
         reveal(card, attempts: 24)
         attachTree("Tree before tapping the reports card")
-        card.tap()
-        // Attached before the assertion, so a failure to arrive shows what is on screen instead.
-        attachScreenshot("After tapping the reports card")
-        attachTree("Tree after tapping the reports card")
 
-        assertScreen("reports")
+        // The card resolves to a single Button and the tap is synthesized, yet the push has not
+        // happened in four runs. Try each activation once, recording what each one does, so one
+        // run distinguishes a hit-testing problem from a link that never fires.
+        let screen = element("screen.reports")
+        var reached = false
+        for (name, activate) in activations(card) {
+            add(string: "\(name): exists=\(card.exists) hittable=\(card.isHittable) enabled=\(card.isEnabled)",
+                named: "Reports card state before \(name)")
+            activate()
+            reached = screen.waitForExistence(timeout: 3)
+            attachScreenshot("After \(name)")
+            attachTree("Tree after \(name)")
+            if reached { break }
+        }
+        XCTAssertTrue(reached, "No way of activating the reports card opened the page")
         attachScreenshot("Native reports page")
         XCTAssertEqual(app.webViews.count, 0, "The reports page must not be a website wrapper")
         XCTAssertTrue(element("record.demo.notice").waitForExistence(timeout: 5),
@@ -280,6 +290,25 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(waitUntilHittable(cancel))
         cancel.tap()
         XCTAssertTrue(element("screen.reports").waitForExistence(timeout: 5))
+    }
+
+    /// Every way of activating a card, tried in turn until one opens the page.
+    private func activations(_ card: XCUIElement) -> [(String, () -> Void)] {
+        [
+            ("tapping the card", { card.tap() }),
+            ("tapping the card's centre coordinate",
+             { card.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap() }),
+            ("tapping the card's summary", { self.app.staticTexts["reports.card.summary"].tap() }),
+            ("tapping the card's chevron",
+             { self.app.images.matching(identifier: "chevron.right").element(boundBy: 2).tap() }),
+        ]
+    }
+
+    private func add(string: String, named name: String) {
+        let attachment = XCTAttachment(string: string)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     /// Dumps the whole accessibility tree as an attachment, so a navigation that does not happen
