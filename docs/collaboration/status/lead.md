@@ -8,9 +8,11 @@ GitHub API和gh repo view一致确认仓库当前PUBLIC；本轮不修改可见�
 
 收到02请求20261021-1835：其转述用户选择07 iOS/08 Android原生岗位，并报告另装5项技能。本次上传不处理该增员/技能登记请求，也不把本聊天此前React Native建议当正式架构决定；原请求与草案仍保留在Windows未提交内容中。后续先核对具名来源再排期。
 
-当前阶段：候选验证完成，待本轮精确提交与推送后追加远端SHA回执；Windows lead交付后等待，Mac接手先确认同身份只有一个写入者。尚未在Mac运行，不宣称健康数据或本机工具已同步。
+推送回执：候选bbc9024cb6c2915b1863af66dcecf1e40acaafba已成功推送origin/codex/mac-handoff-20261021；git ls-remote确认远端SHA一致，远端main仍eb6b559790f3d08e35ebeae9557d68bec6e09e90。首个commit因本机未配置作者失败；核对此前6次提交后，本轮仅用命令级Codex <codex@local.invalid>沿用已有作者，不改全局配置。GITHUB-MAC-01已完成，本回执随后同分支提交。Windows lead结束交付后等待，Mac接手先确认同身份只有一个写入者；未在Mac运行，不宣称健康数据或本机工具已同步。
 
 暂存快照导出复验：发现Git换行转换影响YAML入口解析与报告原始字节；已使入口解析兼容CRLF/LF，并通过.gitattributes保留vendor资源和归档报告原始字节，精确renormalize这些路径后，实际暂存导出portable15/15及vendor读取exit0。git diff --cached --check对活动文件通过；历史archive及原报告保留原始Markdown硬换行/混合行尾，因此仍有既有空白提示，不改写历史快照。
+
+远端克隆复验：Windows在Git忽略的.forma-local/runtime/github-clone-verify中实际从GitHub clone候选bbc9024，portable15/15、vendor读取exit0，git status干净；证明已上传的快照可独立获取，仍不是Mac实机执行。
 
 ---
 

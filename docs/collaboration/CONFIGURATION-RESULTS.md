@@ -2,7 +2,7 @@
 
 ## 2026-10-21补充：GitHub候选与Mac接手
 
-用户授权将已做工作同步GitHub供Mac操作。最新状态见TASKS的GITHUB-MAC-01及status/lead；本节更新下方历史限制：本轮Git精确暂存已成功，配置候选拟推送到codex/mac-handoff-20261021，独立审查前不合入远端main。旧index.lock拒绝不再代表当前权限。GitHub API和CLI确认仓库目前PUBLIC，本轮没有修改可见性。
+用户授权将已做工作同步GitHub供Mac操作。最新状态见TASKS的GITHUB-MAC-01及status/lead；本节更新下方历史限制：本轮Git精确暂存已成功，配置候选bbc9024cb6c2915b1863af66dcecf1e40acaafba已推送到codex/mac-handoff-20261021，git ls-remote确认SHA一致；本回执继续提交同分支，独立审查前不合入远端main。旧index.lock拒绝不再代表当前权限。GitHub API和CLI确认仓库目前PUBLIC，本轮没有修改可见性。
 
 本轮Windows lead实际执行：默认及--portable配置检查各15/15；本机技能12项/110资源哈希一致（保留agent-development缺脚本）；npm.cmd test 155/155；npm.cmd run build通过（既有Training分包提示）；变更脚本语法与git diff --check通过。独立临时目录副本通过portable15项；验证缺技能exit1、覆盖目录正常读取exit0、POSIX路径解释通过。未在Mac实机执行，不等于06审查。
 
@@ -13,6 +13,8 @@
 02的dispatch/HANDOFF/status已有本人更新；候选只保存01初始化骨架，02本人后续正文保持在工作区未提交，未当作01成果上传。精确例外记录在configuration-files.json的indexSnapshots。Mac不能据骨架判断02尚未接手；实际报告需后续由02交付。
 
 暂存导出曾复现Windows换行转换导致的两项检查失败；修正入口CRLF解析并用.gitattributes保留vendor/原报告字节后，最终实际暂存导出portable检查15/15、vendor读取exit0。活动文件cached diff检查通过；历史archive与原报告的既有空白/混合行尾保留，不以清理空白改写证据。
+
+随后在Windows临时独立目录实际从GitHub重新clone候选bbc9024，portable15/15、vendor读取成功、git status干净；未在Mac实机运行。
 
 ---
 

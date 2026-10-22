@@ -1,5 +1,9 @@
 # 2026-10-21｜GITHUB-MAC-01：跨机器接手入口
 
+已推送回执：候选bbc9024cb6c2915b1863af66dcecf1e40acaafba在origin/codex/mac-handoff-20261021，git ls-remote已核对一致；本回执作为后续提交继续推同分支。远端main保留eb6b559，配置未独立审查，不要在Mac默认clone main后误以为已有新配置。当前分支最新SHA应在Mac用git log -1核对。
+
+GitHub重新clone已实测（Windows临时独立目录）：候选bbc9024、portable15/15及vendor读取成功、工作区干净。Mac终端步骤见WORKSPACES；本Windows主管交付后等待，不自动继续业务或新增员工。
+
 - 身份：沿用01 lead；当前Windows checkout C:/Users/devin/健康网站，配置基线main/e4c6a1b；候选远端分支codex/mac-handoff-20261021。准确交付SHA以本文件后续推送回执及GitHub分支为准。
 - 用户要求：将已做工作同步GitHub，在另一台Mac操作；Windows目录保持原位，不是迁移数据库或启用云端服务。
 - 本轮新增：Mac克隆/运行/接手说明（WORKSPACES）、FORMA跨机器路径解释、Skills本机目录覆盖和真实缺失状态、配置检查--portable。候选仍为七个角色，不自动新增07/08。

@@ -26,7 +26,7 @@ TEAM7-CONFIG-01一次性例外：用户明确要求重设员工MD与独立记忆
 
 | ID | owner | 状态 | 依赖 / 文件 | 验收标准 |
 |---|---|---|---|---|
-| GITHUB-MAC-01 | lead | doing | 用户授权；configuration-files.json精确清单、README、FORMA、WORKSPACES、技能读取/配置检查脚本及本人状态/交接 | 候选提交推送到GitHub并核对远端SHA；Mac克隆/运行/单writer接手步骤可读；外置Skills缺失如实报告；不夹带原有图片删除、数据库、密钥或其他员工未交付内容；不冒充Mac实机或06审查 |
+| GITHUB-MAC-01 | lead | done | 用户授权；136项精确候选及Mac接手说明；候选bbc9024已推送codex/mac-handoff-20261021，git ls-remote确认SHA一致 | 测试155/155、构建通过；最终暂存导出portable15/15及vendor读取通过；Mac实际操作未测，外置Skills另配；原图片删除与02本人后续内容保留；回执随同分支更新，TEAM7独立审查仍为review |
 | CHAT-PROMPTS-01 | lead | review | 用户要求逐人生成Prompt并准备新对话；START-PROMPTS.md、agent-prompts/launch/、scripts/prepare-forma-chat-prompts.cjs、lead状态/交接 | 00—06各一份可复制Prompt，编号/ID/MD/记忆/Skills入口对应；现有01优先复用；首轮只读登记，不把缺worktree当成不能读取配置，不生成额外writer；新对话由用户打开，未启动/未提交不伪称完成 |
 | TEAM7-CONFIG-01 | lead | review | 文件已生成；本轮Windows/portable配置各15项通过，12项技能/110资源校验通过（agent-development有已知缺失脚本）；155测试与构建通过；Git索引精确暂存已可写 | 配置候选经GITHUB-MAC-01推送供Mac获取；仍待06独立审查、技能原生触发和各员工实际接手，不标全部完成；历史权限拒绝保留来源 |
 | HANDOVER-01 | lead | blocked | 旧writer与worktree状态读取权限；server/rules、src/training、docs/product及退休角色路径 | 核对所有旧写入者、SHA和未提交工作，确认停写/交接后再启用目标owner；不得假定无活跃会话 |
