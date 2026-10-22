@@ -172,28 +172,18 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(element("companion.activeDays").label.contains("6"))
         XCTAssertTrue(element("companion.item.cap").exists, "The wardrobe survives a character switch")
         attachScreenshot("Companion after switching character")
-    }
 
-    func testCompanionInviteCodeIsRefusedUntilItMatchesTheServiceFormat() throws {
-        selectTab("today", chinese: "今日", english: "Today")
-        let card = element("companion.card")
-        XCTAssertTrue(card.waitForExistence(timeout: 10))
-        reveal(card)
-        card.tap()
-        assertScreen("companion")
-
-        // `isEnabled` is read from the accessibility tree, so these checks do not depend on the
-        // on-screen keyboard having moved out of the way.
+        // An invitation is refused until it matches the service's format. `isEnabled` is read from
+        // the accessibility tree, so this does not depend on the keyboard moving out of the way.
         let join = button("companion.challenge.join")
-        XCTAssertTrue(join.waitForExistence(timeout: 10))
+        XCTAssertTrue(join.waitForExistence(timeout: 5))
         XCTAssertFalse(join.isEnabled, "An empty invitation cannot be submitted")
-        let field = element("companion.challenge.code")
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
-        reveal(field, attempts: 24)
-        field.tap()
-        field.typeText("0123456789abcde")
+        let code = element("companion.challenge.code")
+        reveal(code, attempts: 24)
+        code.tap()
+        code.typeText("0123456789abcde")
         XCTAssertFalse(join.isEnabled, "A 15-character invitation cannot be submitted")
-        field.typeText("f")
+        code.typeText("f")
         XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted, lower case included")
     }
 
