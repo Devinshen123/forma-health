@@ -36,6 +36,8 @@ npm run build
 
 本机网站与公网部署是不同目标；localhost不是手机可直接访问的公网网址。共享HTTPS服务须使用持久数据目录和正确的反向代理设置，见 [部署说明](docs/architecture/companion-deployment-20261019.md) 与 Dockerfile。仓库默认分支和Release提供当前代码/素材，不代表已创建公网服务器。
 
+构建生成 `/release-info.json`，可核对运行网站的 Git 提交、5,632 动作和六位伙伴是否与发布一致。Git源码包没有提交信息时明确显示 unavailable；镜像构建可显式提供 `FORMA_BUILD_COMMIT`。
+
 授权与来源：[动作来源记录](docs/architecture/training-source-log.md)、[伙伴生图记录](docs/architecture/companion-art-prompts-20261020.md)。素材按用户已确认的授权用于Forma分发，并保留Gym visual/openGym归属，不把公开下载解释为向第三方另授素材许可。
 
 ## Mac 与协作交接
