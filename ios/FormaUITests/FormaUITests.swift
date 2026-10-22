@@ -241,9 +241,11 @@ final class FormaUITests: XCTestCase {
         let card = element("reports.card")
         XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must link to reports")
         reveal(card, attempts: 24)
+        attachTree("Tree before tapping the reports card")
         card.tap()
         // Attached before the assertion, so a failure to arrive shows what is on screen instead.
         attachScreenshot("After tapping the reports card")
+        attachTree("Tree after tapping the reports card")
 
         assertScreen("reports")
         attachScreenshot("Native reports page")
@@ -278,6 +280,15 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(waitUntilHittable(cancel))
         cancel.tap()
         XCTAssertTrue(element("screen.reports").waitForExistence(timeout: 5))
+    }
+
+    /// Dumps the whole accessibility tree as an attachment, so a navigation that does not happen
+    /// can be read from the run instead of guessed at.
+    private func attachTree(_ name: String) {
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = name
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     private func waitUntilSelected(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
