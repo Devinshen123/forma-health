@@ -8,9 +8,22 @@ import FormaCore
 /// new original is not in this build — see the notice on the page.
 @MainActor
 struct ReportsView: View {
+    /// Two `.sheet` modifiers on one view do not both work, so the page presents one sheet
+    /// whose case says which.
+    enum Presented: Identifiable {
+        case editor(ReportEditorFields)
+        case attachment(ReportView)
+
+        var id: String {
+            switch self {
+            case .editor(let fields): return "editor:" + fields.id
+            case .attachment(let report): return "attachment:" + report.id
+            }
+        }
+    }
+
     let store: AppStore
-    @State private var editor: ReportEditorFields?
-    @State private var viewing: ReportView?
+    @State private var presented: Presented?
 
     private var reports: [ReportView] { store.reports }
 
@@ -40,11 +53,10 @@ struct ReportsView: View {
         .background(FeatureTheme.background)
         .navigationTitle(store.text("报告", "Reports"))
         .refreshable { await store.refresh() }
-        .accessibilityIdentifier("screen.reports")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    editor = ReportEditorFields()
+                    presented = .editor(ReportEditorFields())
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -53,12 +65,13 @@ struct ReportsView: View {
                 .accessibilityIdentifier("reports.new")
             }
         }
-        .sheet(item: $editor) { fields in
-            ReportEditorSheet(store: store, fields: fields)
+        .sheet(item: $presented) { item in
+            switch item {
+            case .editor(let fields): ReportEditorSheet(store: store, fields: fields)
+            case .attachment(let report): AttachmentSheet(store: store, report: report)
+            }
         }
-        .sheet(item: $viewing) { report in
-            AttachmentSheet(store: store, report: report)
-        }
+        .accessibilityIdentifier("screen.reports")
     }
 
     private var intro: some View {
@@ -96,12 +109,12 @@ struct ReportsView: View {
             }
             HStack(spacing: 14) {
                 Button(store.text("编辑指标", "Edit markers")) {
-                    editor = ReportEditorFields(report: report)
+                    presented = .editor(ReportEditorFields(report: report))
                 }
                 .disabled(store.isBusy)
                 .accessibilityIdentifier("reports.edit.\(report.id)")
                 if report.hasAttachment {
-                    Button(store.text("查看原件", "View original")) { viewing = report }
+                    Button(store.text("查看原件", "View original")) { presented = .attachment(report) }
                         .disabled(store.isBusy)
                         .accessibilityIdentifier("reports.view.\(report.id)")
                 }

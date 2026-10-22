@@ -252,6 +252,8 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must link to reports")
         reveal(card, attempts: 24)
         card.tap()
+        // Attached before the assertion, so a failure to arrive shows what is on screen instead.
+        attachScreenshot("After tapping the reports card")
 
         assertScreen("reports")
         attachScreenshot("Native reports page")

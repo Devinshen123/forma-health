@@ -370,12 +370,14 @@ final class AppStore {
 
     /// Deletes an attachment no record points at any more, for retrying a half-finished removal.
     func deleteOrphanAttachment(_ assetId: String) async {
-        guard !isDemo, let api, let user, UUID(uuidString: assetId) != nil else { return }
+        guard !isDemo, UUID(uuidString: assetId) != nil else { return }
+        // The reason is a local fact, so it is explained before anything about the session.
         guard !ReportState.attachmentIsReferenced(state, assetId: assetId) else {
             reportError = text("请先把该附件从报告中移除，再删除附件。",
                                "Remove this attachment from its report before deleting it.")
             return
         }
+        guard let api, let user else { return }
         let ticket = generation
         do {
             _ = try await api.send("/api/assets/\(assetId)", method: "DELETE",
