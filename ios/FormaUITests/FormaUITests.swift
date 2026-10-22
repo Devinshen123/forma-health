@@ -151,18 +151,21 @@ final class FormaUITests: XCTestCase {
         XCTAssertEqual(element("companion.xp").label, xpBefore, "A demo claim must not change XP")
 
         // Opening the milestone-6 chest awards exactly the contract's second item.
-        let chest = button("companion.chest.demo-6.open")
-        reveal(chest)
+        let chest = element("companion.chest.demo-6.open")
+        XCTAssertTrue(chest.waitForExistence(timeout: 5), "A closed chest must offer to open")
+        reveal(chest, attempts: 24)
         chest.tap()
+        XCTAssertTrue(element("companion.chest.demo-6.opened").waitForExistence(timeout: 5),
+                      "The chest must read as opened afterwards")
         let cap = element("companion.item.cap")
         XCTAssertTrue(cap.waitForExistence(timeout: 5), "Opening day 6 must award the second accessory")
-        reveal(cap)
+        reveal(cap, attempts: 24)
         cap.tap()
         XCTAssertTrue(waitUntilSelected(cap), "The newly awarded accessory must be wearable")
 
         // Every character is free, and switching keeps XP, the wardrobe and rewards.
         let seal = element("companion.character.seal")
-        reveal(seal)
+        reveal(seal, attempts: 24)
         seal.tap()
         XCTAssertTrue(waitUntilSelected(seal), "Choosing a character must take effect")
         XCTAssertEqual(element("companion.xp").label, xpBefore, "Switching character must not reset XP")
@@ -182,12 +185,16 @@ final class FormaUITests: XCTestCase {
         // `isEnabled` is read from the accessibility tree, so these checks do not depend on the
         // on-screen keyboard having moved out of the way.
         let join = button("companion.challenge.join")
-        XCTAssertTrue(join.waitForExistence(timeout: 5))
+        XCTAssertTrue(join.waitForExistence(timeout: 10))
         XCTAssertFalse(join.isEnabled, "An empty invitation cannot be submitted")
-        replaceText("companion.challenge.code", with: "0123456789ABCDE")
+        let field = element("companion.challenge.code")
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        reveal(field, attempts: 24)
+        field.tap()
+        field.typeText("0123456789abcde")
         XCTAssertFalse(join.isEnabled, "A 15-character invitation cannot be submitted")
-        replaceText("companion.challenge.code", with: "0123456789ABCDEF")
-        XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted")
+        field.typeText("f")
+        XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted, lower case included")
     }
 
     private func waitUntilSelected(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
@@ -276,9 +283,9 @@ final class FormaUITests: XCTestCase {
         add(tree)
     }
 
-    private func reveal(_ target: XCUIElement) {
+    private func reveal(_ target: XCUIElement, attempts: Int = 8) {
         let scroll = activeScrollContainer()
-        for _ in 0..<8 {
+        for _ in 0..<attempts {
             let viewport = contentViewport(scroll)
             if target.exists {
                 let frame = target.frame

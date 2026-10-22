@@ -139,6 +139,7 @@ struct CompanionView: View {
                     Spacer(minLength: 0)
                     if chest.isOpened {
                         Text(store.text("已开启", "Opened")).font(.caption).foregroundStyle(FeatureTheme.muted)
+                            .accessibilityIdentifier("companion.chest.\(chest.id).opened")
                     } else {
                         Button(store.text("打开", "Open")) {
                             Task { await store.openCompanionChest(id: chest.id) }
@@ -148,7 +149,6 @@ struct CompanionView: View {
                         .accessibilityIdentifier("companion.chest.\(chest.id).open")
                     }
                 }
-                .accessibilityIdentifier("companion.chest.\(chest.id)")
             }
         }
     }
