@@ -1888,6 +1888,9 @@ th {
 .workbench-shell{min-width:0}.workbench-shell .hint{margin:6px 0 0;line-height:1.6}.workbench-shell h2{margin:0}.workbench-frame{display:block;width:100%;height:min(900px,calc(100dvh - 210px));min-height:600px;border:1px solid #e9ecf0;border-radius:16px;background:#f7f8fa}.workbench-expanded{position:fixed;inset:0;z-index:60;padding:16px;background:#f7f8fa;gap:12px}.workbench-expanded .workbench-frame{flex:1;min-height:0;height:100%}
 @media(max-width:650px){.workbench-frame{min-height:650px;height:80dvh}.workbench-expanded{padding:8px}.workbench-expanded .training-toolbar{gap:8px}.workbench-expanded h2{font-size:18px}.workbench-expanded .hint{font-size:12px}}
 .exercise-preview img{display:block;max-width:100%;height:180px;object-fit:contain}
+.library-hover-video{position:absolute;inset:8px;width:calc(100% - 16px);height:180px;object-fit:contain;opacity:0;pointer-events:none}
+.library-hover-video.is-playing{opacity:1}
+.library-play.is-playing{visibility:hidden}
 .exercise-video video{display:block;width:100%;max-width:320px;aspect-ratio:1;object-fit:contain;margin:0 auto;background:#fff;border-radius:8px}
 .exercise-credit{font-size:11px;line-height:1.5;color:#737985;margin:8px 0 0;overflow-wrap:anywhere}
 .exercise-details{min-width:0}.exercise-details ol{padding-left:22px;line-height:1.7}.exercise-details li+li{margin-top:8px}

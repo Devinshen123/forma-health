@@ -1,3 +1,11 @@
+# 2026-10-22 动作库悬停预览
+
+用户在现有01主管会话明确要求：动作库鼠标放上去直接播放视频。沿用本聊天唯一lead，在现有干净bdd7发布checkout增量实现；历史MUS/WB写入者已完成并交回lead。本任务不启动其他员工、不改健康数据或API。
+
+| ID | owner / 独占路径 | 状态 | 验收 |
+|---|---|---|---|
+| HOVER-01 | lead：src/features/training/Library.tsx、src/styles.css、TASKS及本人status/HANDOFF | done | 本轮完整npm run build exit0；实际3001进入卡片readyState4/paused=false/muted/loop，换卡只一个预览，移开0视频/12缩略图；详情保留controls且默认暂停；390px无横溢出、console error/warn0。减少动态保护静态核对，未真机或模拟系统偏好；截图.forma-local/deliverables/hover-preview-20261022。只更新本机发布包前端静态文件，未重启服务或改健康数据；其他会话3D伙伴新增文件/依赖不在本提交 |
+
 # 2026-10-22 发布整合
 
 本轮将已完成产品和完整5,632动画动作更新GitHub默认main与当前网站。以1557a7e产品合并91509d4的Mac/团队配置，保留主worktree未提交文件。验证与发布完成前不记完成。此前AGENTS.md已被用户撤销，下方为历史记录。

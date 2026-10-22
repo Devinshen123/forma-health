@@ -1,3 +1,11 @@
+# 2026-10-22 HOVER-01 交接
+
+01 lead本轮用户要求动作卡片鼠标悬停直接播放，已在bdd7/codex/forma-release-20261022基线a938a2f增量完成Library.tsx和styles.css。完整build exit0，3001真实验证进入播放、换卡单预览、移开卸载、详情保留、390px不横溢出、console0；减少动态/真实触屏未专项，详见status/lead.md。
+
+运行包是D:/AI-tools/forma-health/releases/20261022-a938a2f，静态前端已局部更新；服务PID32636未重启，数据未改。旧壳备份及截图在C盘主目录.forma-local/{runtime,deliverables}/hover-preview-20261022。release-info.frontendPatch记录本机增量，不把base提交当新补丁提交。原根main未修改。
+
+另一个“Forma 前端开发”会话正在做用户授权3D伙伴，其package/lock、companion-growth.ts、Companion3D/CompanionGrowth/companion-scene及后续文件属于其任务，不能夹带提交或回滚。后续集成须保留本轮Library/styles改动，也不能把悬停自检当06独立审查。当前任务只精确提交本人五个路径；是否推送/合并沿用用户下一步指示。
+
 # 2026-10-21｜GITHUB-MAC-01：跨机器接手入口
 
 已推送回执：候选bbc9024cb6c2915b1863af66dcecf1e40acaafba在origin/codex/mac-handoff-20261021，git ls-remote已核对一致；本回执作为后续提交继续推同分支。远端main保留eb6b559，配置未独立审查，不要在Mac默认clone main后误以为已有新配置。当前分支最新SHA应在Mac用git log -1核对。

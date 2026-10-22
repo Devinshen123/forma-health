@@ -1,3 +1,13 @@
+# 2026-10-22 HOVER-01 动作库悬停预览
+
+执行者01 lead，沿用当前身份；checkout C:/Users/devin/.codex/worktrees/bdd7/健康网站，codex/forma-release-20261022，基线a938a2f。用户明确要求鼠标放在动作库上直接播放。Library卡片仅活动项按需创建静音循环video，离开卸载并pause；失败回到缩略图，键盘聚焦可预览，减少动态跳过自动预览，触屏点击仍开详情。不改API、账户、后端或动作素材。
+
+本轮实际npm.cmd run build exit0，含tsc/Vite/5632动作媒体校验/工作台/离线壳；保留既有分包提示。CUA在3001真实加载index-B6VgL9zF.js：用卡片非交互标题的鼠标移动点击触发pointerenter（不点详情），第一、第二卡分别readyState4/paused=false/muted=true，始终一个预览；移到外部标题后0预览、12缩略图；点击预览开详情，controls=true且默认paused；390px宽度375=scrollWidth375，详情可开，console error/warn0。浏览器能力未暴露独立hover命令，测试通过实际鼠标进入路径完成；减少动态和触屏pointer类型分支静态核对，未真机/故障网络专项。本轮未动server，未重复全套Node测试。
+
+3001实际从D:/AI-tools/forma-health/releases/20261022-a938a2f运行，并非源码dist。已备份原index/sw/release-info至C盘.forma-local/runtime/hover-preview-20261022，再追加新哈希assets并更新index/sw；保留旧assets与媒体，未停PID32636、未读写健康库或.env。release-info保留base SHA，并新增frontendPatch明确本机增量，提交SHA另补。不将旧base SHA说成补丁源码SHA。截图与合成检查在C盘.forma-local/deliverables/hover-preview-20261022。
+
+并行情况：只读核对“Forma 前端开发”正在实现用户另派3D伙伴任务，three依赖及companion新文件为其工作，保留且不提交、不声称由本任务完成；本任务仅Library/styles及本人协作文档。无新增员工、子代理、外部消息、GitHub推送或公网部署。
+
 # 2026-10-22 发布整合
 
 本轮将已完成产品和完整5,632动画动作更新GitHub默认main与当前网站。以1557a7e产品合并91509d4的Mac/团队配置，保留主worktree未提交文件。验证与发布完成前不记完成。此前AGENTS.md已被用户撤销，下方为历史记录。
