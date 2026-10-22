@@ -18,6 +18,7 @@ final class AppStore {
     var companionError: String?
     var companionBusy = false
     var planError: String?
+    var reportError: String?
     var language: String = "zh" {
         didSet { if !uiTesting { UserDefaults.standard.set(language, forKey: "forma.language") } }
     }
@@ -142,7 +143,7 @@ final class AppStore {
 
     func saveRecord(collection: String, value: JSONValue) async throws {
         guard !isDemo, let api, let user, !isBusy,
-              ["meals", "sleeps", "workouts"].contains(collection), let id = value["id"].stringValue else {
+              ["meals", "sleeps", "workouts", "reports"].contains(collection), let id = value["id"].stringValue else {
             throw NativeAPIError.invalidSession
         }
         isBusy = true; defer { isBusy = false }
@@ -211,7 +212,7 @@ final class AppStore {
         generation = UUID(); if invalidatingClient { api?.invalidate() }; api = nil; baseURL = nil
         user = nil; state = .object([:]); versions = [:]; pending = nil
         companion = nil; companionError = nil; companionBusy = false
-        pendingPlan = nil; planError = nil
+        pendingPlan = nil; planError = nil; reportError = nil
         isDemo = false; webSessionID = UUID(); error = nil
         if !uiTesting && !preservingDrafts {
             SessionVault.beginClear(profileID: profile); canRestoreSession = false
@@ -299,6 +300,127 @@ final class AppStore {
         catch {
             cleanupFailed = true
             self.error = text("本地训练数据尚未清理完成，请重试后再切换账户。", "Local training data could not be cleared. Retry before switching accounts.")
+        }
+    }
+
+    // MARK: - Reports
+
+    var reports: [ReportView] { ReportState.reports(state) }
+
+    /// Loads an attachment's bytes for display. Returns nil rather than a placeholder when the
+    /// service has no such attachment, so a missing document is never shown as an empty one.
+    func attachmentData(_ assetId: String) async -> Data? {
+        guard !isDemo, let api, let user, UUID(uuidString: assetId) != nil else { return nil }
+        let ticket = generation
+        do {
+            let data = try await api.send("/api/assets/\(assetId)", account: user.id)
+            guard ticket == generation else { return nil }
+            return data
+        } catch {
+            guard ticket == generation else { return nil }
+            handleSessionFailure(error)
+            reportError = reportMessage(error)
+            return nil
+        }
+    }
+
+    func saveReport(_ report: JSONValue) async {
+        guard !isDemo else {
+            reportError = text("演示模式不会把报告保存到真实账户。", "Demo mode never saves a report to a real account.")
+            return
+        }
+        do {
+            try await saveRecord(collection: "reports", value: report)
+            reportError = nil
+        } catch {
+            reportError = reportMessage(error)
+        }
+    }
+
+    /// Removing an attachment is two steps in a fixed order: the record stops pointing at it,
+    /// then the attachment itself is deleted. The service refuses to delete one still referenced,
+    /// so a failure after the first step leaves a report without its attachment but never a
+    /// dangling reference.
+    func removeAttachment(from report: ReportView) async {
+        guard !isDemo else {
+            reportError = text("演示模式不会改动真实账户的附件。", "Demo mode never changes a real account's attachments.")
+            return
+        }
+        guard let assetId = report.assetId, let api, let user else { return }
+        let updated: JSONValue
+        do { updated = try NativeReports.removingAttachment(from: report) }
+        catch { reportError = reportMessage(error); return }
+
+        do { try await saveRecord(collection: "reports", value: updated) }
+        catch { reportError = reportMessage(error); return }
+
+        let ticket = generation
+        do {
+            _ = try await api.send("/api/assets/\(assetId)", method: "DELETE",
+                                   body: .object([:]), account: user.id)
+            guard ticket == generation else { return }
+            reportError = nil
+        } catch {
+            guard ticket == generation else { return }
+            handleSessionFailure(error)
+            reportError = text("报告已不再引用该附件，但删除附件本身没有成功，可以重试。",
+                               "The report no longer references the attachment, but deleting the attachment itself did not succeed. You can retry.")
+        }
+    }
+
+    /// Deletes an attachment no record points at any more, for retrying a half-finished removal.
+    func deleteOrphanAttachment(_ assetId: String) async {
+        guard !isDemo, let api, let user, UUID(uuidString: assetId) != nil else { return }
+        guard !ReportState.attachmentIsReferenced(state, assetId: assetId) else {
+            reportError = text("请先把该附件从报告中移除，再删除附件。",
+                               "Remove this attachment from its report before deleting it.")
+            return
+        }
+        let ticket = generation
+        do {
+            _ = try await api.send("/api/assets/\(assetId)", method: "DELETE",
+                                   body: .object([:]), account: user.id)
+            guard ticket == generation else { return }
+            reportError = nil
+        } catch {
+            guard ticket == generation else { return }
+            handleSessionFailure(error)
+            reportError = reportMessage(error)
+        }
+    }
+
+    func reportMessage(_ error: Error) -> String {
+        switch error {
+        case let error as ReportError:
+            switch error {
+            case .invalidName:
+                return text("请填写报告名称（1–160 个字符）。", "Enter a report name of 1 to 160 characters.")
+            case .invalidDate:
+                return text("请选择有效的报告日期。", "Choose a valid report date.")
+            case .invalidMarkerName:
+                return text("每个指标都要有名称（1–160 个字符）。", "Every marker needs a name of 1 to 160 characters.")
+            case .invalidMarkerValue:
+                return text("每个指标都要填原始数值（最多 500 个字符）；请照抄你的报告，不要换算。",
+                            "Every marker needs the original value from your document, up to 500 characters. Copy it as printed; do not convert it.")
+            case .markerFieldTooLong:
+                return text("某个指标的单位、参考范围或备注过长。", "A marker's unit, range or notes is too long.")
+            case .tooManyMarkers:
+                return text("一份报告最多 200 个指标。", "A report holds at most 200 markers.")
+            case .emptyReport:
+                return text("一份报告至少需要一个你手填的指标。这份报告只有原件附件，所以不能在手机上移除它；请先补一个指标。",
+                            "A report needs at least one marker you typed yourself. This one holds only its attachment, so it cannot be removed here; add a marker first.")
+            case .invalidAttachment:
+                return text("这个附件引用无效。", "This attachment reference is not valid.")
+            }
+        case NativeAPIError.http(409, _, _):
+            return text("这条报告已在别处变化。请刷新核对后再保存。",
+                        "This report changed elsewhere. Refresh and review before saving.")
+        case NativeAPIError.http(404, _, _):
+            return text("找不到这个附件，可能已被删除。", "This attachment could not be found; it may already be deleted.")
+        case NativeAPIError.http(413, _, _):
+            return text("附件必须不超过 10 MB。", "Attachments must be 10 MB or smaller.")
+        default:
+            return message(error)
         }
     }
 

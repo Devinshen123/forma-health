@@ -18,6 +18,7 @@ struct TodayView: View {
                 }
                 CompanionCard(store: store)
                 PlanCard(store: store)
+                ReportsCard(store: store)
                 FeatureCard {
                     FeatureMetric(title: store.text("饮食摄入", "Food recorded"), value: FeatureFormat.number(summary.nutrition?.kcal, language: store.language), unit: "kcal", identifier: "today.nutrition.kcal")
                     Text(store.text("今天记录了 \(summary.mealRecords) 条饮食；未记录不代表没有进食。", "\(summary.mealRecords) food records today; unrecorded meals are not counted as zero."))

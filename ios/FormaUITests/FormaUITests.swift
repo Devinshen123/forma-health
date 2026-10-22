@@ -245,6 +245,48 @@ final class FormaUITests: XCTestCase {
         XCTAssertEqual(element("plan.sleepHours").label, "8", "The refused demo edit changed nothing")
     }
 
+    func testReportsPageIsNativeAndSaysUploadIsNotHereYet() throws {
+        selectTab("today", chinese: "今日", english: "Today")
+
+        let card = element("reports.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "The today page must link to reports")
+        reveal(card, attempts: 24)
+        card.tap()
+
+        assertScreen("reports")
+        attachScreenshot("Native reports page")
+        XCTAssertEqual(app.webViews.count, 0, "The reports page must not be a website wrapper")
+        XCTAssertTrue(element("record.demo.notice").waitForExistence(timeout: 5),
+                      "A page that can change things must say it is a demo")
+        // The one capability this build does not have must be stated, not left to be discovered.
+        XCTAssertTrue(element("reports.upload.notice").exists,
+                      "The page must say that uploading an original is not in this build")
+
+        // Typing a marker is refused until it is complete, before anything is sent.
+        let new = button("reports.new")
+        XCTAssertTrue(new.waitForExistence(timeout: 5))
+        new.tap()
+        let save = button("reports.editor.save")
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertFalse(save.isEnabled, "A blank report cannot be saved")
+        replaceText("reports.editor.name", with: "Synthetic panel")
+        XCTAssertFalse(save.isEnabled, "A name alone is not a report")
+
+        replaceText("reports.editor.marker.0.name", with: "Ferritin")
+        XCTAssertFalse(save.isEnabled, "A marker without its value is incomplete")
+        replaceText("reports.editor.marker.0.value", with: "42")
+        XCTAssertTrue(save.isEnabled, "A named marker with its value can be submitted")
+
+        // A demo save must be refused in words and must not pretend to have stored anything.
+        save.tap()
+        XCTAssertTrue(element("reports.editor.error").waitForExistence(timeout: 5),
+                      "A demo report save must explain that nothing is stored")
+        let cancel = button("reports.editor.cancel")
+        XCTAssertTrue(waitUntilHittable(cancel))
+        cancel.tap()
+        XCTAssertTrue(element("screen.reports").waitForExistence(timeout: 5))
+    }
+
     private func waitUntilSelected(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             target.exists && target.isSelected
