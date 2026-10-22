@@ -53,18 +53,6 @@ struct ReportsView: View {
         .background(FeatureTheme.background)
         .navigationTitle(store.text("报告", "Reports"))
         .refreshable { await store.refresh() }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    presented = .editor(ReportEditorFields())
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .disabled(store.isBusy)
-                .accessibilityLabel(store.text("新建报告", "New report"))
-                .accessibilityIdentifier("reports.new")
-            }
-        }
         .sheet(item: $presented) { item in
             switch item {
             case .editor(let fields): ReportEditorSheet(store: store, fields: fields)
@@ -85,6 +73,11 @@ struct ReportsView: View {
                             "Uploading an original is not in the iPhone app yet: add attachments on the website. Here you can view and remove the ones you already have."))
                 .font(.caption).foregroundStyle(FeatureTheme.muted)
                 .accessibilityIdentifier("reports.upload.notice")
+            FeatureAction(title: store.text("新建报告", "New report"),
+                          symbol: "plus", identifier: "reports.new") {
+                presented = .editor(ReportEditorFields())
+            }
+            .disabled(store.isBusy)
         }
     }
 

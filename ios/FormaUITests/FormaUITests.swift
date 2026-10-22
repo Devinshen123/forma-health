@@ -266,7 +266,8 @@ final class FormaUITests: XCTestCase {
 
         // Typing a marker is refused until it is complete, before anything is sent.
         let new = button("reports.new")
-        XCTAssertTrue(new.waitForExistence(timeout: 5))
+        XCTAssertTrue(new.waitForExistence(timeout: 5), "The page must offer to record a report")
+        reveal(new, attempts: 24)
         new.tap()
         let save = button("reports.editor.save")
         XCTAssertTrue(save.waitForExistence(timeout: 5))
