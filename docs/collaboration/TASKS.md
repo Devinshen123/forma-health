@@ -1,3 +1,7 @@
+# 2026-10-22 Fud AI 真实模型示例验证
+
+FUD-LIVE-01（lead，done）：用户明确授权创建独立本机测试账户，使用公开CC0鸡肉米饭照片，经实际3001网页上传、逐图授权与OpenAI真实模型识别成功。返回4项可编辑候选、合计760kcal；审核框未勾选、饮食记录未保存。图片来源commons.wikimedia.org/wiki/File:Chicken_Rice_SMJ.jpg；截图为本机忽略的photo-entry-20261022/real-recognition-summary.png。验证了真实响应与审核展示，不代表重量/营养准确率已验证。
+
 # 2026-10-22 Fud AI 密钥配置回执
 
 | ID | owner | 状态 | 验收 |

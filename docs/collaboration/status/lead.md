@@ -1,3 +1,7 @@
+## 2026-10-22 FUD-LIVE-01 真实示例识别通过
+
+用户明确授权创建独立测试账户后，本人通过CUA在实际3001完成本机注册、最小默认计划初始化（跳过可选信息）、上传已核对CC0公开鸡肉米饭照片、单图同意与真实OpenAI请求。审核页面返回白米饭210g/273kcal、烤或炸鸡腿肉180g/378kcal、少量配菜30g/60kcal、蘸酱20g/49kcal，合计760kcal、蛋白质38g/碳水68g/脂肪34g。此为模型估算，无实称基准，不能据此声称准确率。已停在可编辑审核页，确认框未勾选、保存禁用，没有创建饮食事实。测试账户保持登录；未操作真实用户资料。截图.forma-local/deliverables/photo-entry-20261022/real-recognition-summary.png；来源https://commons.wikimedia.org/wiki/File:Chicken_Rice_SMJ.jpg。配置前“真实模型未测试”已由本次成功响应替代。
+
 ## 2026-10-22 FUD-KEY-01 本机配置完成
 
 用户本轮直接授权配置OpenAI密钥；仅更新本机Git忽略的服务端.env，核对未被跟踪，不在文档记录值。核验原服务PID及版本后重启，当前PID88204；3001 capabilities返回foodPhoto.available=true、reason=ready、analysisEngine=fud-ai、provider=openai。使用服务端环境向OpenAI固定模型元数据接口发GET，HTTP200且模型ID匹配；未上传照片、未请求生成、未操作真实健康记录。原有代码28a9936及345项测试无需因环境配置重复构建。真实食物照片识别质量仍待实测；GitHub不包含本机密钥，其他机器需要单独配置。
