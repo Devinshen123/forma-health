@@ -4,7 +4,7 @@
 
 2026-10-21跨机器补充：用户授权通过GitHub在另一台Mac继续操作。Windows原仓库保持原位；Mac可使用自己的克隆目录，所有仓库相对路径以实际checkout为根。文档、启动Prompt及team-config中的C/D盘绝对路径是Windows登记值，不要求Mac创建同名目录或搬迁Windows文件。Mac接手步骤见[WORKSPACES](docs/collaboration/WORKSPACES.md#mac接手2026-10-21)。同一角色仍同时只有一个写入者。
 
-2026-10-22产品范围补充：用户在02对话中指示“你修改规则”，由02直接修改§1产品范围与§3数据规则，一次性例外，01审查后集成。新增原生安卓、第三方App数据接入、聊天记录与聊天历史；§3“AI只出草稿、用户审核后保存”不变。通知与任务拆分见[请求](docs/collaboration/requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)。
+2026-10-22产品范围补充：用户在02对话中指示“你修改规则”，由02直接修改§1产品范围与§3数据规则，一次性例外，01审查后集成。新增原生安卓、第三方App数据接入、聊天记录与聊天历史；§3“AI只出草稿、用户审核后保存”不变。同日用户声明已获SparkyFitness全部使用权限，§3许可证一节相应调整。通知与任务拆分见[请求](docs/collaboration/requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)。
 
 共享产品、安全与协作规则只在本文件维护；路径所有权和正式派工只在[TASKS](docs/collaboration/TASKS.md)维护。工具入口和员工MD只引用，不复制另一套权限。当前七个身份见[TEAM-ROSTER](docs/collaboration/TEAM-ROSTER.md)，工具变化不改变角色ID，同一身份同时一名记忆写入者。
 
@@ -68,7 +68,8 @@
 ### 许可证
 
 - `reference-sources/` 只用来参考，不能修改。
-- 不复制 SparkyFitness（非商业许可）、Mealie 和 openGym（AGPL）的代码、schema、UI、图片。openGym 的动作图片和动画一律不用。
+- SparkyFitness：用户2026-10-22在02对话中声明已获得作者的全部使用权限（原话“获得了所有的权限，你可以放心使用”），因此可以复用其代码、提示词、schema 和 UI。每次复用前须在 `docs/architecture/reuse-log.md` 记录来源路径、上游 commit（本地参考副本为 30d40b75）、改动和授权依据，保留原版权与许可声明，并经 lead 同意。授权凭证由用户保管。
+- 不复制 Mealie 和 openGym（AGPL）的代码、schema、UI、图片。openGym 的动作图片和动画一律不用。
 - FudAI（MIT）的片段如果要采用：先在 `docs/architecture/reuse-log.md` 里记录来源路径、commit、改动、许可证，并经 lead 同意。
 
 ### 设计

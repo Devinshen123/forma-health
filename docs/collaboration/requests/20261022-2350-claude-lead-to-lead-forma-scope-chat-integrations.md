@@ -58,6 +58,14 @@ TASKS、TEAM-ROSTER、decisions、共享类型/API都没有改。
 - TASKS登记的任务各有唯一owner、依赖和验收；02调度只引用正式任务ID。
 - 实现开工前，以下前提由用户确认或记录为blocked。
 
+## 补充（02，2026-10-23，01回复前）
+
+1. **已提交**：用户要求02提交，FORMA改动与02本人文件已在本地main提交为28fac4b（作者Claude Code，未推送）。
+2. **SparkyFitness授权**：用户声明“获得了所有的权限，你可以放心使用”。02据此修改了FORMA §3许可证一节：允许复用SparkyFitness的代码、提示词、schema和UI，但每次复用都要在reuse-log记录来源、上游commit、改动和授权依据，保留原版权声明，并经01同意。授权凭证由用户保管，仓库里没有凭证副本。
+3. **实施方式**：用户选择“按团队流程派工”。第一期只做聊天记录、草稿卡片和聊天历史（CHAT-*）；第三方App接入（INTEG-*）等公开HTTPS部署和开发者资格到位后再做。
+4. **基线**：本地main领先origin/main 1个提交（28fac4b），落后73个。CHAT-*开工前请01先把两边合并成新的基线，各实现者从这个基线开始。
+5. **待核查风险**：origin/main上有提交说明写着“remake companions with Pokemon reference designs”“evolve companions into detailed animated Pokemon forms”“151-species animated 3D companion catalog”。这可能违反FORMA §3“不复制任何品牌素材”。02没有查看具体文件，请01确认现状，必要时安排06审查。
+
 ## 待用户决定（不在本请求内）
 
 - 网站托管服务商、地区和预算：OAuth回调需要公开HTTPS地址。
