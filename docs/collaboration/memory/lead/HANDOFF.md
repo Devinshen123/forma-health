@@ -1,4 +1,4 @@
-## 2026-10-22 第一轮整体验证回执（01 lead）
+## 2026-10-22 完成与整体验证回执（01 lead）
 
 - 全量npm.cmd test：最终345/345 pass，fail0/skip0，exit0；首轮7个旧模型夹具失败已迁移，未降低既有事务/恢复/账户隔离断言。
 - npm.cmd run build：完整主站/工作台/伙伴乐园/源码分发/离线壳全部通过exit0；沿用既有大chunk提示。5,632动作视频与11,328媒体/内容文件SHA校验通过。
@@ -6,7 +6,7 @@
 - 第二次未知重量/营养夹具保留空值，补200g建立1份，未补营养仍禁存；取消后仍只有原2项/480kcal。console error/warn0。证据在原主项目.forma-local/deliverables/sparky-forma-integrations-20261022/fud-*-fixture.png。
 - 独立助手专项：后端12/12与跨场景32/32；QA独立HTTP45/45、审核helper8/8；此为具名助手报告，最终345全套由本人重跑确认。
 - 未配置真实模型key；没有调用OpenAI，照片质量/真实模型响应与真机未验证。移动视口本轮未实测，不以桌面截图冒称手机验收。
-- 当前正在准备本机新版本、保留旧版本以便回滚；正式运行能力以切换后/api/capabilities检查为准。
+- 本机发布完成：D:/AI-tools/forma-health/releases/20261022-28a9936，代码28a993639ac22a1b6a5698da6c918f9ceb2c2a0d，实际3001返回Fud引擎、OpenAI供应商与not_configured；MIT许可HTTP200，页面/控制台正常。旧199221b版本保留，current.json为启动入口。5173合成fixture已关闭，原始账户/记录目录沿用，未写真实饮食。
 # 2026-10-22｜FUD-01：Fud AI 拍照识别接入（实施中）
 
 身份：沿用现有01 lead。checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站；分支codex/fud-food-photo-20261022；基线199221b。用户批准最新版Prompt开工，先拍照识别再分步健康平台；明确选择稍后配置OpenAI密钥。

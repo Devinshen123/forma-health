@@ -1,3 +1,4 @@
+2026-10-22｜已验证（代码/夹具，真实模型未测）｜FUD-01：Fud upstream 6fa1602的照片输出为整份/ingredients营养，必须按已知克重归一化到Forma每100g契约；食材取代整餐行，不能双计。缺克重不使用上游1g默认，未知保留null。capabilities/draft的analysisEngine标Fud实现来源，provider仍OpenAI，二者不可混称。来源：server/fud-ai-food-photo.ts、reuse-log、345项完整测试及CUA合成回执；运行代码28a9936，本机3001。密钥稍后配置，后续真实照片需重新实测。
 # 01｜Codex项目主管 · MEMORY
 
 2026-10-21｜已验证｜Git checkout-index会应用当前机器换行转换；仅在原工作目录验证不等于克隆后可用。实际暂存导出发现Claude入口解析需兼容CRLF/LF，注册哈希资源及混合行尾原报告需.gitattributes的-text以保持原字节；新增属性后对精确路径git add --renormalize才能刷新已暂存blob。来源：GITHUB-MAC-01、scripts/verify-forma-team.cjs、.gitattributes及status；Windows导出复验通过，不冒充Mac实机。
