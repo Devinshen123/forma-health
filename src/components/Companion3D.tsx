@@ -33,19 +33,21 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       const canvas = renderer.domElement;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
       renderer.setClearColor(0x000000, 0); renderer.toneMapping = T.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.2;
-      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
+      renderer.toneMappingExposure = 1.06;
       canvas.setAttribute('aria-hidden', 'true'); canvas.dataset.testid = 'companion-3d-canvas';
       element.appendChild(canvas);
       const scene = new T.Scene();
-      const camera = new T.PerspectiveCamera(35, 1, .1, 30); camera.position.set(0, 2.4, 7.4); camera.lookAt(0, 1.65, 0);
-      scene.add(new T.HemisphereLight('#fff7ef', '#d8e5ce', 2.5));
-      const key = new T.DirectionalLight('#fff4df', 3.6); key.position.set(-3, 6, 5); key.castShadow = true;
-      key.shadow.mapSize.set(512, 512); key.shadow.radius = 4; key.shadow.camera.left = -3; key.shadow.camera.right = 3; key.shadow.camera.top = 4; key.shadow.camera.bottom = -3; key.shadow.normalBias = .035;
+      const camera = new T.PerspectiveCamera(35, 1, .1, 30); camera.position.set(0, 2.15, character === 'bunny' ? 6.4 : 5.8); camera.lookAt(0, character === 'bunny' ? 1.46 : 1.18, 0);
+      scene.add(new T.HemisphereLight('#fff7ef', '#e4d9cf', 2));
+      const key = new T.DirectionalLight('#fff2e3', 2.5); key.position.set(-3, 6, 5);
       scene.add(key);
-      const fill = new T.DirectionalLight('#d9e7ff', 2); fill.position.set(3, 3, -3); scene.add(fill);
-      const platform = new T.Mesh(new T.CylinderGeometry(1.26, 1.3, .12, 64), new T.MeshStandardMaterial({ color: '#e4eadb', roughness: .8 })); platform.position.y = -.06; platform.receiveShadow = true; scene.add(platform);
-      const floor = new T.Mesh(new T.CircleGeometry(2.5, 64), new T.ShadowMaterial({ opacity: .11 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -.13; floor.receiveShadow = true; scene.add(floor);
+      const fill = new T.DirectionalLight('#eef0ff', 1.4); fill.position.set(3, 3, -3); scene.add(fill);
+      const platform = new T.Mesh(new T.SphereGeometry(1, 48, 24), new T.MeshStandardMaterial({ color: '#f0e7d9', roughness: 1 })); platform.scale.set(1.3, .10, .98); platform.position.y = -.07; scene.add(platform);
+      // A soft contact shadow, without the jagged directional shadow of the old model.
+      const shadowPixels = new Uint8Array(64 * 64 * 4);
+      for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) { const i = (y * 64 + x) * 4, r = Math.hypot((x - 31.5) / 31.5, (y - 31.5) / 31.5); shadowPixels.set([105, 91, 75, Math.round(Math.pow(Math.max(0, 1 - r * r), 3) * 56)], i); }
+      const shadowTexture = new T.DataTexture(shadowPixels, 64, 64); shadowTexture.needsUpdate = true;
+      const floor = new T.Mesh(new T.PlaneGeometry(2.6, 2.0), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false })); floor.rotation.x = -Math.PI / 2; floor.position.y = .035; scene.add(floor);
       const model = createCompanionModel(character, equipped, level); scene.add(model.root);
       let angle = 0, petStarted = -10000, frame = 0, lastFrame = 0, onScreen = true, drag: { x: number; y: number; angle: number; moved: boolean; pointer: number } | null = null;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -96,7 +98,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       cleanup = () => {
         cancelAnimationFrame(frame); resize.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', syncLoop); reduced.removeEventListener('change', syncLoop);
         canvas.removeEventListener('pointerdown', down); canvas.removeEventListener('pointermove', move); canvas.removeEventListener('pointerup', up); canvas.removeEventListener('pointercancel', cancel); canvas.removeEventListener('pointerleave', cancel); canvas.removeEventListener('webglcontextlost', contextLost);
-        sceneHandle.current = null; disposeScene(scene); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
+        sceneHandle.current = null; disposeScene(scene); shadowTexture.dispose(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
       };
       draw(performance.now()); syncLoop(); setStatus('ready');
     }).catch(() => { if (!disposed) setStatus('fallback'); });

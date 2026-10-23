@@ -3,19 +3,19 @@ import type { CompanionCharacter, CompanionItem } from '../companion';
 import { companionGrowthStage } from '../companion-growth';
 
 const palettes: Record<CompanionCharacter, [string, string, string]> = {
-  sprout: ['#badb85', '#e9f2c8', '#779b51'], bunny: ['#fff0e1', '#fff8ee', '#efa9b6'],
-  otter: ['#dba787', '#ffe2c1', '#ad7256'], cloud: ['#d9e9f5', '#f2f8ff', '#90b9d5'],
-  bear: ['#e6bb72', '#ffebc4', '#bc8c4f'], seal: ['#c4bee7', '#f0e9ff', '#9294c6'],
+  sprout: ['#c3dd96', '#edf2cf', '#83a65d'], bunny: ['#fff0e3', '#fff7ed', '#f1b5bb'],
+  otter: ['#e3b395', '#ffe7d1', '#bb886a'], cloud: ['#dcecf5', '#f3f9ff', '#a1c1db'],
+  bear: ['#ecc58b', '#fff0d4', '#c59861'], seal: ['#cec9eb', '#f3eeff', '#a4a2ca'],
 };
 
 export function createCompanionModel(character: CompanionCharacter, equipped: CompanionItem | null, level: number) {
   const root = new T.Group(), body = new T.Group(), head = new T.Group();
-  root.add(body); body.add(head); head.position.y = 1.88;
+  root.add(body); body.add(head);
   const [fur, cream, accent] = palettes[character];
   const materials = new Map<string, T.MeshStandardMaterial>();
   const material = (color: string, glossy = false) => {
     const key = color + glossy;
-    if (!materials.has(key)) materials.set(key, new T.MeshStandardMaterial({ color, roughness: glossy ? .18 : .57, metalness: 0 }));
+    if (!materials.has(key)) materials.set(key, new T.MeshStandardMaterial({ color, roughness: glossy ? .2 : .9, metalness: 0 }));
     return materials.get(key)!;
   };
   const sphere = new T.SphereGeometry(1, 32, 24);
@@ -36,62 +36,82 @@ export function createCompanionModel(character: CompanionCharacter, equipped: Co
     const mesh = new T.Mesh(new T.ExtrudeGeometry(shape, { depth: .045, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: .02, bevelThickness: .02 }), material('#ffda7a'));
     mesh.position.set(...p); parent.add(mesh); return mesh;
   }
-  const isSeal = character === 'seal', isCloud = character === 'cloud';
-  ball(body, fur, [0, 1.03, 0], [isSeal ? .77 : .62, .83, .52]);
-  ball(body, cream, [0, 1.03, .43], [.43, .55, .14]);
-  ball(head, fur, [0, 0, 0], [.83, .73, .64]);
+  const isSeal = character === 'seal', isCloud = character === 'cloud', isSprout = character === 'sprout';
+  head.position.y = isSeal ? 1.03 : isCloud ? 1.12 : isSprout ? 1.23 : 1.49;
+  // Seated plush proportions: broad pear cheeks, overlapping head/belly and little paws.
+  // The plant, cloud and seal keep their own silhouette rather than sharing a standing body.
+  if (isSprout) {
+    const pot = new T.Mesh(new T.CylinderGeometry(.81, .65, .56, 64), material('#ebddc8')); pot.position.y = .35; body.add(pot);
+    const rim = ring(body, '#f3e8d8', .80, .07, [0, .63, 0]); rim.rotation.x = Math.PI / 2;
+    ball(body, '#839b68', [0, .61, 0], [.73, .08, .68]);
+  } else if (isCloud) {
+    ball(body, fur, [0, .54, 0], [.84, .43, .59]);
+  } else {
+    ball(body, fur, [0, isSeal ? .54 : .72, 0], [isSeal ? 1.02 : .79, isSeal ? .51 : .69, isSeal ? .77 : .66]);
+    ball(body, cream, [0, isSeal ? .5 : .73, isSeal ? .66 : .56], [isSeal ? .65 : .55, isSeal ? .3 : .46, .17]);
+  }
+  const cheekShape = new T.SphereGeometry(1, 48, 32), cheekVertices = cheekShape.getAttribute('position');
+  for (let i = 0; i < cheekVertices.count; i++) cheekVertices.setX(i, cheekVertices.getX(i) * (1 + .12 * (1 - cheekVertices.getY(i)) / 2));
+  cheekShape.computeVertexNormals();
+  const headMesh = new T.Mesh(cheekShape, material(fur)); headMesh.scale.set(isSprout ? .87 : isCloud ? .87 : .96, isSprout ? .71 : isSeal ? .69 : .79, .74); head.add(headMesh);
   const arms: T.Group[] = [];
   for (const side of [-1, 1]) {
-    const arm = new T.Group(); arm.position.set(side * .57, 1.35, .02); body.add(arm); arms.push(arm);
-    ball(arm, fur, [side * .12, -.2, .03], [isSeal ? .19 : .18, .36, .22]).rotation.z = side * (isSeal ? -.65 : .3);
-    ball(body, fur, [side * .33, .24, .21], [.29, .23, .38]);
+    const arm = new T.Group(); arm.position.set(side * (isSeal ? .88 : isSprout ? .67 : .65), isSeal ? .4 : isSprout ? .79 : isCloud ? .59 : .89, .4); body.add(arm); arms.push(arm);
+    ball(arm, fur, [0, 0, .02], isSeal ? [.33, .12, .29] : isSprout ? [.21, .18, .21] : [.25, .25, .27]).rotation.z = side * (isSeal ? -.35 : -.18);
+    if (!isSprout) {
+      ball(body, fur, [side * .44, isSeal ? .15 : .25, .43], isSeal ? [.32, .12, .32] : [.34, .25, .38]);
+      if (!isSeal && !isCloud) ball(body, cream, [side * .44, .27, .76], [.22, .15, .035]);
+    }
     if (character === 'bunny') {
-      const ear = new T.Group(); ear.position.set(side * .37, .53, -.02); ear.rotation.z = side * -.14; head.add(ear);
-      ball(ear, fur, [0, .51, 0], [.21, .69, .18]); ball(ear, '#efbdc2', [0, .54, .15], [.105, .47, .055]);
+      const ear = new T.Group(); ear.position.set(side * .43, .58, -.05); ear.rotation.z = side * -.29; head.add(ear);
+      ball(ear, fur, [0, .35, 0], [.24, .48, .21]); ball(ear, '#f2c1c5', [0, .37, .17], [.13, .32, .055]);
     } else if (character === 'bear' || character === 'otter') {
-      ball(head, fur, [side * .64, .51, -.03], [.28, .28, .2]); ball(head, accent, [side * .64, .51, .14], [.15, .15, .055]);
+      ball(head, fur, [side * .74, .58, -.10], character === 'bear' ? [.28, .27, .23] : [.23, .21, .19]); ball(head, accent, [side * .74, .58, .09], [.14, .13, .045]);
     }
     // Tiny cheeks are geometry, so they remain attached when the model turns.
-    ball(head, '#eda4a5', [side * .56, -.14, .48], [.16, .085, .035]);
+    ball(head, '#f4c3bf', [side * .59, -.17, .564], [.23, .14, .085]);
+    ball(head, '#f3b6b5', [side * .59, -.17, .638], [.14, .08, .012]);
   }
   if (isCloud) {
-    for (const [x, y, s] of [[-.61, .23, .4], [-.26, .57, .4], [.21, .59, .42], [.63, .2, .39]]) ball(head, fur, [x, y, -.07], [s, s, .52]);
+    for (const [x, y, s] of [[-.74, .02, .4], [-.49, .45, .39], [0, .58, .43], [.49, .4, .4], [.76, .01, .38]]) ball(head, fur, [x, y, -.06], [s, s, .54]);
   }
   if (character === 'sprout') {
-    leaf(head, [-.18, .86, 0], .85, .75, '#86b65a'); leaf(head, [.18, .99, 0], .95, -.65, '#9dcb67');
-    ball(head, accent, [0, .72, 0], [.065, .23, .065]);
+    leaf(head, [-.23, .82, -.04], 1.0, 1.02, '#95bc6f'); leaf(head, [.21, .91, -.04], 1.05, -.95, '#b2d580');
+    ball(head, accent, [0, .71, 0], [.055, .18, .055]);
   }
   if (isSeal) {
-    for (const side of [-1, 1]) ball(body, fur, [side * .25, .28, -.61], [.3, .13, .45]).rotation.y = side * .65;
-  } else ball(body, fur, [0, .66, -.54], character === 'otter' ? [.23, .19, .61] : [.22, .22, .22]);
-  ball(head, cream, [0, -.14, .55], [.36, .24, .14]);
+    for (const side of [-1, 1]) ball(body, fur, [side * .23, .19, -.68], [.32, .12, .43]).rotation.y = side * .65;
+  } else if (!isSprout && !isCloud) ball(body, fur, [0, .45, -.56], character === 'otter' ? [.27, .19, .54] : [.23, .23, .23]);
+  const hasMuzzle = character === 'bear' || character === 'otter' || isSeal;
+  if (hasMuzzle) ball(head, cream, [0, -.15, .65], [.34, .22, .15]);
   const eyes = new T.Group(); head.add(eyes);
   for (const side of [-1, 1]) {
-    ball(eyes, '#363d36', [side * .285, .075, .593], [.071, .092, .048], true);
-    ball(eyes, '#ffffff', [side * .285 - .018, .103, .633], [.022, .026, .012], true);
+    ball(eyes, '#4c3b35', [side * .32, .015, .702], [.065, .077, .042], true);
+    ball(eyes, '#fffaf3', [side * .32 - .018, .041, .739], [.022, .024, .009], true);
   }
-  ball(head, '#69554f', [0, -.095, .712], [.07, .045, .038], true);
-  const mouth = ring(head, '#80665b', .105, .012, [0, -.18, .688], Math.PI); mouth.rotation.z = Math.PI;
+  const faceFront = hasMuzzle ? .809 : .757;
+  ball(head, character === 'bunny' ? '#d999a0' : '#886653', [0, -.105, faceFront], [.046, .031, .026], true);
+  for (const side of [-1, 1]) { const smile = ring(head, '#986f5c', .068, .010, [side * .065, -.144, faceFront - .002], Math.PI); smile.rotation.z = Math.PI; }
 
   // Free wardrobe items have actual volume and follow the head/body in 3D.
-  if (equipped === 'leaf') leaf(body, [-.38, 1.23, .53], .43, .7, '#8bb95b');
-  if (equipped === 'star') star(body, [-.36, 1.22, .53], .15);
+  if (equipped === 'leaf') leaf(body, [-.26, isSprout ? .38 : .86, isSprout ? .78 : .72], .32, .75, '#a4c77f');
+  if (equipped === 'star') star(body, [-.26, isSprout ? .38 : .86, isSprout ? .78 : .72], .115);
   if (equipped === 'flower') {
-    for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; ball(head, '#f0b5bb', [.56 + Math.cos(a) * .13, .48 + Math.sin(a) * .13, .42], [.105, .105, .05]); }
-    ball(head, '#ffdc84', [.56, .48, .47], [.08, .08, .06]);
+    for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; ball(head, '#f0bdc6', [.72 + Math.cos(a) * .11, .44 + Math.sin(a) * .11, .47], [.09, .09, .045]); }
+    ball(head, '#ffe1a2', [.72, .44, .51], [.065, .065, .04]);
   }
-  if (equipped === 'cap') { ball(head, '#a8cddd', [0, .61, 0], [.67, .26, .53]); ball(head, '#8bb3c8', [0, .52, .48], [.65, .065, .39]); }
-  if (equipped === 'scarf') { const scarf = ring(body, '#d69c86', .51, .095, [0, 1.52, 0]); scarf.rotation.x = Math.PI / 2; ball(body, '#d69c86', [.32, 1.21, .5], [.12, .34, .09]).rotation.z = -.15; }
+  if (equipped === 'cap') { ball(head, '#b9d7e3', [0, .67, 0], [.72, .23, .56]); ball(head, '#a7c9d9', [0, .60, .48], [.69, .06, .38]); }
+  if (equipped === 'scarf') { const scarf = ring(body, '#e2b4a5', .59, .085, [0, head.position.y - .48, 0]); scarf.rotation.x = Math.PI / 2; ball(body, '#e2b4a5', [.35, head.position.y - .66, .56], [.11, .21, .09]).rotation.z = -.15; }
   if (equipped === 'crown') {
-    const band = new T.Mesh(new T.CylinderGeometry(.42, .39, .16, 32, 1, true), material('#efc86b')); band.position.set(0, head.position.y + .73, 0); body.add(band);
-    for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; const point = new T.Mesh(new T.ConeGeometry(.12, .28, 5), material('#efc86b')); point.position.set(Math.cos(a) * .34, head.position.y + .9, Math.sin(a) * .34); body.add(point); }
+    const band = new T.Mesh(new T.CylinderGeometry(.35, .33, .12, 32, 1, true), material('#efd28c')); band.position.set(0, head.position.y + .81, 0); body.add(band);
+    for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; const point = new T.Mesh(new T.ConeGeometry(.09, .19, 5), material('#efd28c')); point.position.set(Math.cos(a) * .29, head.position.y + .92, Math.sin(a) * .29); body.add(point); }
   }
   const stage = companionGrowthStage(level), growth = new T.Group(); body.add(growth);
-  if (stage >= 1) for (const side of [-1, 1]) leaf(growth, [side * .71, 1.22, -.37], stage >= 2 ? 1.65 : 1.12, side * -.95, '#a4c991');
+  if (stage >= 1) for (const side of [-1, 1]) leaf(growth, [side * .82, .77, -.37], stage >= 2 ? 1.1 : .75, side * -1.05, '#bed8a8');
   const satellites = new T.Group(); root.add(satellites);
-  if (stage >= 2) { star(satellites, [-1.08, 2.23, -.08], .16); star(satellites, [1.08, 1.45, .08], .115); }
+  if (stage >= 2) { star(satellites, [-1.18, 1.75, -.08], .12); star(satellites, [1.12, 1.08, .08], .09); }
   if (stage >= 3) {
-    const halo = ring(growth, '#e9c779', .55, .025, [0, 2.9, -.2]); halo.rotation.x = Math.PI / 2.6;
+    const halo = ring(growth, '#edcf8c', .49, .018, [0, head.position.y + 1.06, -.2]); halo.rotation.x = Math.PI / 2.6;
     for (let i = 0; i < 7; i++) { const a = i * Math.PI * 2 / 7; leaf(root, [Math.cos(a) * 1.02, .075, Math.sin(a) * .78], .55, Math.PI / 2, i % 2 ? '#e5c0ce' : '#c0d9a5').rotation.x = Math.PI / 2; }
   }
   return { root, body, head, eyes, arms, satellites, stage };
