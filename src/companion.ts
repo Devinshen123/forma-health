@@ -1,15 +1,20 @@
+import { POKEMON_CATALOG, POKEMON_TYPES, pokemonCharacter, type PokemonCharacter } from './pokemon-catalog';
 // Shared game contracts. XP is game progress, never a health score.
 export const COMPANION_RULE_VERSION = 1;
 export const COMPANION_CHARACTERS = ['sprout', 'bunny', 'otter', 'cloud', 'bear', 'seal'] as const;
-export type CompanionCharacter = typeof COMPANION_CHARACTERS[number];
-export const COMPANION_CHARACTER_DETAILS = {
+export type LegacyCompanionCharacter = typeof COMPANION_CHARACTERS[number];
+export type CompanionCharacter = LegacyCompanionCharacter | PokemonCharacter;
+export const ALL_COMPANION_CHARACTERS: readonly CompanionCharacter[] = [...COMPANION_CHARACTERS, ...POKEMON_CATALOG.map(entry => pokemonCharacter(entry.dex))];
+type CharacterDetails = { zh: string; en: string; descriptionZh: string; descriptionEn: string; color: string };
+export const COMPANION_CHARACTER_DETAILS: Record<CompanionCharacter, CharacterDetails> = {
+  ...Object.fromEntries(POKEMON_CATALOG.map(entry => [pokemonCharacter(entry.dex), { zh:entry.zh, en:entry.en, descriptionZh:'一起走自己的节奏。', descriptionEn:'Together, at your own pace.', color:POKEMON_TYPES[entry.types[0]].color }])),
   sprout: { zh: '妙蛙种子', en: 'Bulbasaur', descriptionZh: '背着小种子，一点点长大。', descriptionEn: 'Little steps, with a little seed.', color: '#e8f3e9' },
   bunny: { zh: '皮卡丘', en: 'Pikachu', descriptionZh: '电力满满，也记得休息。', descriptionEn: 'Full of sparks. Make time to rest, too.', color: '#fcf4d9' },
   otter: { zh: '杰尼龟', en: 'Squirtle', descriptionZh: '不着急，按自己的节奏前进。', descriptionEn: 'Take it easy, at your own pace.', color: '#e8f3f7' },
   cloud: { zh: '胖丁', en: 'Jigglypuff', descriptionZh: '软乎乎地，陪你过好每一天。', descriptionEn: 'A soft little friend for every day.', color: '#faeaf0' },
   bear: { zh: '小卡比兽', en: 'Munchlax', descriptionZh: '慢慢来，睡饱再出发。', descriptionEn: 'Rest well. Your next step can wait.', color: '#e8eff0' },
   seal: { zh: '伊布', en: 'Eevee', descriptionZh: '每一种成长，都有自己的可爱。', descriptionEn: 'Every way of growing has its own charm.', color: '#f5ecdf' },
-} satisfies Record<CompanionCharacter, { zh: string; en: string; descriptionZh: string; descriptionEn: string; color: string }>;
+};
 export const COMPANION_ITEMS = ['leaf', 'cap', 'star', 'scarf', 'flower', 'crown'] as const;
 export type CompanionItem = typeof COMPANION_ITEMS[number];
 export type CompanionQuest = 'nutrition' | 'movement' | 'sleep';

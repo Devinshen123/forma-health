@@ -96,6 +96,22 @@ test('character export and deletion stay isolated to the account', t => {
   assert.equal(h.store.companionSnapshot(h.owner).character, 'bunny');
 });
 
+test('the six-character schema expands additively, keeps earned data, and retains new species across restart',t=>{
+  const h=harness(t);earnedProfile(h);
+  const original=h.store.selectCompanionCharacter(h.owner,'bear'),health=h.store.snapshot(h.owner);
+  h.store.close();
+  const legacy=new DatabaseSync(join(h.directory,'forma.sqlite'));
+  try { legacy.exec('ALTER TABLE companion_profiles DROP COLUMN pokemon_character'); } finally {legacy.close();}
+  h.reopen();assert.deepEqual(h.store.companionSnapshot(h.owner),original);
+  assert.deepEqual(h.store.snapshot(h.owner),health);
+  const selected=h.store.selectCompanionCharacter(h.owner,'pokemon-151');
+  assert.deepEqual(selected,{...original,character:'pokemon-151'});
+  h.reopen();assert.deepEqual(h.store.companionSnapshot(h.owner),selected);
+  assert.equal((h.store.db.prepare('SELECT character FROM companion_profiles WHERE owner_id=?').get(h.owner) as {character:string}).character,'bear','original column survives for older app versions');
+  assert.throws(()=>h.store.db.prepare('UPDATE companion_profiles SET pokemon_character=? WHERE owner_id=?').run('pokemon-999',h.owner),/CHECK constraint failed/);
+  assert.deepEqual(h.store.selectCompanionCharacter(h.owner,'cloud'),{...original,character:'cloud'});
+});
+
 test('failed profile writes roll back character selection and retain the previous snapshot', t => {
   const h = harness(t); earnedProfile(h);
   const before = h.store.selectCompanionCharacter(h.owner, 'otter');

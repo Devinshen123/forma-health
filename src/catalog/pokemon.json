@@ -1,0 +1,5055 @@
+[
+  {
+    "dex": 1,
+    "zh": "妙蛙种子",
+    "en": "Bulbasaur",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 2,
+    "zh": "妙蛙草",
+    "en": "Ivysaur",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 3,
+    "zh": "妙蛙花",
+    "en": "Venusaur",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 4,
+    "zh": "小火龙",
+    "en": "Charmander",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 5,
+    "zh": "火恐龙",
+    "en": "Charmeleon",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 6,
+    "zh": "喷火龙",
+    "en": "Charizard",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 7,
+    "zh": "杰尼龟",
+    "en": "Squirtle",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 8,
+    "zh": "卡咪龟",
+    "en": "Wartortle",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 9,
+    "zh": "水箭龟",
+    "en": "Blastoise",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 10,
+    "zh": "绿毛虫",
+    "en": "Caterpie",
+    "types": [
+      "bug"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 11,
+    "zh": "铁甲蛹",
+    "en": "Metapod",
+    "types": [
+      "bug"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 12,
+    "zh": "巴大蝶",
+    "en": "Butterfree",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 13,
+    "zh": "独角虫",
+    "en": "Weedle",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 14,
+    "zh": "铁壳蛹",
+    "en": "Kakuna",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 15,
+    "zh": "大针蜂",
+    "en": "Beedrill",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 16,
+    "zh": "波波",
+    "en": "Pidgey",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 17,
+    "zh": "比比鸟",
+    "en": "Pidgeotto",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 18,
+    "zh": "大比鸟",
+    "en": "Pidgeot",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 19,
+    "zh": "小拉达",
+    "en": "Rattata",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 20,
+    "zh": "拉达",
+    "en": "Raticate",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 21,
+    "zh": "烈雀",
+    "en": "Spearow",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 22,
+    "zh": "大嘴雀",
+    "en": "Fearow",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 23,
+    "zh": "阿柏蛇",
+    "en": "Ekans",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 24,
+    "zh": "阿柏怪",
+    "en": "Arbok",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 25,
+    "zh": "皮卡丘",
+    "en": "Pikachu",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 26,
+    "zh": "雷丘",
+    "en": "Raichu",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 27,
+    "zh": "穿山鼠",
+    "en": "Sandshrew",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 28,
+    "zh": "穿山王",
+    "en": "Sandslash",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 29,
+    "zh": "尼多兰",
+    "en": "Nidoran♀",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 30,
+    "zh": "尼多娜",
+    "en": "Nidorina",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 31,
+    "zh": "尼多后",
+    "en": "Nidoqueen",
+    "types": [
+      "poison",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 32,
+    "zh": "尼多朗",
+    "en": "Nidoran♂",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 33,
+    "zh": "尼多力诺",
+    "en": "Nidorino",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 34,
+    "zh": "尼多王",
+    "en": "Nidoking",
+    "types": [
+      "poison",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 35,
+    "zh": "皮皮",
+    "en": "Clefairy",
+    "types": [
+      "fairy"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 36,
+    "zh": "皮可西",
+    "en": "Clefable",
+    "types": [
+      "fairy"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 37,
+    "zh": "六尾",
+    "en": "Vulpix",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 38,
+    "zh": "九尾",
+    "en": "Ninetales",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 39,
+    "zh": "胖丁",
+    "en": "Jigglypuff",
+    "types": [
+      "normal",
+      "fairy"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 40,
+    "zh": "胖可丁",
+    "en": "Wigglytuff",
+    "types": [
+      "normal",
+      "fairy"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 41,
+    "zh": "超音蝠",
+    "en": "Zubat",
+    "types": [
+      "poison",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 42,
+    "zh": "大嘴蝠",
+    "en": "Golbat",
+    "types": [
+      "poison",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 43,
+    "zh": "走路草",
+    "en": "Oddish",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 44,
+    "zh": "臭臭花",
+    "en": "Gloom",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 45,
+    "zh": "霸王花",
+    "en": "Vileplume",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 46,
+    "zh": "派拉斯",
+    "en": "Paras",
+    "types": [
+      "bug",
+      "grass"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 47,
+    "zh": "派拉斯特",
+    "en": "Parasect",
+    "types": [
+      "bug",
+      "grass"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 48,
+    "zh": "毛球",
+    "en": "Venonat",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 49,
+    "zh": "摩鲁蛾",
+    "en": "Venomoth",
+    "types": [
+      "bug",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 50,
+    "zh": "地鼠",
+    "en": "Diglett",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 51,
+    "zh": "三地鼠",
+    "en": "Dugtrio",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 52,
+    "zh": "喵喵",
+    "en": "Meowth",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 53,
+    "zh": "猫老大",
+    "en": "Persian",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 54,
+    "zh": "可达鸭",
+    "en": "Psyduck",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 55,
+    "zh": "哥达鸭",
+    "en": "Golduck",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 56,
+    "zh": "猴怪",
+    "en": "Mankey",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 57,
+    "zh": "火暴猴",
+    "en": "Primeape",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 58,
+    "zh": "卡蒂狗",
+    "en": "Growlithe",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 59,
+    "zh": "风速狗",
+    "en": "Arcanine",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 60,
+    "zh": "蚊香蝌蚪",
+    "en": "Poliwag",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 61,
+    "zh": "蚊香君",
+    "en": "Poliwhirl",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 62,
+    "zh": "蚊香泳士",
+    "en": "Poliwrath",
+    "types": [
+      "water",
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 63,
+    "zh": "凯西",
+    "en": "Abra",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 64,
+    "zh": "勇基拉",
+    "en": "Kadabra",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 65,
+    "zh": "胡地",
+    "en": "Alakazam",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 66,
+    "zh": "腕力",
+    "en": "Machop",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 67,
+    "zh": "豪力",
+    "en": "Machoke",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 68,
+    "zh": "怪力",
+    "en": "Machamp",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 69,
+    "zh": "喇叭芽",
+    "en": "Bellsprout",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 70,
+    "zh": "口呆花",
+    "en": "Weepinbell",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 71,
+    "zh": "大食花",
+    "en": "Victreebel",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 72,
+    "zh": "玛瑙水母",
+    "en": "Tentacool",
+    "types": [
+      "water",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 73,
+    "zh": "毒刺水母",
+    "en": "Tentacruel",
+    "types": [
+      "water",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 74,
+    "zh": "小拳石",
+    "en": "Geodude",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 75,
+    "zh": "隆隆石",
+    "en": "Graveler",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 76,
+    "zh": "隆隆岩",
+    "en": "Golem",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 77,
+    "zh": "小火马",
+    "en": "Ponyta",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 78,
+    "zh": "烈焰马",
+    "en": "Rapidash",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 79,
+    "zh": "呆呆兽",
+    "en": "Slowpoke",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 80,
+    "zh": "呆壳兽",
+    "en": "Slowbro",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 81,
+    "zh": "小磁怪",
+    "en": "Magnemite",
+    "types": [
+      "electric",
+      "steel"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 82,
+    "zh": "三合一磁怪",
+    "en": "Magneton",
+    "types": [
+      "electric",
+      "steel"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 83,
+    "zh": "大葱鸭",
+    "en": "Farfetch’d",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 84,
+    "zh": "嘟嘟",
+    "en": "Doduo",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 85,
+    "zh": "嘟嘟利",
+    "en": "Dodrio",
+    "types": [
+      "normal",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 86,
+    "zh": "小海狮",
+    "en": "Seel",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 87,
+    "zh": "白海狮",
+    "en": "Dewgong",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 88,
+    "zh": "臭泥",
+    "en": "Grimer",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 89,
+    "zh": "臭臭泥",
+    "en": "Muk",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 90,
+    "zh": "大舌贝",
+    "en": "Shellder",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 91,
+    "zh": "刺甲贝",
+    "en": "Cloyster",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 92,
+    "zh": "鬼斯",
+    "en": "Gastly",
+    "types": [
+      "ghost",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 93,
+    "zh": "鬼斯通",
+    "en": "Haunter",
+    "types": [
+      "ghost",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 94,
+    "zh": "耿鬼",
+    "en": "Gengar",
+    "types": [
+      "ghost",
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 95,
+    "zh": "大岩蛇",
+    "en": "Onix",
+    "types": [
+      "rock",
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 96,
+    "zh": "催眠貘",
+    "en": "Drowzee",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 97,
+    "zh": "引梦貘人",
+    "en": "Hypno",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 98,
+    "zh": "大钳蟹",
+    "en": "Krabby",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 99,
+    "zh": "巨钳蟹",
+    "en": "Kingler",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 100,
+    "zh": "霹雳电球",
+    "en": "Voltorb",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 101,
+    "zh": "顽皮雷弹",
+    "en": "Electrode",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 102,
+    "zh": "蛋蛋",
+    "en": "Exeggcute",
+    "types": [
+      "grass",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 103,
+    "zh": "椰蛋树",
+    "en": "Exeggutor",
+    "types": [
+      "grass",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 104,
+    "zh": "卡拉卡拉",
+    "en": "Cubone",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 105,
+    "zh": "嘎啦嘎啦",
+    "en": "Marowak",
+    "types": [
+      "ground"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 106,
+    "zh": "飞腿郎",
+    "en": "Hitmonlee",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 107,
+    "zh": "快拳郎",
+    "en": "Hitmonchan",
+    "types": [
+      "fighting"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 108,
+    "zh": "大舌头",
+    "en": "Lickitung",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 109,
+    "zh": "瓦斯弹",
+    "en": "Koffing",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 110,
+    "zh": "双弹瓦斯",
+    "en": "Weezing",
+    "types": [
+      "poison"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 111,
+    "zh": "独角犀牛",
+    "en": "Rhyhorn",
+    "types": [
+      "ground",
+      "rock"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 112,
+    "zh": "钻角犀兽",
+    "en": "Rhydon",
+    "types": [
+      "ground",
+      "rock"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 113,
+    "zh": "吉利蛋",
+    "en": "Chansey",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 114,
+    "zh": "蔓藤怪",
+    "en": "Tangela",
+    "types": [
+      "grass"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 115,
+    "zh": "袋兽",
+    "en": "Kangaskhan",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 116,
+    "zh": "墨海马",
+    "en": "Horsea",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 117,
+    "zh": "海刺龙",
+    "en": "Seadra",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 118,
+    "zh": "角金鱼",
+    "en": "Goldeen",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 119,
+    "zh": "金鱼王",
+    "en": "Seaking",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 120,
+    "zh": "海星星",
+    "en": "Staryu",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 121,
+    "zh": "宝石海星",
+    "en": "Starmie",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 122,
+    "zh": "魔墙人偶",
+    "en": "Mr. Mime",
+    "types": [
+      "psychic",
+      "fairy"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 123,
+    "zh": "飞天螳螂",
+    "en": "Scyther",
+    "types": [
+      "bug",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 124,
+    "zh": "迷唇姐",
+    "en": "Jynx",
+    "types": [
+      "ice",
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 125,
+    "zh": "电击兽",
+    "en": "Electabuzz",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 126,
+    "zh": "鸭嘴火兽",
+    "en": "Magmar",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 127,
+    "zh": "凯罗斯",
+    "en": "Pinsir",
+    "types": [
+      "bug"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 128,
+    "zh": "肯泰罗",
+    "en": "Tauros",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 129,
+    "zh": "鲤鱼王",
+    "en": "Magikarp",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 130,
+    "zh": "暴鲤龙",
+    "en": "Gyarados",
+    "types": [
+      "water",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 131,
+    "zh": "拉普拉斯",
+    "en": "Lapras",
+    "types": [
+      "water",
+      "ice"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 132,
+    "zh": "百变怪",
+    "en": "Ditto",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 133,
+    "zh": "伊布",
+    "en": "Eevee",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 134,
+    "zh": "水伊布",
+    "en": "Vaporeon",
+    "types": [
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 135,
+    "zh": "雷伊布",
+    "en": "Jolteon",
+    "types": [
+      "electric"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 136,
+    "zh": "火伊布",
+    "en": "Flareon",
+    "types": [
+      "fire"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 137,
+    "zh": "多边兽",
+    "en": "Porygon",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 138,
+    "zh": "菊石兽",
+    "en": "Omanyte",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 139,
+    "zh": "多刺菊石兽",
+    "en": "Omastar",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 140,
+    "zh": "化石盔",
+    "en": "Kabuto",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 141,
+    "zh": "镰刀盔",
+    "en": "Kabutops",
+    "types": [
+      "rock",
+      "water"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 142,
+    "zh": "化石翼龙",
+    "en": "Aerodactyl",
+    "types": [
+      "rock",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      }
+    ]
+  },
+  {
+    "dex": 143,
+    "zh": "卡比兽",
+    "en": "Snorlax",
+    "types": [
+      "normal"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 144,
+    "zh": "急冻鸟",
+    "en": "Articuno",
+    "types": [
+      "ice",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 145,
+    "zh": "闪电鸟",
+    "en": "Zapdos",
+    "types": [
+      "electric",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 146,
+    "zh": "火焰鸟",
+    "en": "Moltres",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 147,
+    "zh": "迷你龙",
+    "en": "Dratini",
+    "types": [
+      "dragon"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 148,
+    "zh": "哈克龙",
+    "en": "Dragonair",
+    "types": [
+      "dragon"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 149,
+    "zh": "快龙",
+    "en": "Dragonite",
+    "types": [
+      "dragon",
+      "flying"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 150,
+    "zh": "超梦",
+    "en": "Mewtwo",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  },
+  {
+    "dex": 151,
+    "zh": "梦幻",
+    "en": "Mew",
+    "types": [
+      "psychic"
+    ],
+    "animations": [
+      {
+        "name": "idle",
+        "label": "待机"
+      },
+      {
+        "name": "walk",
+        "label": "行走"
+      },
+      {
+        "name": "run",
+        "label": "奔跑"
+      },
+      {
+        "name": "attack",
+        "label": "攻击"
+      },
+      {
+        "name": "happy",
+        "label": "开心"
+      },
+      {
+        "name": "sleep",
+        "label": "睡眠"
+      }
+    ]
+  }
+]

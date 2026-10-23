@@ -6,7 +6,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { request as httpRequest } from 'node:http';
 import { test, type TestContext } from 'node:test';
 import { createApp } from '../server/app';
-import { COMPANION_CHARACTERS, type CompanionCharacter, type CompanionSnapshot } from '../src/companion';
+import { ALL_COMPANION_CHARACTERS, COMPANION_CHARACTERS, type CompanionCharacter, type CompanionSnapshot } from '../src/companion';
 import type { Meal, Profile, Sleep, SyncChange, SyncSnapshot, User, Workout } from '../src/types';
 
 const ORIGIN = 'http://127.0.0.1:5173';
@@ -130,11 +130,11 @@ test('new accounts have no invented progress and cannot inject XP, owner, dates,
   assert.equal((await h.snapshot(withoutProfile)).xp, 0);
 });
 
-test('all six companions are freely selectable, saved to the account, and isolated from other accounts', async t => {
+test('all 151 species and legacy companions are saved to the account without changing XP or other accounts', async t => {
   const h = await harness(t), a = await h.register(), b = await h.register();
   const original = await h.snapshot(a), other = await h.snapshot(b);
   assert.equal(original.character, 'sprout');
-  for (const character of COMPANION_CHARACTERS) {
+  for (const character of ALL_COMPANION_CHARACTERS) {
     const selected = await h.request('/api/companion/character', a, { method: 'PUT', body: { character } });
     assert.equal(selected.status, 200);
     assert.deepEqual(selected.data, { ...original, character }, 'selecting a free character must not mint or reset progress');
@@ -145,7 +145,8 @@ test('all six companions are freely selectable, saved to the account, and isolat
   assert.equal(login.status, 200);
   const cookie = login.response.headers.get('set-cookie')?.split(';')[0]; assert.ok(cookie);
   const secondSession = { user: login.data.user, cookie };
-  assert.equal((await h.snapshot(secondSession)).character, 'seal', 'the choice belongs to the account rather than one browser session');
+  assert.equal((await h.snapshot(secondSession)).character, 'pokemon-151', 'the choice belongs to the account rather than one browser session');
+  assert.equal((await h.request('/api/companion/character',a,{method:'PUT',body:{character:'pokemon-999'}})).status,400,'unknown model IDs cannot be saved');
   assert.equal((await h.request('/api/companion/character', secondSession, { method: 'PUT', body: { character: 'bunny' } })).status, 200);
   assert.equal((await h.snapshot(a)).character, 'bunny');
   const withoutProfile = await h.register(null);

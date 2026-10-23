@@ -20,6 +20,7 @@ const roots = [
   'Dockerfile', '.dockerignore',
   'docs/architecture/training-source-log.md',
   'docs/architecture/companion-pokemon-reference-20261022.md',
+  'docs/architecture/companion-pokedex-151-20261023.md',
   'docs/collaboration/decisions/ADR-training-workbench-20261018.md',
 ];
 const files = new Map();

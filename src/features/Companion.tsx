@@ -1,4 +1,5 @@
 import { companionForm } from '../companion-growth';
+import { POKEMON_CATALOG, POKEMON_TYPES, pokemonCharacter, searchPokemon } from '../pokemon-catalog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, Gift, Leaf, Moon, RefreshCw, Shirt, Users, Utensils, Dumbbell } from 'lucide-react';
 import { ApiError, getCompanion, claimCompanion, restCompanion, openCompanionChest, equipCompanion, companionChallenge, selectCompanionCharacter } from '../api';
@@ -201,10 +202,35 @@ function LoadState({ model, zh, compact = false, authenticated = false }: { mode
 }
 
 function CharacterGallery({ model, art, zh, demo, authenticated }: { model: ReturnType<typeof useCompanion>; art: ReturnType<typeof useCompanionArtwork>; zh: boolean; demo: boolean; authenticated: boolean }) {
+  const [query, setQuery] = useState(''), [type, setType] = useState(''), [page, setPage] = useState(0);
   if (!model.snapshot) return null;
   const current = model.snapshot.character ?? 'sprout';
-  return <section className="panel companion-gallery" aria-labelledby="companion-gallery-title">
-    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '六条进化路线，陪你一点点长大。' : 'Six evolution paths to grow with you.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
+  const results = searchPokemon(query, type), pages = Math.max(1, Math.ceil(results.length / 24)), shownPage = Math.min(page, pages - 1);
+  const choose = async (character: CompanionCharacter) => {
+    if (await model.selectCharacter(character)) document.getElementById('companion-model')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  };
+  return <section id="companion-pokedex" className="panel companion-gallery" aria-labelledby="companion-gallery-title">
+    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '151 位伙伴，等你认识。' : '151 companions to meet.'}</h2><p>{zh ? '关都 3D 图鉴 · 869 段原始动画 · 选择一位，转转看。' : 'Kanto 3D Pokédex · 869 original animations · choose a friend and take a look.'}</p></div><span className="companion-badge">151 · 3D</span></div>
+    <div className="companion-catalog-filters">
+      <label htmlFor="companion-search">{zh ? '寻找伙伴' : 'Find a companion'}<input id="companion-search" type="search" value={query} onChange={event=>{setQuery(event.target.value);setPage(0);}} placeholder={zh?'中文、英文或编号，如 小火龙 / 004':'Name or number, e.g. Charmander / 004'} /></label>
+      <label htmlFor="companion-type">{zh ? '属性' : 'Type'}<select id="companion-type" value={type} onChange={event=>{setType(event.target.value);setPage(0);}}><option value="">{zh?'全部属性':'All types'}</option>{Object.entries(POKEMON_TYPES).map(([id,details])=><option key={id} value={id}>{zh?details.zh:details.en}</option>)}</select></label>
+    </div>
+    <p className="companion-catalog-count" role="status" data-testid="pokedex-count">{zh?`找到 ${results.length} / ${POKEMON_CATALOG.length} 位伙伴`:`${results.length} of ${POKEMON_CATALOG.length} companions`}</p>
+    <div className="companion-characters companion-pokedex-grid" data-testid="pokedex-grid">
+      {results.slice(shownPage*24,(shownPage+1)*24).map(entry=>{
+        const character = pokemonCharacter(entry.dex), selected = companionForm(current,1).dex===entry.dex;
+        const name = zh?entry.zh:entry.en, pending = model.pendingCharacter===character;
+        return <button key={entry.dex} type="button" className={`companion-character ${selected?'is-selected':''}`} data-pokemon-dex={entry.dex} aria-pressed={selected} aria-label={`${name} #${String(entry.dex).padStart(3,'0')} · ${zh?'查看 3D':'View in 3D'}`} disabled={model.busy||(!demo&&!authenticated)} onClick={()=>void choose(character)}>
+          <span className="companion-pokedex-number">#{String(entry.dex).padStart(3,'0')}</span>
+          <span className="companion-character-portrait" style={{backgroundColor:POKEMON_TYPES[entry.types[0]].color}}><CompanionAvatar character={character} thumbnail retryKey={art.revision} onArtError={art.reportError} /></span>
+          <strong>{name}</strong><span className="companion-pokedex-types">{entry.types.map(id=><span key={id}>{zh?POKEMON_TYPES[id].zh:POKEMON_TYPES[id].en}</span>)}</span>
+          <span className="companion-character-status">{pending?(zh?'正在保存…':'Saving…'):selected?<><Check size={13}/>{zh?'当前伙伴':'Selected'}</>:<>3D · {entry.animations.length} {zh?'段动画':'animations'}</>}</span>
+        </button>;
+      })}
+    </div>
+    {!results.length&&<div className="companion-catalog-empty"><p>{zh?'没有找到这位伙伴，试试名字或图鉴编号。':'No companions found. Try a name or Pokédex number.'}</p><button type="button" className="text-button" onClick={()=>{setQuery('');setType('');setPage(0);}}>{zh?'显示全部 151 位':'Show all 151'}</button></div>}
+    {results.length>24&&<nav className="companion-catalog-pagination" aria-label={zh?'图鉴分页':'Pokédex pages'}><button type="button" className="btn btn-secondary" disabled={shownPage===0} onClick={()=>setPage(shownPage-1)}>{zh?'上一页':'Previous'}</button><span>{shownPage+1} / {pages}</span><button type="button" className="btn btn-secondary" disabled={shownPage===pages-1} onClick={()=>setPage(shownPage+1)}>{zh?'下一页':'Next'}</button></nav>}
+    <details className="companion-classic"><summary>{zh?'原有六位伙伴（保留小卡比兽）':'Your original six companions (including Munchlax)'}</summary>
     <div className="companion-characters">
       {COMPANION_CHARACTERS.map(character => {
         const details = COMPANION_CHARACTER_DETAILS[character];
@@ -212,13 +238,14 @@ function CharacterGallery({ model, art, zh, demo, authenticated }: { model: Retu
         const selected = current === character;
         const pending = model.pendingCharacter === character;
         const status = pending ? (zh ? '正在保存…' : 'Saving…') : selected ? (demo ? (zh ? '预览中' : 'Previewing') : (zh ? '当前伙伴' : 'Your companion')) : (demo ? (zh ? '预览伙伴' : 'Preview') : (zh ? '选择伙伴' : 'Choose'));
-        return <button key={character} type="button" className={`companion-character ${selected ? 'is-selected' : ''} ${pending ? 'is-pending' : ''}`} data-companion-character={character} aria-pressed={selected} aria-label={`${name} · ${status}`} disabled={model.busy || (!demo && !authenticated)} onClick={() => { if (!selected) void model.selectCharacter(character); }}>
+        return <button key={character} type="button" className={`companion-character ${selected ? 'is-selected' : ''} ${pending ? 'is-pending' : ''}`} data-companion-character={character} aria-pressed={selected} aria-label={`${name} · ${status}`} disabled={model.busy || (!demo && !authenticated)} onClick={() => { if (!selected) void choose(character); }}>
           <span className="companion-character-portrait" style={{ backgroundColor: details.color }}><CompanionAvatar character={character} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /></span>
           <strong>{name}</strong><span className="companion-character-description">{zh ? details.descriptionZh : details.descriptionEn}</span>
           <span className="companion-character-status">{selected && <Check size={13} aria-hidden="true" />}{status}</span>
         </button>;
       })}
     </div>
+    </details>
     <ArtworkRetry art={art} zh={zh} />
     <p className="companion-gallery-note">{demo ? (zh ? '仅预览 · 登录后可保存喜欢的伙伴。' : 'Preview only · sign in to save your favorite.') : (zh ? '随时换一位伙伴，成长进度、配饰和宝箱都会保留。' : 'Switch whenever you like. Your progress, outfits and chests stay with you.')}</p>
   </section>;
@@ -272,9 +299,8 @@ export default function Companion(props: CompanionProps) {
     <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (model.pendingCharacter ? (zh ? '正在保存伙伴…' : 'Saving your companion…') : (zh ? '正在确认已保存的进度…' : 'Checking saved progress…')) : model.error ? '' : model.notice === 'preview' ? (zh ? `正在预览${name}，登录后可保存。` : `Previewing ${name}. Sign in to save.`) : model.notice === 'character' ? (zh ? '伙伴已保存，成长与装扮已保留。' : 'Companion saved. Your progress and outfits are kept.') : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
     {model.error && snapshot && <div className="companion-error"><p role="alert">{model.error}</p><button className="text-button" disabled={disabled} onClick={() => void run({ type: 'read' })}>{zh ? '重新读取' : 'Reload progress'}</button></div>}
     {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} authenticated={Boolean(accountId)} /></div> : <>
-      <CharacterGallery model={model} art={art} zh={zh} demo={Boolean(demo)} authenticated={Boolean(accountId)} />
       <div className="companion-main-grid">
-        <section className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
+        <section id="companion-model" className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
           <CompanionGrowth key={props.demo ? 'demo' : props.accountId} snapshot={snapshot} identity={props.demo ? 'demo' : props.accountId ?? ''} zh={zh} />
           <div className="companion-home-copy"><h2>{zh ? `你好，我是${name}。` : `Hi, I’m ${name}.`}</h2><p>{zh ? '你回来时，我一直在。漏记不会扣分，也不会失去外观。' : 'I’m here whenever you return. Missing a log never costs XP or outfits.'}</p><Progress snapshot={snapshot} zh={zh} /><div className="companion-days"><span><strong data-testid="companion-active-days">{snapshot.activeDays}</strong> {zh ? '个成长日' : 'growth days'}</span><span>{zh ? '每 3 个成长日解锁免费宝箱' : 'A free chest every 3 growth days'}</span></div><p className="companion-small">{zh ? 'XP 和等级只代表游戏进度，不是健康评分。' : 'XP and levels show game progress, never a health score.'}</p></div>
         </section>
@@ -285,6 +311,8 @@ export default function Companion(props: CompanionProps) {
           <p className="companion-small">{zh ? '休息与训练任选其一，奖励相同。功能启用后新保存的当天记录才参与结算，旧记录和编辑不补发。每类最多 10 XP，每个 UTC 日合计最多 30 XP。同一本地记录日不会重复领取，切换时区不增加额度。UTC 00:00 切换奖励日。' : 'Rest and training earn the same reward; choose either. Only new current-day logs saved after this feature starts qualify; older logs and edits do not earn backdated rewards. Each category earns up to 10 XP, with a 30 XP limit per UTC day. The same local log day cannot earn twice; changing time zones adds no allowance. Reward days change at 00:00 UTC.'}</p>
         </section>
       </div>
+
+      <CharacterGallery model={model} art={art} zh={zh} demo={Boolean(demo)} authenticated={Boolean(accountId)} />
 
       <section className="panel companion-wardrobe" aria-label={zh ? '宝箱与外观' : 'Chests and outfits'}>
         <div className="companion-section-title"><div><span className="companion-eyebrow"><Shirt size={16} />{zh ? '给成长留个纪念' : 'LITTLE KEEPSAKES'}</span><h2>{zh ? `${name}的衣橱` : `${name}’s wardrobe`}</h2></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>

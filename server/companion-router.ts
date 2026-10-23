@@ -1,12 +1,12 @@
 import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
-import { COMPANION_CHARACTERS, COMPANION_ITEMS } from '../src/companion';
+import { ALL_COMPANION_CHARACTERS, COMPANION_ITEMS } from '../src/companion';
 import { idSchema } from './validation-primitives';
 import type { Store } from './store';
 
 const empty = z.object({}).strict();
 const equipment = z.object({ item: z.enum(COMPANION_ITEMS).nullable() }).strict();
-const characterSelection = z.object({ character: z.enum(COMPANION_CHARACTERS) }).strict();
+const characterSelection = z.object({ character: z.enum(ALL_COMPANION_CHARACTERS) }).strict();
 const challenge = z.discriminatedUnion('action', [
   z.object({ action: z.literal('create') }).strict(),
   z.object({ action: z.literal('leave') }).strict(),

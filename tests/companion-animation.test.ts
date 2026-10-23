@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Bone, Group, Quaternion } from 'three';
+import { AnimationMixer, Bone, Group, Quaternion } from 'three';
+import { COMPANION_CHARACTERS } from '../src/companion';
+import { POKEMON_CATALOG } from '../src/pokemon-catalog';
 import { COMPANION_EVOLUTIONS } from '../src/companion-growth';
 import { createCompanionAnimator } from '../src/components/companion-animation';
 import { disposeScene } from '../src/components/companion-scene';
 import { companionGeometryFixture } from './companion-model-fixture';
 
 test('every shipped animated form walks, returns to idle, stays asleep and wakes without a dead transition', async () => {
-  for(const form of Object.values(COMPANION_EVOLUTIONS).flat().filter(form=>form.dex!==446)){
+  for(const form of COMPANION_CHARACTERS.flatMap(id=>COMPANION_EVOLUTIONS[id]).filter(form=>form.dex!==446)){
     const gltf=await companionGeometryFixture(form.dex),animator=createCompanionAnimator(gltf.scene,gltf.animations);
     for(const action of ['idle','happy','walk','sleep'])assert.ok(gltf.animations.some(clip=>clip.name===action),`${form.en} ships authored ${action}`);
     const advance=(seconds:number)=>{for(let frame=0;frame<Math.ceil(seconds/.05);frame++)animator.update(.05);};
@@ -17,6 +19,25 @@ test('every shipped animated form walks, returns to idle, stays asleep and wakes
     gltf.scene.traverse(object=>{assert.ok([...object.position,...object.quaternion,...object.scale].every(Number.isFinite));});
     animator.dispose();disposeScene(gltf.scene);
   }
+});
+
+test('every one of the 869 original clips decodes and drives a finite real skeleton',async()=>{
+  let count=0;
+  for(const entry of POKEMON_CATALOG){
+    const gltf=await companionGeometryFixture(entry.dex),mixer=new AnimationMixer(gltf.scene);
+    assert.deepEqual(gltf.animations.map(clip=>clip.name).sort(),entry.animations.map(clip=>clip.name).sort());
+    for(const clip of gltf.animations){
+      assert.ok(clip.tracks.length>0&&clip.duration>0,`${entry.en} ${clip.name} is authored animation`);
+      const action=mixer.clipAction(clip);action.play();
+      for(const fraction of[.25,.75]){
+        mixer.setTime(clip.duration*fraction);
+        gltf.scene.traverse(object=>assert.ok([...object.position,...object.quaternion,...object.scale].every(Number.isFinite),`${entry.en} ${clip.name} stays finite`));
+      }
+      mixer.stopAllAction();count++;
+    }
+    mixer.uncacheRoot(gltf.scene);disposeScene(gltf.scene);
+  }
+  assert.equal(count,869);
 });
 
 function staticRig(){const root=new Group(),head=new Bone(),arm=new Bone();head.name='Head_05';arm.name='RArm_019';root.add(head,arm);return{root,head,arm};}

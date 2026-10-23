@@ -57,7 +57,7 @@ export async function createCompanionModel(character: CompanionCharacter, equipp
     const upgrade = (original: T.Material) => {
       if (!(original instanceof T.MeshStandardMaterial)) return original;
       if (materials.has(original)) return materials.get(original)!;
-      const eye = /eye/i.test(original.name), fur = character === 'seal';
+      const eye = /eye/i.test(original.name), fur = [133,134,135,136].includes(form.dex);
       const physical = new T.MeshPhysicalMaterial({
         name: original.name, color: original.color, map: original.map,
         normalMap: original.normalMap, normalScale: original.normalScale.clone().multiplyScalar(.65),
@@ -110,6 +110,7 @@ export async function createCompanionModel(character: CompanionCharacter, equipp
   return {
     root, body, stage: companionGrowthStage(level, character), dex: form.dex,
     get action() { return animator.action; },
+    actions: animator.actions,
     update(delta: number) { animator.update(delta); },
     look(x: number, y: number) { animator.look(x, y); },
     play(action: CompanionAction, still = false) { animator.play(action, still); },

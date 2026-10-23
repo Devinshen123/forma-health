@@ -49,9 +49,9 @@ test('earned evolution persists across store reopen and changing families preser
   }
 });
 
-test('all fourteen packaged forms have pinned provenance, unique geometry, embedded textures and matching hashes', async () => {
+test('all 151 catalog models plus the legacy Munchlax have pinned provenance and intact animations', async () => {
   const manifest=JSON.parse(await readFile('public/companions/model-manifest.json','utf8'));
-  const expected=Object.values(COMPANION_EVOLUTIONS).flat().map(form=>form.dex).sort((a,b)=>a-b);
+  const expected=[...new Set(Object.values(COMPANION_EVOLUTIONS).flat().map(form=>form.dex))].sort((a,b)=>a-b);
   assert.deepEqual(manifest.models.map((model:any)=>model.dex).sort((a:number,b:number)=>a-b),expected);
   const hashes=new Set<string>();let total=0;
   for(const model of manifest.models){
@@ -65,14 +65,14 @@ test('all fourteen packaged forms have pinned provenance, unique geometry, embed
     assert.deepEqual((json.animations??[]).map((clip:any)=>clip.name).sort(),model.animations.toSorted());
     for(const view of json.bufferViews){assert.equal(view.buffer,0);assert.ok((view.byteOffset??0)+view.byteLength<=json.buffers[0].byteLength);}
     for(const clip of json.animations??[])for(const channel of clip.channels)assert.ok(json.nodes[channel.target.node]);
-    assert.ok(bytes.length<2_200_000,'one selected mobile model stays below 2.2 MB');
+    assert.ok(bytes.length<3_000_000,'one selected mobile model stays below 3 MB including every animation');
   }
-  assert.equal(hashes.size,14);assert.ok(total<18_000_000);
+  assert.equal(hashes.size,152);assert.equal(manifest.sourceAnimationCount,869);assert.ok(total<200_000_000);
 });
 
 test('real animated model geometry is finite and fits desktop, phone and rotated portrait cameras', async () => {
   // Strip only materials in this Node-only geometry check; browser QA exercises real texture decoding.
-  for(const form of Object.values(COMPANION_EVOLUTIONS).flat().filter(form=>form.dex!==446)){
+  for(const form of [...new Map(Object.values(COMPANION_EVOLUTIONS).flat().map(form=>[form.dex,form])).values()].filter(form=>form.dex!==446)){
     const gltf=await companionGeometryFixture(form.dex);
     const root=gltf.scene;root.updateMatrixWorld(true);
     const raw=new Box3().setFromObject(root,true),size=raw.getSize(new Vector3());

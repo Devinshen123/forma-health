@@ -12,7 +12,8 @@ export async function optimizeCompanionGlb(bytes) {
   const jsonLength = bytes.readUInt32LE(12), json = JSON.parse(bytes.subarray(20, 20 + jsonLength));
   const bin = bytes.subarray(28 + jsonLength);
   if (json.buffers.length !== 1 || json.buffers[0].uri || json.images.some(image => image.uri)) throw Error('Models must be self-contained');
-  json.animations = (json.animations ?? []).filter(clip => ['idle','happy','walk','sleep'].includes(clip.name));
+  // Preserve every authored clip. The full Pokédex exposes run/attack as well as companion actions.
+  json.animations = json.animations ?? [];
   const accessorSlots = [];
   const slot = (object, key) => { if (object[key] !== undefined) accessorSlots.push([object,key]); };
   for (const mesh of json.meshes) for (const primitive of mesh.primitives) {

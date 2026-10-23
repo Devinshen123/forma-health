@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "rights": "Pokémon character designs and original assets belong to their respective owners, including Nintendo, Creatures and GAME FREAK. Repository software licenses do not replace character/model rights.",
   "models": [
     {
@@ -7,13 +7,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/001/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "655d63cef5edb8606d8aa38c95e32080e687b9a8550dce5cceddbaf769221306",
-      "sha256": "f500e5b8978c47a028de9b3f9fb5d5a37af4a34ce7ea576e72db7cfb37b957eb",
-      "bytes": 1077896,
+      "sha256": "7819b437993e449c2015892dad089a998c440ef6e782cafb505a501f6d7423cc",
+      "bytes": 1258156,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -21,13 +23,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/002/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "baa7035a03c8d7d221e9205563073b83b89efba0a63b4ec3595674426d93ceee",
-      "sha256": "c0e5658963cf7d374db2598af1db61f54523f83b959c6261e6c521dc9380e304",
-      "bytes": 1485660,
+      "sha256": "1e375a65d302f68914c76acc354069e61aa5f9d8859f0064d1b5141f721cc912",
+      "bytes": 1656636,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -35,13 +39,63 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/003/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "af4ebb0595c10597faabcfc223d12a441d164a252b196b673dd98b42e666745b",
-      "sha256": "dfe906caa11d5dd03552aa3e8d8b9eea0f85c9d69664c9e55da95a955cc1b702",
-      "bytes": 2075332,
+      "sha256": "756f5eaf0740e43ba029bbb499d484216905f554ac12fce751952500bea81873",
+      "bytes": 2379948,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 4,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/004/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "80330893c87d6b6a64ce6a83c6b620a7736488032c165c39612b7580e62920ed",
+      "sha256": "51096773263c0a64088202fb1c6ba42b09bf581b4ff9154ca0049a87e3f2329f",
+      "bytes": 1113532,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 5,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/005/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "119252b51825cfd60520dd6a65120938e988c5fe92c098be1a5002118d66d920",
+      "sha256": "9a916d49d64197c133d2b07e6b9314bf551d1f481c59b2baf4f75254adbb8120",
+      "bytes": 1099680,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 6,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/006/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "3282da7efe1e4a070d37a648d5af3d105365ec1a6320a4f572bb1b4307f5ba0a",
+      "sha256": "e389f6034e26cbac6ea0cf13150ce79b38aac2519157ba0f3cbf8c42eb5207b0",
+      "bytes": 2198392,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -49,13 +103,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/007/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "aaafb1ac704552e781765fadd8adf3ade1a94587ab1c1a418295579390f944e9",
-      "sha256": "10ee3a3aa17c83c49ea4fe8ec7c9202d44904261348b2e6c8a7b6eeb5ebe998b",
-      "bytes": 1419144,
+      "sha256": "e377febccd3406a1b7bba185fcc7206df761344580a3bcbb9b8e14b52446c5b6",
+      "bytes": 1539564,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -63,13 +119,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/008/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "68c1277cf570426484564d7ea0ee55d4ca2bf17323021567ebe9eaed2bff38c0",
-      "sha256": "7cad8d8676161b528835ba0e24219a2739510f62e58fc7b0fdb028064eea7d72",
-      "bytes": 1219884,
+      "sha256": "bf7da8f25540044ea4d4d8cbfbf07d3947a9548015f960edf0bc88e607a87deb",
+      "bytes": 1354996,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -77,13 +135,246 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/009/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "759ad9d4c1851d3950e87a0bd747a40c5c8c8ed406b31bd5a4b4b67bbcb635b0",
-      "sha256": "b1713ba97f250433ce347b2a0e8ec972e6a260bd3573da6c44c73aa6ff270d36",
-      "bytes": 1910032,
+      "sha256": "bf4d55bc572a47ec5e18e91a892f568eb980d9270acab437972412ced9f5b15e",
+      "bytes": 2205896,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 10,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/010/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "d7c04b69489b98fce2545dde44218cdde208bbfb868697c87a51fc68fc6809d4",
+      "sha256": "7294af3aca7517cadafbc94ffcd1286a626abcee329f6973695d330a773daaa0",
+      "bytes": 434972,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 11,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/011/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "78b530e70329456fc8bfb6b82c8c7354b33294aa60c5a1cd01d04cec70404f3e",
+      "sha256": "94982b2ef77ec8bba99fbd56ba6dae5df20bbc8de3cd07c3ab9281161cf0c7fd",
+      "bytes": 278352,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 12,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/012/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "30287d72ac18bede9be36a217a517816c004d54ac668a42708f37d394058ff88",
+      "sha256": "af330a8ef027bac73627bb0a30639bc54ee060769d31b4a82154d29e2d083b79",
+      "bytes": 637048,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 13,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/013/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "c30c59a4d316e7ab6eaceb32bbe0dd5043ebd3455b976d57dd6beabac549d42a",
+      "sha256": "6b73093557118b8d45ed5748cf41e3a96ce2fd70b14c4c0040b59b27fb2ac803",
+      "bytes": 486844,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 14,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/014/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "bbc9b8b3b5a19de61f8509e6c0788be165f7b09d3c2af3737b8d086b4a84903f",
+      "sha256": "48ebf9098ed6118f5e9f89a09a9763068571f83d6ffc412c7ce563376f645b94",
+      "bytes": 248676,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 15,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/015/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "15395ba2574fef8780a7d2086a26cede930413b08982aac7a93193a1eb8513e0",
+      "sha256": "dff227a31a5d839208f52ef701d57bc1467a2b621f8dc93f6f6896ac52d49277",
+      "bytes": 589868,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 16,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/016/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "5f7dafc0306e331b571fd3b28f58a83f6823d253348901aa3c03e6073bbecec5",
+      "sha256": "a0b9f17714ae91e8f7c40b2376794774c8445d6af3f5b1de1e9586a55dc704ab",
+      "bytes": 691904,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 17,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/017/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "cb7a9cd5e7f7f61a0e7efd591a84a544a148a0a6528f2cb8ac1fdfd8e9da964d",
+      "sha256": "1ea518add1b4ee5a0de6ae0c596a272b07c566ddbf95852da2fb77a17407d402",
+      "bytes": 756836,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 18,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/018/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "d14e888f807920d063a80cbe9c24f4da7c894e45c608c5fb11e22d78bb1f4130",
+      "sha256": "624b553c39c798f0e1483bdba8a50ef42532669930bad6d9c1d84f3a83b212e8",
+      "bytes": 989908,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 19,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/019/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ec58dbf872c9f1c33677cbd63729a2817346aa2a4d61940e7278bf74ac08070e",
+      "sha256": "e616c9079dda8cadaa638b2feb3514b9e9a0ed7fe2fa25bb286411c35a0471a8",
+      "bytes": 612988,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 20,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/020/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ea829c1b8bd6328acc15771f6a568602d9659e7a926156616299d1b7f376af6d",
+      "sha256": "9ddefb16828c971968df9efcda80aa3fe9077faa6fb7900c05f14bfa0772bf46",
+      "bytes": 779188,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 21,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/021/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "7f60fd4280b7fd4fca39ebe3f0d703cab07f61af25f1c8484645cac66a3e5770",
+      "sha256": "da12a2f6134be0b5e6a35d60cec10f598c336e561f0e150feca03b13f4baa103",
+      "bytes": 663120,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 22,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/022/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b6447283ee086d005c377165ced5b10d7e14fe59d22bf6dfc6697577021ada58",
+      "sha256": "92c50226021c1cb9f6eb83508f1027e0b4ff30fe9dc0c82c6392d85c8291df10",
+      "bytes": 996208,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 23,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/023/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "396e91ad34482aeab66fc7523c0613dbd31303da2322faf0a2ce0ce85805c281",
+      "sha256": "36002a0c3fb14da1a1b1be5d8ff89276717b0d12a9c433b7c1c6b2be196ad41b",
+      "bytes": 981996,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 24,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/024/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9464b0a6d5d40bd6065db5002089f602dccc32b542942beb22b8fb2c529f61ac",
+      "sha256": "1ab86fc5c4f26d59639e8b643e90c56c02845f7cb39d2c90a6ad8c0c1fd1d6e2",
+      "bytes": 1002768,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -91,13 +382,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/025/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "5c9e14325cd7f2d4fcf8b9a6ba3a3bcd0c5947c2fd5b102de24643014a9c758c",
-      "sha256": "83d7c173c91547ca3903b5f1833a66e07911b057f4cae8285a5924bf7a8bc0cd",
-      "bytes": 1609772,
+      "sha256": "2daceb3260d793c5f52d511b64cd8a945efd58609575a5eac21dba602f39180b",
+      "bytes": 1845836,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -105,13 +398,203 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/026/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "7c45392537e65810f9f61378787748e9a26e54724fffc7f8c48d80f15523ca20",
-      "sha256": "df345162c10b6a9e9a2d7abd288fe4a6c8106f99022d08f6ce1d9d3edd6c0f0f",
-      "bytes": 1444008,
+      "sha256": "1bf831416c5ea1d4afbeb94cb2baea5daa0b64fc7e070b12e2a82e5fe60418af",
+      "bytes": 1581596,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 27,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/027/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "240278ae364c713fec48f302455eef074428b01d1f00d17f59f0aa5ad8ae9a49",
+      "sha256": "704b73ce7b8e0394be5f6f6ff0e96fd963313da748b89b45e5c276519a2d9226",
+      "bytes": 1398180,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 28,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/028/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f60aed75a1ace3daa799885067e52e78d3a63db5e2926d2ab401f7923becc2f2",
+      "sha256": "1a059c66356d90fd4fe2e8aea92eb1deebafd79b011e09ee7cba8ae95d10c2b4",
+      "bytes": 2486928,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 29,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/029/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "122b80665a414b736faddf75d6a9e8e5991b63bcbdb7d68816935ef5d0449a97",
+      "sha256": "b55cdc075350a02d805cfa89caa617e67a48104c81347a4d54ade962684dd3c2",
+      "bytes": 574364,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 30,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/030/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9dd474279fa82d2b2a62849ad11884902c76c473d43f66b0dfd0f51f7a0088f0",
+      "sha256": "6dabc31aec92a9b22de3cc50af6ce21ac7eff407c4f545ef7c9036f702a109b1",
+      "bytes": 577816,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 31,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/031/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "30ed20188ccbed0b98baceec05d6ba27599473a0b5b00327b4b834c4320f51d1",
+      "sha256": "a7cc156b4270043808d059d3b43b2a7f67f0001d9e9a3304002156202ed48291",
+      "bytes": 633976,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 32,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/032/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "a37a474172bbf228b13eeb17a97152103d774884269efaf8ee96495482d72170",
+      "sha256": "e7a097b306c1c4c68a7d70bf8e3b6aeb2370e24bcfcd6c9eab250f3b4629fb82",
+      "bytes": 601004,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 33,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/033/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "6358b5158c66689cce676828d976dba448f3acc7d633c7455df769b6275a4d45",
+      "sha256": "f531f161e929a94d90742bbdff17ed9d43b1178e30d882f73365d91d25be4f30",
+      "bytes": 550792,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 34,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/034/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "5e4006918f6b3cce210a42471abadbe7d9ea1dfcd43cf0383c65236b00f565db",
+      "sha256": "497df952f66b1d918731fcfc7dbce1c5bdbbc3d730b4fbbf2247173f16301c6b",
+      "bytes": 652212,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 35,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/035/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "709cce0490663e3a6fdc200d9742a4af9b74c7b5b373b81890b40325c7e78884",
+      "sha256": "6b0b1b75f568ba553ab11a558721051318ac45369a5f586e2c7fec401e1997e9",
+      "bytes": 925348,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 36,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/036/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "de05eca7c0b252a919ee7e8df58969d0a381f3111641f9ef12f7593f986534a7",
+      "sha256": "b4ad4b9cca1e5f41554b806f64e0ca73afffc1ca1d10d0aba4a99a64b2e02b7c",
+      "bytes": 1099780,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 37,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/037/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "949a33b6d5ca5c7fc1f6debb43457f64b148b4d81a4759d87cd1583766e0b9b5",
+      "sha256": "3914db27e4da0684b29e182fcaadba3575d7bbb25e1418a555c2dd71f4a09050",
+      "bytes": 1449844,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 38,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/038/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f90e246daadf45168884fad084f97d1d59dbe75fd24bf42b43a1a3307c1e5026",
+      "sha256": "9e260cec0f9ee1ac0d2047bf3132911ce9966900a7d94c389d3328a0bcbe1b88",
+      "bytes": 2550324,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -119,13 +602,15 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/039/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "716ee371f4ee117a8b5fa3617d53c5fcefc376e2cd1773bbdd1815695782ecf7",
-      "sha256": "1a696ced9f6bbbdc27e987254b5dc2daf649a1362458c3ec03855dd6dacfb80e",
-      "bytes": 647076,
+      "sha256": "aeecdd3bdaa1581ed6b52727d64ed122cab0753ccfabb1845cae807f494b3953",
+      "bytes": 758900,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -133,13 +618,1468 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/040/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "470c756fc25b917596e3b15a20cc6071eee349b641f4b9a5af1cd7a82514140c",
-      "sha256": "a6fa1647cc41670e2756e41bf64ac4d19c7ba8f051588ae40c466f3c228342f0",
-      "bytes": 791956,
+      "sha256": "42b79d6fe21aa2802d0e39ff4b297bf24874b9b7e19589fd7aa3c850d5f33d6f",
+      "bytes": 912256,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 41,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/041/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "191b2091975ea5cc7796fc16f1650780da6c479bf94fa0cc149e13ebd2cd0b77",
+      "sha256": "ae23870341e787d4905650815edb6f038e000960b3b21ac90fae63715f3bdaec",
+      "bytes": 396468,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 42,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/042/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "1032b43815b33cde241d22d65f00e681b46f71837480df7e4c163d65bd96e1b7",
+      "sha256": "265384c653d9c0393f75bccaf248ae93dc0c46d51de42ff63185dd6e89b05074",
+      "bytes": 534276,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 43,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/043/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "7a178057d91c194c2cf672420d923e8c04537df865833fcedc37af87f9cb6555",
+      "sha256": "bba59bb05547c17f344c4f16c0dd64e19d3bcd854be08e9560ecfe08d07d6bd9",
+      "bytes": 827948,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 44,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/044/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "d250742d34875d38dda759b42bc68cb8711dd6c575574ecb4f80293831bc82bf",
+      "sha256": "328901e76ab74b58da4a3de536acbaf8a5c3ce4b126df22c15553aeec257d909",
+      "bytes": 959600,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 45,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/045/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "76d57965335ec0ed5d1b350aabc1eafab8b30b1d3cc48ba2c8c0be3f64326afa",
+      "sha256": "0ea2fa11c1a3e8f1d9219757d79be11c7a3b3921b68008fde4f9667a5ecbd403",
+      "bytes": 962440,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 46,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/046/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b203a514b052eda3eabb898eb1500ceca4f46f8cb0a053304017e3aec9739ffe",
+      "sha256": "fb2d4f65dc9ef24c1b8a536fe2b9d13d5ee665ab968a8415531ecebc0cb813b2",
+      "bytes": 599068,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 47,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/047/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ddd5855b6d4344fb826805a630f91d7cfa991e050055f743a9db5bd90ee2bb75",
+      "sha256": "9d5f55130edfcfc786e0e69d5c3f2ed490bf7f8d4cbdb61a01da525dcd259aac",
+      "bytes": 603952,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 48,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/048/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "baf386f3dc37996d4c393abdb86c939cf01b111421cf91775866303c2bc5bb02",
+      "sha256": "980711f2db0241361b3ae56778560805db46cd93dc082b476828fdbc74eb2192",
+      "bytes": 1715076,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 49,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/049/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "a01b93ca01bc0f63960dcbade359264c8c992423d78d11a2ff5cb90c9d23f976",
+      "sha256": "db46bb66a04404a9e41ed57babf7f661ac98f4aedaf5c14ecf01e40fadb99aff",
+      "bytes": 1377168,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 50,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/050/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "0ff77ca6f8004131f44623b95d33d6a01eafe7e9b89cc81cffa365bcb25e09ee",
+      "sha256": "312b0a4f30896768896f649788b2624cdf11d0a5da6e677329b9ebde672f0958",
+      "bytes": 1058824,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 51,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/051/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "122a6ead3e19615acc2985910fb30256bcff85727e17e0897e3580cadea91951",
+      "sha256": "3af5b9bafa5326ae7243496627916c93ec0d2dc157fe4708b86dac783ce4720c",
+      "bytes": 1493100,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 52,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/052/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "71d74c0d411f21afcd421d303cc372bc1db96b57a5d25d9c329046f1204015d6",
+      "sha256": "97be8b5dd663c1f9d953ab6183694356454957eb888b53c90abada3f04931575",
+      "bytes": 1749232,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 53,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/053/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "efbf3d4e05cc07a5b8e7234949c143c0b5afd25301eeb540939f7119bd0fba99",
+      "sha256": "a49d16ef2f7f03899f312111375a83726c6e38c7964cc8e940b81b2413b8e96c",
+      "bytes": 1883516,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 54,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/054/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "052ee4ea5f6c013623a6649b2c43ff6fc26960e234d3b8aa160047e3ef6fd70d",
+      "sha256": "f82a78340406c4fc5fa268d51833456cb8fb8098b0900f4605a92f8fe8c1032c",
+      "bytes": 928668,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 55,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/055/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "900ec2ef7754808bed70a17bee3eea459fa52ebda7208bcd25873ac7b55a8bfc",
+      "sha256": "21772fc345207c2f85ff53dae60849676f867be4fd9368b0e61ad5f06d7995b5",
+      "bytes": 1537292,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 56,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/056/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ed0c6ca6e0037a8ffdc9ae914113414668b1681f6c31675df1ee826f2e1a7e4f",
+      "sha256": "d0c7c4ce0392a594565abceec2cb48f90acdfeae0558e4b46b4279016080f254",
+      "bytes": 1164496,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 57,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/057/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "5a259a399b346c6f0b00b6e3c33f4696206b5d617406a61d20e15fb58e9789af",
+      "sha256": "0619d5180583609405e083a344bb149b9cd58a9bd2396991f408b3d3e1484a61",
+      "bytes": 1714820,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 58,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/058/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "abed6554c85bb60a66a7a9eaff7cdff112712fadd0c1e7f1d170e47cd1b3a8e5",
+      "sha256": "84f8d56989c4556de1948af9380b494ef22ef993848ec3000ad808c95b09bb75",
+      "bytes": 1818624,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 59,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/059/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ae85c50f1020467b12b3b177f6bd9f0138d23dacf20cab90547ef02b16111122",
+      "sha256": "d61750b56a2cb76125f5647bad0c3f0f64045beb59169d8352bc687dc0ec24ab",
+      "bytes": 1940576,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 60,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/060/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "050fc281e6d4422037ce7347820dea6b9894ab3ae012a5e1b7875d4de4a77487",
+      "sha256": "5dfa16c8ab589270f441241ff270bb76ac520ed28363c0f09e4caf149a466557",
+      "bytes": 625548,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 61,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/061/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ea6d751ad8ae1b19ed4be2a5647d7e4d008fdf0e905082b3af1f6ff4a00fa587",
+      "sha256": "e4ac4363124351fa6cb2d4eece88428ca4ddce7653483b04f815b53839dccb50",
+      "bytes": 759508,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 62,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/062/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "04ec80041c2e66ddae8539ed8848f6e9871acc675f3a8900386cf392d76cfda1",
+      "sha256": "c0fd29d99b839317c45736093e97e282224efafcd69ea06f884771ec7e47e3e1",
+      "bytes": 846456,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 63,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/063/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e37e701b6ef6ec5a03023c3039811cfbfd8cdcfeecc0b895dc033dc62f0c7885",
+      "sha256": "cbb603b40a7fcd41c4de694149e1e78d384744c212e6263d246f420d98f0c1cd",
+      "bytes": 755056,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 64,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/064/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b9d71ca29fb573435546f63b9861b0e8302877e27c2f6408f158deb00a238d3b",
+      "sha256": "e58a6d735adf7b02ba9e76a8813f5f36372f5cbdb8472f4a775340fd642d5274",
+      "bytes": 917140,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 65,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/065/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9409c76f9b20c2f9972c9af143bc167f4cb861810278f56ae6ae3dd82713b761",
+      "sha256": "9162a6b1a77684547c15d2b325cfef778fa7d1edb9bd915b06a2b25e56c4e012",
+      "bytes": 1046372,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 66,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/066/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "889b745b0ea48a8a2a1abd96c3a6dd58f3f9152955ad028325eac0180cfacd66",
+      "sha256": "013b6c0c1371276d4daeb061f6ded2e5fa80640f259a073976035e08073afb20",
+      "bytes": 710624,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 67,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/067/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e407b5c047ee2013b10dd383ded9e64ce4dd2ab616c786e4c7c961f895a5f4bd",
+      "sha256": "c9845b5af7ca7f69ff0430778fc04e0faf64f48081f4a533c88bf549647addfb",
+      "bytes": 772352,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 68,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/068/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "134862d4292286fc784b9f4099b1366fe8979fb37efaa802b6eaaa2cad40f256",
+      "sha256": "bf56aa7eb5d63a89d5c949f691f1f11a85354d6002085b6653c2dbc4ae8bb4ef",
+      "bytes": 1135456,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 69,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/069/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b5a368632937db0ee8385b5a4e77344a2ac20790657ebff8ad6cfcb3d48dfa09",
+      "sha256": "61d6018093e0d4047ebd6c47201fb020f48d0ed8bfac0da703e2c4478aa52eb8",
+      "bytes": 1221884,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 70,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/070/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "07d5ae3f69af5485e09e1d5f6f72af69a52415ea23479988ae8c2fba3234c410",
+      "sha256": "26a21d0781b536fa182652f4f27cad32d9130a7682b4097b2ef7262db9bc3033",
+      "bytes": 701140,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 71,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/071/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ad85f7bc485e53336957f46eb7c387eb01b73020051ecbd69b044289575f68d9",
+      "sha256": "e6cd296c04736c9e287e25758218d9b1f4c343b6769866204b102483b9783fe1",
+      "bytes": 1253720,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 72,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/072/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "0b41b7a8994ead31a379de7791aa33e815997c989510ceb44203f87cfa1644bc",
+      "sha256": "e4e7a2c3f2659ddf09fc3fb3a6552eda4696d414ef57f4cf1b91ac1f78125bb6",
+      "bytes": 416384,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 73,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/073/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "002d9f21ddebf4ae7fd63095d608dc61b0cdaa524f72da2ea94ffd631eb27a52",
+      "sha256": "b3872a10b475e7d6d4b69e7201fafaf02d24240e73f04bc65ccf794333205ab8",
+      "bytes": 869804,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 74,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/074/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "71a92bcf9c6823cc0c310413a35e37320e52db171d0fd58aa909fd09bd6b5e30",
+      "sha256": "9588645ba91fdf96fe3b4ac202e569cecb73f06a765406225401b4ad19bccc5e",
+      "bytes": 1678264,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 75,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/075/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "8f54ac01878e1aa85162dd763de412acfbf5ef336c018167abb8d36c94378f49",
+      "sha256": "32664ceb9fbcccf44fae8a98cf016faf93c4c634ce2f756a7e6bd072cf547f31",
+      "bytes": 1596356,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 76,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/076/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4fee12e82fd788394e0fd87eb4eecaa9abf053ab27d9f258aed76643f665985a",
+      "sha256": "dcd00c6ffe3f1ac6644c4da1784a457ce61a775716e5dcee5b40b84d6afdbd6e",
+      "bytes": 1859328,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 77,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/077/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ff2a1dc64f0a0e55f4c0f0c2bf745ee760314a1e07317357b144f33fffd35442",
+      "sha256": "8b750ed762e51f493bed643454fb30fd633cac0560be7ad5068da16d32304da2",
+      "bytes": 1049400,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 78,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/078/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "403c1c8155cd89117bee2ccfa9cbdeab36999bd20847491a101daa7c309c943f",
+      "sha256": "ad43c46ef52277a9687c37d09edeb96197c3e728a895714d7eccc53270c06e7e",
+      "bytes": 1325468,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 79,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/079/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "25d3e2f8837f6ee7959f3e42f75d3b3c69457a73ff2a4c99d88e181d713c7c09",
+      "sha256": "1808df5077e69946081bd5a2279bedfb5f85ef007f3b845ecdebfb431de31d14",
+      "bytes": 846228,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 80,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/080/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ef836de25d782ad2156322543d9fb0b879ca29813200dea9573ceaa8c002847a",
+      "sha256": "fb67be7c0c7994005581a4be1332b6318baa88e161274c2498bde9f16ab624d2",
+      "bytes": 1320596,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 81,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/081/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "6cf9fd2b4a97ea9634c33ced0b9997e94d9be9d9aa728c00227900c1ea1e4fbd",
+      "sha256": "8c827da5318f001ee827d971dea4b4b873c947a96526084e4fd459893f6fbede",
+      "bytes": 435000,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 82,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/082/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "26088fa79a56320d206ce476b4c77b90fcebd79daddca3c3a6a1922aa8727799",
+      "sha256": "705c0aa76b20a5a4a08958cebfdda8040c4f88f2cac1e67fd56dd2c5c372de80",
+      "bytes": 749076,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 83,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/083/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "a0d76d19707ad8f407cd6b4dc99b7e4fd7dba4db73ab21203b4e2a60f1900fe9",
+      "sha256": "8fdf95138c3c30bf4c283ac798a83c8986d365b5cdf3abcff5e130e2149fa7d1",
+      "bytes": 761360,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 84,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/084/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "df1e552e05c95b141d369ca41ce8ab0f4613e66b4826019bc365495f29f1f595",
+      "sha256": "626b24c5a152f91e4b82f59cb8c481d0fe360255766f302152bcf0db835b134d",
+      "bytes": 1501956,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 85,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/085/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e02e413cd6c902f87887d6836a80291abb24260affa47a6d4c3ac0275c2ece1b",
+      "sha256": "f3431236e15d06dff4b17af0a440dd05a48b340e681954669ddfa231b2af0865",
+      "bytes": 1664304,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 86,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/086/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e1b12ef66b9ba6daa9a719d547494efd9bfbceedb7ecbad918d72cb358c80d53",
+      "sha256": "7f09fa575bd4bc3e3c763d1f60a4db5dd7109c934fea65ea9eee4102a12bac9a",
+      "bytes": 912320,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 87,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/087/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "899edd2f543e027e8c4e2fe6023f7dd21d9199c031a84a2078a12e055e82d372",
+      "sha256": "65c754cc0f5bc074487e2209cd076b2cd13eadd1412648920c3b57a4cbb31bee",
+      "bytes": 1565564,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 88,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/088/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "51b99fadcba1beed046aa47aa8d7274b6a66a8891a9c5580a4201c10d6977e68",
+      "sha256": "ef8b053f07045f70c3116ac56a6555b953d7f9af84409ec6c70181572c3d370e",
+      "bytes": 1601156,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 89,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/089/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "d84fc75af2490992d0d4fa0a55dfd73eeb6d7a49e282b7eb61dff63cd4878ed5",
+      "sha256": "1251fc07863dca989d27adc2e390c1d0d67d0b5ba862d2069325e4f99797cd78",
+      "bytes": 1556404,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 90,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/090/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b3c75270f4f417dcc9e55d59e40a8bf6b0a3a9c5645162bcf794747468608229",
+      "sha256": "89c7ff1c7eb3c8429e54e82c13e3c2fc3c2f745cae881583e661271d137d852e",
+      "bytes": 763160,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 91,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/091/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f463c74a1abdc81e35ec9480974a7deb7fabc23d86731b36d45e74775653feb6",
+      "sha256": "6d7b9aff73bf158a23b36637afb79008fa7aac5cfd29785558d53a1049ef32c2",
+      "bytes": 1049132,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 92,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/092/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9bc3cd508a6bf01ec83b0e9c94d9ec3da6b9a25482196e603c449050deea6820",
+      "sha256": "632dee68a65baf28e9c35764ba7d0d93a3130dcee8abf13b481f2e982d3424c5",
+      "bytes": 541500,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 93,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/093/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f1c16d6a70a9fd8fdf03ec093c9643681b3aeab680a9479d30f532bb8d2f0d33",
+      "sha256": "304e2559122a7fb251f918bc46582dbd0130eecb728848a8cd39ff2380d34a9a",
+      "bytes": 1028884,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 94,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/094/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "c631fdac52a9d91775983a63187b748a0c4e765038bc2f657ffc1a480ee1d557",
+      "sha256": "5eb45158e974582b6a60fad9f5aeeb71ab79b30b883639353a96f03248bd71ad",
+      "bytes": 877004,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 95,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/095/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "dde5db70bb22154a2c4cbd06fa2ccc4795051246455679d59936b2d636d0658f",
+      "sha256": "44329ae96cd664909c76a3905125acaf247f93088a9a70e1cd5d44d353a31fde",
+      "bytes": 577820,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 96,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/096/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "80de679db1f20840e42338467b4efc05f635278103b5062674425488c18a74a2",
+      "sha256": "c1e004c43b0cbc08557e85639fa10762db03c002c84cb200889a38289a28c85e",
+      "bytes": 1193412,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 97,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/097/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b850481c048926efc70d81901852556905fce697f8da13ccc1dd4c814ced6a58",
+      "sha256": "923a59c99d84b817699eae559561e0655883d5220fce93e82a3b0916de3f3055",
+      "bytes": 1568380,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 98,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/098/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b573f085390ce709c422712cf9059ce780442e955842572a4e99682054d3fb76",
+      "sha256": "b86857fee18ffc5c4cbe837217085307ce0c8ebe315561a284547b3a1441022a",
+      "bytes": 525376,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 99,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/099/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "96fb0bdbf4578cd44f52fe507606b60b0095f009d44b0fa81cbae7537e5134ba",
+      "sha256": "d34c46fa24bee6de6510c64f8d7071415f9a0016c00da2cb22727a85303ed59b",
+      "bytes": 599168,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 100,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/100/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e917419bf9e6ab9860b0db6edca6539c499d290c43532a6d04a722b730305ce6",
+      "sha256": "a1e0c9613101b306a263b20382e8cf59fba0721db26312cffba442ef27cbed27",
+      "bytes": 360784,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 101,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/101/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "df88564c63ccbe2316004b5da3bc7914e924cedfdb66bd76179a57754321d450",
+      "sha256": "fc0349eee5ffcf09c62edbfdd747a8678655906ea63c63e2a9d54c1f880aef53",
+      "bytes": 549296,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 102,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/102/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9c6eb2048ed68d14980d3b616e6e967f31c68b84872cf467f9f9a2a6835cc6d3",
+      "sha256": "1536cf0626f196558e21080d2ae92d81fb29604fbec3ac47cc34583bf53028df",
+      "bytes": 1224392,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 103,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/103/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "177a1dd51f4285e15b914f4a2149b67ae556f49b106f68520ee76558fb8d0023",
+      "sha256": "3c3c8091936435169317d948b5c5b9dafa53f8157ab089d9206f24f36fd432ac",
+      "bytes": 1773404,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 104,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/104/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "8f232aae79b243951562a73ebfdfc14c1625ea50c856a0686de9f76efd505ec7",
+      "sha256": "3bbad637e6e281b8959cf233ff80338230f755b7c84f3a52d5ed662b158d6405",
+      "bytes": 605184,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 105,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/105/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4a2630c9cd2984d4de5bb5fa9a6d33e1f9615f4314c9511ae4ca7ee66fbd9dbc",
+      "sha256": "8662741888a0eae925960c39b77b934e80f6b629322ce988515ff1aeb8301eae",
+      "bytes": 624252,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 106,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/106/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "0d3f5260221d9ad95c2b4281930c4ee749ea3ec0749fd31058e60648ae3845ae",
+      "sha256": "91f28c5f8c4a9d9c6003a84fb131f9b45258a85fb09d63ba23789e8958cf7f6e",
+      "bytes": 996116,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 107,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/107/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "5231f438eafd535acdcbe183473e04b2e5666360212503bd393a5c568082e35f",
+      "sha256": "a80a15f9c3d0c363857e8057f27efc93f54cb9647df6da15058e6c54116c737e",
+      "bytes": 989748,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 108,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/108/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9000dc68f87492ef241966eb57a6547db2708375de1c22ed09349f5eefcc60b6",
+      "sha256": "79dca816d9586877e91ad5bd55d66ac7e99fb2405f6c499f007915cde88b073f",
+      "bytes": 676912,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 109,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/109/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "c501dca77d9754aad3fc68a9431e06848a9c44d44cda1968bae51b92e04c4f14",
+      "sha256": "aa64e5da5a7c4ae1c7d6d2d2757e47965b6df4a8664d178c57f3c92f9aaf100d",
+      "bytes": 652152,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 110,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/110/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "e4525ece01360a89550073fdfff6feda77bb7af96ca2fe5d3b4eb350b5301069",
+      "sha256": "10b38764fa733df0183a4984247b428e62258113496ad15e7764e96b1c08bcc5",
+      "bytes": 1020720,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 111,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/111/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "da7a94967c4b4a1411e9c136a481a6f70311e641aa240ec07f424cc2713617b2",
+      "sha256": "27fa9313763860d85f6790b105f0ca01323e27ad1b87924b72ad74192a0f6ed5",
+      "bytes": 1569296,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 112,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/112/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ad8c03c33b8ceabe370a26e11173588065591b4ca81f86c9da54cfab7034223a",
+      "sha256": "6d33c416d238dc0770ba761e73de6334e9bafb302260f7c0ca58fd46709899aa",
+      "bytes": 1596212,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 113,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/113/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b6dc66b8b9ae663a27742623a40a0a29e662a305524820363f492d5f2c04c6a6",
+      "sha256": "6b9dfdfc247612a9fd35b6a1eb4ea0161cd9586af2d523ecd2a8885bb1b56a16",
+      "bytes": 1143644,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 114,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/114/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "a499167b9f2dec7c0d6a5e155fb1455ada8d2e6fafcc61c95a6f39905d33f08e",
+      "sha256": "c46502a353c8bfedf578071298eb3aaa3c58f8eb09a35d18bc0c3a63ed779424",
+      "bytes": 566852,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 115,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/115/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "34aadf0b4c07b4111f000a9a8ebe9787e352b6a1aaef032ce640a5e3b902f2b8",
+      "sha256": "4d4f8cbf2b2bea92c4719b4459da8b78ca255682c265b1f2077e269f69ee83d0",
+      "bytes": 1001060,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 116,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/116/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "0b90f2ad832636ffff415968edc3e1d15dfb8cc80a2e40a11bde482574f4ed1f",
+      "sha256": "061636f40da52429058b1140b07a26687c440112307322b2c75b7609bbd86824",
+      "bytes": 765128,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 117,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/117/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "308701df0f08d4e9741d11fee25ff43db367f7c0891575e2bfb069485decdaa7",
+      "sha256": "5afc33e023f60b64b08b229d5944ce0dd1936049dad33adecfbe6302ada51900",
+      "bytes": 904524,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 118,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/118/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "162210093dddb71a0e60298a734bef9693c073a628d83c6dea42de2c3e722909",
+      "sha256": "f0832cf7f0b3cfe2212dbb2319a791323fcc57346b5583986c7712a44859b8d9",
+      "bytes": 617612,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 119,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/119/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "dd6e5a4a6619e2261f44db067d046dfb6fdf6f9ef41c8672a995d0c70040cdfd",
+      "sha256": "1553905a06578e7583b62b3fc346ea46dffdc5cde1d6acbac347595c7f1fcecf",
+      "bytes": 585024,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 120,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/120/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "89dbb0a25d277be916bf347e04b121a78b71b0dd9a502740114362abea3ab2f7",
+      "sha256": "cb7bc1271d8cf8b494122ee4c2fda47141225f20759e2fa954b794131e5d2b2d",
+      "bytes": 397000,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 121,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/121/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b60ad9a10029afa1fc981357e107ad45548a3068846913394aa9bd1f922d3adf",
+      "sha256": "263adfa6c8666db94ac4557b02c23ea8e5c2c6188253ce9287d2d0f6d5596f4a",
+      "bytes": 530996,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 122,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/122/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "16e7130bf7a224a359c75dc8f351f47f35b46fe3b464159a536f0c435677e7e3",
+      "sha256": "5588653cc679b35b845b5d5065ff38a62b3a59389cb5ed28cb8080c0f2a8910e",
+      "bytes": 687628,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 123,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/123/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4039c8ce51041e4d367f4c79ffbffc3dbc22e5e17f4edceef01022a18036a324",
+      "sha256": "a4e259bde515f40e73f62cacefb816c2ea7565ce5b455525de610e690ba51a1f",
+      "bytes": 1364160,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 124,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/124/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "6c49c96fd47550aa1245b2c1c46a6ce8ef3951a27ec11511ecdd52dfda504c63",
+      "sha256": "b2a6f91cce3deec83be0bde42c7503d071b023282a68ead4dd7f9b55b154349f",
+      "bytes": 1224652,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 125,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/125/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "58700ca3733e20903eb5071fa9da229e1ef1ce07a6875537fa057d60bdf18569",
+      "sha256": "130ad099ae39bdf36404273066541b2acdbff0293af3da254603562e218d9af2",
+      "bytes": 1340412,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 126,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/126/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "686be2041f47745062f84a07c6da839a2c4fd142d77a90a11ebc106d8356bbad",
+      "sha256": "a537595433b43219f7d941a23181fd1c038e42f46f1f3ef595977407d232793f",
+      "bytes": 1576000,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 127,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/127/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "8e7368488cb31aaf8acb89d39b05d622ec39ae2fcd6926fd5cd6a8190ec5dbeb",
+      "sha256": "1b5547d6d7414297dfb6d5357a1f5e784891cae8c4f085805f1172da93a42c31",
+      "bytes": 732128,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 128,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/128/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "9ca6201d6a0697aac3e1575454af109ab207732f33200cc91f278e0dbe52a969",
+      "sha256": "efd615d6d70c78b1d76183dc4b4ee19702c4bc2b10dad980587500d226df185d",
+      "bytes": 1701640,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 129,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/129/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "034abd913703c736ab8b5f3cb9498a94fa12c28e45c42b7c865745b23dc375b1",
+      "sha256": "347ffacb5a625316346248153d1eb70ac3496d7bb1dc8974b429f28b605c53a8",
+      "bytes": 836680,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 130,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/130/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "058efa0b961869bfff9b3c87c4655ae9b384af543ef7d073245fc52c950882a7",
+      "sha256": "c33dea3d22a90a5d694e58a6c28e516dc212f86ff8b4807b0eb664929b3e43ea",
+      "bytes": 1583020,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 131,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/131/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "d234d68b7794937cf825ecc84c162fe0156f4d009c28dfb7f3a895e2df3fa3bf",
+      "sha256": "5faedcb64dc61d9e78268f7a18d295e0da992ffbdf7062fd65b194143f2a0da4",
+      "bytes": 1237680,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 132,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/132/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "1e26b5139953c4a578143fdb5bd9f577baca01dc713e1e25c6087534ab048bf3",
+      "sha256": "e702949b41b24f3529f068cf2e0a05215f927f6d7cbc2fe5b893413b7e937a02",
+      "bytes": 639512,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -147,13 +2087,47 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/133/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "9760a789048a76192afbf18dd1d5dbc6a780b0267a7ff953396384debaa19bd9",
-      "sha256": "4832f05eee5aa1175124dae122a471e3d7f5cc2a49eaab52419f493e05a33619",
-      "bytes": 1038644,
+      "sha256": "ca65a15cf4abdcb2df0c451cc15814ee76b0ec34411598db4107098e84d5d353",
+      "bytes": 1196944,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 134,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/134/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4e4e93c8890fc3f685a9dc931a6eeaf39ab086ac0b039922af5ea53a028a0836",
+      "sha256": "e0f7e0ac33c272d0f5aeeb917bd7c0c985c2b27e62284c35d7a10deb9415417c",
+      "bytes": 1433036,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 135,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/135/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "216ecc41df1c784d883a4bb2c7e098b82ab6a0307eadf0be27a76d037ab978aa",
+      "sha256": "33f579a1105b8eb186c46e5b5332537578ddef34e013358d75bc8abdb0ed39bb",
+      "bytes": 1681284,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -161,13 +2135,106 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/136/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "1c1de95bda4c90a6d3f352df8bc931bba00b44d6e9bc1b0285bc255913eff992",
-      "sha256": "dd2d6c6963c32ad69f958a81cdc35ba72a20a0d03b813d2434a863a30c04506b",
-      "bytes": 1452696,
+      "sha256": "7a2089b1c3cf0fdd3611292ccd7c7c80cd67f54f0aee9b4d860121580f45d640",
+      "bytes": 1662364,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 137,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/137/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "24bf6c9f73e92379418ca1ab4c51485dc36817e35057e7fa34e940fdbd0c5c02",
+      "sha256": "9a30cbe4a645e98071247850e858cac9a70feb0b3cdd5b6ce05b7261afbdae10",
+      "bytes": 335356,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 138,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/138/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "b20ab29e0ef8572d02bab5c231c4c3bb8313abd6e85c43ec60f4843557df011a",
+      "sha256": "ffb6ac5d510760ea625fb517bffe2516918ffb5531558e02c4b832650d97ae59",
+      "bytes": 486352,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 139,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/139/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ad8d20ded442dd8d3d878af7d72f4664515fef8274a19d76c87489240085d345",
+      "sha256": "33c8ee7c698ace3034bb9fff7ada75282ac6da199427ead71cee0600681a7336",
+      "bytes": 767476,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 140,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/140/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "76fdcf7d6753fe82ff99c6a631f7490e8a85bec0d8601aea714240330deeb4d5",
+      "sha256": "2648f40c1cd7d986c58549243363611cf5d6e85deef60bf43830ddfc574443d5",
+      "bytes": 323848,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 141,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/141/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4e1f4c5f35d45b127dea0313fc956612eef09e2bc4f6aac105b0698a9f0f5e90",
+      "sha256": "3b79349a83957be0bf9e0ceb31f7920ae5589271178981f041200170763218d8",
+      "bytes": 587324,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
+      ]
+    },
+    {
+      "dex": 142,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/142/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "311bd8a0e399b97cee3e9746f70d43ce7827c05a5450d14dd937f7cc3f7c19a9",
+      "sha256": "8950e73480beee4d25e863cf0c8286c029b5eb4c47492938a8f333ad24a948c9",
+      "bytes": 839856,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "walk"
       ]
     },
     {
@@ -175,13 +2242,143 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/143/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "b49437acbb7485d092373940ca66425318660fe1237663160a6f8386ec5620ae",
-      "sha256": "a3e6de5f9bfc3191ed2ec7cfa9a3a41ade4703832ef7a34e71f99b9e0f15ea0f",
-      "bytes": 858340,
+      "sha256": "36a2831fb11f4e8964a12634f84cceddf6b9dd67e0561cbede6bb6488d0a3724",
+      "bytes": 1012988,
       "animations": [
-        "idle",
+        "attack",
         "happy",
-        "walk",
-        "sleep"
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 144,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/144/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "ba316f3ad4d40be1baac1dc06701b7c6286beb32d7ad9bd836da1dbf5aba8de7",
+      "sha256": "05164cf468e0b77a34b685bf50c5ecd08905dded0840930fbd717e4602b1a6fd",
+      "bytes": 2061416,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 145,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/145/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "1f880e9d6953420b58c6e80348b2cf81f314dbb1596ae005da5a822404268f68",
+      "sha256": "b9532e5927dbe420ea48550f582da8511971672955985ef1f70c736a0cbb8cfd",
+      "bytes": 2009800,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 146,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/146/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "254eb09ca385ed39da877621af302efbaa7a91a5f233a604aca3836e0b6ba4b4",
+      "sha256": "002bb1b607ecd399ef72c5a101b60edd49aa6cf9172905438f774e61946b65af",
+      "bytes": 2460396,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 147,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/147/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "4fdc1af20ff314ea9a2c8c7b17b9845692c717f3fb0ed31edd25a4036173f9ca",
+      "sha256": "cba153f4ec16cfa92acbcbcd3d70f27c45bdf444a049af80bdf7152afec85be5",
+      "bytes": 736044,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 148,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/148/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "6d6097dbaa3ef1c4d9dce8694be4c338e631b6ce4a5d69288480d1ecedeb6a30",
+      "sha256": "7cd045a9befef591cfb118bacf46ef08bcb8a365c30663ff57569fd33eda5b50",
+      "bytes": 929772,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 149,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/149/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "159d58225012cd6919eda06119c3b8e0a607da57627e2ca3fbfbb329a671f7cb",
+      "sha256": "8aa4f4595f4c31b1f36669166aa8c0b66b14818b5cfbda39b944b70221ae5b94",
+      "bytes": 1700092,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 150,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/150/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f29ed4c0081a5e600543e3ae35476af596418ca3dbcb6bdf9bbfa73f842542b2",
+      "sha256": "b5fef43b8ab7d55edb97fc9f5e87d038171ca7e1ba7f3cf660e1a871d58654c7",
+      "bytes": 1730864,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
+      ]
+    },
+    {
+      "dex": 151,
+      "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/151/model.glb",
+      "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
+      "sourceSha256": "f72afcd89f989c9e9879f43ee05d9e14bca59f95ea32bbea731824420edef880",
+      "sha256": "3158c34c3341cc0aed1b19abaf3b46b1533076b0b518b6fc7e3222a5d9b61afc",
+      "bytes": 900580,
+      "animations": [
+        "attack",
+        "happy",
+        "idle",
+        "run",
+        "sleep",
+        "walk"
       ]
     },
     {
@@ -193,5 +2390,7 @@
       "bytes": 62888,
       "animations": []
     }
-  ]
+  ],
+  "catalogSpecies": 151,
+  "sourceAnimationCount": 869
 }

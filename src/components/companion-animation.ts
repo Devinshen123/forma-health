@@ -1,6 +1,6 @@
 import * as T from 'three';
-export type CompanionAction = 'idle' | 'happy' | 'walk' | 'sleep';
-export const COMPANION_ACTIONS = ['idle', 'happy', 'walk', 'sleep'] as const;
+export type CompanionAction = 'idle' | 'happy' | 'walk' | 'sleep' | 'run' | 'attack';
+export const COMPANION_ACTIONS = ['idle', 'happy', 'walk', 'sleep', 'run', 'attack'] as const;
 
 // Owns clip transitions and head tracking independently of rendering or account state.
 export function createCompanionAnimator(root: T.Object3D, sourceClips: T.AnimationClip[], onChange: (action: CompanionAction) => void = () => {}) {
@@ -13,7 +13,7 @@ export function createCompanionAnimator(root: T.Object3D, sourceClips: T.Animati
   const yawAxis = new T.Vector3(0, 1, 0).applyQuaternion(inverseHeadBasis).normalize();
   const pitchAxis = new T.Vector3(1, 0, 0).applyQuaternion(inverseHeadBasis).normalize();
   // The one static upstream model receives real bone tracks, rather than claiming missing source clips.
-  for (const action of COMPANION_ACTIONS) if (!clips.has(action)) {
+  for (const action of ['idle','happy','walk','sleep'] as const) if (!sourceClips.length && !clips.has(action)) {
     const duration = action === 'sleep' ? 5 : action === 'walk' ? 1.2 : action === 'happy' ? 1.8 : 4;
     const times = [0, duration / 4, duration / 2, duration * 3 / 4, duration];
     const tracks: T.KeyframeTrack[] = [];
@@ -41,21 +41,24 @@ export function createCompanionAnimator(root: T.Object3D, sourceClips: T.Animati
   const clearGaze = () => { if (head && applied) head.quaternion.multiply(inverseOffset.copy(offset).invert()); applied = false; };
   const play = (action: CompanionAction, still = false) => {
     if (disposed) return;
+    if (!clips.has(action)) action = 'idle';
     clearGaze();
     const next = mixer.clipAction(clips.get(action)!);
     if (still) mixer.stopAllAction(); else if (selected && selected !== next) selected.fadeOut(.22);
-    next.reset().setEffectiveWeight(1).setLoop(action === 'happy' ? T.LoopOnce : T.LoopRepeat, action === 'happy' ? 1 : action === 'walk' ? 2 : Infinity);
-    next.clampWhenFinished = action === 'happy' || action === 'walk';
+    const once = action === 'happy' || action === 'attack', moving = action === 'walk' || action === 'run';
+    next.reset().setEffectiveWeight(1).setLoop(once ? T.LoopOnce : T.LoopRepeat, once ? 1 : moving ? 2 : Infinity);
+    next.clampWhenFinished = once || moving;
     if (!still) next.fadeIn(.22);
     next.play(); selected = next; current = action;
     if (still) { next.time = action === 'sleep' ? next.getClip().duration * .65 : .1; mixer.update(0); }
     onChange(action);
   };
-  const finished = (event: { action: T.AnimationAction }) => { if (event.action === selected && (current === 'happy' || current === 'walk')) play('idle'); };
+  const finished = (event: { action: T.AnimationAction }) => { if (event.action === selected && ['happy','walk','run','attack'].includes(current)) play('idle'); };
   mixer.addEventListener('finished', finished);
   play('idle', true);
   return {
     get action() { return current; },
+    actions: COMPANION_ACTIONS.filter(action=>clips.has(action)),
     play,
     look(x: number, y: number) { target.set(T.MathUtils.clamp(x, -1, 1), T.MathUtils.clamp(y, -1, 1)); },
     update(delta: number) {

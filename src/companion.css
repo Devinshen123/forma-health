@@ -250,3 +250,27 @@
 .companion-3d-zzz { position:absolute; top:14%; right:20%; color:#6f82a5; font-size:20px; letter-spacing:5px; pointer-events:none; animation:companion-sleep 3s ease-in-out infinite; }
 @keyframes companion-sleep { 50% { transform:translateY(-9px); opacity:.5; } }
 @media(prefers-reduced-motion:reduce) { .companion-3d-zzz { animation:none; } }
+.companion-catalog-filters { display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:14px; }
+.companion-catalog-filters label { display:grid; gap:8px; font-size:12px; color:#5e6956; }
+.companion-catalog-filters input,.companion-catalog-filters select,.companion-animation-picker select { width:100%; min-width:0; min-height:44px; border:1px solid #dfe3d8; border-radius:10px; padding:9px 12px; background:#fff; color:#27321e; font:inherit; }
+.companion-catalog-count { font-size:12px; color:#737985; margin:8px 0 16px; }
+.companion-pokedex-grid .companion-character { position:relative; gap:5px; grid-template-rows:auto auto auto auto; padding-top:22px; }
+.companion-pokedex-number { position:absolute; top:8px; left:10px; font-size:10px; color:#737985; font-variant-numeric:tabular-nums; }
+.companion-pokedex-types { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; color:#737985; font-size:11px; }
+.companion-pokedex-types span { background:#f5f6f2; border-radius:8px; padding:2px 6px; }
+.companion-catalog-pagination { display:flex; justify-content:center; align-items:center; gap:24px; margin-top:20px; font-size:12px; color:#647051; }
+.companion-catalog-empty { padding:28px; text-align:center; color:#737985; }
+.companion-classic { margin-top:24px; border-top:1px solid #edf0e8; padding-top:16px; }
+.companion-classic summary { cursor:pointer; font-size:13px; color:#647051; min-height:36px; }
+.companion-classic[open] summary { margin-bottom:12px; }
+.companion-open-pokedex { display:block; margin:0 0 8px auto; font-size:12px; min-height:36px; }
+.companion-animation-picker { display:flex!important; align-items:center; justify-content:center; gap:12px; margin:12px 0 0!important; color:#647051; font-size:11px!important; }
+.companion-animation-picker select { width:auto; max-width:180px; min-height:36px; font-size:12px; }
+#companion-model,#companion-pokedex { scroll-margin-top:16px; }
+@media(max-width:600px) {
+ .companion-catalog-filters { grid-template-columns:minmax(0,1fr) 105px; gap:8px; }
+ .companion-catalog-filters input,.companion-catalog-filters select { font-size:13px; padding:8px; }
+ .companion-pokedex-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+ .companion-pokedex-grid .companion-character > strong { font-size:14px; }
+ .companion-catalog-pagination { gap:16px; }
+}

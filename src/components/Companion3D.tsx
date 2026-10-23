@@ -19,6 +19,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
   const [revision, setRevision] = useState(0), [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const pausedRef = useRef(paused); pausedRef.current = paused;
   const [action, setAction] = useState<CompanionAction>('idle');
+  const [availableActions, setAvailableActions] = useState<CompanionAction[]>([]);
   const [greeting, setGreeting] = useState(false);
   const form = companionForm(character, level), name = form[zh ? 'zh' : 'en'];
 
@@ -32,6 +33,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       if (disposed) return;
       const model = await createCompanionModel(character, equipped, form.level, controller.signal, next => { if (!disposed) setAction(next); });
       if (disposed) { model.dispose(); return; }
+      setAvailableActions([...model.actions]);
       let renderer: InstanceType<typeof T.WebGLRenderer>;
       try { renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' }); }
       catch { model.dispose(); setStatus('fallback'); return; }
@@ -132,10 +134,11 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
     </div>
     <div className="companion-3d-actions" role="group" aria-label={zh ? '和伙伴互动' : 'Interact with your companion'}>
       <button type="button" disabled={status !== 'ready'} aria-pressed={action === 'happy'} onClick={() => sceneHandle.current?.pet()}><Heart size={16} />{zh ? '摸摸' : 'Pet'}</button>
-      <button type="button" disabled={status !== 'ready'} aria-pressed={action === 'walk'} onClick={() => sceneHandle.current?.interact('walk')}><Footprints size={16} />{zh ? '走两步' : 'Walk'}</button>
-      <button type="button" disabled={status !== 'ready'} aria-pressed={action === 'sleep'} onClick={() => sceneHandle.current?.interact(action === 'sleep' ? 'idle' : 'sleep')}>{action === 'sleep' ? <Sun size={16} /> : <Moon size={16} />}{zh ? (action === 'sleep' ? '叫醒' : '打个盹') : (action === 'sleep' ? 'Wake up' : 'Nap')}</button>
+      <button type="button" disabled={status !== 'ready'||!availableActions.includes('walk')} aria-pressed={action === 'walk'} onClick={() => sceneHandle.current?.interact('walk')}><Footprints size={16} />{zh ? '走两步' : 'Walk'}</button>
+      <button type="button" disabled={status !== 'ready'||!availableActions.includes('sleep')} aria-pressed={action === 'sleep'} onClick={() => sceneHandle.current?.interact(action === 'sleep' ? 'idle' : 'sleep')}>{action === 'sleep' ? <Sun size={16} /> : <Moon size={16} />}{zh ? (action === 'sleep' ? '叫醒' : '打个盹') : (action === 'sleep' ? 'Wake up' : 'Nap')}</button>
     </div>
-    <p className="companion-3d-action-status" role="status">{action === 'sleep' ? (zh ? '睡着啦…轻点我就醒来。' : 'Zzz… tap me to wake up.') : action === 'walk' ? (zh ? '陪你活动一下，走完就回来。' : 'A little walk, then back to you.') : action === 'happy' ? (zh ? '好开心，你来啦 ♡' : 'Happy to see you ♡') : (zh ? '在这里，陪着你。' : 'Right here with you.')}</p>
+    <label className="companion-animation-picker">{zh?`${form.dex===446?'伙伴动画':'原始动画'} · ${availableActions.length} 段`:`${form.dex===446?'Companion':'Original'} animations · ${availableActions.length}`}<select aria-label={zh?'选择伙伴动画':'Choose companion animation'} disabled={status!=='ready'} value={action} onChange={event=>sceneHandle.current?.interact(event.target.value as CompanionAction)}>{availableActions.map(id=><option key={id} value={id}>{zh?{idle:'待机',happy:'开心',walk:'行走',sleep:'睡眠',run:'奔跑',attack:'招式展示'}[id]:{idle:'Idle',happy:'Happy',walk:'Walk',sleep:'Sleep',run:'Run',attack:'Move demonstration'}[id]}</option>)}</select></label>
+    <p className="companion-3d-action-status" role="status">{action === 'sleep' ? (zh ? '睡着啦…轻点我就醒来。' : 'Zzz… tap me to wake up.') : action === 'walk'||action==='run' ? (zh ? '陪你活动一下，结束就回来。' : 'A little movement, then back to you.') : action==='attack'?(zh?'给你展示一个小招式。':'A little move to show you.'): action === 'happy' ? (zh ? '好开心，你来啦 ♡' : 'Happy to see you ♡') : (zh ? '在这里，陪着你。' : 'Right here with you.')}</p>
     {action === 'sleep' && <span className="companion-3d-zzz" aria-hidden="true">Z z z</span>}
   </div>;
 }

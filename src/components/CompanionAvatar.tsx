@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { ImageOff } from 'lucide-react';
-import { COMPANION_CHARACTERS, type CompanionCharacter, type CompanionItem } from '../companion';
+import { ALL_COMPANION_CHARACTERS, type LegacyCompanionCharacter, type CompanionCharacter, type CompanionItem } from '../companion';
 
 import { companionPortrait, COMPANION_ART_VERSION } from '../companion-growth';
 
@@ -10,7 +10,7 @@ type AccessoryAnchors = { hat: Anchor; neck: Anchor; pin: Anchor; flower: Anchor
 // Portraits are exported from the runtime's Pokémon-reference geometry.
 // The version query bypasses older active workers that still cache the previous fixed art URLs.
 const ART_VERSION = COMPANION_ART_VERSION;
-const anchors: Record<CompanionCharacter, AccessoryAnchors> = {
+const anchors: Record<LegacyCompanionCharacter, AccessoryAnchors> = {
   sprout: { hat: [121, 99, .72], neck: [120, 151, .95], pin: [79, 170, .85], flower: [166, 96, .62], crown: [124, 87, .62] },
   bunny: { hat: [124, 79, .62], neck: [120, 153, .82], pin: [77, 167, .8], flower: [174, 81, .65], crown: [124, 66, .64] },
   otter: { hat: [124, 55, .74], neck: [120, 145, .8], pin: [84, 164, .85], flower: [178, 65, .65], crown: [127, 44, .75] },
@@ -41,12 +41,12 @@ export default function CompanionAvatar(props: CompanionAvatarProps) {
 }
 
 function CompanionArtwork({ character = 'sprout', equipped = null, level = 1, label, className = '', thumbnail = false, unavailableLabel = 'Image unavailable', onArtError }: CompanionAvatarProps) {
-  const knownCharacter = (COMPANION_CHARACTERS as readonly string[]).includes(character);
+  const knownCharacter = (ALL_COMPANION_CHARACTERS as readonly string[]).includes(character);
   const [imageFailed, setImageFailed] = useState(false);
   const failed = !knownCharacter || imageFailed;
   const paintId = useId();
   const paint = `url(#${paintId})`;
-  const position = anchors[character];
+  const position = anchors[character as LegacyCompanionCharacter] ?? anchors.sprout;
   const colors: Record<CompanionItem, [string, string]> = { leaf: ['#c7df9f', '#8ab85e'], cap: ['#e2f0f4', '#a9cbd8'], star: ['#fff0b4', '#e9c464'], scarf: ['#edd1bd', '#cca389'], flower: ['#f9e0d7', '#eab7a7'], crown: ['#fff0b4', '#e9c464'] };
   return <span className={`companion-avatar ${failed ? 'has-art-error' : ''} ${className}`} data-character={character} data-level={level} role={label ? 'img' : undefined} aria-label={label ? `${label}${failed ? ` · ${unavailableLabel}` : ''}` : undefined} aria-hidden={label ? undefined : true}>
     {failed ? <span className="companion-art-unavailable"><ImageOff size={23} /><span>{unavailableLabel}</span></span> : <img className="companion-avatar-art" src={`${companionPortrait(character, level, thumbnail)}${ART_VERSION}`} srcSet={`${companionPortrait(character, level, true)}${ART_VERSION} 192w, ${companionPortrait(character, level)}${ART_VERSION} 640w`} sizes={thumbnail ? '(max-width: 600px) 120px, 160px' : '(max-width: 600px) 215px, 260px'} alt="" width={thumbnail ? 192 : 640} height={thumbnail ? 192 : 640} loading={thumbnail ? 'lazy' : 'eager'} decoding="async" draggable={false} onError={() => { setImageFailed(true); onArtError?.(); }} />}

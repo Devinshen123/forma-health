@@ -1,11 +1,13 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import type { AppState } from '../src/types';
-import { COMPANION_ITEMS, COMPANION_RULE_VERSION, companionLevel, type CompanionCharacter, type CompanionChest, type CompanionItem, type CompanionQuest, type CompanionSnapshot, type CompanionChallenge } from '../src/companion';
+import { ALL_COMPANION_CHARACTERS, COMPANION_ITEMS, COMPANION_RULE_VERSION, companionLevel, type CompanionCharacter, type CompanionChest, type CompanionItem, type CompanionQuest, type CompanionSnapshot, type CompanionChallenge } from '../src/companion';
 import { companionDay, companionFacts, companionLocalDay, companionRecords, type CompanionFact } from './companion-rules';
 
 const QUESTS: readonly CompanionQuest[] = ['nutrition', 'movement', 'sleep'];
 const CHARACTER_COLUMN = "character TEXT NOT NULL DEFAULT 'sprout' CHECK(character IN ('sprout','bunny','otter','cloud','bear','seal'))";
+// Additive migration: preserve the old CHECK column and every saved legacy choice.
+const POKEMON_COLUMN = `pokemon_character TEXT CHECK(pokemon_character IS NULL OR pokemon_character IN (${ALL_COMPANION_CHARACTERS.filter(id=>id.startsWith('pokemon-')).map(id=>`'${id}'`).join(',')}))`;
 interface RewardRow { id: number; utc_day: string; local_day: string; quest: CompanionQuest; rule_version: number; xp: number; source_kind: string; source_id: string; awarded_at: string }
 interface ChestRow { id: string; milestone: number; item: CompanionItem | null; opened_at: string | null }
 interface ChallengeRow { id: string; code: string; starts_at: string; ends_at: string; revoked_at: string | null }
@@ -40,6 +42,14 @@ export class CompanionLedger {
         if (!hasCharacter()) db.exec(`ALTER TABLE companion_profiles ADD COLUMN ${CHARACTER_COLUMN}`);
         db.exec('COMMIT');
       } catch (error) { db.exec('ROLLBACK'); throw error; }
+    }
+    const hasPokemon = () => (db.prepare('PRAGMA table_info(companion_profiles)').all() as {name:string}[]).some(column=>column.name==='pokemon_character');
+    if (!hasPokemon()) {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        if (!hasPokemon()) db.exec(`ALTER TABLE companion_profiles ADD COLUMN ${POKEMON_COLUMN}`);
+        db.exec('COMMIT');
+      } catch(error) { db.exec('ROLLBACK'); throw error; }
     }
   }
   /** Observe new saved facts only. Existing data, date edits and time-zone changes never backfill XP. */
@@ -108,9 +118,9 @@ export class CompanionLedger {
     const day = companionDay(now), localDay = companionLocalDay(state, now);
     const totals = this.db.prepare('SELECT COALESCE(SUM(xp),0) AS xp,COUNT(DISTINCT utc_day) AS days FROM companion_rewards WHERE owner_id=?').get(ownerId) as { xp: number; days: number };
     const completed = this.db.prepare('SELECT DISTINCT quest FROM companion_rewards WHERE owner_id=? AND (utc_day=? OR local_day=?)').all(ownerId, day, localDay) as unknown as { quest: CompanionQuest }[];
-    const profile = this.db.prepare('SELECT equipped,character FROM companion_profiles WHERE owner_id=?').get(ownerId) as { equipped: CompanionItem | null; character: CompanionCharacter } | undefined;
+    const profile = this.db.prepare('SELECT equipped,character,pokemon_character FROM companion_profiles WHERE owner_id=?').get(ownerId) as { equipped: CompanionItem | null; character: CompanionCharacter; pokemon_character: CompanionCharacter | null } | undefined;
     const chests = this.chests(ownerId);
-    return { ruleVersion: COMPANION_RULE_VERSION, character: profile?.character ?? 'sprout', day, xp: totals.xp, level: companionLevel(totals.xp), activeDays: totals.days,
+    return { ruleVersion: COMPANION_RULE_VERSION, character: profile?.pokemon_character ?? profile?.character ?? 'sprout', day, xp: totals.xp, level: companionLevel(totals.xp), activeDays: totals.days,
       equipped: profile?.equipped ?? null, inventory: COMPANION_ITEMS.filter(item => chests.some(chest => chest.item === item)),
       quests: QUESTS.map(id => ({ id, completed: completed.some(row => row.quest === id), xp: 10 })), chests, challenge: this.challengeSnapshot(ownerId, now) };
   }
@@ -130,7 +140,8 @@ export class CompanionLedger {
     return this.snapshot(ownerId, state, now);
   }
   selectCharacter(ownerId: string, character: CompanionCharacter, state: AppState, now: Date): CompanionSnapshot {
-    this.db.prepare('INSERT INTO companion_profiles(owner_id,character) VALUES (?,?) ON CONFLICT(owner_id) DO UPDATE SET character=excluded.character').run(ownerId, character);
+    if(character.startsWith('pokemon-')) this.db.prepare('INSERT INTO companion_profiles(owner_id,pokemon_character) VALUES (?,?) ON CONFLICT(owner_id) DO UPDATE SET pokemon_character=excluded.pokemon_character').run(ownerId,character);
+    else this.db.prepare('INSERT INTO companion_profiles(owner_id,character,pokemon_character) VALUES (?,?,NULL) ON CONFLICT(owner_id) DO UPDATE SET character=excluded.character,pokemon_character=NULL').run(ownerId, character);
     return this.snapshot(ownerId, state, now);
   }
   /** Persist attempt counters in their own transaction, including failed guesses. Leaving is never limited. */
