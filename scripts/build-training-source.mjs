@@ -19,6 +19,7 @@ const roots = [
   'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', '.env.example', 'public/favicon.svg',
   'Dockerfile', '.dockerignore',
   'docs/architecture/training-source-log.md',
+  'docs/architecture/companion-pokemon-reference-20261022.md',
   'docs/collaboration/decisions/ADR-training-workbench-20261018.md',
 ];
 const files = new Map();

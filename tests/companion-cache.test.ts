@@ -63,6 +63,9 @@ test('new companion art invalidates the shell and an old retained cache cannot s
   handlers.get('fetch')!({ request: new Request(origin + '/companions/bunny.webp'), respondWith: (work: Promise<Response>) => { reply = work; } });
   assert.equal(await (await reply!).text(), 'current art');
   assert.equal(activeReads, 1); assert.equal(globalReads, 0); assert.equal(networkReads, 0);
+  handlers.get('fetch')!({ request: new Request(origin + '/companions/bunny.webp?v=pokemon-20261022'), respondWith: (work: Promise<Response>) => { reply = work; } });
+  assert.equal(await (await reply!).text(), 'current art', 'versioned portraits must work offline with the matching current cache');
+  assert.equal(activeReads, 2); assert.equal(globalReads, 0); assert.equal(networkReads, 0);
   for (const path of ['/api/companion', '/api/assets/private', '/training-workbench/api/media']) {
     let intercepted = false;
     handlers.get('fetch')!({ request: new Request(origin + path), respondWith: () => { intercepted = true; } });

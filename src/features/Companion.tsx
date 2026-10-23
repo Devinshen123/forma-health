@@ -203,7 +203,7 @@ function CharacterGallery({ model, art, zh, demo, authenticated }: { model: Retu
   if (!model.snapshot) return null;
   const current = model.snapshot.character ?? 'sprout';
   return <section className="panel companion-gallery" aria-labelledby="companion-gallery-title">
-    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '六位小伙伴，各有自己的可爱。' : 'Six little personalities. One at your side.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
+    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '宝可梦参考造型，圆滚滚地陪着你。' : 'Round little companions, with looks inspired by Pokémon.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
     <div className="companion-characters">
       {COMPANION_CHARACTERS.map(character => {
         const details = COMPANION_CHARACTER_DETAILS[character];

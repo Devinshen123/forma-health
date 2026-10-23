@@ -3,12 +3,12 @@ export const COMPANION_RULE_VERSION = 1;
 export const COMPANION_CHARACTERS = ['sprout', 'bunny', 'otter', 'cloud', 'bear', 'seal'] as const;
 export type CompanionCharacter = typeof COMPANION_CHARACTERS[number];
 export const COMPANION_CHARACTER_DETAILS = {
-  sprout: { zh: '芽芽', en: 'Sprout', descriptionZh: '一点一点，长成喜欢的样子。', descriptionEn: 'A little growth, at your own pace.', color: '#edf5dd' },
-  bunny: { zh: '糯糯', en: 'Mochi', descriptionZh: '小步跳，也能走很远。', descriptionEn: 'Little hops can take you far.', color: '#f8eee8' },
-  otter: { zh: '桃桃', en: 'Peach', descriptionZh: '把平常的一天，过得有点可爱。', descriptionEn: 'A little joy in an ordinary day.', color: '#f9eae3' },
-  cloud: { zh: '云云', en: 'Nimbus', descriptionZh: '慢下来，也是一种前进。', descriptionEn: 'Taking it slow is progress, too.', color: '#eaf2f9' },
-  bear: { zh: '蜜蜜', en: 'Honey', descriptionZh: '稳稳地，陪你继续。', descriptionEn: 'Steady company for the next step.', color: '#f8f0dc' },
-  seal: { zh: '月月', en: 'Luna', descriptionZh: '今天也给自己一点温柔。', descriptionEn: 'A little kindness for yourself today.', color: '#f0edf8' },
+  sprout: { zh: '妙蛙种子', en: 'Bulbasaur', descriptionZh: '背着小种子，一点点长大。', descriptionEn: 'Little steps, with a little seed.', color: '#e8f3e9' },
+  bunny: { zh: '皮卡丘', en: 'Pikachu', descriptionZh: '电力满满，也记得休息。', descriptionEn: 'Full of sparks. Make time to rest, too.', color: '#fcf4d9' },
+  otter: { zh: '杰尼龟', en: 'Squirtle', descriptionZh: '不着急，按自己的节奏前进。', descriptionEn: 'Take it easy, at your own pace.', color: '#e8f3f7' },
+  cloud: { zh: '胖丁', en: 'Jigglypuff', descriptionZh: '软乎乎地，陪你过好每一天。', descriptionEn: 'A soft little friend for every day.', color: '#faeaf0' },
+  bear: { zh: '卡比兽', en: 'Snorlax', descriptionZh: '慢慢来，睡饱再出发。', descriptionEn: 'Rest well. Your next step can wait.', color: '#e8eff0' },
+  seal: { zh: '伊布', en: 'Eevee', descriptionZh: '每一种成长，都有自己的可爱。', descriptionEn: 'Every way of growing has its own charm.', color: '#f5ecdf' },
 } satisfies Record<CompanionCharacter, { zh: string; en: string; descriptionZh: string; descriptionEn: string; color: string }>;
 export const COMPANION_ITEMS = ['leaf', 'cap', 'star', 'scarf', 'flower', 'crown'] as const;
 export type CompanionItem = typeof COMPANION_ITEMS[number];

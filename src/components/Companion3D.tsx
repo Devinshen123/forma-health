@@ -25,7 +25,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
     const element = host.current;
     if (!element) return;
     setStatus('loading');
-    void import('./companion-scene').then(({ T, createCompanionModel, disposeScene }) => {
+    void import('./companion-scene').then(({ T, createCompanionModel, disposeScene, fitCompanionCamera }) => {
       if (disposed) return;
       let renderer: InstanceType<typeof T.WebGLRenderer>;
       try { renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' }); }
@@ -73,7 +73,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
         cancelAnimationFrame(frame); frame = 0;
         if (!document.hidden && onScreen) { draw(performance.now()); if (!pausedRef.current && !reduced.matches) frame = requestAnimationFrame(tick); }
       };
-      const resize = new ResizeObserver(() => { const { width, height } = element.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); syncLoop(); });
+      const resize = new ResizeObserver(() => { const { width, height } = element.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); fitCompanionCamera(camera, model.root, width / height); syncLoop(); });
       resize.observe(element);
       const intersection = new IntersectionObserver(entries => { onScreen = entries[0].isIntersecting; syncLoop(); }); intersection.observe(element);
       const down = (event: PointerEvent) => { if (event.button !== 0) return; drag = { x: event.clientX, y: event.clientY, angle, moved: false, pointer: event.pointerId }; };

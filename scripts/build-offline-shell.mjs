@@ -15,7 +15,7 @@ self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>{const old=keys.filter(k=>k.startsWith('forma-shell-')&&k!==CACHE);return Promise.all(old.slice(0,-1).map(k=>caches.delete(k)));}).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{const req=event.request,url=new URL(req.url);if(req.method!=='GET'||url.origin!==self.location.origin||url.pathname==='/api'||url.pathname.startsWith('/api/')||url.pathname.toLowerCase().startsWith('/training-workbench/api/'))return;
 if(req.mode==='navigate'){const fallback=url.pathname.startsWith('/training-workbench/')?'/training-workbench/index.html':'/index.html';event.respondWith(fetch(req).catch(()=>caches.open(CACHE).then(cache=>cache.match(fallback)).then(r=>r||Response.error())));return;}
-if(url.search)return;
+if(url.search){if(url.search==='?v=pokemon-20261022'&&${JSON.stringify(companionFiles)}.includes(url.pathname))event.respondWith(caches.open(CACHE).then(cache=>cache.match(url.pathname)).then(r=>r||fetch(req)));return;}
 if(FILES.includes(url.pathname)||url.pathname.startsWith('/assets/'))event.respondWith(caches.open(CACHE).then(cache=>cache.match(req)).then(r=>r||fetch(req)));});
 `);
 console.log(`Offline shell ${version}: ${assets.length} static files. API excluded.`);
