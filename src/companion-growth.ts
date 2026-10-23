@@ -11,7 +11,7 @@ export const COMPANION_EVOLUTIONS: Record<CompanionCharacter, readonly Companion
   bear: [{ dex: 446, level: 1, zh: '小卡比兽', en: 'Munchlax' }, { dex: 143, level: 3, zh: '卡比兽', en: 'Snorlax' }],
   seal: [{ dex: 133, level: 1, zh: '伊布', en: 'Eevee' }, { dex: 136, level: 3, zh: '火伊布', en: 'Flareon' }],
 };
-export const COMPANION_ART_VERSION = '?v=evolution-20261022';
+export const COMPANION_ART_VERSION = '?v=interactive-3d-20261022';
 export function companionGrowthStage(level: number, character: CompanionCharacter = 'sprout') {
   const safeLevel = Number.isFinite(level) ? Math.max(1, Math.floor(level)) : 1;
   return COMPANION_EVOLUTIONS[character].reduce((stage, form, index) => safeLevel >= form.level ? index : stage, 0);

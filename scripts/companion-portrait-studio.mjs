@@ -5,7 +5,7 @@ import { build } from 'esbuild';
 const { outputFiles } = await build({ entryPoints: ['src/components/companion-scene.ts'], bundle: true, format: 'esm', write: false });
 const ids = ['sprout','bunny','otter','cloud','bear','seal'];
 const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>Forma 3D portrait studio</title><style>body{margin:20px;background:#f7f6f1;font:16px system-ui}canvas{display:block;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 0/20px 20px}select{font:inherit;margin:10px}a{margin:15px}</style><label>角色<select aria-label="角色">${ids.map(id=>`<option value="${id}">${id}</option>`).join('')}</select></label><label>等级<select aria-label="等级"><option>1</option><option>3</option><option>5</option></select></label><span id="status" role="status">绘制中</span><canvas width="640" height="640" aria-label="透明伙伴肖像"></canvas><a id="export">导出 PNG</a><script type="module">
-import {T,createCompanionModel,fitCompanionCamera} from '/scene.js';
+import {T,createCompanionModel,fitCompanionCamera,installCompanionLighting} from '/scene.js';
 const ids=${JSON.stringify(ids)},params=new URLSearchParams(location.search),id=params.get('character')||'sprout',level=Number(params.get('level')||1);
 if(!ids.includes(id)||![1,3,5].includes(level))throw Error('Unknown form');
 const selects=document.querySelectorAll('select');selects[0].value=id;selects[1].value=String(level);
@@ -14,9 +14,7 @@ try {
 const canvas=document.querySelector('canvas'),renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,preserveDrawingBuffer:true});
 renderer.setSize(640,640);renderer.setClearColor(0,0);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.06;
 const scene=new T.Scene(),camera=new T.PerspectiveCamera(35,1,.1,30),model=await createCompanionModel(id,null,level);
-model.root.rotation.y=-.16;scene.add(model.root);scene.add(new T.HemisphereLight('#fff7ef','#e4d9cf',2));
-const key=new T.DirectionalLight('#fff2e3',2.5);key.position.set(-3,6,5);scene.add(key);
-const fill=new T.DirectionalLight('#eef0ff',1.4);fill.position.set(3,3,-3);scene.add(fill);
+model.root.rotation.y=-.16;scene.add(model.root);const releaseLighting=installCompanionLighting(renderer,scene);addEventListener('pagehide',()=>{model.dispose();releaseLighting();renderer.dispose();renderer.forceContextLoss();},{once:true});
 fitCompanionCamera(camera,model.root,1);renderer.render(scene,camera);canvas.dataset.form=model.dex;canvas.dataset.ready='true';
 document.querySelector('#status').textContent='已绘制 '+id+' '+model.dex;
 const link=document.querySelector('#export');link.href=canvas.toDataURL('image/png');link.download=model.dex+'.png';

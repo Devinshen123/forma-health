@@ -7,7 +7,7 @@ import { Store } from '../server/store';
 import { emptyState } from '../src/types';
 import { test } from 'node:test';
 import { Box3, Mesh, PerspectiveCamera, Vector3 } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { companionGeometryFixture } from './companion-model-fixture';
 import { companionLevel, COMPANION_CHARACTERS } from '../src/companion';
 import { companionForm, companionGrowthStage, COMPANION_EVOLUTIONS, nextCompanionEvolution } from '../src/companion-growth';
 import { disposeScene, fitCompanionCamera } from '../src/components/companion-scene';
@@ -65,22 +65,15 @@ test('all fourteen packaged forms have pinned provenance, unique geometry, embed
     assert.deepEqual((json.animations??[]).map((clip:any)=>clip.name).sort(),model.animations.toSorted());
     for(const view of json.bufferViews){assert.equal(view.buffer,0);assert.ok((view.byteOffset??0)+view.byteLength<=json.buffers[0].byteLength);}
     for(const clip of json.animations??[])for(const channel of clip.channels)assert.ok(json.nodes[channel.target.node]);
-    assert.ok(bytes.length<2_000_000,'one selected mobile model stays below 2 MB');
+    assert.ok(bytes.length<2_200_000,'one selected mobile model stays below 2.2 MB');
   }
-  assert.equal(hashes.size,14);assert.ok(total<16_000_000);
+  assert.equal(hashes.size,14);assert.ok(total<18_000_000);
 });
 
 test('real animated model geometry is finite and fits desktop, phone and rotated portrait cameras', async () => {
   // Strip only materials in this Node-only geometry check; browser QA exercises real texture decoding.
   for(const form of Object.values(COMPANION_EVOLUTIONS).flat().filter(form=>form.dex!==446)){
-    const bytes=await readFile(`public/companions/models/${form.dex}.glb`),length=bytes.readUInt32LE(12);
-    const json=JSON.parse(bytes.subarray(20,20+length).toString());
-    delete json.images;delete json.textures;delete json.materials;
-    for(const mesh of json.meshes)for(const primitive of mesh.primitives)delete primitive.material;
-    const text=Buffer.from(JSON.stringify(json)),padding=(4-text.length%4)%4,header=Buffer.from(bytes.subarray(0,20));
-    header.writeUInt32LE(28+text.length+padding+bytes.subarray(28+length).length,8);header.writeUInt32LE(text.length+padding,12);
-    const packed=Buffer.concat([header,text,Buffer.alloc(padding,32),bytes.subarray(20+length)]);
-    const gltf=await new GLTFLoader().parseAsync(packed.buffer.slice(packed.byteOffset,packed.byteOffset+packed.length),'');
+    const gltf=await companionGeometryFixture(form.dex);
     const root=gltf.scene;root.updateMatrixWorld(true);
     const raw=new Box3().setFromObject(root,true),size=raw.getSize(new Vector3());
     assert.ok(size.toArray().every(value=>Number.isFinite(value)&&value>0));

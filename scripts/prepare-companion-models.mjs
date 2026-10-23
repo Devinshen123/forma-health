@@ -12,7 +12,7 @@ export async function optimizeCompanionGlb(bytes) {
   const jsonLength = bytes.readUInt32LE(12), json = JSON.parse(bytes.subarray(20, 20 + jsonLength));
   const bin = bytes.subarray(28 + jsonLength);
   if (json.buffers.length !== 1 || json.buffers[0].uri || json.images.some(image => image.uri)) throw Error('Models must be self-contained');
-  json.animations = (json.animations ?? []).filter(clip => ['idle','happy'].includes(clip.name));
+  json.animations = (json.animations ?? []).filter(clip => ['idle','happy','walk','sleep'].includes(clip.name));
   const accessorSlots = [];
   const slot = (object, key) => { if (object[key] !== undefined) accessorSlots.push([object,key]); };
   for (const mesh of json.meshes) for (const primitive of mesh.primitives) {
@@ -75,7 +75,7 @@ if (process.argv[1]?.replaceAll('\\','/').endsWith('/prepare-companion-models.mj
     const original=await readFile(`${inputDirectory}/${animated?'animated-':''}${dex}.glb`);
     const output=await optimizeCompanionGlb(original);
     await writeFile(`public/companions/models/${dex}.glb`,output);
-    models.push({dex,sourceUrl,sourceRevision:revision,sourceSha256:digest(original),sha256:digest(output),bytes:output.length,animations:animated?['idle','happy']:[]});
+    models.push({dex,sourceUrl,sourceRevision:revision,sourceSha256:digest(original),sha256:digest(output),bytes:output.length,animations:animated?['idle','happy','walk','sleep']:[]});
     console.log(`${dex}: ${(original.length/1e6).toFixed(2)} MB → ${(output.length/1e6).toFixed(2)} MB`);
   }
   await writeFile('public/companions/model-manifest.json',JSON.stringify({schemaVersion:1,rights:'Pokémon character designs and original assets belong to their respective owners, including Nintendo, Creatures and GAME FREAK. Repository software licenses do not replace character/model rights.',models},null,2)+'\n');

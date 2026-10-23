@@ -63,7 +63,7 @@ test('new companion art invalidates the shell and an old retained cache cannot s
   handlers.get('fetch')!({ request: new Request(origin + '/companions/bunny.webp'), respondWith: (work: Promise<Response>) => { reply = work; } });
   assert.equal(await (await reply!).text(), 'current art');
   assert.equal(activeReads, 1); assert.equal(globalReads, 0); assert.equal(networkReads, 0);
-  handlers.get('fetch')!({ request: new Request(origin + '/companions/bunny.webp?v=evolution-20261022'), respondWith: (work: Promise<Response>) => { reply = work; } });
+  handlers.get('fetch')!({ request: new Request(origin + '/companions/bunny.webp?v=interactive-3d-20261022'), respondWith: (work: Promise<Response>) => { reply = work; } });
   assert.equal(await (await reply!).text(), 'current art', 'versioned portraits must work offline with the matching current cache');
   assert.equal(activeReads, 2); assert.equal(globalReads, 0); assert.equal(networkReads, 0);
   for (const path of ['/api/companion', '/api/assets/private', '/training-workbench/api/media']) {
@@ -98,7 +98,7 @@ test('public models cache on demand, survive cache denial, and never turn failed
       assert.ok(installed.includes('/companions/forms/25.webp'));assert.ok(!installed.some(path=>path.endsWith('.glb')),'install must not download all forms');
     }
     let response:Promise<Response>|undefined;
-    handlers.get('fetch')!({request:new Request(origin+'/companions/models/25.glb?v=evolution-20261022'),respondWith:(promise:Promise<Response>)=>response=promise});
+    handlers.get('fetch')!({request:new Request(origin+'/companions/models/25.glb?v=interactive-3d-20261022'),respondWith:(promise:Promise<Response>)=>response=promise});
     assert.equal(await(await response!).text(),scenario==='cached'?'cached-model':'network-model');
     assert.equal(downloads,scenario==='cached'?0:1);assert.equal(writes,scenario==='new'?1:0);
     for(const path of['/api/companion','/training-workbench/api/export','/uploads/private.glb','/companions/models/999.glb']){

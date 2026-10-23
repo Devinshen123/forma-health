@@ -7,11 +7,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/001/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "655d63cef5edb8606d8aa38c95e32080e687b9a8550dce5cceddbaf769221306",
-      "sha256": "b6cb1a5949da97d4c8d7b49047c19a97159e49a1955bd9f3cc6a324894b13f8f",
-      "bytes": 885600,
+      "sha256": "f500e5b8978c47a028de9b3f9fb5d5a37af4a34ce7ea576e72db7cfb37b957eb",
+      "bytes": 1077896,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -19,11 +21,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/002/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "baa7035a03c8d7d221e9205563073b83b89efba0a63b4ec3595674426d93ceee",
-      "sha256": "b148595e05d5219d0c5f2ebe6136c85bd62a644f40c9d47d0a87bbfad6fe439e",
-      "bytes": 1261936,
+      "sha256": "c0e5658963cf7d374db2598af1db61f54523f83b959c6261e6c521dc9380e304",
+      "bytes": 1485660,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -31,11 +35,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/003/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "af4ebb0595c10597faabcfc223d12a441d164a252b196b673dd98b42e666745b",
-      "sha256": "f0e0b5f85ca4d30f23c4e5be6d91b7608aa7161c48cb0db57ffcc2e06655b7ba",
-      "bytes": 1756376,
+      "sha256": "dfe906caa11d5dd03552aa3e8d8b9eea0f85c9d69664c9e55da95a955cc1b702",
+      "bytes": 2075332,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -43,11 +49,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/007/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "aaafb1ac704552e781765fadd8adf3ade1a94587ab1c1a418295579390f944e9",
-      "sha256": "6c28f8b38b40dce2f83126517a48c0ff1d9a18229b3114a7d3b6134e90c4f03d",
-      "bytes": 1322056,
+      "sha256": "10ee3a3aa17c83c49ea4fe8ec7c9202d44904261348b2e6c8a7b6eeb5ebe998b",
+      "bytes": 1419144,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -55,11 +63,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/008/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "68c1277cf570426484564d7ea0ee55d4ca2bf17323021567ebe9eaed2bff38c0",
-      "sha256": "809bcecafc10f283979f5c40e7be5f0035c578ca9aa17f9ac31b3c0744dca897",
-      "bytes": 1075744,
+      "sha256": "7cad8d8676161b528835ba0e24219a2739510f62e58fc7b0fdb028064eea7d72",
+      "bytes": 1219884,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -67,11 +77,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/009/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "759ad9d4c1851d3950e87a0bd747a40c5c8c8ed406b31bd5a4b4b67bbcb635b0",
-      "sha256": "03b60bcc69759fdc789c278adf42c9f63019ab082e72c76cdf5d8ae4f568ea18",
-      "bytes": 1633912,
+      "sha256": "b1713ba97f250433ce347b2a0e8ec972e6a260bd3573da6c44c73aa6ff270d36",
+      "bytes": 1910032,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -79,11 +91,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/025/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "5c9e14325cd7f2d4fcf8b9a6ba3a3bcd0c5947c2fd5b102de24643014a9c758c",
-      "sha256": "5c8952b27aab823404e1e7d2f7c5c823c7164487b850d49873daa54f3177c105",
-      "bytes": 1392232,
+      "sha256": "83d7c173c91547ca3903b5f1833a66e07911b057f4cae8285a5924bf7a8bc0cd",
+      "bytes": 1609772,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -91,11 +105,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/026/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "7c45392537e65810f9f61378787748e9a26e54724fffc7f8c48d80f15523ca20",
-      "sha256": "1e61951fa9c9a6dc36bc3e24349a24a684df467470e7c4a68493c2ba06797810",
-      "bytes": 1297544,
+      "sha256": "df345162c10b6a9e9a2d7abd288fe4a6c8106f99022d08f6ce1d9d3edd6c0f0f",
+      "bytes": 1444008,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -103,11 +119,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/039/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "716ee371f4ee117a8b5fa3617d53c5fcefc376e2cd1773bbdd1815695782ecf7",
-      "sha256": "161675ff506b704eef6893543e3c03549b3ef9c3a509a69c5a3436af06327e5d",
-      "bytes": 565092,
+      "sha256": "1a696ced9f6bbbdc27e987254b5dc2daf649a1362458c3ec03855dd6dacfb80e",
+      "bytes": 647076,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -115,11 +133,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/040/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "470c756fc25b917596e3b15a20cc6071eee349b641f4b9a5af1cd7a82514140c",
-      "sha256": "6c0cfeeb2a096cc82532b52aafa24a35b29a37c19ae4955af1da27c9aec0d2ee",
-      "bytes": 609980,
+      "sha256": "a6fa1647cc41670e2756e41bf64ac4d19c7ba8f051588ae40c466f3c228342f0",
+      "bytes": 791956,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -127,11 +147,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/133/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "9760a789048a76192afbf18dd1d5dbc6a780b0267a7ff953396384debaa19bd9",
-      "sha256": "a43bc682df819545a9765f7b6fbd9159d0e60033e3f87631bc07e1319184b0f4",
-      "bytes": 828272,
+      "sha256": "4832f05eee5aa1175124dae122a471e3d7f5cc2a49eaab52419f493e05a33619",
+      "bytes": 1038644,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -139,11 +161,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/136/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "1c1de95bda4c90a6d3f352df8bc931bba00b44d6e9bc1b0285bc255913eff992",
-      "sha256": "34ac244e2781506bd42980729780378cc3e786710ec9e12adb676cf3c90ec08a",
-      "bytes": 1211576,
+      "sha256": "dd2d6c6963c32ad69f958a81cdc35ba72a20a0d03b813d2434a863a30c04506b",
+      "bytes": 1452696,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
@@ -151,11 +175,13 @@
       "sourceUrl": "https://raw.githubusercontent.com/06wj/pokemon/00d96f7f18894055e7f1db44fa0df6462e5e4c8a/public/models/143/model.glb",
       "sourceRevision": "00d96f7f18894055e7f1db44fa0df6462e5e4c8a",
       "sourceSha256": "b49437acbb7485d092373940ca66425318660fe1237663160a6f8386ec5620ae",
-      "sha256": "122bee313d005fedd250442763630bbf8cdd21d5e4d7d342c8351c717c5ac522",
-      "bytes": 651556,
+      "sha256": "a3e6de5f9bfc3191ed2ec7cfa9a3a41ade4703832ef7a34e71f99b9e0f15ea0f",
+      "bytes": 858340,
       "animations": [
         "idle",
-        "happy"
+        "happy",
+        "walk",
+        "sleep"
       ]
     },
     {
