@@ -1,3 +1,7 @@
+## 2026-10-22 FUD-KEY-01 本机配置完成
+
+用户本轮直接授权配置OpenAI密钥；仅更新本机Git忽略的服务端.env，核对未被跟踪，不在文档记录值。核验原服务PID及版本后重启，当前PID88204；3001 capabilities返回foodPhoto.available=true、reason=ready、analysisEngine=fud-ai、provider=openai。使用服务端环境向OpenAI固定模型元数据接口发GET，HTTP200且模型ID匹配；未上传照片、未请求生成、未操作真实健康记录。原有代码28a9936及345项测试无需因环境配置重复构建。真实食物照片识别质量仍待实测；GitHub不包含本机密钥，其他机器需要单独配置。
+
 ## 2026-10-22 完成与整体验证回执（01 lead）
 
 - 全量npm.cmd test：最终345/345 pass，fail0/skip0，exit0；首轮7个旧模型夹具失败已迁移，未降低既有事务/恢复/账户隔离断言。
