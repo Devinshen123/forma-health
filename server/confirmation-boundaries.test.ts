@@ -11,10 +11,14 @@ import type { ActiveWorkout, FoodPhotoDraft, Meal, SetLog, SyncChange, SyncMutat
 
 const NOW = '2026-10-17T12:00:00.000Z';
 const ORIGIN = 'http://127.0.0.1:5173';
-const RAW_DRAFT = { isFood: true, items: [
+const RAW_DRAFT = { isFood: true, name: 'Synthetic rice and beans', calories: 283, protein: 9.65, carbs: 58, fat: 0.85, serving_size_grams: 230, ingredients: [
+  { name: 'Synthetic rice', grams: 150, calories: 195, protein: 4.05, carbs: 42, fat: 0.45 },
+  { name: 'Synthetic beans', grams: 80, calories: 88, protein: 5.6, carbs: 16, fat: 0.4 },
+], warnings: ['Synthetic confirmation fixture.'] };
+const EXPECTED_DRAFT_ITEMS = [
   { name: 'Synthetic rice', grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } },
   { name: 'Synthetic beans', grams: 80, per100g: { kcal: 110, protein: 7, carbs: 20, fat: 0.5 } },
-], warnings: ['Synthetic confirmation fixture.'] };
+];
 interface Account { id: string; cookie: string }
 interface HttpResult { status: number; body: any; headers: Headers }
 const key = (collection: SyncChange['collection'], id: string) => `${collection}:${id}`;
@@ -176,7 +180,7 @@ test('uncertain AI-meal deletion replay preserves a later report reference and c
   assert.equal(replay.status, 200); assert.deepEqual(replay.body, referenced);
   assert.equal((await h.request('DELETE', `/assets/${draft.assetId}`, account, {})).status, 409, 'a report protects the same private image after both AI meals were removed');
   const kept = await h.request('GET', '/export', account);
-  assert.equal(kept.body.assets.length, 1); assert.deepEqual(kept.body.aiDrafts[0].items, RAW_DRAFT.items);
+  assert.equal(kept.body.assets.length, 1); assert.deepEqual(kept.body.aiDrafts[0].items, EXPECTED_DRAFT_ITEMS);
   const lastDeletion = mutation(remove('reports', report.id, 1));
   const removed = await h.sync(account, lastDeletion);
   assert.equal(removed.status, 200); assert.deepEqual(removed.body.state.reports, []);

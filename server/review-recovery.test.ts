@@ -12,13 +12,17 @@ import type { ActiveWorkout, FoodPhotoDraft, Meal, SetLog, SyncChange, SyncMutat
 const NOW = '2026-10-17T12:00:00.000Z';
 const ORIGIN = 'http://127.0.0.1:5173';
 const RAW_DRAFT = {
-  isFood: true,
-  items: [
-    { name: 'Synthetic rice', grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } },
-    { name: 'Synthetic beans', grams: 80, per100g: { kcal: 110, protein: 7, carbs: 20, fat: 0.5 } },
+  isFood: true, name: 'Synthetic rice and beans', calories: 283, protein: 9.65, carbs: 58, fat: 0.85, serving_size_grams: 230,
+  ingredients: [
+    { name: 'Synthetic rice', grams: 150, calories: 195, protein: 4.05, carbs: 42, fat: 0.45 },
+    { name: 'Synthetic beans', grams: 80, calories: 88, protein: 5.6, carbs: 16, fat: 0.4 },
   ],
   warnings: ['Synthetic fixture: review both portions.'],
 };
+const EXPECTED_DRAFT_ITEMS = [
+  { name: 'Synthetic rice', grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } },
+  { name: 'Synthetic beans', grams: 80, per100g: { kcal: 110, protein: 7, carbs: 20, fat: 0.5 } },
+];
 interface Account { id: string; cookie: string }
 interface HttpResult { status: number; body: any; headers: Headers }
 const key = (collection: SyncChange['collection'], id: string) => `${collection}:${id}`;
@@ -121,7 +125,7 @@ test('multi-item AI review rejects a forged item atomically and a corrected requ
   assert.equal(saved.body.entityVersions[key('meals', first.id)], 1);
   assert.equal(saved.body.entityVersions[key('meals', second.id)], 1);
   const exported = await h.request('GET', '/export', account);
-  assert.deepEqual(exported.body.aiDrafts[0].items, RAW_DRAFT.items, 'reviewed values do not rewrite the original independent AI draft');
+  assert.deepEqual(exported.body.aiDrafts[0].items, EXPECTED_DRAFT_ITEMS, 'reviewed values do not rewrite the original independent AI draft');
   assert.equal(h.providerCalls(), 1, 'correcting and saving never invokes the provider again');
 });
 

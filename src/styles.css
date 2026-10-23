@@ -1845,6 +1845,17 @@ th {
   background: #fff;
 }
 .ai-item-card .form-grid { margin-top: 12px; }
+.food-photo-engine { overflow-wrap: anywhere; }
+.ai-item-card .food-photo-portion-grid { margin-top: 0; }
+.food-photo-portion-shortcuts { flex-wrap: wrap; }
+.food-photo-portion-shortcuts button { min-height: 44px; min-width: 80px; }
+.food-photo-portion-shortcuts button[aria-pressed="true"] {
+  background: #fff;
+  color: #171b20;
+  font-weight: 600;
+  box-shadow: 0 1px 4px #18223210;
+}
+.food-photo-portion-shortcuts button:disabled { opacity: 0.5; cursor: not-allowed; }
 .ai-warning-list {
   margin: 8px 0;
   padding-left: 20px;

@@ -10,7 +10,7 @@ import { parseState } from './validation';
 import type { FoodPhotoDraft, Meal, SyncChange, SyncMutation, SyncSnapshot } from '../src/types';
 
 const NOW = '2026-10-17T12:00:00.000Z';
-const RAW_DRAFT = { isFood: true, items: [{ name: 'Synthetic rice', grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } }], warnings: [] };
+const RAW_DRAFT = { isFood: true, name: 'Synthetic rice', calories: 195, protein: 4.05, carbs: 42, fat: 0.45, serving_size_grams: 150, ingredients: [], warnings: [] };
 interface Account { id: string; cookie: string }
 const upsert = <T extends { id: string }>(collection: SyncChange['collection'], value: T, baseVersion = 0): SyncChange => ({ collection, id: value.id, baseVersion, kind: 'upsert', value });
 const mutation = (...changes: SyncChange[]): SyncMutation => ({ mutationId: randomUUID(), changes });

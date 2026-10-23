@@ -7,7 +7,7 @@ import sharp from 'sharp';
 import { createApp, type AppOptions } from './app';
 import { FOOD_PHOTO_MODEL } from './food-photo';
 
-const RAW_DRAFT = { isFood: true, items: [{ name: 'Rice', grams: 100, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } }], warnings: [] };
+const RAW_DRAFT = { isFood: true, name: 'Rice', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, serving_size_grams: 100, ingredients: [], warnings: [] };
 const envelope = () => ({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(RAW_DRAFT) }] }] });
 async function fixture(t: TestContext, extras: Pick<AppOptions, 'ai' | 'aiFetch' | 'aiNow'>) {
   const dir = mkdtempSync(join(tmpdir(), 'forma-food-photo-'));

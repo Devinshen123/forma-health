@@ -1,3 +1,25 @@
+## 2026-10-22 第一轮整体验证回执（01 lead）
+
+- 全量npm.cmd test：最终345/345 pass，fail0/skip0，exit0；首轮7个旧模型夹具失败已迁移，未降低既有事务/恢复/账户隔离断言。
+- npm.cmd run build：完整主站/工作台/伙伴乐园/源码分发/离线壳全部通过exit0；沿用既有大chunk提示。5,632动作视频与11,328媒体/内容文件SHA校验通过。
+- 本人CUA真实浏览器：localhost:5173隔离合成账户，注入Fud整份/ingredients原始HTTP响应。150g米饭→半份75g→两份300g→225g/1.5份；改名与每100g热量140后本项315kcal、两项总480kcal，修改清审核确认，确认前禁存、确认后2项保存。
+- 第二次未知重量/营养夹具保留空值，补200g建立1份，未补营养仍禁存；取消后仍只有原2项/480kcal。console error/warn0。证据在原主项目.forma-local/deliverables/sparky-forma-integrations-20261022/fud-*-fixture.png。
+- 独立助手专项：后端12/12与跨场景32/32；QA独立HTTP45/45、审核helper8/8；此为具名助手报告，最终345全套由本人重跑确认。
+- 未配置真实模型key；没有调用OpenAI，照片质量/真实模型响应与真机未验证。移动视口本轮未实测，不以桌面截图冒称手机验收。
+- 当前正在准备本机新版本、保留旧版本以便回滚；正式运行能力以切换后/api/capabilities检查为准。
+# 2026-10-22｜FUD-01：Fud AI 拍照识别接入（实施中）
+
+身份：沿用现有01 lead。checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站；分支codex/fud-food-photo-20261022；基线199221b。用户批准最新版Prompt开工，先拍照识别再分步健康平台；明确选择稍后配置OpenAI密钥。
+
+已做：核对当前运行版本与旧C盘根目录差异；创建干净独立checkout并登记FUD-01..04，技术助手按独占路径实施后端、前端、独立测试。锁定Fud upstream 6fa1602，MIT复用审查/映射及分发许可已写。扩展可选analysisEngine元数据，保留现有items/per100g对外契约与provider=openai。
+
+进行中：源码适配、份数编辑与幂等保存、夹具/安全测试、本机发布。未调用真实模型、未读取.env或实际健康记录，未连接外部健康平台。原C盘主工作树已有文件和bdd7均未修改。
+
+待验证：后端与审核纯函数专项、全套npm test、完整npm run build、隔离合成账户浏览器流程、实际3001缺配置状态。未测不得标通过。
+
+待用户决定/配置：用户已选稍后配置OPENAI_API_KEY，真实照片模型质量验证延后；外部平台凭证/权限/原生真机按后续任务处理。
+
+下一步：集成技术助手交付并完成验证；只精确提交本任务文件，保留现有数据与回滚版本。
 # 2026-10-22 HOVER-01 动作库悬停预览
 
 执行者01 lead，沿用当前身份；checkout C:/Users/devin/.codex/worktrees/bdd7/健康网站，codex/forma-release-20261022，基线a938a2f。用户明确要求鼠标放在动作库上直接播放。Library卡片仅活动项按需创建静音循环video，离开卸载并pause；失败回到缩略图，键盘聚焦可预览，减少动态跳过自动预览，触屏点击仍开详情。不改API、账户、后端或动作素材。

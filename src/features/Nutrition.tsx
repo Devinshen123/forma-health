@@ -7,6 +7,7 @@ import { RecordDiscardDialog } from '../components/RecordDiscardDialog';
 import { recordingToday } from './recordingDates';
 import { useRecordGuard } from './useRecordGuard';
 import { mealDraftTotals, newMealDraft, recentReusableMeals, reuseMealDraft, type MealDraft } from './mealEditor';
+import { asReviewItem, completeReviewItem, reviewBatchTotals, reviewTotals, setReviewGrams, setReviewPortions, type ReviewItem } from './foodPhotoReview';
 import { AttachmentLifecycle } from "./attachmentLifecycle";
 import { RecordBatchDraft, RecordDraft } from "./recordDraft";
 import {
@@ -15,30 +16,9 @@ import {
   type FeatureProps,
   type Capabilities,
   type FoodPhotoDraft,
-  type FoodPhotoItem,
   type Meal,
 } from "../types";
 
-type ReviewItem = { index: number; mealId: string; name: string; grams: string; kcal: string; protein: string; carbs: string; fat: string };
-const asReviewItem = (item: FoodPhotoItem, index: number): ReviewItem => ({
-  index, mealId: uid(), name: item.name, grams: item.grams === null ? "" : String(item.grams),
-  kcal: item.per100g.kcal === null ? "" : String(item.per100g.kcal),
-  protein: item.per100g.protein === null ? "" : String(item.per100g.protein),
-  carbs: item.per100g.carbs === null ? "" : String(item.per100g.carbs),
-  fat: item.per100g.fat === null ? "" : String(item.per100g.fat),
-});
-const completeReviewItem = (item: ReviewItem) => {
-  const values = [item.grams, item.kcal, item.protein, item.carbs, item.fat];
-  if (!item.name.trim() || item.name.trim().length > 160 || values.some(value => !value.trim() || !Number.isFinite(Number(value)))) return false;
-  const [grams, kcal, protein, carbs, fat] = values.map(Number);
-  return grams > 0 && grams <= 10000 && kcal >= 0 && kcal <= 1200 &&
-    [protein, carbs, fat].every(value => value >= 0 && value <= 100) && protein + carbs + fat <= 111;
-};
-const reviewTotals = (item: ReviewItem) => completeReviewItem(item) ? mealTotals({
-  id: "", date: "", type: "lunch", name: item.name, grams: Number(item.grams), referenceGrams: 100,
-  kcal: Number(item.kcal), protein: Number(item.protein), carbs: Number(item.carbs), fat: Number(item.fat),
-  source: "ai_estimate", createdAt: "",
-}) : null;
 const photoError = (cause: unknown, zh: boolean) => {
   const code = cause instanceof ApiError ? cause.code : undefined;
   const messages: Record<string, [string, string]> = {
@@ -128,6 +108,7 @@ export default function Nutrition({
   const [analysisStage, setAnalysisStage] = useState<"uploading" | "analyzing">("analyzing");
   const [aiDraft, setAiDraft] = useState<FoodPhotoDraft | null>(null);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
+  const enteringUnknownWeight = useRef<number | null>(null);
   const [reviewed, setReviewed] = useState(false);
   const aiRecords = useRef(new RecordBatchDraft<Meal>());
   const aiSubmitted = aiRecords.current.hasSubmitted;
@@ -184,6 +165,7 @@ export default function Nutrition({
     analysisSequence.current++;
     analysisController.current?.abort();
     analysisController.current = null;
+    enteringUnknownWeight.current = null;
     setAnalyzing(false); setAiDraft(null); setReviewItems([]); setReviewed(false); setConsent(false);
     aiRecords.current = new RecordBatchDraft<Meal>();
   };
@@ -292,8 +274,10 @@ export default function Nutrition({
     setChoosingReuse(false);
     setDraft(next);
   };
-  const patch = (change: Partial<MealDraft>) =>
+  const patch = (change: Partial<MealDraft>) => {
     setDraft((current) => (current ? { ...current, ...change } : null));
+    setReviewed(false);
+  };
   const chooseFile = async (selected?: File) => {
     if (!mounted.current || working || aiSubmitted) return;
     setError("");
@@ -514,7 +498,7 @@ export default function Nutrition({
       if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) return;
       if (result.assetId !== attachment) throw new Error("Mismatched photo draft");
       setAiDraft(result);
-      setReviewItems(result.items.map(asReviewItem));
+      setReviewItems(result.items.map((item, index) => asReviewItem(item, index, uid())));
       if (!result.isFood || !result.items.length) setError(zh ? "没有识别出可审核的食物。换一张照片，或改用手动填写。" : "No food candidates to review. Choose another photo or enter the meal manually.");
     } catch (cause) {
       if (!mounted.current || sequence !== analysisSequence.current || controller.signal.aborted) return;
@@ -528,8 +512,15 @@ export default function Nutrition({
       }
     }
   };
-  const patchReviewItem = (index: number, change: Partial<ReviewItem>) => {
+  const patchReviewItem = (index: number, change: Partial<Pick<ReviewItem, 'name' | 'kcal' | 'protein' | 'carbs' | 'fat'>>) => {
     setReviewItems(current => current.map(item => item.index === index ? { ...item, ...change } : item));
+    setReviewed(false);
+  };
+  const changeReviewPortion = (index: number, field: 'grams' | 'portions', value: string) => {
+    // When filling an unknown weight, finish the whole input ("200"), not just its first digit ("2").
+    const establishServing = enteringUnknownWeight.current === index;
+    setReviewItems(current => current.map(item => item.index !== index ? item :
+      field === 'grams' ? setReviewGrams(establishServing ? { ...item, servingGrams: null } : item, value) : setReviewPortions(item, value)));
     setReviewed(false);
   };
   const confirmAi = async (event: FormEvent<HTMLFormElement>) => {
@@ -566,10 +557,8 @@ export default function Nutrition({
       notify("尚未确认保存，请查看同步状态后重试", "Save not confirmed. Check sync status before retrying.");
     } finally { if (mounted.current) setBusy(false); }
   };
-  const aiTotals = reviewItems.length && reviewItems.every(completeReviewItem) ? reviewItems.reduce((sum, item) => {
-    const value = reviewTotals(item)!;
-    return { kcal: sum.kcal + value.kcal, protein: sum.protein + value.protein, carbs: sum.carbs + value.carbs, fat: sum.fat + value.fat };
-  }, { kcal: 0, protein: 0, carbs: 0, fat: 0 }) : null;
+  const aiTotals = reviewBatchTotals(reviewItems);
+  const hasFudEngine = capabilities?.foodPhoto.analysisEngine?.id === 'fud-ai';
   return (
     <div className="stack">
       <div className="page-heading">
@@ -763,8 +752,9 @@ export default function Nutrition({
               </div> : null}
               {demo ? <div className="panel"><strong>{zh ? "演示模式不会调用 AI" : "Demo mode does not call AI"}</strong><p className="muted">{zh ? "创建真实账户后，才可私有上传并使用识图。这里不会生成假识别结果。" : "Create a real account to upload privately and use photo analysis. Demo mode does not generate simulated results."}</p><button className="btn btn-secondary" type="button" onClick={onCreate}>{zh ? "创建账户后使用识图" : "Create an account for photo analysis"}</button></div>
                 : <div className="panel stack">
-                  <div className="section-title"><strong>{zh ? "识图服务状态" : "Photo analysis status"}</strong><button className="btn btn-ghost" type="button" disabled={capabilityLoading || working} onClick={() => void refreshCapabilities()}><RefreshCw size={15} />{zh ? "刷新状态" : "Refresh status"}</button></div>
-                  <p className="muted" role="status">{capabilityLoading ? zh ? "正在读取配置…" : "Checking configuration…" : capabilityError ? zh ? "暂时无法读取状态，可继续手动填写。" : "Could not read the status. Manual entry is still available." : capabilities?.foodPhoto.available ? zh ? "识图已配置；真实照片质量仍需验证。" : "Photo analysis is configured; real-photo quality still needs validation." : capabilities?.foodPhoto.reason === "invalid_config" ? zh ? "识图配置无效，请联系本机管理员；可继续手动填写。" : "Photo analysis configuration is invalid. Contact the local administrator; manual entry remains available." : zh ? "待配置 OpenAI 密钥。你仍可手动保存照片与营养。" : "Waiting for an OpenAI key. You can still save a photo and enter nutrition manually."}</p>
+                  <div className="section-title"><strong>{hasFudEngine ? zh ? "Fud AI 照片识别" : "Fud AI photo analysis" : zh ? "识图服务状态" : "Photo analysis status"}</strong><button className="btn btn-ghost" type="button" disabled={capabilityLoading || working} onClick={() => void refreshCapabilities()}><RefreshCw size={15} />{zh ? "刷新状态" : "Refresh status"}</button></div>
+                  {hasFudEngine ? <p className="hint">{zh ? "采用 Fud AI 的食物识别流程，由 OpenAI 模型生成草稿。先核对食物、克重或份数与每 100 g 营养，再确认保存。" : "Uses the Fud AI food-analysis workflow with an OpenAI model. Review foods, weight or servings, and per-100-g nutrition before confirming a save."}</p> : null}
+                  <p className="muted" role="status">{capabilityLoading ? zh ? "正在读取配置…" : "Checking configuration…" : capabilityError ? zh ? "暂时无法读取状态，可继续手动填写。" : "Could not read the status. Manual entry is still available." : capabilities?.foodPhoto.available ? zh ? "识图已配置。识别结果为估算，请核对食物和份量后保存。" : "Photo analysis is configured. Results are estimates; review foods and portions before saving." : capabilities?.foodPhoto.reason === "invalid_config" ? zh ? "识图配置无效，请联系本机管理员；可继续手动填写。" : "Photo analysis configuration is invalid. Contact the local administrator; manual entry remains available." : zh ? "待配置 OpenAI 密钥。你仍可手动保存照片与营养。" : "Waiting for an OpenAI key. You can still save a photo and enter nutrition manually."}</p>
                   <label className="checkbox-label"><input type="checkbox" checked={consent} disabled={!file || !capabilities?.foodPhoto.available || aiSubmitted} onChange={event => setConsent(event.target.checked)} /><span>{zh ? "我同意本次将这张照片及输出语言发送给 OpenAI，用于生成可审核的食物草稿。不会随请求发送我的账户、过敏、训练、睡眠及其它记录。" : "I consent to send this photo and output language to OpenAI for this analysis, to generate a food draft I can review. My account, allergies, training, sleep and other records are not sent with it."}</span></label>
                   <p className="hint">{zh ? "发送前会压缩照片并去除 EXIF；供应商的数据保留按其政策执行。" : "The photo is resized and EXIF is removed before sending. Provider data retention follows its policies."} <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">{zh ? "查看 OpenAI 数据政策" : "View OpenAI data policy"}</a></p>
                   <button className="btn btn-primary" type="button" disabled={!file || !consent || !capabilities?.foodPhoto.available || working || aiSubmitted} onClick={() => void runAnalysis()}><Camera size={17} />{aiDraft ? zh ? "重新识别这张照片" : "Analyze this photo again" : zh ? "识别照片" : "Analyze photo"}</button>
@@ -772,7 +762,8 @@ export default function Nutrition({
             </fieldset>
             {analyzing ? <div className="ai-photo-summary" role="status" aria-live="polite"><RefreshCw size={20} /><div><strong>{analysisStage === "uploading" ? zh ? "正在私有上传照片…" : "Uploading the photo privately…" : zh ? "正在生成食物草稿…" : "Preparing a food draft…"}</strong><p className="muted">{zh ? "尚未保存饮食记录。识别完成后请逐项核对。" : "No meal has been saved. Review each candidate when analysis finishes."}</p></div><button className="btn btn-secondary" type="button" onClick={cancelAnalysis}><Square size={15} />{zh ? "停止等待" : "Stop waiting"}</button></div> : null}
             {aiDraft && !analyzing ? <fieldset disabled={busy} className="stack" style={{ border: 0, padding: 0, margin: 0 }}>
-              <div className="section-title"><h3 ref={reviewHeading} tabIndex={-1}>{zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{aiSubmitted ? zh ? "AI 估算 · 已尝试保存" : "AI estimate · Save attempted" : zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
+              <div className="section-title"><h3 ref={reviewHeading} tabIndex={-1}>{aiDraft.analysisEngine?.id === 'fud-ai' ? zh ? "审核 Fud AI 食物草稿" : "Review the Fud AI food draft" : zh ? "审核 AI 食物草稿" : "Review the AI food draft"}</h3><span className="badge">{aiSubmitted ? zh ? "AI 估算 · 已尝试保存" : "AI estimate · Save attempted" : zh ? "AI 估算 · 未保存" : "AI estimate · Not saved"}</span></div>
+              <p className="hint food-photo-engine">{aiDraft.analysisEngine?.id === 'fud-ai' ? zh ? "识别流程：Fud AI · " : "Analysis workflow: Fud AI · " : ''}{zh ? "模型：OpenAI / " : "Model: OpenAI / "}{aiDraft.model}</p>
               {aiSubmitted ? <p className="hint" role="status">{zh ? "这些食物可能已保存或正在等待同步。你可以校正数值并重试这一批；如需移除食物、更换照片或重新识别，请关闭后先核对已有记录。" : "These foods may already be saved or waiting to sync. You can correct values and retry this batch. Close and check existing records before removing foods, changing the photo or analyzing again."}</p> : null}
               <p className="hint">{zh ? "仅凭照片无法确定所有过敏原、隐藏食材、烹调油和准确重量。请核对名称、份量与营养；不确定的数值留空，不能直接保存。" : "A photo cannot determine every allergen, hidden ingredient, cooking oil or exact weight. Check names, portions and nutrition. Unknown values stay blank and must be completed before saving."}</p>
               {aiDraft.warnings.length ? <ul className="ai-warning-list">{aiDraft.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul> : null}
@@ -782,10 +773,19 @@ export default function Nutrition({
                 const missing = ([{ key: "grams", zh: "重量", en: "weight" }, { key: "kcal", zh: "热量", en: "energy" }, { key: "protein", zh: "蛋白质", en: "protein" }, { key: "carbs", zh: "碳水", en: "carbs" }, { key: "fat", zh: "脂肪", en: "fat" }] as const).filter(field => !item[field.key].trim()).map(field => zh ? field.zh : field.en);
                 return <div className="ai-item-card stack" key={item.index}>
                   <div className="section-title"><strong>{zh ? "食物 " : "Food "}{position + 1}</strong><button className="icon-button" type="button" disabled={aiSubmitted} aria-label={(zh ? "移除候选 " : "Remove candidate ") + (item.name || position + 1)} onClick={() => { if (!aiSubmitted) { setReviewItems(current => current.filter(candidate => candidate.index !== item.index)); setReviewed(false); } }}><Trash2 size={16} /></button></div>
-                  <div className="form-grid"><label className="field">{zh ? "食物名称" : "Food name"}<input className="input" required maxLength={160} value={item.name} onChange={event => patchReviewItem(item.index, { name: event.target.value })} /></label><label className="field">{zh ? "实际份量（克）" : "Portion eaten (g)"}<input className="input" type="number" required min="0.01" max="10000" step="any" placeholder={zh ? "待填写" : "Unknown"} value={item.grams} onChange={event => patchReviewItem(item.index, { grams: event.target.value })} /></label></div>
+                  <label className="field">{zh ? "食物名称" : "Food name"}<input className="input" required maxLength={160} value={item.name} onChange={event => patchReviewItem(item.index, { name: event.target.value })} /></label>
+                  <div className="form-grid food-photo-portion-grid">
+                    <label className="field">{zh ? "实际份量（克）" : "Portion eaten (g)"}<input className="input" type="number" required min="0.01" max="10000" step="any" placeholder={zh ? "待填写" : "Unknown"} value={item.grams} aria-describedby={'food-photo-basis-' + item.mealId} onFocus={() => { enteringUnknownWeight.current = item.servingGrams === null ? item.index : null; }} onBlur={() => { enteringUnknownWeight.current = null; }} onChange={event => changeReviewPortion(item.index, 'grams', event.target.value)} /></label>
+                    <label className="field">{zh ? "吃了几份" : "Servings eaten"}<input className="input" type="number" required min="0" max={item.servingGrams ? 10000 / item.servingGrams : undefined} step="any" disabled={item.servingGrams === null} placeholder={zh ? "先填写克重" : "Enter weight first"} value={item.portions} aria-describedby={'food-photo-basis-' + item.mealId} onChange={event => changeReviewPortion(item.index, 'portions', event.target.value)} /></label>
+                  </div>
+                  <p className="hint" id={'food-photo-basis-' + item.mealId}>{item.servingGrams === null ? zh ? "克重未知：请先填写实际重量，首次有效重量将作为 1 份。" : "Weight is unknown. Enter the weight first; that first valid weight becomes one serving." : zh ? '1 份 = ' + item.servingGrams + ' g（本项最初的有效重量）。改克重或份数会联动，营养按重量重算。' : '1 serving = ' + item.servingGrams + ' g (the first valid weight for this food). Weight and servings stay linked; intake scales with weight.'}</p>
+                  <div className="segmented food-photo-portion-shortcuts" role="group" aria-label={(zh ? "选择份数：" : "Choose servings: ") + (item.name || position + 1)}>
+                    {[{ value: 0.5, zh: '半份', en: 'Half serving' }, { value: 1, zh: '一份', en: 'One serving' }, { value: 2, zh: '两份', en: 'Two servings' }].map(portion => <button type="button" key={portion.value} disabled={item.servingGrams === null || item.servingGrams * portion.value > 10000} aria-pressed={!!item.grams && Number(item.portions) === portion.value} onClick={() => changeReviewPortion(item.index, 'portions', String(portion.value))}>{zh ? portion.zh : portion.en}</button>)}
+                  </div>
                   <p className="hint">{zh ? "下方营养数值均为每 100 g；实际摄入按上方重量计算。" : "Nutrition below is per 100 g. Intake scales to the portion weight above."}</p>
                   <div className="form-grid four">{([{ key: "kcal", zh: "热量", en: "Energy", unit: "kcal" }, { key: "protein", zh: "蛋白质", en: "Protein", unit: "g" }, { key: "carbs", zh: "碳水", en: "Carbs", unit: "g" }, { key: "fat", zh: "脂肪", en: "Fat", unit: "g" }] as const).map(field => <label className="field" key={field.key}>{zh ? field.zh : field.en} ({field.unit}/100 g)<input className="input" type="number" required min="0" max={field.key === "kcal" ? 1200 : 100} step="any" placeholder={zh ? "待填写" : "Unknown"} value={item[field.key]} onChange={event => patchReviewItem(item.index, { [field.key]: event.target.value })} /></label>)}</div>
                   {missing.length ? <p className="hint">{zh ? "尚未确定： " : "Still unknown: "}{missing.join(zh ? "、" : ", ")}</p> : null}
+                  {!missing.length && !completeReviewItem(item) ? <p className="form-error">{zh ? "请核对名称、有效重量与份数，以及每 100 g 的营养数值。" : "Check the name, valid weight and servings, and per-100-g nutrition."}</p> : null}
                   <p className="muted">{zh ? "这一项实际摄入： " : "Intake for this food: "}{itemValue ? itemValue.kcal + " kcal · " + (zh ? "蛋白质 " : "Protein ") + itemValue.protein + " g · " + (zh ? "碳水 " : "Carbs ") + itemValue.carbs + " g · " + (zh ? "脂肪 " : "Fat ") + itemValue.fat + " g" : "—"}</p>
                 </div>;
               })}

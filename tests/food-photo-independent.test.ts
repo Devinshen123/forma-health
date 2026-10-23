@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "node:http";
 import sharp from "sharp";
 import { createApp, type AppOptions } from "../server/app";
-import { emptyState, type AppState, type FoodPhotoDraft, type Meal } from "../src/types";
+import { emptyState, mealTotals, type AppState, type FoodPhotoDraft, type Meal } from "../src/types";
 
 // Fixtures only: these values are deliberately fake and are never sent to a real provider.
 // Every configured test injects raw HTTP responses. No test reads OPENAI_API_KEY.
@@ -18,10 +18,14 @@ const MODEL = "gpt-5.4-mini-2026-03-17";
 const TEST_NOW = Date.parse("2026-10-14T18:00:00.000Z");
 const PROVIDER_SENTINEL = "QA_PRIVATE_PROVIDER_ERROR_DO_NOT_RETURN";
 const META_SENTINEL = "QA_PRIVATE_EXIF_DO_NOT_SEND";
+const FUD_COMMIT = "6fa160239727a6ab275d0ff302acd191160fce20";
+const expectedItems = () => [{ name: "Fixture rice", grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } }];
 
 const estimate = () => ({
   isFood: true,
-  items: [{ name: "Fixture rice", grams: 150, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } }],
+  name: "Fixture rice", serving_size_grams: 150,
+  calories: 195, protein: 4.05, carbs: 42, fat: 0.45,
+  ingredients: [],
   warnings: ["Fixture estimate. Portion needs review."],
 });
 function envelope(value: unknown = estimate()) {
@@ -144,8 +148,9 @@ test("AI-04: real adapter request shape, metadata stripping and separate immutab
   assert.equal(draft.assetId, assetId);
   assert.equal(draft.provider, "openai");
   assert.equal(draft.model, MODEL);
+  assert.deepEqual(draft.analysisEngine, { id: "fud-ai", sourceCommit: FUD_COMMIT });
   assert.deepEqual(draft.consent, { acceptedAt: new Date(TEST_NOW).toISOString(), version: "food-photo-v1", language: "en" }, "consent proof must come from the server, not the provider or client");
-  assert.deepEqual(draft.items, estimate().items);
+  assert.deepEqual(draft.items, expectedItems());
   assert.equal(stub.calls.length, 1);
   const call = stub.calls[0];
   assert.equal(call.url, "https://api.openai.com/v1/responses");
@@ -156,6 +161,12 @@ test("AI-04: real adapter request shape, metadata stripping and separate immutab
   assert.equal(call.body.reasoning?.effort, "none");
   assert.equal(call.body.text?.format?.type, "json_schema");
   assert.equal(call.body.text?.format?.strict, true);
+  const schema = call.body.text.format.schema;
+  assert.equal(schema.additionalProperties, false);
+  assert.ok(schema.required.includes("serving_size_grams"));
+  assert.ok(schema.required.includes("ingredients"));
+  assert.ok(schema.required.includes("calories"));
+  assert.equal(schema.properties.items, undefined, "the model must generate the Fud serving/ingredient response, not the old per100g response under a new label");
   const content = call.body.input.flatMap((message: any) => message.content ?? []);
   const images = content.filter((part: any) => part.type === "input_image");
   assert.equal(images.length, 1);
@@ -175,23 +186,24 @@ test("AI-04: real adapter request shape, metadata stripping and separate immutab
   assert.equal(snapshot.body.state.profile.aiConsent, false, "per-photo consent must not silently enable ongoing profile consent");
   const exported = await h.exportFor(owner);
   assert.equal(exported.body.aiDrafts.length, 1);
-  assert.deepEqual(exported.body.aiDrafts[0].items, estimate().items);
+  assert.deepEqual(exported.body.aiDrafts[0].items, expectedItems());
   const meal = reviewedMeal(draft);
   assert.equal((await saveMeal(h, owner, meal)).status, 200, "user corrections to every food field must be permitted after review");
   const after = await h.exportFor(owner);
   assert.deepEqual(after.body.state.meals[0], meal);
-  assert.deepEqual(after.body.aiDrafts[0].items, estimate().items, "editing the saved meal must not rewrite the original AI draft");
+  assert.deepEqual(after.body.aiDrafts[0].items, expectedItems(), "editing the saved meal must not rewrite the original AI draft");
 });
 
 test("AI-04: uncertain and non-food outputs preserve nulls and never auto-save meals", async t => {
-  const uncertain = { isFood: true, items: [{ name: "Uncertain fixture food", grams: null, per100g: { kcal: null, protein: 0, carbs: null, fat: null } }], warnings: ["Portion and nutrition are uncertain."] };
-  const stub = provider([() => rawResponse(envelope(uncertain)), () => rawResponse(envelope({ isFood: false, items: [], warnings: ["No food identified."] }))]);
+  const uncertain = { isFood: true, name: "Uncertain fixture food", serving_size_grams: 100, calories: null, protein: 0, carbs: null, fat: null, ingredients: [], warnings: ["Nutrition is uncertain."] };
+  const nonFood = { isFood: false, name: null, serving_size_grams: null, calories: null, protein: null, carbs: null, fat: null, ingredients: [], warnings: ["No food identified."] };
+  const stub = provider([() => rawResponse(envelope(uncertain)), () => rawResponse(envelope(nonFood))]);
   const h = await harness(t, { fetch: stub.transport });
   const owner = await h.register();
   const asset = await h.upload(owner);
   const first = await h.analyze(owner, asset);
   assert.equal(first.status, 201);
-  assert.equal(first.body.items[0].grams, null);
+  assert.equal(first.body.items[0].grams, 100);
   assert.equal(first.body.items[0].per100g.kcal, null);
   assert.equal(first.body.items[0].per100g.protein, 0, "a genuinely returned zero must remain distinguishable from unknown");
   const cannotSaveNull = reviewedMeal(first.body, { kcal: null as unknown as number });
@@ -202,6 +214,51 @@ test("AI-04: uncertain and non-food outputs preserve nulls and never auto-save m
   assert.deepEqual(second.body.items, []);
   assert.deepEqual((await h.snapshotFor(owner)).body.state.meals, []);
   assert.equal(stub.calls.length, 2);
+});
+
+test("FUD-04: ingredient servings replace the whole-dish total, normalize once and save only reviewed foods", async t => {
+  const raw = {
+    isFood: true, name: "Fixture bowl", serving_size_grams: 250,
+    calories: 350, protein: 12.55, carbs: 62, fat: 0.95,
+    ingredients: [
+      { name: "Fixture rice", grams: 150, calories: 195, protein: 4.05, carbs: 42, fat: 0.45 },
+      { name: "Fixture beans", grams: 100, calories: 155, protein: 8.5, carbs: 20, fat: 0.5 },
+    ], warnings: [],
+  };
+  const stub = provider([() => rawResponse(envelope(raw))]);
+  const h = await harness(t, { fetch: stub.transport });
+  const owner = await h.register(), asset = await h.upload(owner);
+  const result = await h.analyze(owner, asset);
+  assert.equal(result.status, 201);
+  const draft = result.body as FoodPhotoDraft;
+  assert.deepEqual(draft.items, [
+    expectedItems()[0],
+    { name: "Fixture beans", grams: 100, per100g: { kcal: 155, protein: 8.5, carbs: 20, fat: 0.5 } },
+  ]);
+  assert.ok(draft.items.every(item => item.name !== raw.name), "the whole dish must not become a third item alongside its ingredients");
+  assert.deepEqual((await h.snapshotFor(owner)).body.state.meals, []);
+  const meals = draft.items.map((item, index) => reviewedMeal(draft, {
+    name: item.name, grams: item.grams!, kcal: item.per100g.kcal!, protein: item.per100g.protein!,
+    carbs: item.per100g.carbs!, fat: item.per100g.fat!, aiItemIndex: index,
+  }));
+  for (const meal of meals) assert.equal((await saveMeal(h, owner, meal)).status, 200);
+  const saved = (await h.snapshotFor(owner)).body.state.meals as Meal[];
+  assert.equal(saved.length, 2);
+  assert.equal(saved.reduce((total, meal) => total + mealTotals(meal).kcal, 0), 350, "serving normalization and ingredient totals must not duplicate calories");
+  assert.equal((await h.exportFor(owner)).body.aiDrafts.length, 1);
+});
+
+test("FUD-04: unknown serving weight prevents conversion of whole-serving nutrition into fictitious per-100-g values", async t => {
+  const raw = { ...estimate(), serving_size_grams: null, protein: 0 };
+  const stub = provider([() => rawResponse(envelope(raw))]);
+  const h = await harness(t, { fetch: stub.transport });
+  const owner = await h.register(), asset = await h.upload(owner);
+  const result = await h.analyze(owner, asset, { language: "zh" });
+  assert.equal(result.status, 201);
+  assert.equal(result.body.items[0].grams, null);
+  assert.deepEqual(result.body.items[0].per100g, { kcal: null, protein: null, carbs: null, fat: null });
+  assert.ok(result.body.warnings.some((warning: string) => /克|重量|份量/.test(warning)), "the user must be told why the serving cannot be normalized");
+  assert.deepEqual((await h.snapshotFor(owner)).body.state.meals, []);
 });
 
 test("AI-04: private asset ownership, account binding, consent and strict input precede provider calls", async t => {
@@ -263,6 +320,7 @@ test("AI-04: no key and invalid configuration fail safely without a transport ca
     const caps = await h.request("GET", "/capabilities");
     assert.equal(caps.body.foodPhoto.available, false);
     assert.equal(caps.body.foodPhoto.reason, reason);
+    assert.deepEqual(caps.body.foodPhoto.analysisEngine, { id: "fud-ai", sourceCommit: FUD_COMMIT });
     assertSafeError(await h.analyze(owner, asset), 503, code);
     assert.equal(stub.calls.length, 0);
     assert.deepEqual((await h.exportFor(owner)).body.aiDrafts, []);
@@ -272,16 +330,19 @@ test("AI-04: no key and invalid configuration fail safely without a transport ca
 test("AI-04: injected raw transport cannot bypass production output validation", async t => {
   const invalidOutputs: [string, unknown][] = [
     ["wrong primitive", { ...estimate(), isFood: "true" }],
-    ["too many candidates", { ...estimate(), items: Array.from({ length: 9 }, () => estimate().items[0]) }],
-    ["missing nullable field", { isFood: true, items: [{ name: "Fixture", grams: 100, per100g: { kcal: 130, protein: 2, carbs: 28 } }], warnings: [] }],
-    ["negative nutrient", { ...estimate(), items: [{ ...estimate().items[0], per100g: { ...estimate().items[0].per100g, fat: -1 } }] }],
-    ["impossible macros", { ...estimate(), items: [{ ...estimate().items[0], per100g: { kcal: 130, protein: 70, carbs: 70, fat: 70 } }] }],
+    ["too many candidates", { ...estimate(), ingredients: Array.from({ length: 9 }, () => ({ name: "Fixture rice", grams: 100, calories: 130, protein: 2.7, carbs: 28, fat: 0.3 })) }],
+    ["missing nullable field", { isFood: true, name: "Fixture", serving_size_grams: 100, calories: 130, protein: 2, carbs: 28, ingredients: [], warnings: [] }],
+    ["negative nutrient", { ...estimate(), fat: -1 }],
+    ["impossible macros", { ...estimate(), serving_size_grams: 100, protein: 70, carbs: 70, fat: 70 }],
     ["untrusted extra field", { ...estimate(), diagnosis: PROVIDER_SENTINEL }],
-    ["extra item field", { ...estimate(), items: [{ ...estimate().items[0], provider: PROVIDER_SENTINEL }] }],
-    ["extra nutrition field", { ...estimate(), items: [{ ...estimate().items[0], per100g: { ...estimate().items[0].per100g, healthScore: 90 } }] }],
-    ["non-food with candidates", { ...estimate(), isFood: false }],
-    ["control character in name", { ...estimate(), items: [{ ...estimate().items[0], name: "Fixture\u0000label" }] }],
+    ["extra ingredient field", { ...estimate(), ingredients: [{ name: "Fixture", grams: 100, calories: 130, protein: 2, carbs: 28, fat: 0, provider: PROVIDER_SENTINEL }] }],
+    ["extra nutrition field", { ...estimate(), per100g: { kcal: 130, protein: 2, carbs: 28, fat: 0, healthScore: 90 } }],
+    ["old model schema is not accepted", { isFood: true, items: expectedItems(), warnings: [] }],
+    ["non-food with a serving", { ...estimate(), isFood: false }],
+    ["control character in name", { ...estimate(), name: "Fixture\u0000label" }],
     ["control character in warning", { ...estimate(), warnings: ["Fixture\u0000warning"] }],
+    ["zero weight", { ...estimate(), serving_size_grams: 0 }],
+    ["numeric string", { ...estimate(), calories: "195" }],
   ];
   for (const [name, output] of invalidOutputs) await t.test(name, async child => {
     const stub = provider([() => rawResponse(envelope(output))]);
@@ -296,7 +357,7 @@ test("AI-04: injected raw transport cannot bypass production output validation",
 
 test("AI-04: malformed envelope, invalid JSON, incomplete response and refusal degrade safely", async t => {
   const cases: [string, () => Response, number, string][] = [
-    ["malformed envelope", () => rawResponse({ items: estimate().items }), 502, "AI_INVALID_OUTPUT"],
+    ["malformed envelope", () => rawResponse(estimate()), 502, "AI_INVALID_OUTPUT"],
     ["bad output JSON", () => rawResponse({ status: "completed", output: [{ type: "message", content: [{ type: "output_text", text: `{${PROVIDER_SENTINEL}` }] }] }), 502, "AI_INVALID_OUTPUT"],
     ["incomplete response", () => rawResponse({ ...envelope(), status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }), 502, "AI_INVALID_OUTPUT"],
     ["refusal", () => rawResponse({ status: "completed", output: [{ type: "message", content: [{ type: "refusal", refusal: PROVIDER_SENTINEL }] }] }), 422, "AI_REFUSED"],

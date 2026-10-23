@@ -11,6 +11,7 @@ const explicit = new Set([
   'vendor/pokemon-island/LICENSE','vendor/pokemon-island/NOTICE.md','vendor/pokemon-island/README.md','vendor/pokemon-island/README.zh-CN.md',
   'vendor/pokemon-island/src/content/animatedModels.json','vendor/pokemon-island/src/ecology/coastalLayout.json',
   'docs/architecture/training-source-log.md',
+  'docs/architecture/reuse-log.md', 'public/licenses/fud-ai-MIT.txt',
   'docs/architecture/companion-pokemon-reference-20261022.md',
   'docs/architecture/companion-pokedex-151-20261023.md',
   'docs/architecture/companion-island-20261023.md',

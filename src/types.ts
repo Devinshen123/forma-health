@@ -47,7 +47,12 @@ export interface FoodPhotoItem {
   grams: number | null;
   per100g: { kcal: number | null; protein: number | null; carbs: number | null; fat: number | null };
 }
+export interface FoodPhotoAnalysisEngine {
+  id: "fud-ai";
+  sourceCommit: string;
+}
 export interface FoodPhotoDraft {
+  analysisEngine?: FoodPhotoAnalysisEngine;
   id: string;
   assetId: string;
   provider: "openai";
@@ -63,7 +68,7 @@ export interface Capabilities {
   apple: boolean;
   healthkit: boolean;
   mode: "local";
-  foodPhoto: { available: boolean; provider: "openai"; reason: "ready" | "not_configured" | "invalid_config" };
+  foodPhoto: { analysisEngine?: FoodPhotoAnalysisEngine; available: boolean; provider: "openai"; reason: "ready" | "not_configured" | "invalid_config" };
 }
 export interface Exercise {
   name: string;

@@ -806,7 +806,7 @@ test("CSRF origin and content type are enforced and disconnected capabilities re
     apple: false,
     healthkit: false,
     mode: "local",
-    foodPhoto: { available: false, provider: 'openai', reason: 'not_configured' },
+    foodPhoto: { available: false, provider: 'openai', reason: 'not_configured', analysisEngine: { id: 'fud-ai', sourceCommit: '6fa160239727a6ab275d0ff302acd191160fce20' } },
   });
   const body = {
     email: "attack@example.com",

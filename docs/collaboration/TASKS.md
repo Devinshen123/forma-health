@@ -1,3 +1,17 @@
+# 2026-10-22 Fud AI 拍照接入（当前）
+
+用户在本聊天批准最新版 Prompt 开始实施，先完成 Fud AI 拍照识别、可编辑食物/份量与确认保存。保留 Apple/Google/WHOOP/Oura 与优先华为/小米/Keep 的后续分步计划，本切片不接真实健康账号。用户已选择稍后配置 OpenAI 密钥；当前真实模型测试不可执行，不作为代码/夹具验证已完成的证明。
+
+唯一 lead 沿用当前会话；实施 checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站，分支 codex/fud-food-photo-20261022，基于正在运行的 199221b。bdd7 当前干净、相关前端会话 idle；本切片不写 bdd7 或原主目录的既有未提交文件。子代理仅为本任务助手，不启动第二名 lead 或另一个员工聊天。
+
+| ID | owner / 本轮独占路径 | 状态 | 验收 |
+|---|---|---|---|
+| FUD-01 | lead：src/types.ts、src/api.ts（如需要）、docs/architecture/reuse-log.md 与计划/契约文档、public/licenses/fud-ai-MIT.txt、scripts/source-policy.mjs、TASKS、本人 status/HANDOFF、README、.env.example、本机发布集成 | doing | 固定MIT来源/适配映射，沿用安全模型调用与限额，整体验证并更新本机网站；无密钥则真实状态可见 |
+| FUD-02 | 后端技术助手：server/food-photo.ts、server/fud-ai-food-photo.ts、server/fud-ai-food-photo.test.ts、server/food-photo.test.ts，以及server/{api,approval-failure-recovery,confirmation-boundaries,review-recovery}.test.ts的旧模型夹具迁移 | done | 实际移植Fud识别提示/结构解析及按份量归一化；未知不造0，原有照片/账户/限流/预算安全边界保持 |
+| FUD-03 | 前端技术助手：src/features/Nutrition.tsx、src/features/foodPhotoReview.ts、src/styles.css 中本任务专用样式（如需要） | done | 真实引擎标识、食物名称/克重/份数可编辑重算，明确基准与审核后保存，取消/重试不提前保存 |
+| FUD-04 | 独立验证助手：tests/food-photo-independent.test.ts、tests/fud-food-photo.test.ts、本任务验证产物 | done | 更新原模型夹具并独立验证新Fud形状、边界、账户隔离和保存；不修改产品实现 |
+
+本表只对上述切片覆盖历史冻结与只读表；主项目仍在C盘。本轮用户授权覆盖此前仅写方案的阶段限制，不代表批准付费服务、上传真实照片或修改已有健康事实。
 # 2026-10-22 动作库悬停预览
 
 用户在现有01主管会话明确要求：动作库鼠标放上去直接播放视频。沿用本聊天唯一lead，在现有干净bdd7发布checkout增量实现；历史MUS/WB写入者已完成并交回lead。本任务不启动其他员工、不改健康数据或API。
