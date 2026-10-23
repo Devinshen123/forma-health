@@ -7,9 +7,13 @@ const explicit = new Set([
   'vendor/opengym/frontend/index.html', 'vendor/opengym/frontend/package.json',
   'vendor/opengym/frontend/package-lock.json', 'vendor/opengym/frontend/vite.config.js',
   'vendor/opengym/LICENSE', 'vendor/opengym/NOTICE.md',
+  'vendor/pokemon-island/package.json','vendor/pokemon-island/package-lock.json','vendor/pokemon-island/tsconfig.json','vendor/pokemon-island/index.html','vendor/pokemon-island/vite.config.ts',
+  'vendor/pokemon-island/LICENSE','vendor/pokemon-island/NOTICE.md','vendor/pokemon-island/README.md','vendor/pokemon-island/README.zh-CN.md',
+  'vendor/pokemon-island/src/content/animatedModels.json','vendor/pokemon-island/src/ecology/coastalLayout.json',
   'docs/architecture/training-source-log.md',
   'docs/architecture/companion-pokemon-reference-20261022.md',
   'docs/architecture/companion-pokedex-151-20261023.md',
+  'docs/architecture/companion-island-20261023.md',
   'docs/collaboration/decisions/ADR-training-workbench-20261018.md',
   'public/licenses/opengym-NOTICE.txt', 'public/licenses/opengym-AGPL-3.0.txt',
   'public/licenses/free-exercise-db-Unlicense.txt',
@@ -28,6 +32,6 @@ export function sourceFileAllowed(name) {
   if (/(^|\/)(?:node_modules|dist|data|reference-sources|\.git|\.wb-tmp)(\/|$)/i.test(name)) return false;
   if (explicit.has(name)) return true;
   if (/^public\/exercise-content\/opengym\/(?:[0-9]|[1-5][0-9]|6[0-3])\.json$/.test(name)) return true;
-  return /^(?:src|server|scripts|tests|vendor\/opengym\/frontend\/src)\/.+\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|css)$/.test(name)
+  return /^(?:src|server|scripts|tests|vendor\/opengym\/frontend\/src|vendor\/pokemon-island\/(?:src|scripts))\/.+\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|css)$/.test(name)
     && !name.split('/').some(part => part.startsWith('.'));
 }

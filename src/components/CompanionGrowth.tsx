@@ -5,7 +5,7 @@ import type { CompanionSnapshot } from '../companion';
 import Companion3D from './Companion3D';
 import CompanionAvatar from './CompanionAvatar';
 
-export default function CompanionGrowth({ snapshot, identity, zh }: { snapshot: CompanionSnapshot; identity: string; zh: boolean }) {
+export default function CompanionGrowth({ snapshot, identity, zh, suspended=false }: { snapshot: CompanionSnapshot; identity: string; zh: boolean; suspended?:boolean }) {
   const [previewLevel, setPreviewLevel] = useState<number | null>(null);
   const [celebration, setCelebration] = useState<string | null>(null);
   const previous = useRef({ identity, character: snapshot.character, level: snapshot.level });
@@ -26,7 +26,7 @@ export default function CompanionGrowth({ snapshot, identity, zh }: { snapshot: 
   return <div className="companion-growth-studio" data-preview={previewLevel !== null} data-evolving={Boolean(celebration)} data-form={form.dex}>
     <button type="button" className="text-button companion-open-pokedex" onClick={()=>document.getElementById('companion-pokedex')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>{zh?'选择伙伴 · 打开 151 图鉴':'Choose a companion · 151 Pokédex'} →</button>
     <div className="companion-growth-stage-label"><Sparkles size={14} /><strong>{zh ? form.zh : form.en}</strong><span>{previewLevel !== null ? (zh ? '形态预览' : 'Preview') : (zh ? '当前形态' : 'Current form')} · Lv.{shownLevel}</span></div>
-    <Companion3D character={character} equipped={snapshot.equipped} level={shownLevel} zh={zh} />
+    <Companion3D character={character} equipped={snapshot.equipped} level={shownLevel} zh={zh} suspended={suspended}/>
     <div className="companion-growth-announcement" role="status" aria-live="polite">{celebration ?? ''}</div>
     <div className="companion-evolution-heading"><strong>{zh ? (forms.length>1?'我的进化路线':'我的伙伴形态') : (forms.length>1?'My evolution path':'My companion form')}</strong><span>{zh ? `${currentStage + 1} / ${forms.length} 已解锁` : `${currentStage + 1} / ${forms.length} unlocked`}</span></div>
     <div className="companion-growth-road" style={{ gridTemplateColumns: `repeat(${forms.length}, minmax(0, 1fr))` }} role="group" aria-label={zh ? '进化形态预览' : 'Evolution form previews'}>

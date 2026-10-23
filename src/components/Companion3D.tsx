@@ -5,7 +5,7 @@ import { companionForm } from '../companion-growth';
 import CompanionAvatar from './CompanionAvatar';
 import type { CompanionAction } from './companion-animation';
 
-interface Props { character: CompanionCharacter; equipped: CompanionItem | null; level: number; zh: boolean }
+interface Props { character: CompanionCharacter; equipped: CompanionItem | null; level: number; zh: boolean; suspended?:boolean }
 type SceneHandle = { rotate: (delta: number) => void; pet: () => void; reset: () => void; refresh: () => void; interact: (action: CompanionAction) => void; zoom: (delta: number) => void };
 
 export default function Companion3D(props: Props) {
@@ -13,11 +13,12 @@ export default function Companion3D(props: Props) {
   return <CompanionScene key={`${props.character}:${props.equipped}:${companionForm(props.character, props.level).dex}`} {...props} />;
 }
 
-function CompanionScene({ character, equipped, level, zh }: Props) {
+function CompanionScene({ character, equipped, level, zh, suspended=false }: Props) {
   const host = useRef<HTMLDivElement>(null), sceneHandle = useRef<SceneHandle | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'fallback'>('loading');
   const [revision, setRevision] = useState(0), [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const pausedRef = useRef(paused); pausedRef.current = paused;
+  const suspendedRef=useRef(suspended);suspendedRef.current=suspended;
   const [action, setAction] = useState<CompanionAction>('idle');
   const [availableActions, setAvailableActions] = useState<CompanionAction[]>([]);
   const [greeting, setGreeting] = useState(false);
@@ -82,7 +83,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       const tick = (now: number) => { frame = requestAnimationFrame(tick); if (now - lastFrame < 33) return; lastFrame = now; draw(now); };
       const syncLoop = () => {
         cancelAnimationFrame(frame); frame = 0;
-        if (!document.hidden && onScreen) { draw(performance.now()); if (!pausedRef.current && !reduced.matches) frame = requestAnimationFrame(tick); }
+        if (!document.hidden && onScreen && !suspendedRef.current) { draw(performance.now()); if (!pausedRef.current && !reduced.matches) frame = requestAnimationFrame(tick); }
       };
       const resize = new ResizeObserver(() => { const { width, height } = element.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); fitCompanionCamera(camera, framing, width / height); cameraBase.copy(camera.position); adjustZoom(); syncLoop(); });
       resize.observe(element);
@@ -117,7 +118,7 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
     return () => { disposed = true; controller.abort(); cleanup(); };
   }, [character, equipped, form.level, revision]);
 
-  useEffect(() => { sceneHandle.current?.refresh(); }, [paused]);
+  useEffect(() => { sceneHandle.current?.refresh(); }, [paused,suspended]);
   useEffect(() => { if (!greeting) return; const timer = window.setTimeout(() => setGreeting(false), 1800); return () => window.clearTimeout(timer); }, [greeting]);
   return <div className="companion-3d" data-testid="companion-3d" data-character={character} data-level={level} data-status={status} data-action={action}>
     <div className="companion-3d-viewport" ref={host} role="img" aria-label={zh ? `${name}的实时 3D 形象，等级 ${level}` : `${name} in real-time 3D, level ${level}`} />

@@ -1,4 +1,5 @@
 import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
+import { clearIslandCache } from './island-storage';
 import {
   Home,
   Utensils,
@@ -240,7 +241,7 @@ export default function App() {
     const deletedAccount = writeBinding.accountId;
     resetSession(true,true);
     localStorage.setItem("forma-session-change", crypto.randomUUID());
-    if(deletedAccount) await clearWorkbenchCache(deletedAccount);
+    if(deletedAccount){clearIslandCache(deletedAccount);await clearWorkbenchCache(deletedAccount);}
   }
   useEffect(() => {
     const changed = (event: StorageEvent) => {

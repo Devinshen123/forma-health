@@ -15,6 +15,7 @@ const manifest = JSON.parse(manifestBytes.toString('utf8'));
 const portraits = readdirSync('public/companions').filter(name => /^[a-z]+\.webp$/.test(name)).map(name => name.slice(0, -5)).sort();
 const companionModels = JSON.parse(readFileSync('public/companions/model-manifest.json','utf8')).models;
 const pokemonCatalog = JSON.parse(readFileSync('src/catalog/pokemon.json','utf8'));
+const island=JSON.parse(readFileSync('dist/companion-island/island-release.json','utf8'));
 const info = {
   schemaVersion: 1,
   sourceCommit,
@@ -22,5 +23,6 @@ const info = {
   exerciseLibrary: { source: manifest.source, sourceCommit: manifest.sourceCommit, exercises: manifest.primaryCount, videos: manifest.videoCount, files: manifest.files.length, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex') },
   companions: { characters: portraits, catalogSpecies: pokemonCatalog.length, originalAnimationClips: pokemonCatalog.reduce((sum,entry)=>sum+entry.animations.length,0), imageCount: portraits.length * 2, renderMode: 'realtime-webgl', lighting: 'pbr-environment-soft-shadows', interactions: ['pet','walk','sleep','wake','gaze','rotate','zoom','run','attack'], growthMilestones: [1, 3, 5], evolutionForms: companionModels.length, modelBytes: companionModels.reduce((total, model) => total + model.bytes, 0), formImageCount: companionModels.length * 2 },
 };
+info.companions.island=island;
 writeFileSync('dist/release-info.json', JSON.stringify(info, null, 2) + '\n');
 console.log(`Release identity: ${sourceCommit ?? 'unavailable'}; ${manifest.primaryCount} animated exercises, ${portraits.length} companions.`);

@@ -468,6 +468,12 @@ export function createApp(options: AppOptions) {
   if (options.distDir && existsSync(join(options.distDir, "index.html"))) {
     const dist = resolve(options.distDir);
     const workbenchDist = join(dist, 'training-workbench');
+    const islandDist=join(dist,'companion-island');
+    if(existsSync(join(islandDist,'index.html'))){
+      app.use('/companion-island',(_req,res,next)=>{res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',"frame-ancestors 'self'");next();});
+      app.use('/companion-island',express.static(islandDist,{dotfiles:'deny',index:'index.html'}));
+      app.get('/companion-island/{*path}',(_req,res)=>res.status(404).send('Companion island resource not found'));
+    }
     if (existsSync(join(workbenchDist, 'index.html'))) {
       app.use('/training-workbench', express.static(workbenchDist, { dotfiles: 'deny', index: 'index.html' }));
       app.get('/training-workbench/{*path}', (_req, res) => res.status(404).send('Training resource not found'));

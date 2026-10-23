@@ -12,6 +12,9 @@ const output = join(root, 'dist/training-workbench/source.zip');
 const roots = [
   'src', 'server', 'scripts', 'tests', 'public/exercise-content', 'public/licenses',
   'vendor/opengym/frontend/src',
+  'vendor/pokemon-island/src','vendor/pokemon-island/scripts',
+  'vendor/pokemon-island/package.json','vendor/pokemon-island/package-lock.json','vendor/pokemon-island/tsconfig.json','vendor/pokemon-island/vite.config.ts','vendor/pokemon-island/index.html',
+  'vendor/pokemon-island/LICENSE','vendor/pokemon-island/NOTICE.md','vendor/pokemon-island/README.md','vendor/pokemon-island/README.zh-CN.md',
   'vendor/opengym/frontend/index.html', 'vendor/opengym/frontend/package.json',
   'vendor/opengym/frontend/package-lock.json', 'vendor/opengym/frontend/vite.config.js',
   'vendor/opengym/LICENSE', 'vendor/opengym/NOTICE.md',
@@ -21,6 +24,7 @@ const roots = [
   'docs/architecture/training-source-log.md',
   'docs/architecture/companion-pokemon-reference-20261022.md',
   'docs/architecture/companion-pokedex-151-20261023.md',
+  'docs/architecture/companion-island-20261023.md',
   'docs/collaboration/decisions/ADR-training-workbench-20261018.md',
 ];
 const files = new Map();

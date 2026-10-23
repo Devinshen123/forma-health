@@ -7,6 +7,7 @@ import { COMPANION_CHARACTERS, COMPANION_CHARACTER_DETAILS, COMPANION_ITEMS, dem
 import type { FeatureProps, Language, Page } from '../types';
 import CompanionAvatar from '../components/CompanionAvatar';
 import CompanionGrowth from '../components/CompanionGrowth';
+import CompanionIsland from '../components/CompanionIsland';
 import '../companion.css';
 
 type CompanionProps = FeatureProps & { navigate: (page: Page) => void };
@@ -280,6 +281,7 @@ export default function Companion(props: CompanionProps) {
   const { snapshot, run, disabled } = model;
   const [code, setCode] = useState('');
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [islandActive,setIslandActive]=useState(false);
   useEffect(() => { setCode(''); setConfirmLeave(false); }, [accountId, demo]);
   const movementComplete = snapshot?.quests.find(quest => quest.id === 'movement')?.completed;
   const pendingChests = snapshot?.chests.filter(chest => !chest.openedAt) ?? [];
@@ -299,9 +301,10 @@ export default function Companion(props: CompanionProps) {
     <div className="companion-live" aria-live="polite" aria-atomic="true">{model.busy ? (model.pendingCharacter ? (zh ? '正在保存伙伴…' : 'Saving your companion…') : (zh ? '正在确认已保存的进度…' : 'Checking saved progress…')) : model.error ? '' : model.notice === 'preview' ? (zh ? `正在预览${name}，登录后可保存。` : `Previewing ${name}. Sign in to save.`) : model.notice === 'character' ? (zh ? '伙伴已保存，成长与装扮已保留。' : 'Companion saved. Your progress and outfits are kept.') : model.notice ? (zh ? '已确认保存的成长进度。' : 'Saved growth progress confirmed.') : ''}</div>
     {model.error && snapshot && <div className="companion-error"><p role="alert">{model.error}</p><button className="text-button" disabled={disabled} onClick={() => void run({ type: 'read' })}>{zh ? '重新读取' : 'Reload progress'}</button></div>}
     {!snapshot ? <div className="panel"><LoadState model={model} zh={zh} authenticated={Boolean(accountId)} /></div> : <>
+      <CompanionIsland key={demo?'demo':accountId} dex={form.dex} name={name} identity={demo?'demo':accountId??'demo'} zh={zh} onOpenChange={setIslandActive}/>
       <div className="companion-main-grid">
         <section id="companion-model" className="panel companion-home" aria-label={zh ? `${name}的成长` : `${name}’s growth`}>
-          <CompanionGrowth key={props.demo ? 'demo' : props.accountId} snapshot={snapshot} identity={props.demo ? 'demo' : props.accountId ?? ''} zh={zh} />
+          <CompanionGrowth key={props.demo ? 'demo' : props.accountId} snapshot={snapshot} identity={props.demo ? 'demo' : props.accountId ?? ''} zh={zh} suspended={islandActive}/>
           <div className="companion-home-copy"><h2>{zh ? `你好，我是${name}。` : `Hi, I’m ${name}.`}</h2><p>{zh ? '你回来时，我一直在。漏记不会扣分，也不会失去外观。' : 'I’m here whenever you return. Missing a log never costs XP or outfits.'}</p><Progress snapshot={snapshot} zh={zh} /><div className="companion-days"><span><strong data-testid="companion-active-days">{snapshot.activeDays}</strong> {zh ? '个成长日' : 'growth days'}</span><span>{zh ? '每 3 个成长日解锁免费宝箱' : 'A free chest every 3 growth days'}</span></div><p className="companion-small">{zh ? 'XP 和等级只代表游戏进度，不是健康评分。' : 'XP and levels show game progress, never a health score.'}</p></div>
         </section>
         <section className="panel companion-daily" aria-label={zh ? '今日成长任务' : 'Today’s growth quests'}>

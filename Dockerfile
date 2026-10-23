@@ -4,6 +4,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY vendor/opengym/frontend/package.json vendor/opengym/frontend/package-lock.json ./vendor/opengym/frontend/
 RUN npm ci --prefix vendor/opengym/frontend --no-audit --no-fund
+COPY vendor/pokemon-island/package.json vendor/pokemon-island/package-lock.json ./vendor/pokemon-island/
+RUN npm ci --prefix vendor/pokemon-island --no-audit --no-fund
 # The licensed media must be staged locally before building. It is never in Git.
 COPY . .
 RUN npm run build

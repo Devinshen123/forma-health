@@ -1,0 +1,17 @@
+import {spawnSync} from 'node:child_process';
+import {existsSync,copyFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+const root=resolve(import.meta.dirname,'..'),app=join(root,'vendor/pokemon-island'),out=join(root,'dist/companion-island');
+const vite=join(app,'node_modules/vite/bin/vite.js');
+if(!existsSync(vite))throw Error('Run npm ci in vendor/pokemon-island before building.');
+const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>!/^VITE_/.test(key)));
+env.NODE_ENV='production';env.FORMA_ISLAND_OUT_DIR=out;
+const checked=spawnSync(process.execPath,[join(app,'node_modules/typescript/bin/tsc'),'--noEmit'],{cwd:app,env,stdio:'inherit'});
+if(checked.status!==0)throw Error('Companion island typecheck failed');
+const result=spawnSync(process.execPath,[vite,'build'],{cwd:app,env,stdio:'inherit'});
+if(result.status!==0)throw Error('Companion island build failed');
+mkdirSync(out,{recursive:true});
+for(const name of['LICENSE','NOTICE.md'])copyFileSync(join(app,name),join(out,name));
+copyFileSync(join(app,'node_modules/hilo3d/LICENSE'),join(out,'hilo3d-MIT.txt'));
+writeFileSync(join(out,'island-release.json'),JSON.stringify({source:'06wj/pokemon',sourceRevision:'00d96f7f18894055e7f1db44fa0df6462e5e4c8a',defaultResidents:20,selectedCompanionJoins:true,behaviors:['explore','socialize','eatFruit','waitFruit','yieldFruit','lightFire','fireGather','waterFlowers','gardenVisit','smellFlowers','electricDisplay','elementReply','sneezeReply','weatherExplore','weatherShelter','nap','wakeReaction'],tools:['observe','fruit','shake-tree','prepare-fire','rustle-flowers','pet','capture'],weather:['sunny','rain','snow'],storage:'account-scoped-local-keepsakes; session-only-demo',healthApiAccess:false},null,2)+'\n');
+console.log('[companion-island] built local 3D world, original behaviors, photos and journal.');
