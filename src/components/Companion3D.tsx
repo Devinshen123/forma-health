@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Heart, Pause, Play, RotateCcw, RotateCw } from 'lucide-react';
 import type { CompanionCharacter, CompanionItem } from '../companion';
-import { COMPANION_CHARACTER_DETAILS } from '../companion';
+import { companionForm } from '../companion-growth';
 import CompanionAvatar from './CompanionAvatar';
 
 interface Props { character: CompanionCharacter; equipped: CompanionItem | null; level: number; zh: boolean }
@@ -9,7 +9,7 @@ type SceneHandle = { rotate: (delta: number) => void; pet: () => void; reset: ()
 
 export default function Companion3D(props: Props) {
   // Each character/stage owns its resources. Late imports cannot mount into another identity.
-  return <CompanionScene key={`${props.character}:${props.equipped}:${props.level}`} {...props} />;
+  return <CompanionScene key={`${props.character}:${props.equipped}:${companionForm(props.character, props.level).dex}`} {...props} />;
 }
 
 function CompanionScene({ character, equipped, level, zh }: Props) {
@@ -18,18 +18,21 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
   const [revision, setRevision] = useState(0), [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const pausedRef = useRef(paused); pausedRef.current = paused;
   const [greeting, setGreeting] = useState(false);
-  const name = COMPANION_CHARACTER_DETAILS[character][zh ? 'zh' : 'en'];
+  const form = companionForm(character, level), name = form[zh ? 'zh' : 'en'];
 
   useEffect(() => {
     let disposed = false, cleanup = () => {};
+    const controller = new AbortController();
     const element = host.current;
     if (!element) return;
     setStatus('loading');
-    void import('./companion-scene').then(({ T, createCompanionModel, disposeScene, fitCompanionCamera }) => {
+    void import('./companion-scene').then(async ({ T, createCompanionModel, disposeScene, fitCompanionCamera }) => {
       if (disposed) return;
+      const model = await createCompanionModel(character, equipped, form.level, controller.signal);
+      if (disposed) { model.dispose(); return; }
       let renderer: InstanceType<typeof T.WebGLRenderer>;
       try { renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' }); }
-      catch { setStatus('fallback'); return; }
+      catch { model.dispose(); setStatus('fallback'); return; }
       const canvas = renderer.domElement;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
       renderer.setClearColor(0x000000, 0); renderer.toneMapping = T.ACESFilmicToneMapping;
@@ -48,11 +51,12 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) { const i = (y * 64 + x) * 4, r = Math.hypot((x - 31.5) / 31.5, (y - 31.5) / 31.5); shadowPixels.set([105, 91, 75, Math.round(Math.pow(Math.max(0, 1 - r * r), 3) * 56)], i); }
       const shadowTexture = new T.DataTexture(shadowPixels, 64, 64); shadowTexture.needsUpdate = true;
       const floor = new T.Mesh(new T.PlaneGeometry(2.6, 2.0), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false })); floor.rotation.x = -Math.PI / 2; floor.position.y = .035; scene.add(floor);
-      const model = createCompanionModel(character, equipped, level); scene.add(model.root);
+      scene.add(model.root);
+      let animationTime = performance.now();
       let angle = 0, petStarted = -10000, frame = 0, lastFrame = 0, onScreen = true, drag: { x: number; y: number; angle: number; moved: boolean; pointer: number } | null = null;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
       const rotate = (delta: number) => { angle += delta; draw(performance.now()); };
-      const pet = () => { petStarted = performance.now(); setGreeting(true); draw(petStarted); };
+      const pet = () => { petStarted = performance.now(); model.greet(); setGreeting(true); draw(petStarted); };
       const reset = () => { angle = 0; draw(performance.now()); };
       sceneHandle.current = { rotate, pet, reset, refresh: () => syncLoop() };
       function draw(now: number) {
@@ -61,11 +65,9 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
         model.root.rotation.y = angle + (animate ? Math.sin(t * .55) * .075 : 0);
         model.body.position.y = (animate ? Math.sin(t * 1.8) * .025 : 0) + Math.abs(Math.sin((now - petStarted) / 115)) * bounce * .22;
         model.body.scale.setScalar(1 + (animate ? Math.sin(t * 1.8) * .008 : 0));
-        model.head.rotation.z = animate ? Math.sin(t * .85) * .035 + bounce * .1 : 0;
-        model.eyes.scale.y = animate && t % 5 < .13 ? .13 : 1;
-        model.arms[1].rotation.z = animate ? -bounce * (.65 + Math.sin(t * 16) * .25) : 0;
-        model.satellites.rotation.y = animate ? Math.sin(t * .5) * .2 : 0;
-        canvas.dataset.rotation = angle.toFixed(2); canvas.dataset.stage = String(model.stage); canvas.dataset.motion = animate ? 'playing' : 'paused';
+        if (animate) model.update(Math.min((now - animationTime) / 1000, .06));
+        animationTime = now;
+        canvas.dataset.rotation = angle.toFixed(2); canvas.dataset.stage = String(model.stage); canvas.dataset.form = String(model.dex); canvas.dataset.motion = animate ? 'playing' : 'paused';
         renderer.render(scene, camera);
       }
       const tick = (now: number) => { frame = requestAnimationFrame(tick); if (now - lastFrame < 33) return; lastFrame = now; draw(now); };
@@ -98,12 +100,12 @@ function CompanionScene({ character, equipped, level, zh }: Props) {
       cleanup = () => {
         cancelAnimationFrame(frame); resize.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', syncLoop); reduced.removeEventListener('change', syncLoop);
         canvas.removeEventListener('pointerdown', down); canvas.removeEventListener('pointermove', move); canvas.removeEventListener('pointerup', up); canvas.removeEventListener('pointercancel', cancel); canvas.removeEventListener('pointerleave', cancel); canvas.removeEventListener('webglcontextlost', contextLost);
-        sceneHandle.current = null; disposeScene(scene); shadowTexture.dispose(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
+        sceneHandle.current = null; scene.remove(model.root); model.dispose(); disposeScene(scene); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
       };
       draw(performance.now()); syncLoop(); setStatus('ready');
-    }).catch(() => { if (!disposed) setStatus('fallback'); });
-    return () => { disposed = true; cleanup(); };
-  }, [character, equipped, level, revision]);
+    }).catch(() => { cleanup(); if (!disposed) setStatus('fallback'); });
+    return () => { disposed = true; controller.abort(); cleanup(); };
+  }, [character, equipped, form.level, revision]);
 
   useEffect(() => { sceneHandle.current?.refresh(); }, [paused]);
   useEffect(() => { if (!greeting) return; const timer = window.setTimeout(() => setGreeting(false), 1800); return () => window.clearTimeout(timer); }, [greeting]);

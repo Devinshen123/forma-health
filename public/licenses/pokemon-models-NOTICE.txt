@@ -1,0 +1,17 @@
+Pokémon model and character notice
+
+Pokémon character names, designs and original assets belong to their respective rights holders, including Nintendo, Creatures Inc. and GAME FREAK inc. These are not Forma original characters. Software repository licenses do not independently grant rights in the characters or original models.
+
+13 animated models: https://github.com/06wj/pokemon
+Pinned revision: 00d96f7f18894055e7f1db44fa0df6462e5e4c8a
+Repository software notice: pokemon-viewer-MIT.txt.
+
+Munchlax model: https://github.com/Pokemon-3D-api/assets
+Pinned revision: 429de1288cea0d43f5b4f56305d2276e94239d65
+The upstream repository describes optimized models sourced from Sketchfab; its model_map.json was empty at this revision, so no original artist attribution is invented here.
+
+Exact source URLs, source hashes and packaged model hashes: /companions/model-manifest.json.
+Local preparation retains idle/happy animation clips, packs buffers, and compresses embedded textures to WebP at up to 512px. The Munchlax runtime pose lowers the arms and selects matching open-eye atlas columns. All other species silhouettes are retained.
+
+Renderer: Three.js (MIT, three-MIT.txt).
+Draco glTF decoder: Google Draco (Apache 2.0, draco-Apache-2.0.txt), distributed with Three.js r186.

@@ -7,7 +7,7 @@ export const COMPANION_CHARACTER_DETAILS = {
   bunny: { zh: '皮卡丘', en: 'Pikachu', descriptionZh: '电力满满，也记得休息。', descriptionEn: 'Full of sparks. Make time to rest, too.', color: '#fcf4d9' },
   otter: { zh: '杰尼龟', en: 'Squirtle', descriptionZh: '不着急，按自己的节奏前进。', descriptionEn: 'Take it easy, at your own pace.', color: '#e8f3f7' },
   cloud: { zh: '胖丁', en: 'Jigglypuff', descriptionZh: '软乎乎地，陪你过好每一天。', descriptionEn: 'A soft little friend for every day.', color: '#faeaf0' },
-  bear: { zh: '卡比兽', en: 'Snorlax', descriptionZh: '慢慢来，睡饱再出发。', descriptionEn: 'Rest well. Your next step can wait.', color: '#e8eff0' },
+  bear: { zh: '小卡比兽', en: 'Munchlax', descriptionZh: '慢慢来，睡饱再出发。', descriptionEn: 'Rest well. Your next step can wait.', color: '#e8eff0' },
   seal: { zh: '伊布', en: 'Eevee', descriptionZh: '每一种成长，都有自己的可爱。', descriptionEn: 'Every way of growing has its own charm.', color: '#f5ecdf' },
 } satisfies Record<CompanionCharacter, { zh: string; en: string; descriptionZh: string; descriptionEn: string; color: string }>;
 export const COMPANION_ITEMS = ['leaf', 'cap', 'star', 'scarf', 'flower', 'crown'] as const;

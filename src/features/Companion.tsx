@@ -1,3 +1,4 @@
+import { companionForm } from '../companion-growth';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, Gift, Leaf, Moon, RefreshCw, Shirt, Users, Utensils, Dumbbell } from 'lucide-react';
 import { ApiError, getCompanion, claimCompanion, restCompanion, openCompanionChest, equipCompanion, companionChallenge, selectCompanionCharacter } from '../api';
@@ -203,7 +204,7 @@ function CharacterGallery({ model, art, zh, demo, authenticated }: { model: Retu
   if (!model.snapshot) return null;
   const current = model.snapshot.character ?? 'sprout';
   return <section className="panel companion-gallery" aria-labelledby="companion-gallery-title">
-    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '宝可梦参考造型，圆滚滚地陪着你。' : 'Round little companions, with looks inspired by Pokémon.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
+    <div className="companion-section-title"><div><h2 id="companion-gallery-title">{zh ? '选择你的伙伴' : 'Find your companion'}</h2><p>{zh ? '六条进化路线，陪你一点点长大。' : 'Six evolution paths to grow with you.'}</p></div><span className="companion-badge">{zh ? '全部免费' : 'Always free'}</span></div>
     <div className="companion-characters">
       {COMPANION_CHARACTERS.map(character => {
         const details = COMPANION_CHARACTER_DETAILS[character];
@@ -230,7 +231,8 @@ export function CompanionCard(props: CompanionProps) {
   const zh = props.lang === 'zh';
   const character = snapshot?.character ?? 'sprout';
   const characterDetails = characterDetailsFor(character);
-  const name = zh ? characterDetails.zh : characterDetails.en;
+  const form = companionForm(character, snapshot?.level ?? 1);
+  const name = zh ? form.zh : form.en;
   return <section className="panel companion-card" aria-label={zh ? '健康伙伴' : 'Health companion'}>
     <div className="companion-card-heading"><span className="companion-eyebrow"><Leaf size={16} />{zh ? '健康伙伴' : 'Health companion'}</span>{props.demo && <span className="companion-badge">{zh ? '演示数据' : 'Demo data'}</span>}</div>
     <div className="companion-card-intro">
@@ -261,7 +263,8 @@ export default function Companion(props: CompanionProps) {
   const normalizedCode = code.trim().toUpperCase();
   const character = snapshot?.character ?? 'sprout';
   const characterDetails = characterDetailsFor(character);
-  const name = zh ? characterDetails.zh : characterDetails.en;
+  const form = companionForm(character, snapshot?.level ?? 1);
+  const name = zh ? form.zh : form.en;
 
   return <section className="companion-page" aria-label={zh ? '伙伴成长' : 'Companion growth'}>
     <header className="companion-page-heading"><div><span className="companion-eyebrow"><Leaf size={17} />FORMA COMPANION</span><h1>{zh ? '一起，慢慢长大。' : 'A little growth, together.'}</h1><p>{zh ? '记录、休息、再出发。选一位伙伴，陪你走自己的节奏。' : 'Log, rest and begin again. Find a friend for your own pace.'}</p></div><button className="btn btn-secondary" disabled={disabled} onClick={() => void run({ type: 'claim' })}><RefreshCw size={17} />{zh ? '同步成长' : 'Sync progress'}</button></header>
@@ -293,7 +296,7 @@ export default function Companion(props: CompanionProps) {
         <div className="companion-outfits">{COMPANION_ITEMS.map(item => {
           const owned = snapshot.inventory.includes(item);
           const selected = snapshot.equipped === item;
-          return <button key={item} data-item={item} className={`companion-outfit ${selected ? 'is-equipped' : ''}`} disabled={disabled || !owned} aria-pressed={selected} aria-label={`${itemName(item, zh)} · ${selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '尚未解锁' : 'Locked')}`} onClick={() => void run({ type: 'equip', item })}><CompanionAvatar character={character} equipped={item} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><strong>{itemName(item, zh)}</strong><span>{selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '成长日解锁' : 'Unlock by growing')}</span></button>;
+          return <button key={item} data-item={item} className={`companion-outfit ${selected ? 'is-equipped' : ''}`} disabled={disabled || !owned} aria-pressed={selected} aria-label={`${itemName(item, zh)} · ${selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '尚未解锁' : 'Locked')}`} onClick={() => void run({ type: 'equip', item })}><CompanionAvatar character={character} level={snapshot.level} equipped={item} thumbnail unavailableLabel={zh ? '形象暂不可用' : 'Image unavailable'} retryKey={art.revision} onArtError={art.reportError} /><strong>{itemName(item, zh)}</strong><span>{selected ? (zh ? '已佩戴' : 'Equipped') : owned ? (zh ? '佩戴' : 'Equip') : (zh ? '成长日解锁' : 'Unlock by growing')}</span></button>;
         })}</div>
         <div className="companion-wardrobe-footer"><span className="companion-small">{zh ? `已开启 ${openedChests.length} 个宝箱 · 已拥有 ${snapshot.inventory.length} 款外观` : `${openedChests.length} chests opened · ${snapshot.inventory.length} outfits owned`}</span><button className="text-button" disabled={disabled || snapshot.equipped === null} onClick={() => void run({ type: 'equip', item: null })}>{zh ? '暂时不戴配饰' : 'Wear no accessory'}</button></div>
       </section>

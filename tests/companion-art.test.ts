@@ -41,3 +41,15 @@ test('each companion has a distinct bilingual identity and complete transparent 
   assert.equal(portraitDigests.size, 6, 'six character names must not accidentally package copies of one portrait');
   assert.ok(totalBytes < 3_500_000, 'the six portraits and thumbnails must stay below a combined 3.5 MB');
 });
+
+test('every evolution has a distinct transparent portrait and phone thumbnail matching its model identity', async () => {
+  const { COMPANION_EVOLUTIONS }=await import('../src/companion-growth');
+  const hashes=new Set<string>();
+  for(const form of Object.values(COMPANION_EVOLUTIONS).flat())for(const thumbnail of[false,true]){
+    const path=resolve(artwork,'forms',`${form.dex}${thumbnail?'-thumb':''}.webp`),bytes=await readFile(path),meta=await sharp(bytes).metadata();
+    assert.equal(meta.width,thumbnail?192:640);assert.equal(meta.height,meta.width);assert.ok(meta.hasAlpha);assert.equal(meta.format,'webp');assert.ok(bytes.length>1000&&bytes.length<100_000);
+    const stats=await sharp(bytes).stats();assert.equal(stats.channels[3].min,0);assert.equal(stats.channels[3].max,255);
+    if(!thumbnail)hashes.add(createHash('sha256').update(bytes).digest('hex'));
+  }
+  assert.equal(hashes.size,14);
+});
