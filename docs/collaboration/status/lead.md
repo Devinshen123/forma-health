@@ -1,3 +1,11 @@
+## 2026-10-23 HEALTH 发布与申请入口（最新）
+
+实际网站已运行7c5b9a905abe15b7861bed6b455afbc3b0ffead6，D:/AI-tools/forma-health/releases/20261023-7c5b9a9；数据与.env指针继续原C盘。原3001在切换前未监听，没有终止未知进程；新服务启动45684后曾无日志退出，已按现有启动入口恢复54104并再次验证HTTP版本/photoReady=true。实际CUA设置页：三cloud provider not_configured/0records、Apple needs_iPhone，console0；合成fixture已关闭，未把测试连接带入生产。截图live-connections.png。
+
+已打开WHOOP(10)/Oura(11)/Google(12)/Apple(13)官方门户，WHOOP/Oura/Apple待用户登录；Google显示强制两步验证拦截，未点击账号安全变更或创建项目。申请用途/回调说明已准备，正式域名问题待用户答。本人没有代用户接受条款、发送申请或获取provider token。
+
+Mac CI首轮40060892364原始失败保留，6e02aa0将未保存HK样本测试改显式来源并让生产nil来源fail closed；次轮40061328110完整日志已下载：Core25/25、新HealthSampleMapper4/4、NativeAPI6/6、UI4/4、unsigned archive成功；全Native14项有旧WorkbenchSessionTests.swift:47恢复草稿missing的1项失败，整体job failure，不能声称完整iOS验收通过。iOS助手只读分析是否与新改动相关；真机权限/真实设备仍未测。Web/server最新377/377及完整build通过不受该iOS旧测试替代。
+
 ## 2026-10-23 HEALTH 集成验证（最新）
 
 root本次npm.cmd test最终377/377、fail0/skip0，npm.cmd run build完整通过；保留大chunk提示。npx tsc、generator和ios/verify-health-config.mjs通过。独立QA23/23、backend9/9均为具名助手报告，root全套包含这些用例。首次独立Google来源保留断言失败已修，未削弱测试。CUA localhost:5173独立DB/合成账户/注入供应商HTTP完成Oura连接显示→立即同步3项→来源与设备当地日期审核，console warn/error0；截图在原C盘.forma-local/deliverables/health-integrations-20261023/synthetic-import-preview.png。没有连接或导入真实健康账户。

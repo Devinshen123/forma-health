@@ -17,6 +17,10 @@
 
 # lead 长期记忆
 
+2026-10-23｜已验证｜健康平台实现共享契约在src/health.ts；provider OAuth回调位于/integrations/:provider/callback，使用独立短期Lax绑定cookie，原账户session仍Strict。Google Health现行官方REST v4不是GoogleFit；Apple只读原生预览+单独上传，expectedRevision阻断断开/删除后的旧预览。来源：server/health、独立23项/全套377项及docs/architecture/health-integrations-20261023.md。适用代码与合成验证，provider凭证/审批/真实设备并未完成。
+
+2026-10-23｜已验证｜新建HKSample的sourceRevision可为nil，不能当成从HealthStore读回的样本。生产mapper遇缺失provenance应fail closed；测试使用显式合成来源，不能用app默认来源伪造。来源：6e02aa0、Apple官方sourceRevision说明、MacCI40061328110新增4项通过。该CI全job仍因旧WK训练草稿恢复测试失败，不能用新增测试通过冒称完整绿。
+
 Owner：lead。初始化：2026-10-20；执行者：lead（MEM-01）。下列为有来源的文档种子，没有运行本角色的新实现验收。
 
 ## 项目约束

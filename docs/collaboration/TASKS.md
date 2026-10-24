@@ -5,9 +5,13 @@
 | ID | owner / 独占写入路径 | 状态 | 验收 |
 |---|---|---|---|
 | HEALTH-SERVER | fud_backend技术助手已冻结交回lead：server/health/、server/health.test.ts、server/app.ts、.env.example | done | root最终377/377，助手专项9/9、独立QA23/23；OAuth/加密token/刷新/15分钟轮询/最近7天+2天重叠/Apple批次revision；未连接真实provider，云端删除不推断 |
-| HEALTH-IOS | ios技术助手已冻结交回lead：ios/、docs/health/apple-health-setup.md；lead维护generator | review | 原生只读/预览/显式上传/来源UUID/账户与revision保护；root静态检查通过，792254b已推送并dispatch Mac CI 40060892364（构建已通过、完整job进行中）；未真机 |
-| HEALTH-WEB | lead：src/health.ts、src/api.ts、src/features/HealthConnections.tsx、src/features/Settings.tsx、src/styles.css、scripts/ios-generate-project.mjs、docs/architecture/、docs/health/provider-application-guide.md、README、任务板/本人记忆与发布集成 | doing | root全套377/377与完整build通过，CUA隔离合成Oura同步3项/来源日期审核/console0；正在本机发布及打开申请页面 |
+| HEALTH-IOS | ios技术助手已冻结交回lead：ios/、docs/health/apple-health-setup.md；lead维护generator | review | 6e02aa0修复未保存HK样本来源nil；Mac CI40061328110：Core25/25、新HealthKit4/4、NativeAPI6/6、UI4/4与unsigned Release archive通过；完整job有旧Workbench草稿恢复测试1失败，不能标全绿；未真机 |
+| HEALTH-WEB | lead：src/health.ts、src/api.ts、src/features/HealthConnections.tsx、src/features/Settings.tsx、src/styles.css、scripts/ios-generate-project.mjs、docs/architecture/、docs/health/provider-application-guide.md、README、任务板/本人记忆与发布集成 | done | root全套377/377与完整build通过，CUA隔离合成Oura同步3项/来源日期审核/console0；实际3001已7c5b9a9，凭证缺失诚实显示未配置；四个平台申请入口已打开，WHOOP/Oura/Apple待用户登录，Google实际被2SV阻塞 |
 | HEALTH-QA | 独立qa技术助手已冻结：tests/health-integrations.test.ts、docs/reviews/health-integrations-20261023.md | done | 独立23/23、skip0；首轮Google来源失败修复，scope/旋转/事务/断开删除竞态/Apple旧preview/数据语义通过；不把HTTP夹具当跨站或真设备验证 |
+
+真实接入与申请仍待用户：正式HTTPS网站/隐私政策、各开发者账户登录/条款及应用凭证、Google账号两步验证、Apple开发团队与iPhone真机。未创建付费资源、未提交平台申请或自动开启Google账号安全设置。原C盘数据与OpenAI配置保持，真实可穿戴数据未访问。iOS完整回归的Workbench旧测试失败保留证据并另行分析，不把新增HealthKit测试通过当全套通过。
+
+IOS-WK-REGRESSION（lead，todo）：保留旧WK草稿跨view恢复严格断言，用可见非零尺寸合成窗口与公开WebKit状态诊断传播时序。现有只读比较确认WorkbenchSession/其测试/NativeAPI本轮未改，不能据此声称已证明根因；没有在健康切片中跳过或削弱旧测试，也未大改持久化产品实现。
 
 # 2026-10-22 Fud AI 真实模型示例验证
 

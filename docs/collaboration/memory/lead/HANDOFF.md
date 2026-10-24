@@ -1,3 +1,9 @@
+## 2026-10-23 HEALTH 发布、申请与剩余验证（最新）
+
+网页运行7c5b9a9，current.json指向D:/AI-tools/forma-health/releases/20261023-7c5b9a9，保留原C data/.env；最新启动PID54104已HTTP核实。三个cloud缺provider凭证，Apple需iPhone；fixture5173已结束，真实记录未导入。WHOOP/Oura/Google/Apple门户已开，用户需先WHOOP登录；Google当前2SV拦截，正式域名/隐私政策待用户，无擅自安全设置或外部申请提交。
+
+源码分支含7c5b9a9全后端/UI和6e02aa0 iOS provenance修复。root377全套/完整build通过；MacCI40061328110 Core25、新HealthKit4、NativeAPI6、UI4与archive通过，但旧WorkbenchSessionTests恢复localStorage一项失败，整个job不是绿。日志在原C盘忽略交付health-integrations-20261023/ios-run-40061328110-failed.log；原生助手只读判断因果，禁止削弱或跳过旧测试。真机/真实provider OAuth及跨浏览器导航未验证。最终接入仍需账号与凭证，不能说已经同步真实设备。
+
 ## 2026-10-23 HEALTH 集成验证（最新）
 
 backend/iOS/QA技术助手均冻结并交回lead。root377/377 tests、完整build通过；CUA独立localhost5173 mock Oura同步3项+来源日期审核、console0，非真实设备。Apple commit792254b已push现branch，Mac CI40060892364 native build/Core tests过，后续transport/UI尚进行中。原C盘.env只初始化健康token加密key（不记录值、不入Git），三个OAuth provider仍缺凭证。root将精确提交其余代码+指南并发布到D盘已有runtime，data/env继续原C目录；不要将fixture假连接带入实际站点。下一步部署、核实实际未配置状态、官网申请引导，待正式域名/开发者登录及凭证。Mac真机HealthKit仍未验证。
