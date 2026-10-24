@@ -4,13 +4,26 @@ import FormaCore
 
 enum HealthSampleMapper {
     static func record(_ sample: HKSample) throws -> HealthImportRecord {
-        let source = sample.sourceRevision.source
+        // Apple's sourceRevision exists only after retrieval from HealthKit. Newly constructed
+        // objects can return nil despite older SDKs importing this property as nonoptional.
+        let revision: HKSourceRevision? = sample.sourceRevision
+        return try record(sample, source: provenance(revision))
+    }
+
+    static func provenance(_ revision: HKSourceRevision?) throws -> HealthSampleSource {
+        guard let revision else { throw HealthImportValidation.invalidSample }
+        return HealthSampleSource(id: revision.source.bundleIdentifier, name: revision.source.name,
+                                  productType: revision.productType)
+    }
+
+    /// Shared value/unit mapping; explicit synthetic provenance avoids accessing an unsaved sample's nil sourceRevision.
+    static func record(_ sample: HKSample, source: HealthSampleSource) throws -> HealthImportRecord {
         var metadata: [String: JSONValue] = ["bridge": .string("apple-health"),
                                               "deviceTimezoneAtImport": .string(TimeZone.current.identifier)]
         if let timezone = sample.metadata?[HKMetadataKeyTimeZone] as? String {
             metadata["timezone"] = .string(String(timezone.prefix(160)))
         }
-        if let product = sample.sourceRevision.productType { metadata["productType"] = .string(String(product.prefix(160))) }
+        if let product = source.productType { metadata["productType"] = .string(String(product.prefix(160))) }
         if let device = sample.device {
             if let name = device.name { metadata["deviceName"] = .string(String(name.prefix(160))) }
             if let model = device.model { metadata["deviceModel"] = .string(String(model.prefix(160))) }
@@ -53,7 +66,7 @@ enum HealthSampleMapper {
             }
         } else { throw HealthImportValidation.invalidSample }
         return try HealthImportRecord(id: sample.uuid, kind: kind, start: sample.startDate, end: sample.endDate,
-                                      value: value, unit: unit, sourceID: source.bundleIdentifier,
+                                      value: value, unit: unit, sourceID: source.id,
                                       sourceName: source.name, deviceID: sample.device?.localIdentifier, metadata: metadata)
     }
 }
