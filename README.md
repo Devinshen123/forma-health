@@ -30,6 +30,12 @@ npm start
 
 数据默认保存在私有 `data/`；可用 `FORMA_DATA_DIR` 指向现有数据目录，更新网站不需要替换账户数据。环境示例见 [.env.example](.env.example)。真实密钥、账户记录和上传附件不进入Git或发布资源包。
 
+## 登录与账户安全
+
+网站支持邮箱密码，并增加邮箱验证、找回密码和Google/Apple快捷登录流程。原账户保持兼容；相同邮箱不会自动合并，需先登录原账户再绑定。邮件、Google和Apple需要服务器配置才能真正启用，缺配置会在页面明确显示。网站快捷登录不等同于健康平台授权；iPhone原生快捷登录仍需单独实现。
+
+配置步骤、精确回调和开发者材料见[登录配置](docs/architecture/authentication-setup.md)，契约与安全边界见[认证方案](docs/architecture/authentication-20261024.md)。凭证只保留服务器环境，不随GitHub或Mac克隆同步。
+
 ## 连接 WHOOP、Oura、Google 与 Apple Health
 
 在网站设置 → 设备与健康数据中查看真实连接状态。官方注册、需要填写的资料和精确回调路径见[申请指南](docs/health/provider-application-guide.md)，技术与权限边界见[架构说明](docs/architecture/health-integrations-20261023.md)。服务端环境变量见`.env.example`的`FORMA_HEALTH_*`部分，密钥不得加入前端变量或Git。

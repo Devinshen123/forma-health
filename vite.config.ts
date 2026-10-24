@@ -6,6 +6,6 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: true,
-    proxy: { "/api": "http://127.0.0.1:3001", "/companion-island": "http://127.0.0.1:3001" },
+    proxy: { "/api": "http://127.0.0.1:3001", "/auth/callback": "http://127.0.0.1:3001", "/integrations": "http://127.0.0.1:3001", "/companion-island": "http://127.0.0.1:3001" },
   },
 });

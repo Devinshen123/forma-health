@@ -62,6 +62,9 @@ export class Store {
       CREATE TABLE IF NOT EXISTS workbench_media(owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,hash TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(owner_id,hash));
     `);
     this.companion = new CompanionLedger(this.db);
+    // Sessions created before recent-auth tracking intentionally remain stale.
+    if (!(this.db.prepare('PRAGMA table_info(sessions)').all() as { name: string }[]).some(column => column.name === 'created_ms'))
+      this.db.exec('ALTER TABLE sessions ADD COLUMN created_ms INTEGER NOT NULL DEFAULT 0');
     this.db
       .prepare("DELETE FROM sessions WHERE expires_at <= ?")
       .run(Date.now());
@@ -103,10 +106,10 @@ export class Store {
       throw error;
     }
   }
-  createSession(ownerId: string, token: string, expiresAt: number) {
+  createSession(ownerId: string, token: string, expiresAt: number, createdAt = Date.now()) {
     this.db
-      .prepare("INSERT INTO sessions VALUES (?,?,?)")
-      .run(hashToken(token), ownerId, expiresAt);
+      .prepare("INSERT INTO sessions(token_hash,owner_id,expires_at,created_ms) VALUES (?,?,?,?)")
+      .run(hashToken(token), ownerId, expiresAt, createdAt);
   }
   session(token: string) {
     const row = this.db

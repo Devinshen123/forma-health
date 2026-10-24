@@ -28,6 +28,7 @@ import Onboarding from "./features/Onboarding";
 import Settings from "./features/Settings";
 import Companion from "./features/Companion";
 import { Auth } from "./components/Auth";
+import type { AuthEntry } from './auth';
 import SyncPanel from "./components/SyncPanel";
 import { SyncEngine, type SyncStatus } from "./sync/engine";
 import { readCached } from "./sync/storage";
@@ -58,6 +59,15 @@ function Brand() {
     </span>
   );
 }
+function readAuthEntry(): AuthEntry | undefined {
+  const parameters = new URLSearchParams(window.location.hash.slice(1));
+  const kind = parameters.get('auth');
+  const token = parameters.get('token');
+  const ticket = parameters.get('ticket');
+  if ((kind === 'reset' || kind === 'verify') && token && /^[A-Za-z0-9_-]{20,512}$/.test(token)) return { kind, token };
+  if (kind === 'oauth' && ticket && /^[A-Za-z0-9_-]{20,512}$/.test(ticket)) return { kind, ticket };
+  if (kind && ['reset', 'verify', 'oauth', 'error'].includes(kind)) return { kind: 'error', code: kind === 'error' && /^AUTH_[A-Z_]{1,60}$/.test(parameters.get('code') ?? '') ? parameters.get('code')! : 'AUTH_INVALID_TOKEN' };
+}
 export default function App() {
   const [lang, setLang] = useState<Language>(() =>
     localStorage.getItem("forma-language") === "en" ? "en" : "zh",
@@ -67,7 +77,8 @@ export default function App() {
   const [demo, setDemo] = useState(true);
   const [page, setPage] = useState<Page>("today");
   const [trainingStart, setTrainingStart] = useState<"statistics" | undefined>();
-  const [auth, setAuth] = useState(false);
+  const [authEntry, setAuthEntry] = useState<AuthEntry | undefined>(readAuthEntry);
+  const [auth, setAuth] = useState(() => !!readAuthEntry());
   const [onboarding, setOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
@@ -90,6 +101,19 @@ export default function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(""), 5000);
   }
+  useEffect(() => {
+    const clearFragment = () => window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+    if (authEntry) clearFragment();
+    const receive = () => {
+      const entry = readAuthEntry();
+      if (!entry) return;
+      clearFragment();
+      setAuthEntry(entry);
+      setAuth(true);
+    };
+    window.addEventListener('hashchange', receive);
+    return () => window.removeEventListener('hashchange', receive);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
     localStorage.setItem("forma-language", lang);
@@ -203,6 +227,7 @@ export default function App() {
     setState(snapshot.state);
     revision.current = snapshot.revision;
     setDemo(false);
+    setAuthEntry(undefined);
     setAuth(false);
     setOnboarding(!snapshot.state.profile);
     if(user?.id!==current.id)setPage("today");
@@ -423,6 +448,7 @@ export default function App() {
                 onLogout={signOut}
                 onDeleted={accountDeleted}
                 onCreate={() => setAuth(true)}
+                onSessionChanged={authenticated}
               />
             )}
           </>
@@ -451,9 +477,18 @@ export default function App() {
       </nav>
       {auth && (
         <Auth
+          key={`auth:${user?.id ?? 'demo'}:${writeBinding.epoch}:${authEntry ? authEntry.kind === 'oauth' ? authEntry.ticket : authEntry.kind === 'error' ? authEntry.code : authEntry.token : 'normal'}`}
           lang={lang}
-          onClose={() => setAuth(false)}
+          entry={authEntry}
+          onClose={() => { setAuth(false); setAuthEntry(undefined); }}
           onAuthenticated={authenticated}
+          onPasswordReset={() => {
+            resetSession(false);
+            setAuthEntry(undefined);
+            setAuth(true);
+            localStorage.setItem('forma-session-change', crypto.randomUUID());
+            notify('密码已重置，请使用新密码登录。', 'Password reset. Sign in with your new password.');
+          }}
         />
       )}{" "}
       {leavePage&&<Modal title={page==='training' ? zh?'训练还有未保存输入':'Unsaved training entries' : zh?'还有未保存的输入':'Unsaved entries'} onClose={()=>setLeavePage(null)} footer={<><button className="btn btn-primary" onClick={()=>setLeavePage(null)}>{page==='training' ? zh?'返回训练':'Return to training' : zh?'继续编辑':'Keep editing'}</button><button className="btn btn-secondary" onClick={()=>{navigate(leavePage,true);setLeavePage(null);}}>{zh?'放弃未保存输入并离开':'Discard unsaved entries and leave'}</button></>}><p>{zh?'当前表单输入将丢失。已保存的记录和待同步的更改会保留；离开不会撤销已提交的保存。':'Current form entries will be lost. Saved records and pending sync changes remain; leaving does not undo a submitted save.'}</p></Modal>}

@@ -1,3 +1,16 @@
+# 2026-10-24 AUTH 实施（当前）
+
+用户明确要求实现登录并选择邮箱密码、Google与Apple。沿用唯一lead、fud-food-photo checkout与现分支，覆盖旧只读限制；不执行WHOOP/Oura下一阶段申请。方案/契约见docs/architecture/authentication-20261024.md及src/auth.ts。
+
+| ID | owner / 独占写入 | 状态 | 验收 |
+|---|---|---|---|
+| AUTH-SERVER | fud_backend技术助手已冻结交回lead：server/auth/、server/app.ts、server/store.ts、server/auth.test.ts、.env.example | done | 本人最终全套429通过；助手7/7与独立45/45（含旧库迁移），邮箱验证/恢复/密码、Google+Apple验签/双阶段、单次/竞态、旧邮箱不自动合并，真实provider未开通 |
+| AUTH-WEB | fud_frontend技术助手已冻结交回lead：src/components/Auth.tsx、src/components/AccountSecurity.tsx、src/auth.css | done | 双语登录/注册/忘记重置验证/快捷登录、配置说明、pending/卸载保护；root合成浏览器含verify/reset/new密码、390px无溢出/console0；真实provider缺凭证 |
+| AUTH-INTEGRATE | lead：src/auth.ts、src/api.ts、src/App.tsx、src/components/Modal.tsx（可选关闭禁用）、src/features/Settings.tsx、docs/architecture/、vite.config.ts（开发回调代理）、scripts/build-offline-shell.mjs（OAuth回调绕过离线壳）、README、docs/collaboration/decisions/20261024-authentication.md及任务板/本人记忆/构建部署 | doing | 共享契约、前后集成、完整测试构建与合成浏览器；保留真实数据与原C目录 |
+| AUTH-DIAG-02 | 拟02 claude-lead：docs/collaboration/deliverables/claude-lead/auth-ios-report-diagnostics-20261024.md及本人既有记录 | todo | 静态诊断候选；正式单requests/20261024-1235-lead-to-claude-lead-static-diagnostics.md；等待Showroom明确桌面交接，未发送/未接单，不解除受限操作 |
+| AUTH-QA | fud_qa技术助手已冻结交回lead：tests/authentication.test.ts、docs/reviews/authentication-20261024.md | done | 独立安全/真实签名夹具/重放过期/跨账户/Apple POST/邮箱重置；不把mock当真实provider验证 |
+
+助手是本任务技术助手，不创建第二名lead或同时写其他正式员工记忆。配置/开发者凭证与正式HTTPS缺失不阻塞代码，但不声称真实快捷登录已开通。
 # 2026-10-23 HEALTH 实施（当前）
 
 用户明确要求实现WHOOP/Oura回调及后端同步、Google Health与Apple Health，并授权技术助手并行。沿用既有lead及fud-food-photo checkout，产品方案沿用已批准Prompt并具体化为docs/architecture/health-integrations-20261023.md。本表覆盖本切片的历史只读/冻结，不接管其他会话目录。

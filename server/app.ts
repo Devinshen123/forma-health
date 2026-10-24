@@ -4,7 +4,7 @@ import express, {
   type NextFunction,
 } from "express";
 import cookieParser from "cookie-parser";
-import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z, ZodError } from "zod";
@@ -30,6 +30,10 @@ import { HealthService } from './health/service';
 import type { HealthConfig } from './health/model';
 import { HealthError } from './health/model';
 import { clearHealthCallbackCookies, healthCallbackRouter, healthRouter } from './health/router';
+import { AuthService } from './auth/service';
+import { AuthError, type AuthConfig, type AuthMailer } from './auth/config';
+import { authCallbackRouter, authRouter, clearAuthBrowserCookie } from './auth/router';
+import { derivePassword as derive, checkPassword as verifyPassword } from './auth/password';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -41,26 +45,6 @@ const localOrigins = new Set([
   "http://127.0.0.1:3001",
 ]);
 const publicUser = ({ id, email, name }: User): User => ({ id, email, name });
-const derive = (password: string, salt: string) =>
-  new Promise<Buffer>((resolveHash, reject) => {
-    scrypt(
-      password,
-      salt,
-      64,
-      { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 },
-      (error, result) => (error ? reject(error) : resolveHash(result)),
-    );
-  });
-async function verifyPassword(password: string, account?: Account) {
-  const hash = await derive(
-    password,
-    account?.password_salt ?? randomBytes(16).toString("hex"),
-  );
-  return (
-    !!account &&
-    timingSafeEqual(hash, Buffer.from(account.password_hash, "hex"))
-  );
-}
 const uploadSchema = z
   .object({
     name: z
@@ -143,6 +127,10 @@ export interface AppOptions {
   health?: HealthConfig;
   healthFetch?: typeof fetch;
   healthNow?: () => number;
+  auth?: AuthConfig;
+  authFetch?: typeof fetch;
+  authNow?: () => number;
+  authMailer?: AuthMailer;
   trustProxy?: number;
 }
 export function createApp(options: AppOptions) {
@@ -150,6 +138,7 @@ export function createApp(options: AppOptions) {
     app = express();
   const foodPhoto = new FoodPhotoService(store, options.ai, options.aiFetch, options.aiNow);
   const health = new HealthService(store, options.health, options.healthFetch, options.healthNow);
+  const authentication = new AuthService(store, options.auth, options.authFetch, options.authNow, options.authMailer);
   const secureCookies =
     options.secureCookies ?? process.env.NODE_ENV === "production";
   const cookieOptions = {
@@ -195,6 +184,7 @@ export function createApp(options: AppOptions) {
   // OAuth is a top-level cross-site GET with its own expiring state and Lax
   // binding. Do not weaken the existing Strict session cookie or API guards.
   app.use('/integrations', cookieParser(), healthCallbackRouter(health, secureCookies));
+  app.use('/auth/callback', express.urlencoded({ extended: false, limit: '32kb', parameterLimit: 10 }), authCallbackRouter(authentication));
 
   const buckets = new Map<string, { count: number; until: number }>();
   const rateLimit = (req: Request, res: Response, next: NextFunction) => {
@@ -255,12 +245,14 @@ export function createApp(options: AppOptions) {
   app.use('/training-workbench/api', trainingWorkbenchRouter(store, auth, secureCookies, localOrigins));
   const issueSession = (req: Request, res: Response, user: User) => {
     const previous = sessionOf(req);
-    if (previous) { health.cancelSession(previous.token); store.deleteSession(previous.token); }
+    if (previous) { authentication.cancelSession(previous.token); health.cancelSession(previous.token); store.deleteSession(previous.token); }
     const token = randomBytes(32).toString("hex");
-    store.createSession(user.id, token, Date.now() + SESSION_MS);
+    store.createSession(user.id, token, Date.now() + SESSION_MS, options.authNow?.() ?? Date.now());
     res.cookie(COOKIE, token, { ...cookieOptions, maxAge: SESSION_MS });
     clearHealthCallbackCookies(res, secureCookies);
+    clearAuthBrowserCookie(res, secureCookies);
   };
+  app.use('/api/auth', authRouter(authentication, { auth, rateLimit, secureCookies, sessionOf, issueSession, cancelHealth: owner => health.cancelAccount(owner) }));
   app.get("/api/capabilities", (_req, res) =>
     res.json(foodPhoto.capabilities()),
   );
@@ -277,6 +269,7 @@ export function createApp(options: AppOptions) {
     res.json({ user: account ? publicUser(account) : null });
   });
   app.post("/api/auth/register", rateLimit, async (req, res) => {
+    const initialSession = sessionOf(req);
     const { email, password, name } = registerSchema.parse(req.body);
     if (store.accountByEmail(email))
       return res
@@ -284,6 +277,7 @@ export function createApp(options: AppOptions) {
         .json({ error: "An account with this email already exists" });
     const salt = randomBytes(16).toString("hex"),
       hash = await derive(password, salt);
+    if (initialSession?.account) authentication.sessionCurrent(initialSession.account.id, initialSession.token);
     try {
       const user = store.createAccount(email, name, hash.toString("hex"), salt);
       issueSession(req, res, user);
@@ -297,10 +291,15 @@ export function createApp(options: AppOptions) {
     }
   });
   app.post("/api/auth/login", rateLimit, async (req, res) => {
+    const initialSession = sessionOf(req);
     const { email, password } = credentialsSchema.parse(req.body);
     const account = store.accountByEmail(email);
+    const passwordVersion = account ? authentication.sessionVersion(account.id) : -1;
     if (!(await verifyPassword(password, account)))
       return res.status(401).json({ error: "Email or password is incorrect" });
+    if (initialSession?.account) authentication.sessionCurrent(initialSession.account.id, initialSession.token);
+    if (!account || authentication.sessionVersion(account.id) !== passwordVersion || !authentication.security(account.id).hasPassword)
+      throw new AuthError('AUTH_SESSION_CHANGED', 401);
     issueSession(req, res, account!);
     res.json({ user: publicUser(account!) });
   });
@@ -312,9 +311,10 @@ export function createApp(options: AppOptions) {
         error: 'Account changed. Sign in again before saving.',
         code: 'ACCOUNT_CHANGED',
       });
-    if (session) { health.cancelSession(session.token); store.deleteSession(session.token); }
+    if (session) { authentication.cancelSession(session.token); health.cancelSession(session.token); store.deleteSession(session.token); }
     res.clearCookie(COOKIE, cookieOptions);
     clearHealthCallbackCookies(res, secureCookies);
+    clearAuthBrowserCookie(res, secureCookies);
     res.json({ ok: true });
   });
   app.get("/api/state", auth, (_req, res) =>
@@ -473,6 +473,7 @@ export function createApp(options: AppOptions) {
     if (sessionOf(req)?.account?.id !== account.id)
       return res.status(401).json({ error: 'Account changed. Sign in again before deleting your account.', code: 'ACCOUNT_CHANGED' });
     foodPhoto.cancelAccount(account.id);
+    authentication.cancelAccount(account.id);
     health.cancelAccount(account.id);
     store.deleteAccount(account.id);
     res.clearCookie(COOKIE, cookieOptions);
@@ -505,6 +506,7 @@ export function createApp(options: AppOptions) {
         return res.status(error.status).json({ error: error.message, code: error.code });
       }
       if (error instanceof HealthError) return res.status(error.status).json({ error: 'Health integration could not complete this request', code: error.code });
+      if (error instanceof AuthError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
       if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
@@ -531,5 +533,5 @@ export function createApp(options: AppOptions) {
         .json({ error: "The local server could not complete this request" });
     },
   );
-  return { app, store, health, close: () => { health.close(); store.close(); } };
+  return { app, store, health, authentication, close: () => { authentication.close(); health.close(); store.close(); } };
 }

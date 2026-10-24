@@ -7,23 +7,27 @@ export function Modal({
   onClose,
   children,
   footer,
+  closeDisabled = false,
 }: {
   title: string;
   description?: string;
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  closeDisabled?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
   const closeRef = useRef(onClose);
+  const disabledRef = useRef(closeDisabled);
   closeRef.current = onClose;
+  disabledRef.current = closeDisabled;
   useEffect(() => {
     const dialog = ref.current!;
     dialog.showModal();
     const cancel = (e: Event) => {
       e.preventDefault();
-      closeRef.current();
+      if (!disabledRef.current) closeRef.current();
     };
     dialog.addEventListener("cancel", cancel);
     return () => {
@@ -45,7 +49,7 @@ export function Modal({
             e.clientY < r.top ||
             e.clientY > r.bottom
           )
-            onClose();
+            if (!closeDisabled) onClose();
         }
       }}
     >
@@ -56,6 +60,7 @@ export function Modal({
         </div>
         <button
           className="icon-button"
+          disabled={closeDisabled}
           onClick={onClose}
           aria-label="Close / 关闭"
         >

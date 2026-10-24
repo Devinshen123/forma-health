@@ -1,0 +1,35 @@
+.auth-surface { min-width: 0; }
+.auth-surface .auth-form { margin-top: 0; }
+.auth-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.auth-password { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.auth-password .input { flex: 1; min-width: 0; }
+.auth-password .icon-button { flex: 0 0 44px; min-height: 44px; }
+.auth-fieldset .field > label { display: flex; align-items: center; gap: 5px; }
+.auth-provider-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.auth-provider-option { min-width: 0; }
+.auth-provider-status { margin: 8px 0 0; font-size: 12px; color: var(--muted, #737985); line-height: 1.6; overflow-wrap: anywhere; }
+.auth-status-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.auth-status-row > p { margin: 0; }
+.auth-status-row > button { flex-shrink: 0; }
+.auth-divider { display: flex; align-items: center; gap: 14px; color: var(--muted, #737985); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: var(--border, #e9ecf0); }
+.auth-text-button { align-self: center; }
+.auth-notice { margin: 0; padding: 13px 15px; border: 1px solid #dce8db; border-radius: 10px; background: #f6faf2; color: #35533c; line-height: 1.7; font-size: 13px; overflow-wrap: anywhere; }
+.auth-complete { align-items: flex-start; padding: 8px 0; }
+.auth-complete > svg { color: #4d782e; }
+.account-security { min-width: 0; }
+.account-security > .section-title { gap: 12px; flex-wrap: wrap; }
+.account-security-status { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.account-security-status p { margin: 6px 0 0; }
+.account-security-password, .account-security-providers { border-top: 1px solid var(--border, #e9ecf0); padding-top: 20px; }
+.account-security .hint { margin: 0; }
+.account-security .field { max-width: none; }
+.account-security .auth-provider-option { border: 1px solid var(--border, #e9ecf0); padding: 14px; border-radius: 12px; }
+.account-security .auth-provider-option > .account-security-status { margin-bottom: 10px; }
+.auth-link-confirm { padding: 16px; border: 1px solid #dce8db; background: #fafcf8; border-radius: 12px; min-width: 0; }
+.auth-link-confirm .row-actions { flex-wrap: wrap; }
+@media (max-width: 520px) {
+  .auth-provider-list { grid-template-columns: minmax(0, 1fr); }
+  .auth-status-row { flex-wrap: wrap; }
+  .auth-link-confirm .row-actions > button { width: 100%; }
+}

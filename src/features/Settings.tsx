@@ -13,6 +13,7 @@ import type { Capabilities, FeatureProps, User } from "../types";
 import { getCapabilities, request } from "../api";
 import { Modal } from "../components/Modal";
 import HealthConnections from './HealthConnections';
+import { AccountSecurity } from '../components/AccountSecurity';
 export default function Settings({
   state,
   lang,
@@ -24,11 +25,13 @@ export default function Settings({
   onLogout,
   onDeleted,
   onCreate,
+  onSessionChanged,
 }: {
   user: User | null;
   onLogout: () => Promise<void>;
   onDeleted: () => Promise<void>;
   onCreate: () => void;
+  onSessionChanged: (user: User) => Promise<void>;
 } & FeatureProps) {
   const zh = lang === "zh";
   const [deleting, setDeleting] = useState(false);
@@ -149,6 +152,7 @@ export default function Settings({
           )}
         </button>
       </section>
+      {!demo && accountId && <AccountSecurity key={accountId} lang={lang} accountId={accountId} onSessionChanged={onSessionChanged} />}
       <section className="panel">
         <div className="section-heading">
           <h2>{zh ? "显示偏好" : "Preferences"}</h2>
@@ -222,7 +226,6 @@ export default function Settings({
           </div>
           <span className="badge">{zh ? "尚未接入" : "Not connected"}</span>
         </div>
-        <div className="record-row"><div className="row-main"><strong>{zh ? "Apple 登录" : "Sign in with Apple"}</strong><p className="muted">{zh ? "尚未实现。当前本机测试使用邮箱账户。" : "Not implemented. Local testing currently uses email accounts."}</p></div><span className="badge">{zh ? "尚未接入" : "Not connected"}</span></div>
         <p className="hint">
           {zh
             ? "只有你本次同意的照片副本及输出语言会发送给 OpenAI，其它账户资料和记录不会随请求发送。原图与记录保存在本机实例；供应商的数据保留按其政策执行。"

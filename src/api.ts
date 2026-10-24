@@ -1,5 +1,6 @@
 import type { AppState, User, Capabilities, FoodPhotoDraft, Language, SyncSnapshot, SyncMutation } from "./types";
 import type { CompanionSnapshot, CompanionItem, CompanionCharacter } from "./companion";
+import type { AccountSecurity, AuthMailResult, AuthOptions, SignInProvider } from './auth';
 export interface Snapshot {
   state: AppState;
   revision: number;
@@ -21,6 +22,22 @@ export function setAccountHint(id: string | null) {
 function errorMessage(message: string, status: number, code?: string) {
   if (localStorage.getItem("forma-language") === "en") return message;
   const aiMessages: Record<string, string> = {
+    AUTH_MAIL_NOT_CONFIGURED: "邮件服务尚未配置，请联系网站管理员。你仍可使用现有密码登录。",
+    AUTH_MAIL_FAILED: "邮件暂时无法发送，请稍后重试。",
+    AUTH_NOT_CONFIGURED: "这个快捷登录尚未配置，请先使用邮箱和密码。",
+    AUTH_PROVIDER_NOT_CONFIGURED: "这个快捷登录尚未配置，请先使用邮箱和密码。",
+    AUTH_INVALID_TOKEN: "链接已失效或已使用，请重新申请。",
+    AUTH_TOKEN_INVALID: "链接已失效或已使用，请重新申请。",
+    AUTH_INVALID_STATE: "登录验证已失效，请重新开始。",
+    AUTH_INVALID_TICKET: "登录验证已失效，请重新开始。",
+    AUTH_EMAIL_EXISTS: "这个邮箱已有账户，请先用原方式登录，再到设置中绑定快捷登录。",
+    AUTH_ACCOUNT_EXISTS: "这个邮箱已有账户，请先用原方式登录，再到设置中绑定快捷登录。",
+    AUTH_PASSWORD_REQUIRED: "请先设置密码，再进行这项操作。",
+    AUTH_PASSWORD_INCORRECT: "当前密码不正确，请重试。",
+    AUTH_IDENTITY_LINKED: "这个快捷登录已绑定其他账户。",
+    AUTH_PROVIDER_ERROR: "快捷登录未完成，请重新尝试或使用邮箱密码。",
+    AUTH_INVALID_ID_TOKEN: "快捷登录验证未通过，请重新尝试。",
+    AUTH_RATE_LIMIT: "操作过于频繁，请稍后重试。",
     PROFILE_REQUIRED: "请先完成个人档案，再确认休息日。",
     ITEM_NOT_OWNED: "请先开启对应宝箱，再佩戴这款外观。",
     CHALLENGE_ACTIVE: "你已有进行中的挑战，请先退出，再加入其他挑战。",
@@ -83,18 +100,29 @@ export async function request<T>(
   return data;
 }
 export const getMe = () => request<{ user: User | null }>("/auth/me");
-export const login = (email: string, password: string) =>
+export const login = (email: string, password: string, signal?: AbortSignal) =>
   request<{ user: User }>("/auth/login", {
     method: "POST",
+    signal,
     body: JSON.stringify({ email, password }),
   });
-export const register = (email: string, password: string, name: string) =>
+export const register = (email: string, password: string, name: string, signal?: AbortSignal) =>
   request<{ user: User }>("/auth/register", {
     method: "POST",
+    signal,
     body: JSON.stringify({ email, password, name }),
   });
 export const logout = () =>
   request("/auth/logout", { method: "POST", body: "{}" });
+export const getAuthOptions = (signal?: AbortSignal) => request<AuthOptions>('/auth/options', { signal });
+export const getAccountSecurity = (accountId: string, signal?: AbortSignal) => request<AccountSecurity>('/auth/account', { signal, headers: { 'X-Forma-Account': accountId } });
+export const forgotPassword = (email: string, signal?: AbortSignal) => request<AuthMailResult>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }), signal });
+export const resetPassword = (token: string, password: string, signal?: AbortSignal) => request<{ ok: true }>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }), signal });
+export const verifyEmail = (token: string, signal?: AbortSignal) => request<{ ok: true }>('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }), signal });
+export const sendVerification = (accountId: string, signal?: AbortSignal) => request<AuthMailResult>('/auth/send-verification', { method: 'POST', body: '{}', headers: { 'X-Forma-Account': accountId }, signal });
+export const changePassword = (password: string, currentPassword: string | undefined, accountId: string, signal?: AbortSignal) => request<{ user: User }>('/auth/password', { method: 'POST', body: JSON.stringify({ password, ...(currentPassword === undefined ? {} : { currentPassword }) }), headers: { 'X-Forma-Account': accountId }, signal });
+export const startSignIn = (provider: SignInProvider, intent: 'login' | 'link', password?: string, accountId?: string, signal?: AbortSignal) => request<{ authorizationUrl: string }>(`/auth/${provider}/start`, { method: 'POST', body: JSON.stringify({ intent, ...(password === undefined ? {} : { password }) }), ...(accountId ? { headers: { 'X-Forma-Account': accountId } } : {}), signal });
+export const completeSignIn = (ticket: string, signal?: AbortSignal) => request<{ user: User }>('/auth/oauth/complete', { method: 'POST', body: JSON.stringify({ ticket }), signal });
 export const getState = () => request<Snapshot>("/state");
 const companionRequest = (path: string, accountId: string, options: RequestInit = {}) =>
   request<CompanionSnapshot>(`/companion${path}`, { ...options, headers: { 'X-Forma-Account': accountId } });

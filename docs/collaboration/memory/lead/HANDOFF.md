@@ -1,3 +1,13 @@
+## 2026-10-24 AUTH 最终验证与候选（最新）
+
+01 lead，本人最终npm test 429/429、fail/cancel/skip0（17942.9492ms）；完整npm run build exit0，包括5,632媒体与工作台/乐园/源码/离线壳。后端7/7及独立QA45/45（含旧三列sessions迁移，原会话/快照revision保持）与真实签名夹具；真实Google/Apple、邮件发送、供应商账户未配置/未联调。CUA隔离localhost5173实际登录/验证/重置/新密码登录原账户、未配置回调返回、390px无横溢出，console0。合成服务与标签已关闭，默认视口恢复。文档authentication-validation-20261024.md详列证据与边界。
+
+原C盘私有data/backups已做SQLite一致性备份（未查看或打印账户内容），原data/.env不搬移。迁移forward-only：sessions新增created_ms，旧后端三列INSERT不能直接回退，须新前向兼容修复，不恢复旧备份覆盖新事实。本轮源码准备精确提交并发布；实际运行仍待切换，不把候选SHA/历史runtime当新功能已运行。
+
+另收到其他Codex会话只读协调草稿，登记AUTH-DIAG-02及requests/20261024-1235-lead-to-claude-lead-static-diagnostics.md：02独占文档输出，等待Showroom明确桌面交接，未发送Claude/点击/输入/开CLI。仅工具目录核实Windows-MCP有截图/状态能力，原生连接与当前owner未实测。报告导航分支未知，草稿另一CI来源未核实；该候选不改变当前AUTH实现或解除任何受限动作。
+## 2026-10-24 AUTH 实施（最新）
+
+用户选择邮箱密码+Google+Apple快捷登录，已明确授权实施登录；不是执行WHOOP/Oura待确认申请。当前唯一lead沿用fud-food-photo checkout/codex/fud-food-photo-20261022，起点e853428干净；原C主checkout已另有02be085，保留不触碰。运行3001仍7c5b9a9/PID54104。本轮技术助手后端/前端/QA独占范围已登记TASKS，root共享src/auth.ts、api、App、Settings、Modal及方案/配置文档已实施中。独立测试/构建/浏览器尚待集成，不能标完成；真实邮件及Google/Apple凭证未知不读取.env。下一步集成助手、完整验证、安全审查后保留C数据发布。
 ## 2026-10-23 HEALTH 发布、申请与剩余验证（最新）
 
 网页运行7c5b9a9，current.json指向D:/AI-tools/forma-health/releases/20261023-7c5b9a9，保留原C data/.env；最新启动PID54104已HTTP核实。三个cloud缺provider凭证，Apple需iPhone；fixture5173已结束，真实记录未导入。WHOOP/Oura/Google/Apple门户已开，用户需先WHOOP登录；Google当前2SV拦截，正式域名/隐私政策待用户，无擅自安全设置或外部申请提交。
