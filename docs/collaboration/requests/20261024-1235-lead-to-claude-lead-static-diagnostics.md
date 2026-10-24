@@ -11,3 +11,7 @@
 已知iOS候选（本聊天历史）：同checkout，`6e02aa097db8ac55658c05a25fae7e10565916b9`后继HEAD含HealthKit修复，CI40061328110新增Health/Core/NativeAPI/UI与archive通过，旧Workbench恢复一项失败。草稿另提CI39745031559/ecb9ac49，本轮未核实其分支及与本候选先后关系，不混写为同一证据。报告页导航的另一分支checkout/完整SHA/证据目前未知，明确待01/来源会话补齐，02不得猜分支。
 
 门禁：Showroom02正使用共享Claude桌面，须收到明确桌面交接再进入下一段。当前只登记，未向Claude发送、点击、输入、开新CLI、终止/重启进程或声称接单。接单/开始/首项产出必须另有既有会话的实际回执。Windows-MCP工具目录可见Snapshot、Screenshot、ControlStatus、App/Click/Type等；仅核实工具存在，未调用原生控制或截图，连接/权限/桌面当前owner尚未实测。
+
+## 固定候选补记
+
+AUTH产品已提交为`5e6b34ccb90d3554cf0a01ef1ca59e0ef5d9d55c`，即本静态诊断的登录候选，完整root429通过/构建/合成浏览器/本机发布证据见docs/architecture/authentication-validation-20261024.md。该进展不表示02接单；本任务继续等待桌面交接，不触碰共享输入。报告导航分支仍未知。

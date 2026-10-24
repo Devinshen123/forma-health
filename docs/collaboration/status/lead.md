@@ -1,6 +1,13 @@
+## 2026-10-24 AUTH 发布完成（最新）
+
+产品5e6b34ccb90d3554cf0a01ef1ca59e0ef5d9d55c已同步GitHub main及当前分支，原C目录未接管；实际3001已此SHA，runtime D:/AI-tools/forma-health/releases/20261024-5e6b34c，PID63520。原示例账户Strict会话仍可用，新账户安全页可见；邮箱密码可用、真实mail/Google/Apple未配置，Fud仍ready。原私有data/backups已一致性备份。root最终429测试与完整build、CUA隔离注册体系及实际站点console0，详情见authentication-validation-20261024.md；此后只有文档更新，无需重复产品测试。
+
+旧PID54104在切换前已自行停止、原因未证明；未盲杀其他进程。旧后端不兼容新sessions列的三值INSERT，回退须前向兼容修复，不能只切旧release或恢复备份覆盖新记录。真实邮箱/OAuth/iPhone快捷登录仍待外部配置。合成5173已停，实际网站标签保持在设置的快捷登录区。
+
+AUTH-DIAG-02仅候选登记，固定登录候选5e6b34c，02独占文档输出已预留，Windows原生工具只目录检查；未发Claude、未点键鼠，等待Showroom明确交接。未知报告导航分支与草稿另一CI不猜测。技术助手已冻结；迟到待初始化的QA补报已中止，独立报告仍44/44，新迁移用例由root429全套验证，不冒称助手45专项实测。
 ## 2026-10-24 AUTH 最终验证与候选（最新）
 
-01 lead，本人最终npm test 429/429、fail/cancel/skip0（17942.9492ms）；完整npm run build exit0，包括5,632媒体与工作台/乐园/源码/离线壳。后端7/7及独立QA45/45（含旧三列sessions迁移，原会话/快照revision保持）与真实签名夹具；真实Google/Apple、邮件发送、供应商账户未配置/未联调。CUA隔离localhost5173实际登录/验证/重置/新密码登录原账户、未配置回调返回、390px无横溢出，console0。合成服务与标签已关闭，默认视口恢复。文档authentication-validation-20261024.md详列证据与边界。
+01 lead，本人最终npm test 429/429、fail/cancel/skip0（17942.9492ms）；完整npm run build exit0，包括5,632媒体与工作台/乐园/源码/离线壳。后端7/7及独立QA44/44，另新增旧三列sessions迁移由root最终429全套验证（原会话/快照revision保持）与真实签名夹具；真实Google/Apple、邮件发送、供应商账户未配置/未联调。CUA隔离localhost5173实际登录/验证/重置/新密码登录原账户、未配置回调返回、390px无横溢出，console0。合成服务与标签已关闭，默认视口恢复。文档authentication-validation-20261024.md详列证据与边界。
 
 原C盘私有data/backups已做SQLite一致性备份（未查看或打印账户内容），原data/.env不搬移。迁移forward-only：sessions新增created_ms，旧后端三列INSERT不能直接回退，须新前向兼容修复，不恢复旧备份覆盖新事实。本轮源码准备精确提交并发布；实际运行仍待切换，不把候选SHA/历史runtime当新功能已运行。
 
