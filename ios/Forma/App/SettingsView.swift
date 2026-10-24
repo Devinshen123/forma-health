@@ -54,9 +54,11 @@ struct SettingsView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section(store.text("连接状态", "Connections")) {
-                    LabeledContent("HealthKit", value: store.text("尚未接入", "Not connected"))
+                    NavigationLink(store.text("Apple Health：只读预览与上传", "Apple Health: read-only preview and upload")) {
+                        AppleHealthView(store: store, importer: store.appleHealth)
+                    }.disabled(store.isDemo).accessibilityIdentifier("settings.health")
                     LabeledContent(store.text("Apple 登录", "Sign in with Apple"), value: store.text("尚未接入", "Not connected"))
-                    Text(store.text("睡眠目前手动记录；本版没有健康数据自动读取权限。", "Sleep is entered manually. This version does not request access to Apple Health data."))
+                    Text(store.text("健康数据需要在iPhone中先授权读取，再审核并单独同意上传。不会自动改写手动睡眠或训练记录。", "Health data requires iPhone read permission, then review and separate upload consent. Manual sleep and training records are not overwritten."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section {

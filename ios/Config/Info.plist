@@ -18,4 +18,5 @@
 <key>ITSAppUsesNonExemptEncryption</key><false/>
 <key>NSCameraUsageDescription</key><string>用于你主动拍摄并审核的训练进步照片。 Capture training progress photos that you choose and review.</string>
 <key>NSPhotoLibraryUsageDescription</key><string>用于你主动选择并上传的训练进步照片。 Select training progress photos that you choose to upload.</string>
+<key>NSHealthShareUsageDescription</key><string>用于在本机预览你的步数、活动能量、心率、静息心率、HRV、睡眠和训练。核对后可单独同意上传到你登录的Forma服务器。 Read steps, active energy, heart rate, resting heart rate, HRV, sleep and workouts for local review. Upload to your signed-in Forma server only after your separate confirmation.</string>
 </dict></plist>

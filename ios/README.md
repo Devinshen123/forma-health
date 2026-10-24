@@ -2,11 +2,11 @@
 
 独立 iOS 17+ SwiftUI App。原生今日、饮食、训练、睡眠、趋势五页和邮箱账户；完整动作库/计划/逐组训练/详细统计在原生训练页内使用同源授权训练工作台。不是整个App加载网站。原生营养与手动睡眠/训练摘要写入已有 `/api/sync`，跨端事实共用服务；不把摘要冒充逐组明细。
 
-本工程没有 HealthKit、Apple 登录、支付、推送或自动设备睡眠读取。当前没有已签名IPA、TestFlight或App Store发布。模拟器产物只供Mac模拟器，不能在iPhone直接安装。
+2026-10-23新增设置中的Apple Health只读预览与单独确认上传，Apple Watch数据经iPhone HealthKit读取；接入和Mac/真机验收步骤见[apple-health-setup](../docs/health/apple-health-setup.md)。这不是后台自动同步。Apple 登录、支付、推送仍未实现。当前没有已签名IPA、TestFlight或App Store发布。模拟器产物只供Mac模拟器，不能在iPhone直接安装。
 
 ## 在 Mac 打开
 
-1. 获取 `codex/forma-iphone-app-20261018` 分支，打开 `ios/Forma.xcodeproj`，选择 Forma scheme。
+1. 获取包含最新HealthKit切片的分支（本轮为 `codex/fud-food-photo-20261022`，集成后以主分支为准），打开 `ios/Forma.xcodeproj`，选择 Forma scheme。
 2. 选择已安装的 iPhone 模拟器，运行。无需填写服务器即可点“先体验演示”；演示明确标注，禁止保存到个人账户。
 3. 真机运行前在 Signing & Capabilities 选择你自己的开发团队，并按实际团队选择唯一 Bundle Identifier。不要提交个人签名文件或证书。
 4. 个人记录使用现有 Forma 账户。在 App 首屏填写**已部署且由你信任的 HTTPS 根地址**（例如你的Forma服务域名），再登录。这里不会预填虚假的线上地址；127.0.0.1是设备自己，不是Windows电脑。服务必须完整部署现有Web/API/训练工作台与授权素材，并正确支持现有同源HTTPS验证与Secure cookie。
@@ -22,7 +22,7 @@
 - 根目录 `node --import tsx --test tests/ios-contract.test.ts`：合成fixture通过实际Express cookie会话、同步幂等/账户隔离/冲突契约。
 - `.github/workflows/ios.yml`：Mac上无签名构建、Core与UI检查，保留结果、截图和模拟器.app。实际运行结论见项目状态文档，不把工程文件存在视为已运行成功。
 
-最终已运行结果：[39193436826 / a5b65f3](https://github.com/Devinshen123/forma-health/actions/runs/39193436826)，Xcode16.4、iPhone16Pro/iOS18.5。Core21、Native10（真实HTTP API与WebKit存储）、UI4全部通过、无skip；模拟器build和iPhone SDK无签名Release archive成功。运行附件中包含真实UI截图和xcresult，保留7天。此前失败及修复记录在`docs/collaboration/status/ios-lead.md`；最终文档提交未改变已验证代码。
+此前原生版本结果：[39193436826 / a5b65f3](https://github.com/Devinshen123/forma-health/actions/runs/39193436826)，Xcode16.4、iPhone16Pro/iOS18.5。Core21、Native10（真实HTTP API与WebKit存储）、UI4全部通过、无skip；模拟器build和iPhone SDK无签名Release archive成功。这是HealthKit新增前的历史结果，不能证明本轮新增代码已编译或已读到真机健康数据。本轮结果须由新的Mac/CI运行单独记录。
 
 ## 数据与限制
 

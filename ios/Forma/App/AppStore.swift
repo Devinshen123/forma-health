@@ -23,6 +23,7 @@ final class AppStore {
     private var webProfileID: UUID?
     private var versions: [String: Int] = [:]
     private var generation = UUID()
+    let appleHealth = AppleHealthImporter()
     private typealias PendingSave = (key: String, value: JSONValue, mutation: JSONValue)
     private var pending: PendingSave?
     private var parkedSave: (server: String, account: String, save: PendingSave)?
@@ -190,6 +191,7 @@ final class AppStore {
     }
 
     func clearLocal(preservingDrafts: Bool = false, invalidatingClient: Bool = true) {
+        appleHealth.invalidate()
         let profile = webProfileID ?? (uiTesting ? nil : SessionVault.load()?.webStoreID)
         if preservingDrafts, let pending, let baseURL, let user {
             parkedSave = (baseURL.absoluteString, user.id, pending)
@@ -284,5 +286,49 @@ final class AppStore {
         let session = try NativeWorkbenchSession(id: webProfileID, origin: baseURL, accountId: account)
         workbenchSession = session
         return session
+    }
+
+    func healthImportSession() throws -> HealthImportSession {
+        guard !isDemo, !isPurging, !cleanupFailed, !uiTesting, let api, let user,
+              api.baseURL == baseURL else { throw NativeAPIError.invalidSession }
+        return HealthImportSession(generation: generation, account: user.id, client: api)
+    }
+
+    func isCurrentHealthImport(_ session: HealthImportSession) -> Bool {
+        generation == session.generation && user?.id == session.account && api === session.client
+            && baseURL == session.client.baseURL && !isDemo && !isPurging && !cleanupFailed
+    }
+
+    func uploadAppleHealth(_ payload: JSONValue, session: HealthImportSession) async throws {
+        guard isCurrentHealthImport(session) else { throw NativeAPIError.staleSession }
+        do {
+            let response = try await session.client.json("/api/health/apple-health/import", method: "POST",
+                                                         body: payload, account: session.account)
+            guard isCurrentHealthImport(session) else { throw NativeAPIError.staleSession }
+            guard let imported = response["imported"].intValue, imported >= 0,
+                  let deleted = response["deleted"].intValue, deleted >= 0,
+                  response["connection"]["provider"].stringValue == "apple-health" else {
+                throw NativeAPIError.malformedResponse
+            }
+        } catch {
+            if isCurrentHealthImport(session) { handleSessionFailure(error) }
+            throw error
+        }
+    }
+
+    func appleHealthRevision(session: HealthImportSession) async throws -> Int {
+        guard isCurrentHealthImport(session) else { throw NativeAPIError.staleSession }
+        do {
+            let response = try await session.client.json("/api/health/connections", account: session.account)
+            guard isCurrentHealthImport(session) else { throw NativeAPIError.staleSession }
+            guard let connection = response["connections"].arrayValue?.first(where: { $0["provider"].stringValue == "apple-health" }),
+                  let revision = connection["syncRevision"].intValue, revision >= 0 else {
+                throw NativeAPIError.malformedResponse
+            }
+            return revision
+        } catch {
+            if isCurrentHealthImport(session) { handleSessionFailure(error) }
+            throw error
+        }
     }
 }

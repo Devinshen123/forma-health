@@ -45,6 +45,7 @@ function configList(key,appTarget) {
     } : appTarget === true ? {
       PRODUCT_BUNDLE_IDENTIFIER:'com.formahealth.app', PRODUCT_NAME:'$(TARGET_NAME)', TARGETED_DEVICE_FAMILY:'1',
       INFOPLIST_FILE:'Config/Info.plist', GENERATE_INFOPLIST_FILE:'NO',
+      CODE_SIGN_ENTITLEMENTS:'Config/Forma.entitlements',
       ASSETCATALOG_COMPILER_APPICON_NAME:'AppIcon', ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME:'AccentColor',
       CURRENT_PROJECT_VERSION:'1', MARKETING_VERSION:'0.1.0',
       LD_RUNPATH_SEARCH_PATHS:'$(inherited) @executable_path/Frameworks',
