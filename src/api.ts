@@ -61,7 +61,7 @@ export async function request<T>(
   const response = await fetch(`/api${path}`, {
     credentials: "same-origin",
     ...options,
-    signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(path === '/food-photo-drafts' ? 90000 : 15000)]) : AbortSignal.timeout(path === '/food-photo-drafts' ? 90000 : 15000),
+    signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(path === '/food-photo-drafts' || path.startsWith('/health/') ? 90000 : 15000)]) : AbortSignal.timeout(path === '/food-photo-drafts' || path.startsWith('/health/') ? 90000 : 15000),
     headers: {
       "Content-Type": "application/json",
       ...(accountHint ? { "X-Forma-Account": accountHint } : {}),

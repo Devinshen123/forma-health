@@ -12,6 +12,7 @@ import {
 import type { Capabilities, FeatureProps, User } from "../types";
 import { getCapabilities, request } from "../api";
 import { Modal } from "../components/Modal";
+import HealthConnections from './HealthConnections';
 export default function Settings({
   state,
   lang,
@@ -222,7 +223,6 @@ export default function Settings({
           <span className="badge">{zh ? "尚未接入" : "Not connected"}</span>
         </div>
         <div className="record-row"><div className="row-main"><strong>{zh ? "Apple 登录" : "Sign in with Apple"}</strong><p className="muted">{zh ? "尚未实现。当前本机测试使用邮箱账户。" : "Not implemented. Local testing currently uses email accounts."}</p></div><span className="badge">{zh ? "尚未接入" : "Not connected"}</span></div>
-        <div className="record-row"><div className="row-main"><strong>Apple Health / HealthKit</strong><p className="muted">{zh ? "需要未来的 iPhone App 授权接入。网页目前使用手动睡眠与训练记录。" : "Requires permission in the future iPhone app. The website currently uses manual sleep and training records."}</p></div><span className="badge">{zh ? "待 iPhone App" : "iPhone app pending"}</span></div>
         <p className="hint">
           {zh
             ? "只有你本次同意的照片副本及输出语言会发送给 OpenAI，其它账户资料和记录不会随请求发送。原图与记录保存在本机实例；供应商的数据保留按其政策执行。"
@@ -230,6 +230,7 @@ export default function Settings({
         </p>
         <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">{zh ? "查看 OpenAI 数据政策" : "View OpenAI data policy"}</a>
       </section>
+      <HealthConnections key={`${demo ? 'demo' : accountId}`} lang={lang} demo={demo} accountId={accountId} onCreate={onCreate} />
       <section className="panel">
         <h2 className="section-title">{zh ? "我的数据" : "My data"}</h2>
         <div className="row-actions">

@@ -9,8 +9,9 @@ Forma 提供中英双语网站：饮食记录、训练、手动睡眠、趋势�
 - **151种实时3D宝可梦与869段原始动画**：完整关都图鉴支持中文、英文、编号搜索、17种属性筛选和分页选择；全部GLB与贴图保存在本地，仅加载当前选择的模型。支持旋转、缩放、软阴影、目光跟随、摸摸和原始动画切换，缺少的动作不冒充已有动画。保留原来的六位伙伴（包括额外的小卡比兽），每100XP升一级，关都后续形态按Forma的3/5级里程碑进化；模型、名字和头像一起改变。支持暂停及减少动态效果，预览与账户等级明确区分。单模型不足3MB，保留账户XP、装备、宝箱与挑战。来源、迁移及导入方式见 [151图鉴说明](docs/architecture/companion-pokedex-151-20261023.md)。
 - **完整3D伙伴乐园**：在伙伴页点击进入，原有20位居民与当前伙伴在同一座小岛生活。接入自主探索、交流、吃果/等候/让食、点火/围炉、取水浇花、赏花/闻花喷嚏、电火花、邻居回应、避雨赏雪、午睡与醒来；支持投果、摇树、备柴、拨花、摸摸、跟随、晨昏天气、声音、暂停、拍照和发现手记。全部代码和场景由本机提供，复用现有模型。虚拟相册按账户保存在浏览器，演示使用会话存储，不产生健康记录或XP。见 [乐园接入说明](docs/architecture/companion-island-20261023.md)。
 - **Fud AI 拍照饮食识别**：采用MIT许可的Fud AI照片/食材分析逻辑，适配到Forma后端；识别后可修改食物、克重、份数与营养，确认后才保存。Fud AI是实现来源，实际模型仍由后端OpenAI提供；配置`OPENAI_API_KEY`后可调用，密钥未配置时明确提示并保留手动流程。见[适配与后续平台计划](docs/architecture/fud-food-photo-20261022.md)、[复用记录](docs/architecture/reuse-log.md)及[MIT许可](public/licenses/fud-ai-MIT.txt)。
-- 保留饮食文字/手动记录、训练和睡眠记录、可解释计划调整及版本历史、数据导出和账户删除。Apple/Google/WHOOP/Oura与优先华为/小米/Keep为分步接入计划，不作为当前已完成能力。
-- [独立iPhone工程](ios/README.md)：原生五页与同一后端，详细训练工作台由同源WebView复用。历史Mac CI构建与合成测试已通过；用户真机签名、TestFlight、HealthKit和Apple登录尚未完成。
+- **设备与健康数据**：WHOOP、Oura、Google Health v4 已实现服务端OAuth回调、加密凭证、刷新与最近窗口轮询；设置页可连接、同步、查看按来源保存的导入记录、断开和删除导入记录。尚需各平台开发者凭证、合适的HTTPS网站/回调及真实账户联调，不能把代码或合成测试当作设备已经连接。华为/小米/Keep仍是后续接入计划。
+- 保留饮食文字/手动记录、训练和睡眠记录、可解释计划调整及版本历史、数据导出和账户删除。导入的设备数据独立于手动事实，不自动送往AI，不简单相加跨平台步数、能量或睡眠。
+- [独立iPhone工程](ios/README.md)：原生五页与同一后端，详细训练工作台由同源WebView复用；新增只读HealthKit、逐条本机预览与单独确认上传，Apple Watch数据经Apple Health导入。用户真机签名、HealthKit权限/设备联调、TestFlight与Apple登录尚未完成。
 
 ## 安装与完整动作库
 
@@ -28,6 +29,14 @@ npm start
 打开 http://127.0.0.1:3001/ 。开发模式为 `npm run dev`（API3001，Vite5173），同一端口只运行一份服务。
 
 数据默认保存在私有 `data/`；可用 `FORMA_DATA_DIR` 指向现有数据目录，更新网站不需要替换账户数据。环境示例见 [.env.example](.env.example)。真实密钥、账户记录和上传附件不进入Git或发布资源包。
+
+## 连接 WHOOP、Oura、Google 与 Apple Health
+
+在网站设置 → 设备与健康数据中查看真实连接状态。官方注册、需要填写的资料和精确回调路径见[申请指南](docs/health/provider-application-guide.md)，技术与权限边界见[架构说明](docs/architecture/health-integrations-20261023.md)。服务端环境变量见`.env.example`的`FORMA_HEALTH_*`部分，密钥不得加入前端变量或Git。
+
+云端默认每15分钟检查已连接账户，首次拉取最近7天、后续带2天重叠窗口；完整批次成功后才更新同步时间。不会从缺页推断删除，不保证实时通知、任意完整历史或所有设备数据类型。导入保留原始来源、设备当地日期与HRV方法，恢复/准备度保留供应商含义；用户手动记录不会被覆盖。
+
+Apple Health没有网页OAuth凭证。已有iPhone App负责只读授权、预览与显式上传；需要Mac/Xcode签名、真机和安全可达的Forma服务。见[Apple Health安装与验收](docs/health/apple-health-setup.md)。Google Health云端API与Android Health Connect不同，当前未创建Android App。
 
 ## 验证与部署
 

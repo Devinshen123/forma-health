@@ -1,3 +1,15 @@
+## 2026-10-23 HEALTH 集成验证（最新）
+
+root本次npm.cmd test最终377/377、fail0/skip0，npm.cmd run build完整通过；保留大chunk提示。npx tsc、generator和ios/verify-health-config.mjs通过。独立QA23/23、backend9/9均为具名助手报告，root全套包含这些用例。首次独立Google来源保留断言失败已修，未削弱测试。CUA localhost:5173独立DB/合成账户/注入供应商HTTP完成Oura连接显示→立即同步3项→来源与设备当地日期审核，console warn/error0；截图在原C盘.forma-local/deliverables/health-integrations-20261023/synthetic-import-preview.png。没有连接或导入真实健康账户。
+
+Apple源码792254b已推送当前GitHub分支，Mac CI run40060892364已通过Core tests及native build，native/UI完整job仍进行中。健康token加密key只初始化到原C盘Git忽略的本机服务端环境，值不输出/不入Git，不改OpenAI密钥。WHOOP/Oura/Google凭证仍未配置，正式域名问题待答；具体回调与申请资料已写docs/health/provider-application-guide.md。下一步精确提交、发布当前本机网站并打开官方申请入口，用户登录/条款/提交及真机验证仍需本人完成。
+
+## 2026-10-23 HEALTH 实施中
+
+用户明确要求WHOOP/Oura回调与后端同步、Google/Apple Health及官方申请引导，允许技术助手并行。沿用唯一lead、当前fud checkout/分支，最新基线2806776；原C目录及其他checkout不写。任务板已登记server、iOS、web、独立QA范围。已写共享导入类型/设计、连接与审核UI、申请资料指南；独立审查发现Apple旧预览跨断开上传竞态，已追加expectedRevision保护。Google官方当前v4，已纠正设计中的v1假设。真实平台凭证、正式域名/隐私政策、账号资格及iPhone签名/真机待准备；不将代码或fixture视为真实设备同步成功。
+
+当前验证：root执行npx.cmd tsc --noEmit通过（后端交付前阶段检查，不代替最终构建/全套测试）。后续集成完整tests/build、独立review、必要Mac CI与本机发布后再打开申请页面引导本人登录/条款/提交。配置中OpenAI密钥不读取/不展示，本轮不改真实健康事实。
+
 ## 2026-10-22 FUD-LIVE-01 真实示例识别通过
 
 用户明确授权创建独立测试账户后，本人通过CUA在实际3001完成本机注册、最小默认计划初始化（跳过可选信息）、上传已核对CC0公开鸡肉米饭照片、单图同意与真实OpenAI请求。审核页面返回白米饭210g/273kcal、烤或炸鸡腿肉180g/378kcal、少量配菜30g/60kcal、蘸酱20g/49kcal，合计760kcal、蛋白质38g/碳水68g/脂肪34g。此为模型估算，无实称基准，不能据此声称准确率。已停在可编辑审核页，确认框未勾选、保存禁用，没有创建饮食事实。测试账户保持登录；未操作真实用户资料。截图.forma-local/deliverables/photo-entry-20261022/real-recognition-summary.png；来源https://commons.wikimedia.org/wiki/File:Chicken_Rice_SMJ.jpg。配置前“真实模型未测试”已由本次成功响应替代。

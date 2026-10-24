@@ -26,6 +26,10 @@ import { trainingWorkbenchRouter } from './training-workbench';
 import { WorkbenchConflict, WorkbenchError } from './training-workbench-data';
 import { companionRouter } from './companion-router';
 import { CompanionError } from './companion';
+import { HealthService } from './health/service';
+import type { HealthConfig } from './health/model';
+import { HealthError } from './health/model';
+import { clearHealthCallbackCookies, healthCallbackRouter, healthRouter } from './health/router';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -136,12 +140,16 @@ export interface AppOptions {
   aiFetch?: typeof fetch;
   aiNow?: () => number;
   companionNow?: () => number;
+  health?: HealthConfig;
+  healthFetch?: typeof fetch;
+  healthNow?: () => number;
   trustProxy?: number;
 }
 export function createApp(options: AppOptions) {
   const store = new Store(options.dataDir, options.companionNow),
     app = express();
   const foodPhoto = new FoodPhotoService(store, options.ai, options.aiFetch, options.aiNow);
+  const health = new HealthService(store, options.health, options.healthFetch, options.healthNow);
   const secureCookies =
     options.secureCookies ?? process.env.NODE_ENV === "production";
   const cookieOptions = {
@@ -184,6 +192,9 @@ export function createApp(options: AppOptions) {
   });
   app.use("/api/assets", express.json({ limit: "14mb", strict: true }));
   app.use("/api", express.json({ limit: "2mb", strict: true }), cookieParser());
+  // OAuth is a top-level cross-site GET with its own expiring state and Lax
+  // binding. Do not weaken the existing Strict session cookie or API guards.
+  app.use('/integrations', cookieParser(), healthCallbackRouter(health, secureCookies));
 
   const buckets = new Map<string, { count: number; until: number }>();
   const rateLimit = (req: Request, res: Response, next: NextFunction) => {
@@ -235,6 +246,7 @@ export function createApp(options: AppOptions) {
   // read route still resolves each attachment by its session-derived owner.
   const assetReadAuth = authenticate(false);
   app.use('/api/companion', companionRouter(store, auth));
+  app.use('/api/health', healthRouter(health, auth, secureCookies));
   app.use('/training-workbench', (_req, res, next) => {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
@@ -243,10 +255,11 @@ export function createApp(options: AppOptions) {
   app.use('/training-workbench/api', trainingWorkbenchRouter(store, auth, secureCookies, localOrigins));
   const issueSession = (req: Request, res: Response, user: User) => {
     const previous = sessionOf(req);
-    if (previous) store.deleteSession(previous.token);
+    if (previous) { health.cancelSession(previous.token); store.deleteSession(previous.token); }
     const token = randomBytes(32).toString("hex");
     store.createSession(user.id, token, Date.now() + SESSION_MS);
     res.cookie(COOKIE, token, { ...cookieOptions, maxAge: SESSION_MS });
+    clearHealthCallbackCookies(res, secureCookies);
   };
   app.get("/api/capabilities", (_req, res) =>
     res.json(foodPhoto.capabilities()),
@@ -299,8 +312,9 @@ export function createApp(options: AppOptions) {
         error: 'Account changed. Sign in again before saving.',
         code: 'ACCOUNT_CHANGED',
       });
-    if (session) store.deleteSession(session.token);
+    if (session) { health.cancelSession(session.token); store.deleteSession(session.token); }
     res.clearCookie(COOKIE, cookieOptions);
+    clearHealthCallbackCookies(res, secureCookies);
     res.json({ ok: true });
   });
   app.get("/api/state", auth, (_req, res) =>
@@ -447,6 +461,7 @@ export function createApp(options: AppOptions) {
       aiReservations: store.aiReservations(account.id),
       trainingWorkbench: store.exportWorkbench(account.id),
       companion: store.exportCompanion(account.id),
+      health: health.ledger.export(account.id),
     });
   });
   app.delete("/api/account", auth, rateLimit, async (req, res) => {
@@ -458,8 +473,10 @@ export function createApp(options: AppOptions) {
     if (sessionOf(req)?.account?.id !== account.id)
       return res.status(401).json({ error: 'Account changed. Sign in again before deleting your account.', code: 'ACCOUNT_CHANGED' });
     foodPhoto.cancelAccount(account.id);
+    health.cancelAccount(account.id);
     store.deleteAccount(account.id);
     res.clearCookie(COOKIE, cookieOptions);
+    clearHealthCallbackCookies(res, secureCookies);
     res.json({ ok: true });
   });
   app.use("/api", (_req, res) =>
@@ -487,6 +504,7 @@ export function createApp(options: AppOptions) {
         if (error.retryAfter !== undefined) res.setHeader('Retry-After', String(error.retryAfter));
         return res.status(error.status).json({ error: error.message, code: error.code });
       }
+      if (error instanceof HealthError) return res.status(error.status).json({ error: 'Health integration could not complete this request', code: error.code });
       if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
       if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
@@ -513,5 +531,5 @@ export function createApp(options: AppOptions) {
         .json({ error: "The local server could not complete this request" });
     },
   );
-  return { app, store, close: () => store.close() };
+  return { app, store, health, close: () => { health.close(); store.close(); } };
 }

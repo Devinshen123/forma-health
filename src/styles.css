@@ -973,6 +973,36 @@ textarea.input {
 .settings-page .panel > p {
   font-size: 14px;
 }
+.health-connections { min-width: 0; }
+.health-provider-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.health-provider { min-width: 0; padding: 20px; border: 1px solid var(--border, #e9ecf0); border-radius: 16px; }
+.health-provider h3 { font-size: 17px; margin: 0; }
+.health-provider p { font-size: 14px; line-height: 1.7; }
+.health-provider-heading { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.health-provider-heading .badge { white-space: normal; }
+.health-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.health-actions .btn { min-height: 42px; }
+.health-connection-details { display: grid; gap: 7px; font-size: 13px; margin: 16px 0; }
+.health-connection-details > div { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.health-connection-details dt { color: #737985; }
+.health-connection-details dd { margin: 0; overflow-wrap: anywhere; }
+.health-notice { padding: 14px 16px; border-radius: 12px; background: #f4f7ee; margin: 14px 0; line-height: 1.7; }
+.health-error { background: #fff1ef; color: #903c30; }
+.health-delete { margin-top: 10px; color: #903c30; }
+.health-setup { margin-top: 18px; font-size: 13px; }
+.health-setup summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+.health-callback code { display: block; margin-top: 6px; overflow-wrap: anywhere; white-space: normal; font-size: 12px; background: #f7f8fa; padding: 10px; border-radius: 8px; }
+.health-table-wrap { max-width: 100%; overflow: auto; }
+.health-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.health-table caption { text-align: left; color: #737985; padding: 8px 0 14px; }
+.health-table th, .health-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid #e9ecf0; vertical-align: top; overflow-wrap: anywhere; }
+.health-table th { font-weight: 600; }
+.health-import-preview { margin-top: 24px; }
+@media (max-width: 680px) {
+  .health-provider-grid { grid-template-columns: minmax(0, 1fr); }
+  .health-provider { padding: 16px; }
+  .health-table th, .health-table td { padding: 10px 5px; font-size: 12px; }
+}
 .toast {
   position: fixed;
   bottom: 26px;

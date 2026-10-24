@@ -1,3 +1,11 @@
+## 2026-10-23 HEALTH 集成验证（最新）
+
+backend/iOS/QA技术助手均冻结并交回lead。root377/377 tests、完整build通过；CUA独立localhost5173 mock Oura同步3项+来源日期审核、console0，非真实设备。Apple commit792254b已push现branch，Mac CI40060892364 native build/Core tests过，后续transport/UI尚进行中。原C盘.env只初始化健康token加密key（不记录值、不入Git），三个OAuth provider仍缺凭证。root将精确提交其余代码+指南并发布到D盘已有runtime，data/env继续原C目录；不要将fixture假连接带入实际站点。下一步部署、核实实际未配置状态、官网申请引导，待正式域名/开发者登录及凭证。Mac真机HealthKit仍未验证。
+
+## 2026-10-23 HEALTH 实施中（最新）
+
+用户新授权WHOOP/Oura回调/同步并含Google/Apple Health，允许技术助手；任务板HEALTH-SERVER/I0S/WEB/QA在当前fud checkout实施，源基线2806776。root唯一lead做src/health.ts、HealthConnections UI、Settings集成、ios工程generator entitlement及申请指南；backend技术助手拥有server/health与app/store/index/env，health_ios助手只写ios与apple设置指南，QA只写独立tests/review。Shared AppleHealthImport带expectedRevision，连接syncRevision在断开/删除变化，跨客户端旧预览拒绝。Google官方现查v4，非GoogleFit。未提交本轮产品、未实际连接wearable、未部署。下一步收集助手并做全套构建/测试、Mac CI与官网申请引导。正式域名问题已异步询问，缺域名不阻塞代码与本机fixture。
+
 ## 2026-10-22 FUD-LIVE-01 真实示例验证（最新）
 
 用户授权独立本机测试账户并要求识别公开示例照片。实际3001网页已真实调用OpenAI并成功展示4项候选，总计760kcal（模型估算）；未确认保存饮食。当前浏览器测试账户保持登录，停在审核合计区。CC0来源commons.wikimedia.org/wiki/File:Chicken_Rice_SMJ.jpg；截图在原C盘项目忽略目录photo-entry-20261022/real-recognition-summary.png。未记录测试密码或人类资料。真实响应/解析/审核展示已验证，准确率尚无实称基准。未修改产品代码，后续操作需区分该测试账户与用户个人账户。

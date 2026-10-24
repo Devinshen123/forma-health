@@ -1,3 +1,14 @@
+# 2026-10-23 HEALTH 实施（当前）
+
+用户明确要求实现WHOOP/Oura回调及后端同步、Google Health与Apple Health，并授权技术助手并行。沿用既有lead及fud-food-photo checkout，产品方案沿用已批准Prompt并具体化为docs/architecture/health-integrations-20261023.md。本表覆盖本切片的历史只读/冻结，不接管其他会话目录。
+
+| ID | owner / 独占写入路径 | 状态 | 验收 |
+|---|---|---|---|
+| HEALTH-SERVER | fud_backend技术助手已冻结交回lead：server/health/、server/health.test.ts、server/app.ts、.env.example | done | root最终377/377，助手专项9/9、独立QA23/23；OAuth/加密token/刷新/15分钟轮询/最近7天+2天重叠/Apple批次revision；未连接真实provider，云端删除不推断 |
+| HEALTH-IOS | ios技术助手已冻结交回lead：ios/、docs/health/apple-health-setup.md；lead维护generator | review | 原生只读/预览/显式上传/来源UUID/账户与revision保护；root静态检查通过，792254b已推送并dispatch Mac CI 40060892364（构建已通过、完整job进行中）；未真机 |
+| HEALTH-WEB | lead：src/health.ts、src/api.ts、src/features/HealthConnections.tsx、src/features/Settings.tsx、src/styles.css、scripts/ios-generate-project.mjs、docs/architecture/、docs/health/provider-application-guide.md、README、任务板/本人记忆与发布集成 | doing | root全套377/377与完整build通过，CUA隔离合成Oura同步3项/来源日期审核/console0；正在本机发布及打开申请页面 |
+| HEALTH-QA | 独立qa技术助手已冻结：tests/health-integrations.test.ts、docs/reviews/health-integrations-20261023.md | done | 独立23/23、skip0；首轮Google来源失败修复，scope/旋转/事务/断开删除竞态/Apple旧preview/数据语义通过；不把HTTP夹具当跨站或真设备验证 |
+
 # 2026-10-22 Fud AI 真实模型示例验证
 
 FUD-LIVE-01（lead，done）：用户明确授权创建独立本机测试账户，使用公开CC0鸡肉米饭照片，经实际3001网页上传、逐图授权与OpenAI真实模型识别成功。返回4项可编辑候选、合计760kcal；审核框未勾选、饮食记录未保存。图片来源commons.wikimedia.org/wiki/File:Chicken_Rice_SMJ.jpg；截图为本机忽略的photo-entry-20261022/real-recognition-summary.png。验证了真实响应与审核展示，不代表重量/营养准确率已验证。
