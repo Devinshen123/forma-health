@@ -1,3 +1,10 @@
+# 2026-10-24 AUTH-ENABLE-01 实际开通（当前）
+
+用户明确要求真正开通Google/Apple网站登录并打开申请页面引导配置。唯一01 lead，当前checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站，分支codex/fud-food-photo-20261022，源码0aa698db7d066655a2f1e10b8a0e156988529773；实际3001为产品5e6b34c。只登记此配置任务，不启动其他员工或Claude桌面交接。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| AUTH-ENABLE-01 | lead：docs/architecture/authentication-setup.md、docs/collaboration/deliverables/lead/auth-provider-activation-20261024.md、本任务板/本人status与memory；本机被Git忽略的服务端配置和官方申请界面 | blocked | Google本机功能已通过真实授权→回调→同源完成登录→刷新保留，空新账户引导页留给用户，未代填计划/健康事实。实际5e6b34c/PID95536，Google与Fud ready，回调http://127.0.0.1:3001/auth/callback/google；久置流程失效后重新发起成功，未放宽校验。剩余Apple缺登录/会员/HTTPS域名；Google正式公网项目/核验与旧secret停用/上线前私下轮换仍待用户。凭证/配置仅本机忽略.env，不能据本机通过声称公众上线或Apple已开通 |
 # 2026-10-24 AUTH 实施（当前）
 
 用户明确要求实现登录并选择邮箱密码、Google与Apple。沿用唯一lead、fud-food-photo checkout与现分支，覆盖旧只读限制；不执行WHOOP/Oura下一阶段申请。方案/契约见docs/architecture/authentication-20261024.md及src/auth.ts。

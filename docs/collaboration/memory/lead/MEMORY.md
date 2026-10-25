@@ -1,3 +1,11 @@
+## 2026-10-25 已验证 · Google本机真实登录
+
+AUTH-ENABLE-01：5e6b34c运行于127.0.0.1:3001，用户具体确认后Google真实授权→回调→同源显式完成→空新账户引导，刷新保持认证均通过。首个久置流程失效，重新发起即时成功；state/PKCE/binding为10分钟、完成ticket为2分钟，不能因人工等待失败降低校验。服务端配置仅本机忽略.env，PID95536；没有真实健康事实或计划写入。成功证据开通记录与本机google-live-success-20261025.png。旧secret停用/正式使用前私下轮换、正式域名/Google生产核验、Apple与其他设备/账号仍未验；旧记录中“Google真实provider未测”由本条替代。
+
+## 2026-10-24 已验证 · OAuth凭证界面读取（历史）
+
+Google客户端创建结果的复制按钮ARIA标签包含完整secret；不能输出完整控件标签、完整AX/DOM或此时的截图。只将所需凭证读入本机内存并直接写私有配置，检查输出仅为布尔状态；secret不进文档/Git/聊天。首份secret曾被工具输出，已停止接入并交用户更换；尚未取得替换值，不声称已安全接通。下载事件超时不能推断已落盘；同Chrome新官方标签恢复了旧标签Debugger unattached后的操作，不读取浏览器配置/缓存。来源：AUTH-ENABLE-01本轮真实控制台与开通记录。
+
 ## 2026-10-24 已验证 · AUTH会话与回调
 
 AUTH-INTEGRATE：Apple跨站form_post不带Strict/Lax会话，回调只产一次性ticket，同源完成再校验Strict browser binding/原session；SW必须旁路/auth和/integrations保留native redirect。provider只按验签issuer/subject映射，不按邮箱合并。普通密码修改不能提升emailVerified；匿名已关联subject旧OAuth在reset两阶段需单调版本检查，ready ticket还需target-owner FK防删后重建。429全套、合成CUA验证见authentication-validation-20261024.md。sessions新增created_ms后旧三值INSERT后端不兼容，回退必须前向兼容，不能只切旧release。真实provider/邮件/iPhone快捷登录未实测。

@@ -1,3 +1,24 @@
+## 2026-10-25 AUTH-ENABLE-01 Google本机真实登录通过（最新）
+
+用户生成替换凭证并再次明确授权本机配置；已仅保存原C被Git忽略/未跟踪的.env中Google ID/secret/public base，内存解析确认其他设置不变，未输出检查值。该值由用户发入聊天，上线前仍建议私下轮换与停旧，不循环阻止已授权的本机验证。核对实际sourceCommit与原进程后，受控重启63520→95536，仍为5e6b34c；本人两次Invoke-RestMethod auth/options返回Google ready、Apple not_configured，capabilities确认Fud/OpenAI拍照ready。
+
+用户明确确认首次资料授权后，本人点击Continue；首个久置流程返回授权失效/浏览器不匹配，未改代码或降低校验，重新从本站发起同一账号/相同范围即时成功，出现“完成快捷登录”。点击本站“完成登录或绑定”后真实新Google账户进入引导页，刷新保持登录，URL无query/fragment凭证残留、无页面错误。state/PKCE/binding源码10分钟，久置失效原因仅合理推测，不宣称已证明唯一根因。未填写个人问卷、确认计划或健康事实；新账户未有计划，设置/账户入口仍呈现引导流程，安全页未另核对。真实取消/已有邮箱显式绑定/其他Google账号/真机/正式HTTPS/Apple未测。
+
+Chrome953081833已markDeliverable，停在用户新账户引导页，截图原C忽略交付google-live-success-20261025.png。Google本机授权码交换、身份签名验证、双阶段完成与刷新保留已走通；旧secret停用/正式上线前私下轮换仍由用户处理，Apple仍缺会员/HTTPS域名，所以AUTH-ENABLE-01整体blocked而非全开通。当前源码checkout codex/fud-food-photo-20261022，本轮文档基线0aa698db7d066655a2f1e10b8a0e156988529773，运行产品5e6b34c；本次配置与验证回执精确提交本人6项路径，提交身份以本文件所属git log为准，本机.env不入Git/不随Mac同步。无产品代码变更，不重跑历史429项/构建；其他员工/Claude任务不启动。
+
+## 2026-10-25 Google密钥页重新打开（历史）
+
+用户明确要求打开先前Add secret页面；已在外部Chrome打开同一Forma Web Local Development客户端详情，展开Information and summary，并滚动使Add secret可见，标签953081838已markHandoff。当前仅见旧secret掩码；未点击生成或读取完整密钥，未更新.env/重启/实测OAuth。截图原C忽略交付google-secret-page-open-20261025.png。等待用户本人生成新值并保持结果窗口，后续按既有AUTH-ENABLE-01继续。
+
+## 2026-10-25 网站打开回执
+
+用户要求打开Forma网站；本人确认3001运行5e6b34ccb90d3554cf0a01ef1ca59e0ef5d9d55c/PID63520，与current.json一致。在外部Chrome打开http://127.0.0.1:3001/?release=5e6b34c，实际演示首页可见并markDeliverable，截图原C忽略交付forma-site-open-20261025.png。未重启服务、改代码/配置或操作Google密钥；AUTH-ENABLE-01仍等待实际替换密钥，沿用下方交接。
+
+## 2026-10-24 AUTH-ENABLE-01 官方申请配置（最新）
+
+唯一01 lead，AUTH-ENABLE-01，checkout codex/fud-food-photo-20261022/0aa698db7d066655a2f1e10b8a0e156988529773；6项本人配置指南/任务/状态/记忆改动未提交。用户明确同意Google资料与数据政策后已保存品牌；另行明确确认后已创建Forma Web Local Development客户端，类型Web、回调http://127.0.0.1:3001/auth/callback/google，源码仅openid/email/profile。创建成功窗口与后台列表均已核对，未创建付费资源。复制按钮ARIA误输出首份secret，停止使用并明确告知用户；不在文档留值。新secret生成/确认按浏览器要求交用户本人。用户称生成后，本人刷新后台仍仅一条旧密钥、新完整值未显示，已再次引导右侧Client secrets的Add secret，等待实际新值。
+
+JSON下载事件超时、REPL重置，下载是否落盘未知；旧Chrome标签Debugger unattached，用户恢复后旧标签仍失败，同一Chrome新开官方客户端列表成功，当前953081536可读并markHandoff；旧953081530关闭失败，仍可能存在，不能声称已清理。截图原C忽略交付auth-provider-activation-20261024/google-secret-rotation.png。下一步只把替换密钥私下写原C被Git忽略的.env，协助用户停用旧密钥，再受控重启并真实OAuth。当前本轮GETauth/options仍Google/Apple not_configured，运行5e6b34c/PID63520，未改.env、未重启、未调用真实OAuth或读写健康数据。Apple缺登录/会员确认/域名；未付款/部署。git diff --check通过；无产品代码改动，不重复测试。Claude诊断继续等交接，不派其他员工。
 ## 2026-10-24 AUTH 发布完成（最新）
 
 产品5e6b34ccb90d3554cf0a01ef1ca59e0ef5d9d55c已同步GitHub main及当前分支，原C目录未接管；实际3001已此SHA，runtime D:/AI-tools/forma-health/releases/20261024-5e6b34c，PID63520。原示例账户Strict会话仍可用，新账户安全页可见；邮箱密码可用、真实mail/Google/Apple未配置，Fud仍ready。原私有data/backups已一致性备份。root最终429测试与完整build、CUA隔离注册体系及实际站点console0，详情见authentication-validation-20261024.md；此后只有文档更新，无需重复产品测试。
