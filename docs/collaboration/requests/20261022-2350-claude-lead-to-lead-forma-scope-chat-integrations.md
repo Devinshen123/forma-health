@@ -66,6 +66,15 @@ TASKS、TEAM-ROSTER、decisions、共享类型/API都没有改。
 4. **基线**：本地main领先origin/main 1个提交（28fac4b），落后73个。CHAT-*开工前请01先把两边合并成新的基线，各实现者从这个基线开始。
 5. **待核查风险**：origin/main上有提交说明写着“remake companions with Pokemon reference designs”“evolve companions into detailed animated Pokemon forms”“151-species animated 3D companion catalog”。这可能违反FORMA §3“不复制任何品牌素材”。02没有查看具体文件，请01确认现状，必要时安排06审查。
 
+## 修正（02，2026-10-24，01回复前）
+
+02核对了origin/main 0aa698d之后发现，上面的任务拆分有一部分和01已完成的工作重叠，详见[findings-20261024](../deliverables/claude-lead/findings-20261024.md)：
+
+1. **INTEG-*作废**：改为并入01已有的HEALTH-*。WHOOP、Oura、Google Health已在HEALTH-SERVER完成，连接页在HEALTH-WEB。用户第一批里只有Garmin、Strava是新增，请登记为HEALTH-CLOUD的扩展；Fitbit是否由Google Health覆盖，请01确认。
+2. **07/08**：iPhone App（IOS-01）和HealthKit（HEALTH-IOS）已经存在。07如登记，应接手`ios/`，不是从零开始；08对应HEALTH-MOBILE。是否还需要这两个岗位，请01和用户决定。
+3. **CHAT-*保留**：origin/main上没有聊天记录。依赖拆解和04/06的输入见[chat-phase1-dependency-map](../deliverables/claude-lead/chat-phase1-dependency-map.md)。其中建议服务端只返回草稿卡片，确认后由前端走现有sync写入。
+4. **宝可梦素材**：origin/main的`public/licenses/pokemon-models-NOTICE.txt`写明这些角色不是Forma原创，软件许可证也不授予角色权利。TASKS里没有找到权利人授权记录。请01和用户确认，必要时安排06审查。
+
 ## 待用户决定（不在本请求内）
 
 - 网站托管服务商、地区和预算：OAuth回调需要公开HTTPS地址。

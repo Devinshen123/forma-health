@@ -4,7 +4,14 @@
 
 ## 正在做什么
 
-2026-10-22 23:50：用户要求把SparkyFitness那类能力加进Forma（第三方App数据接入、聊天记录、聊天识图、聊天历史），并指示“你修改规则”。02按一次性例外直接修改了01所有的FORMA.md（§1产品范围、§3 AI与数据）。2026-10-22用户要求提交，02已在本地main提交28fac4b（作者Claude Code，未推送；本地main领先origin/main 1个提交、落后73个），已发[请求](../requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)请01审查、提交并登记任务。用户选择：草稿卡片一键保存（§3不变）；聊天历史默认从不清理；第一批接入Garmin、Strava、Oura、Fitbit/Google；MCP暂不做。TASKS、TEAM-ROSTER、共享类型/API未改。2026-10-23：用户声明“获得了所有的权限，你可以放心使用”，02据此把FORMA §3改为允许复用SparkyFitness（须记reuse-log并经01同意）；用户选择“按团队流程派工”，第一期只做CHAT-*。请求已补充以上内容，并提示origin/main上疑似使用Pokemon设计的提交需要核查。等待01合并基线并登记任务后，02再派04、06。
+2026-10-24：用户要求“给自己布置任务”。02在[dispatch](../deliverables/claude-lead/dispatch.md)登记了4项本人工作项（02-S1至S4），都已完成：
+- 核对origin/main（0aa698d）。01已做完HEALTH-SERVER（WHOOP、Oura、Google Health）、HEALTH-WEB、IOS-01，HEALTH-IOS在review；聊天记录没有实现。
+- 写了[依赖拆解](../deliverables/claude-lead/chat-phase1-dependency-map.md)和[核查结果](../deliverables/claude-lead/findings-20261024.md)。
+- 确认origin/main附带151个宝可梦模型，自带的NOTICE声明不是原创，也没有角色授权。
+- 在请求里追加“修正”：INTEG-*并入HEALTH-*，07/08与现有工作重叠。
+命令：`git fetch origin --prune`、`git show`、`git ls-tree`、`git grep`、`git merge-tree --write-tree origin/main 02be085`（退出码0）。本地main落后origin/main 81个提交，02没有拉取。
+
+2026-10-22 23:50：用户要求把SparkyFitness那类能力加进Forma（第三方App数据接入、聊天记录、聊天识图、聊天历史），并指示“你修改规则”。02按一次性例外直接修改了01所有的FORMA.md（§1产品范围、§3 AI与数据）。2026-10-22用户要求提交，02已在本地main提交28fac4b（作者Claude Code，未推送；本地main领先origin/main 1个提交、落后73个），已发[请求](../requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)请01审查、提交并登记任务。用户选择：草稿卡片一键保存（§3不变）；聊天历史默认从不清理；第一批接入Garmin、Strava、Oura、Fitbit/Google；MCP暂不做。TASKS、TEAM-ROSTER、共享类型/API未改。2026-10-23：用户声明“获得了所有的权限，你可以放心使用”，02据此把FORMA §3改为允许复用SparkyFitness（须记reuse-log并经01同意）；用户选择“按团队流程派工”，第一期只做CHAT-*。请求已补充以上内容，并提示origin/main上疑似使用Pokemon设计的提交需要核查。等待01合并基线并登记任务后，02再派04、06。2026-10-23：用户选择“推到GitHub分支，我去叫01”。02执行`git push origin main:refs/heads/claude/02-chat-scope-20261023`，退出码0，远端分支指向02be085；`git merge-tree --write-tree origin/main 02be085`退出码0，无冲突。main没有推送。
 
 2026-10-21 18:35：按用户要求起草新员工07 iOS、08安卓，并用find-skills选技能。已写[草案](../deliverables/claude-lead/new-roles-07-ios-08-android.md)与[给01的登记请求](../requests/20261021-1835-claude-lead-to-lead-register-ios-android.md)。等01登记后再开对话（用户选择）。18:38按用户确认把5项技能装到项目.claude/skills（swift-testing-pro、mobile-android-design、testing-setup、android-intent-security、kotlin-coroutines-flows）：4次`npx -y skills add … --agent claude-code --copy -y --json`退出码均为0，skills-lock.json新增5条，原有技能未被覆盖。记录见草案第3节“安装记录”。authentication按用户决定未装。之后按用户要求开了07、08的只读待命对话（plan模式），04、06已有对话，不重复开；详见[dispatch](../deliverables/claude-lead/dispatch.md)。07、08已回报只读确认完成（据它们自报：读完规定文件、跑了3条git只读命令、技能SKILL.md可读；08只读了各技能开头）。02核对：暂存区0个文件；已修改的文件仍是原来8项；最近40分钟改动的文件都是02自己的写入或技能安装产物，07、08没有写文件。等待01登记。未提交Git。
 
@@ -68,6 +75,7 @@ ONBOARD-02整体仍未满足TASKS依赖（TEAM7-CONFIG-01审查提交、本人�
 - authentication（PolyForm Perimeter许可）以后是否安装；用户2026-10-21决定先不装。
 - Apple Developer Program会员与身份、Google Play开发者账号、Mac访问方式与工具、本机是否安装Android Studio/JDK、托管与预算。
 - Garmin、Strava、Oura、Fitbit/Google开发者资格与条款；聊天使用的AI供应商与单用户成本上限。
+- 宝可梦角色模型：是否持有权利人授权；没有授权的话，是下线还是替换成原创角色。
 
 ## 待01处理的配置出入（未发请求）
 

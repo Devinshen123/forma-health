@@ -10,7 +10,8 @@
 - 阻塞：TEAM7-CONFIG-01未提交；WORKTREE-SYNC-01、HANDOVER-01 blocked；没有本人checkout则工程写入blocked。
 - 请求：未发出。
 - 2026-10-21 18:35追加：用户决定新增07 iOS、08安卓原生员工，由02起草、01登记，登记后再开对话。已写[草案](../../deliverables/claude-lead/new-roles-07-ios-08-android.md)与[请求](../../requests/20261021-1835-claude-lead-to-lead-register-ios-android.md)；18:38按用户确认把5项技能装进项目.claude/skills，并更新了skills-lock.json；authentication未装。SKILLS-MATRIX仍待01登记。随后按用户要求开了07（local_c9b1e4a1）和08（local_c7b00ccb）的只读待命对话，均为plan模式，不写文件；04、06沿用已有对话。07、08已回报只读确认完成，02核对它们没有写文件。恢复时先看请求末尾有无01的`## 回复`；登记后再给07、08派ONBOARD正式任务。
-- 2026-10-22 23:50追加：按用户“你修改规则”的指示，02一次性修改了FORMA.md §1与§3（聊天记录、第三方接入、聊天历史、原生安卓），未提交。已发[请求](../../requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)给01，请其审查、提交并登记CHAT-*/INTEG-*任务。恢复时先看两份请求有无01回复，以及FORMA是否被01改动或提交。2026-10-23：用户要求提交（28fac4b）；用户声明已获SparkyFitness全部权限，FORMA §3已改为可复用（须记reuse-log）；用户选择按团队流程派工，第一期只做CHAT-*。01登记CHAT-FRONTEND/CHAT-REVIEW后，02再给04、06派工。
+- 2026-10-22 23:50追加：按用户“你修改规则”的指示，02一次性修改了FORMA.md §1与§3（聊天记录、第三方接入、聊天历史、原生安卓），未提交。已发[请求](../../requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)给01，请其审查、提交并登记CHAT-*/INTEG-*任务。恢复时先看两份请求有无01回复，以及FORMA是否被01改动或提交。2026-10-23：用户要求提交（28fac4b）；用户声明已获SparkyFitness全部权限，FORMA §3已改为可复用（须记reuse-log）；用户选择按团队流程派工，第一期只做CHAT-*。01登记CHAT-FRONTEND/CHAT-REVIEW后，02再给04、06派工。2026-10-23：两个提交已推到GitHub分支claude/02-chat-scope-20261023（02be085），可无冲突合入origin/main；本地main仍落后origin/main 73个提交，02没有合并或拉取。
+- 2026-10-24：完成本人工作项02-S1至S4（见dispatch）。关键事实：本地main已严重落后，核对现状要用`git fetch`后`git show origin/main:<path>`；01已完成大部分健康接入和iPhone App，CHAT-*是唯一真正新增的部分。宝可梦素材风险已报告。
 - 下次第一步：重新读取FORMA §5开工清单；检查TASKS中ONBOARD-02、TEAM7-CONFIG-01、WORKTREE-SYNC-01有无变化，requests中有无发给claude-lead的新文件；若本人checkout已创建，在其中核对规则版本与git状态，未同步或有冲突即报告blocked。等待明确任务，不自动开始A–D架构候选。
 - 待用户决定：无新增。
 - 建议技能：拆依赖用team-composition-patterns；换会话用handoff；前端交付与审查安排用vercel-react-best-practices（仅Vite React适用条目）。

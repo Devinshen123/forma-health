@@ -10,6 +10,17 @@
 
 - 2026-10-22：[FORMA范围修改与聊天/第三方接入任务拆分](../../requests/20261022-2350-claude-lead-to-lead-forma-scope-chat-integrations.md)。候选ID（CHAT-*、INTEG-*）尚未登记，02不据此派工。
 
+## 02本人工作项（2026-10-24，用户要求“给自己布置任务”）
+
+这些只是02职责内的工作项，不是正式任务ID，也不派给其他员工。
+
+| 编号 | 内容 | 状态 | 产出 |
+|---|---|---|---|
+| 02-S1 | 核对GitHub最新main与01进展 | 完成 | [findings-20261024](findings-20261024.md) 第1节 |
+| 02-S2 | 第一期聊天（CHAT-*）的依赖拆解，以及给04、06的交付输入 | 完成（草案） | [chat-phase1-dependency-map](chat-phase1-dependency-map.md) |
+| 02-S3 | 宝可梦素材风险只读核查 | 完成 | findings第3节 |
+| 02-S4 | 修正给01的请求：INTEG与07和01已完成的工作重叠 | 完成 | 请求末尾“修正” |
+
 ## 员工对话（2026-10-21）
 
 - 04：已有对话“Forma 04｜前端工程师”（local_be8bcc81，cwd 健康网站-worktrees\frontend）；06：已有对话“Forma 06｜独立审查员”（local_fcb09894，cwd主目录）。同一身份只能有一个写入者，所以不重复开。
