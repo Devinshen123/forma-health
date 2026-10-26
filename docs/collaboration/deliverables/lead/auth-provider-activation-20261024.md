@@ -49,6 +49,8 @@
 
 ## Apple：先确认会员，再准备HTTPS站点
 
+2026-10-25用户明确要求继续Apple申请引导。本人在外部Chrome打开官方`https://developer.apple.com/programs/enroll/`，点击页面实际的`Start your enrollment`，进入Apple官方登录（idmsa.apple.com，标题Sign in to Apple Developer，邮箱/手机号字段为空）。标签953081842已markHandoff；截图原C本机忽略交付apple-enrollment-login-20261025.png。用户本人登录及双重认证，个人/公司申请身份已发问题，尚待选择；未核实会员、填写身份资料、勾选协议、付款或生成Apple凭证。下一步在用户登录后检查实际团队/会员状态，已为会员就避免重复申请，再按本人选择引导。Apple网站正式HTTPS域名仍未有，不因此修改当前可用的Google本机配置。
+
 入口：[Apple Developer账户](https://developer.apple.com/account/)，[会员注册说明](https://developer.apple.com/programs/enroll/)。先由用户登录确认实际团队/会员状态。若确需注册，个人/组织类型、实名资料、协议与付款由用户本人确认；标准会员99美元/年，实际币种、税费和减免以Apple页面为准。组织注册另需法律实体、D-U-N-S及域名相关资料，不能把普通Apple账号当已加入付费计划。
 
 准备清单：

@@ -1,4 +1,10 @@
-## 2026-10-25 AUTH-ENABLE-01 Google本机真实登录通过（最新）
+## 2026-10-25 AUTH-ENABLE-01 Apple申请引导（最新）
+
+用户明确继续Apple登录申请；唯一lead沿用codex/fud-food-photo-20261022，本轮起点a15a47eb40b18b9b57e46f6e8b322fe70092195e且干净。实际在外部Chrome打开Apple官方programs/enroll，点击Start your enrollment，到达idmsa.apple.com登录页，Sign in to Apple Developer与空邮箱/手机号字段已核实。Chrome953081842已markHandoff，截图原C忽略交付apple-enrollment-login-20261025.png。
+
+待用户本人完成Apple登录/双重认证、选择个人还是公司/组织；已发异步问题，不替用户做法律主体选择。尚未核实真实会员、填身份、接受协议、付款或生成凭证；不能将免费Apple账号当付费会员。本轮核对官方标准99USD/年、当地价格为准；个人需实名/联系方式/地址，公司另需法律实体、通常D-U-N-S/公司域名邮箱/官网。登录后先检查会员避免重复申请，再按实际页引导。Apple网站还缺正式HTTPS域名；Google本机通过事实沿用下方，本轮未改.env/服务/健康数据、不跑产品测试、不启动员工。任务板恢复doing，配置指南与本人记录随本步骤精确提交。
+
+## 2026-10-25 AUTH-ENABLE-01 Google本机真实登录通过（此前完成）
 
 用户生成替换凭证并再次明确授权本机配置；已仅保存原C被Git忽略/未跟踪的.env中Google ID/secret/public base，内存解析确认其他设置不变，未输出检查值。该值由用户发入聊天，上线前仍建议私下轮换与停旧，不循环阻止已授权的本机验证。核对实际sourceCommit与原进程后，受控重启63520→95536，仍为5e6b34c；本人两次Invoke-RestMethod auth/options返回Google ready、Apple not_configured，capabilities确认Fud/OpenAI拍照ready。
 

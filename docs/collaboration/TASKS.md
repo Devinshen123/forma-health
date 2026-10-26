@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| AUTH-ENABLE-01 | lead：docs/architecture/authentication-setup.md、docs/collaboration/deliverables/lead/auth-provider-activation-20261024.md、本任务板/本人status与memory；本机被Git忽略的服务端配置和官方申请界面 | blocked | Google本机功能已通过真实授权→回调→同源完成登录→刷新保留，空新账户引导页留给用户，未代填计划/健康事实。实际5e6b34c/PID95536，Google与Fud ready，回调http://127.0.0.1:3001/auth/callback/google；久置流程失效后重新发起成功，未放宽校验。剩余Apple缺登录/会员/HTTPS域名；Google正式公网项目/核验与旧secret停用/上线前私下轮换仍待用户。凭证/配置仅本机忽略.env，不能据本机通过声称公众上线或Apple已开通 |
+| AUTH-ENABLE-01 | lead：docs/architecture/authentication-setup.md、docs/collaboration/deliverables/lead/auth-provider-activation-20261024.md、本任务板/本人status与memory；本机被Git忽略的服务端配置和官方申请界面 | doing | Google本机真实登录/刷新通过，5e6b34c/PID95536。用户2026-10-25明确继续Apple申请引导；已在外部Chrome从官方enroll页点击Start your enrollment到达Apple登录页，等待本人登录/双重认证与个人/公司申请身份选择；未填写身份、提交协议、付款或生成凭证。登录后先核实实际会员，避免重复申请；Apple网站还缺正式HTTPS域名。Google生产核验/旧secret停用/上线前私下轮换仍待用户，不改当前Google配置或健康记录 |
 # 2026-10-24 AUTH 实施（当前）
 
 用户明确要求实现登录并选择邮箱密码、Google与Apple。沿用唯一lead、fud-food-photo checkout与现分支，覆盖旧只读限制；不执行WHOOP/Oura下一阶段申请。方案/契约见docs/architecture/authentication-20261024.md及src/auth.ts。
