@@ -1,4 +1,12 @@
-## 2026-10-26 AUTH-ENABLE-01 Apple申请入口重新打开（最新）
+## 2026-10-26 REA-FORMA-20261026 静态交付（最新）
+
+01 lead；沿用fud-food-photo checkout/codex/fud-food-photo-20261022，起点2cc01d5f86c25d31508666d48c84004f30deb02c且干净。已完成[工作台草稿恢复静态报告](../deliverables/lead/rea-forma-20261026/workbench-draft-static-review.md)，仅改该专属目录、TASKS及本人status/HANDOFF。原C主目录ba4822b的他人未提交内容保持原状。Codex元数据确认本人active、Forma前端notLoaded；Claude/Mac当前writer未知，不接管iOS源码或旧writer范围。
+
+实际发现：本机origin/main=0aa698d与本人HEAD的ios完全一致，目标测试blob caecf91；既有cf2224d单文件修补（恢复轮询5秒、两处导航45秒）存在本机iOS分支548fd62，blob185bc8，产品Session/工作流两分支无差异。因此选定“已有修补未覆盖本机集成验收”的缺口，不重派旧失败，也不宣称时序为唯一根因。保存的旧CI40061328110日志1287/1291行已核对并计算SHA256；另一39745031559原始证据未核实，明确未知。GitHub实时状态未查询。
+
+已执行普通Git/rg/有界读取与文档路径核对；REA技能v39完整读取，其完整源码路由要求普通工具，未生成REA Evidence。git diff --check与报告任务板链接核对通过；提交前另做暂存区差异/空白检查。报告包含固定SHA与精确行号、状态路径、最小单文件移植设计、9场景矩阵及未来Mac命令。没有执行浏览器、服务/合成fixture、测试/构建/模拟器、CI、安装、push/PR或部署，未碰真实健康数据、凭据和权限。静态任务done不代表产品修复/发布完成；实施与发布受现有执行限制及未知写者、缺固定候选验收阻塞。Apple待答卡仍属于另一任务。
+
+## 2026-10-26 AUTH-ENABLE-01 Apple申请入口重新打开（历史，仍待用户）
 
 01 lead；当前直接用户请求为继续Apple登录并先打开官方申请页，沿用本checkout和codex/fud-food-photo-20261022，起点143a4c0acf110b6983ab7cd3bb80922ea75e9fe5且干净。原C主仓库ba4822b存在他人未提交内容，保持只读。已在外部Chrome重新打开https://developer.apple.com/programs/enroll/，核对个人/组织要求与99USD/年（当地价格为准），点击Start your enrollment后到达idmsa.apple.com。登录页起初加载缓慢，刷新一次后最终截图核实Sign in to Apple Developer及空邮箱/手机号字段；Chrome953082008已markHandoff，截图在原C忽略交付.forma-local/deliverables/apple-enrollment-20261026.png。尚未登录或核验会员，未填写身份、接受协议、付款或生成凭证。已发异步状态问题，等待用户本人完成登录及双重认证并告知个人/公司申请主体；Apple网站正式HTTPS域名仍待准备。
 

@@ -1,3 +1,11 @@
+# 2026-10-26 REA-FORMA-20261026 静态交付（当前）
+
+唯一owner为01 lead；沿用codex/fud-food-photo-20261022，文档起点2cc01d5f86c25d31508666d48c84004f30deb02c。完整源码按REA技能v39用普通Git/源码工具审查，不调用REA运行时或伪造Evidence。本轮禁止浏览器、网站/合成服务、测试/构建、CI、安装、凭据/权限变更、真实健康数据、业务文件修改和部署。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| REA-FORMA-20261026 | lead：docs/collaboration/deliverables/lead/rea-forma-20261026/、本任务板、status/lead.md、memory/lead/HANDOFF.md | done | 仅静态交付完成：[报告](deliverables/lead/rea-forma-20261026/workbench-draft-static-review.md)。本机集成0aa698d仍为旧测试blob；iOS分支已有cf2224d修补。已给固定SHA/行号、状态链、最小移植设计、失败/恢复/账户矩阵与未来命令，不重复派修旧失败。静态差异/旧日志/链接核对通过；无产品实测。真实远端及Claude/Mac写者未知，未改业务、启动服务/测试/CI或发布；Apple另待本人登录 |
+
 # 2026-10-24 AUTH-ENABLE-01 实际开通（当前）
 
 用户明确要求真正开通Google/Apple网站登录并打开申请页面引导配置。唯一01 lead，当前checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站，分支codex/fud-food-photo-20261022，源码0aa698db7d066655a2f1e10b8a0e156988529773；实际3001为产品5e6b34c。只登记此配置任务，不启动其他员工或Claude桌面交接。

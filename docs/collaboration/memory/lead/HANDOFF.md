@@ -1,4 +1,12 @@
-## 2026-10-26 AUTH-ENABLE-01 Apple申请入口重新打开（最新）
+## 2026-10-26 REA-FORMA-20261026 静态交付（最新）
+
+01 lead；沿用fud-food-photo checkout/codex/fud-food-photo-20261022，起点2cc01d5f86c25d31508666d48c84004f30deb02c且干净。已完成[工作台草稿恢复静态报告](../../deliverables/lead/rea-forma-20261026/workbench-draft-static-review.md)，只写专属报告、TASKS及本人status/HANDOFF。原C主目录ba4822b及他人未提交内容未改。Claude/Mac活跃写者未知，不能因历史助手交回lead而暗中接管；Codex应用仅显示本人active与Forma前端notLoaded。
+
+关键事实：本机origin/main=0aa698db7d066655a2f1e10b8a0e156988529773，ios与本人HEAD相同；旧目标测试blob caecf91c7ba63299b74ca5d57edf44b22e6193db。修补cf2224d2b963c93d2d3d54e0ee4b058b9286acef在本机iOS分支548fd62b38440ce17ba374063b6c6933910257c4内，修补blob185bc8ecf6139a1157175d30c3657af0b1e386f4；仅测试文件改变，不能把旧失败再次当未知新缺陷。当前剩余是候选移植/验收缺口；未fetch，不声称实时GitHub状态。日志40061328110的missing断言已直接核对，cf提交的“全为时序”只属作者判断，另一39745031559原始证据未知。
+
+下一步只能在执行限制明确解除并确认当前writer后，先查实时候选是否已含修补，再决定是否最小移植；必须保留永久缺失/导航错误负例、账户隔离/退出清理及同候选完整回归。不整合未知分支，不增加无限等待/skip。现阶段只静态交付，实际Git差异、旧日志及文档链接核对完成，git diff --check通过；产品测试/构建、网站/合成服务、浏览器、CI、安装、push/PR/部署均未执行。Apple登录任务保持独立阻塞，等待用户本人登录/双重认证及主体选择；不自动恢复浏览器操作。
+
+## 2026-10-26 AUTH-ENABLE-01 Apple申请入口重新打开（历史，仍待用户）
 
 01 lead；当前直接用户请求为继续Apple登录并先打开官方申请页，沿用本checkout和codex/fud-food-photo-20261022，起点143a4c0acf110b6983ab7cd3bb80922ea75e9fe5且干净。原C主仓库ba4822b存在他人未提交内容，保持只读。已在外部Chrome重新打开https://developer.apple.com/programs/enroll/，核对个人/组织要求与99USD/年（当地价格为准），点击Start your enrollment后到达idmsa.apple.com。登录页起初加载缓慢，刷新一次后最终截图核实Sign in to Apple Developer及空邮箱/手机号字段；Chrome953082008已markHandoff，截图在原C忽略交付.forma-local/deliverables/apple-enrollment-20261026.png。尚未登录或核验会员，未填写身份、接受协议、付款或生成凭证。已发异步状态问题，等待用户本人完成登录及双重认证并告知个人/公司申请主体；Apple网站正式HTTPS域名仍待准备。
 
