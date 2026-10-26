@@ -1,4 +1,10 @@
-## 2026-10-25 AUTH-ENABLE-01 Apple申请引导（最新）
+## 2026-10-26 AUTH-ENABLE-01 Apple申请入口重新打开（最新）
+
+01 lead；当前直接用户请求为继续Apple登录并先打开官方申请页，沿用本checkout和codex/fud-food-photo-20261022，起点143a4c0acf110b6983ab7cd3bb80922ea75e9fe5且干净。原C主仓库ba4822b存在他人未提交内容，保持只读。已在外部Chrome重新打开https://developer.apple.com/programs/enroll/，核对个人/组织要求与99USD/年（当地价格为准），点击Start your enrollment后到达idmsa.apple.com。登录页起初加载缓慢，刷新一次后最终截图核实Sign in to Apple Developer及空邮箱/手机号字段；Chrome953082008已markHandoff，截图在原C忽略交付.forma-local/deliverables/apple-enrollment-20261026.png。尚未登录或核验会员，未填写身份、接受协议、付款或生成凭证。已发异步状态问题，等待用户本人完成登录及双重认证并告知个人/公司申请主体；Apple网站正式HTTPS域名仍待准备。
+
+旧Apple标签连接超时后通过新鲜标签清单确认目标仍存在，在同一Chrome重新打开官方入口成功；没有关闭或重启浏览器，也未改Google配置、访问Forma运行页、运行产品测试或读写健康数据。另一个会话的REA静态诊断委派保持排队，不覆盖当前直接用户Apple请求，未实施该静态任务或对外回信。浏览器技能入口与官方网页已显式读取；本轮只更新任务和本人交接文档，以git diff --check核对，不将历史429测试/登录成功当本轮实测。
+
+## 2026-10-25 AUTH-ENABLE-01 Apple申请引导（历史）
 
 用户明确继续Apple登录申请；唯一lead沿用codex/fud-food-photo-20261022，本轮起点a15a47eb40b18b9b57e46f6e8b322fe70092195e且干净。实际在外部Chrome打开Apple官方programs/enroll，点击Start your enrollment，到达idmsa.apple.com登录页，Sign in to Apple Developer与空邮箱/手机号字段已核实。Chrome953081842已markHandoff，截图原C忽略交付apple-enrollment-login-20261025.png。
 

@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| AUTH-ENABLE-01 | lead：docs/architecture/authentication-setup.md、docs/collaboration/deliverables/lead/auth-provider-activation-20261024.md、本任务板/本人status与memory；本机被Git忽略的服务端配置和官方申请界面 | doing | Google本机真实登录/刷新通过，5e6b34c/PID95536。用户2026-10-25明确继续Apple申请引导；已在外部Chrome从官方enroll页点击Start your enrollment到达Apple登录页，等待本人登录/双重认证与个人/公司申请身份选择；未填写身份、提交协议、付款或生成凭证。登录后先核实实际会员，避免重复申请；Apple网站还缺正式HTTPS域名。Google生产核验/旧secret停用/上线前私下轮换仍待用户，不改当前Google配置或健康记录 |
+| AUTH-ENABLE-01 | lead：docs/architecture/authentication-setup.md、docs/collaboration/deliverables/lead/auth-provider-activation-20261024.md、本任务板/本人status与memory；本机被Git忽略的服务端配置和官方申请界面 | doing | Google本机真实登录/刷新通过为2026-10-25历史实测。用户2026-10-26直接要求继续Apple申请；本人在外部Chrome重新打开官方enroll页并点击Start your enrollment，登录页初始加载缓慢，刷新一次后最终显示Sign in to Apple Developer及空邮箱/手机号表单，已保留页面。待本人登录/双重认证与个人/公司身份选择；未填身份、接受协议、付款或生成凭证。登录后先核实会员；正式HTTPS域名仍待准备。本轮未访问Forma网站、改配置、重启服务或读写健康记录，当前运行状态未复测 |
 # 2026-10-24 AUTH 实施（当前）
 
 用户明确要求实现登录并选择邮箱密码、Google与Apple。沿用唯一lead、fud-food-photo checkout与现分支，覆盖旧只读限制；不执行WHOOP/Oura下一阶段申请。方案/契约见docs/architecture/authentication-20261024.md及src/auth.ts。
