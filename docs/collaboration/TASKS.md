@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| VERSION-ALIGN-01 | lead：FORMA.md、WORKSPACES.md、本任务板、decisions/、deliverables/lead/version-alignment-20261027/及本人status/HANDOFF；既有Git分支的保留式同步 | doing | 已fetch核实GitHub main=0aa698d，合并保留01的4次文档提交与02的3次文档提交，合并提交da6cda9；产品/测试/依赖/工作流未变。Windows原目录276个未跟踪文件已建立SHA256清单，demo-meal.png原删除保留；原目录更新等待确认Claude停写。Mac无在线连接，等待本人选择同步方式及回传真实状态；共同基线和安全Mac步骤写WORKSPACES，不冒称三端已完成 |
+| VERSION-ALIGN-01 | lead：FORMA.md、WORKSPACES.md、本任务板、decisions/、deliverables/lead/version-alignment-20261027/及本人status/HANDOFF；既有Git分支的保留式同步 | blocked | Windows主管工作区与GitHub main/主管分支已正常原子推送对齐，首轮发布217a807及TASKS blob已通过连接器核对；01四次与02三次文档提交完整保留，产品/测试/依赖/工作流未变。用户已明确原C目录保持不动；276个未跟踪文件hash、原demo删除、HEAD与status复核均不变。Mac无在线连接，等待本人选择同步方式及回传实际目录/分支/SHA/未提交状态；不是三端全部完成，其他步骤不执行 |
 
 以下汇总优先于后方历史切片中的旧todo、旧“未配置”及旧完成说明。历史正文保留证据，不因同步而重新执行或重复派工。
 

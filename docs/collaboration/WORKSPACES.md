@@ -8,7 +8,7 @@
 
 - 保留所有原目录、分支、未提交文件及本机数据。禁止`reset --hard`、`clean`、强推、自动stash、覆盖目录或恢复`public/demo-meal.png`的原删除。
 - 01已在本人checkout以保留父提交的合并集成原Windows main的3次文档提交和01的4次文档提交：合并提交`da6cda9c85caa17f5066dc5165d8f79122d0cdd2`，父提交分别为`7e818628528473236f89f51225a41d24259a2282`及`ba4822b7dc54f95950ddf7814ae93b6b5a3b2a61`。产品、测试、依赖和工作流未因该合并改变。
-- Windows原目录`C:/Users/devin/健康网站`仍在原位置。01集成checkout为`C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站`。原目录更新前先确认Claude停写，未确认时保持原状；不直接更新另一个已checkout分支的ref来绕过检查。
+- Windows原目录`C:/Users/devin/健康网站`仍在原位置。01集成checkout为`C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站`。用户本轮已明确“原目录保持不动”，因此原目录停留在ba4822b，不做快进或文件更新；不直接更新另一个已checkout分支的ref来绕过检查。当前最新任务板从GitHub main或01集成checkout读取，冻结原目录中的旧副本不能用于新的派工。
 - 同一角色的Windows与Mac不能同时写同一份任务/记忆。当前01写者仍是Windows本会话；Mac本轮只做Git状态核对和接收同步，不另开第二个lead写者，不启动员工。
 - `.env`、密钥、数据库、上传照片、健康记录、缓存和本机技能路径不通过此次Git同步复制到Mac。
 

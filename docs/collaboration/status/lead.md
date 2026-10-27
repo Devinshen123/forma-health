@@ -2,9 +2,9 @@
 
 用户只批准计划第1项。01 lead沿用fud-food-photo checkout/codex/fud-food-photo-20261022；开工7e818628528473236f89f51225a41d24259a2282干净。git fetch成功，GitHub连接器TASKS核对及本机refs确认远端main为0aa698d；原C main为ba4822b且保留3个02独有文档提交。已在本人checkout正常merge形成da6cda9c85caa17f5066dc5165d8f79122d0cdd2，两个父提交完整保留，10项变更均为协作文档，产品/测试/依赖/工作流无变化。
 
-已记录原C 276个未跟踪文件的大小/hash及原demo删除，清单在本人Git忽略交付windows-main-before.json；原目录尚未更新，等待用户确认Claude停写。远程设备目录只有离线设备，Codex没有Mac主机，已询问用户Mac同步方式；未声称Mac已对齐，也没有尝试未知SSH地址。唯一任务状态已整理到TASKS顶部，旧任务保留历史；WORKSPACES已把旧handoff分支标历史，提供只做Git的Mac核对/快进步骤。07/08、CHAT与真实接入不派工。
+已记录原C 276个未跟踪文件的大小/hash及原demo删除，清单在本人Git忽略交付windows-main-before.json。用户已答“不确定，先保持原目录不动”，原C未快进/改文件；逐项复核变化/缺失0、status差异0、HEAD不变、原删除保留。远程设备目录只有离线设备，Codex没有Mac主机，Mac同步方式问题仍待答；未声称Mac已对齐，也没有尝试未知SSH地址。唯一任务状态已整理到TASKS顶部，原C冻结任务板是旧副本，不再用于新派工；GitHub main/主管checkout是当前入口。07/08、CHAT与真实接入不派工。
 
-当前交付：FORMA、TASKS、WORKSPACES、decision与[同步回执](../deliverables/lead/version-alignment-20261027/alignment.md)及本人交接。下一步精确提交文档、正常push main及主管分支并核对远端SHA/blob；原C和Mac须满足writer/现场状态条件才更新。只进行Git和文档核对，不运行产品测试、build、网站、CI、部署、安装或账号/健康操作。最终各端状态以同步回执及后续核对为准。
+已交付FORMA、TASKS、WORKSPACES、decision与[同步回执](../deliverables/lead/version-alignment-20261027/alignment.md)及本人交接。首轮217a807已atomic正常push到main/主管分支，ls-remote/本机HEAD相同且干净；GitHub连接器固定提交读取TASKS，blob4ea194f一致。两原HEAD祖先与业务树无差异检查exit0，文档链接/空白检查通过。此后仅补实际回执与等待状态，继续精确提交同步，不部署。VERSION-ALIGN-01因Mac未连接/状态未知标blocked，原C按用户要求冻结；不启动产品测试、build、网站、CI、安装或账号/健康操作。下一步只等待Mac连接方式/实际状态，不能自动开始计划第2–6项。
 
 ## 2026-10-26 REA-FORMA-20261026 静态交付（历史）
 

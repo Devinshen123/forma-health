@@ -28,7 +28,14 @@
 - Windows原目录更新前确认现有Claude已停写；更新后HEAD一致，276个原未跟踪文件hash逐一不变，原demo删除仍存在，其他本机私有目录原地保留。
 - Mac提供其实际checkout、分支、SHA、未提交状态；在不丢本地改动的前提下正常快进到最终提交，TASKS blob一致。没有实际回执即未完成。
 
-初始状态：01共同基线及文档准备完成；GitHub最终push待执行；Windows原目录等待writer状态答复；Mac等待用户选择连接/手动同步方式。后续实际结果记录在本文下方，不把准备完成写成三端已对齐。
+### 已执行结果
+
+- `git push --atomic origin HEAD:refs/heads/main HEAD:refs/heads/codex/fud-food-photo-20261022`成功；首轮共同提交为`217a8076be30d5c41ee1211df9ba91a50682bec1`。`git ls-remote`确认两个远端分支相同，Windows主管工作区HEAD相同且干净。
+- 首轮TASKS blob为`4ea194fae483af62490421044e57143b5b3270ad`，GitHub连接器按固定217a807读取该文件，返回同一blob与最新任务状态入口。本文及等待状态的后续精确文档提交继续正常同步到两个分支；最终交付SHA以本次最终git log/ls-remote回执为准，不在提交正文中自引用本提交SHA。
+- `git merge-base --is-ancestor`确认01与02两个原HEAD均为共同候选祖先；相对7e81862的产品/测试/依赖/工作流差异检查通过，exit0。
+- 用户回答“不确定，先保持原目录不动”。已照办，没有更新原C main或任何原文件。再次逐项核验276个原未跟踪文件：变化/缺失0；原git status差异0、HEAD不变、demo原删除仍保留。原目录中的任务板仍为旧副本；当前权威入口是GitHub main和01集成checkout。
+- Mac没有在线连接，实际checkout/本地提交仍未知，用户尚未选择第二个问题中的同步方式。本轮不能完成Mac端写入或验收，VERSION-ALIGN-01因此标blocked；不会用Windows/GitHub已完成代替三端完成。
+- 文档链接核对、git diff --check及暂存区检查通过。未执行产品测试或构建；无需为本轮纯文档同步启动服务/CI。
 
 ## 未执行
 
