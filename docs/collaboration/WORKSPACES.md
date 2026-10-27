@@ -1,5 +1,55 @@
 # Forma 工作目录与迁移决定
 
+## 当前跨机器同步入口（2026-10-27 / VERSION-ALIGN-01）
+
+用户本轮只授权代码版本、协作规则和任务板对齐。共同分发入口为`Devinshen123/forma-health`的`main`；01继续沿用`codex/fud-food-photo-20261022`及现有checkout，两者以本轮最终回执SHA为准。下面2026-10-21的旧`codex/mac-handoff-20261021`步骤仅作历史，不能再当最新版本入口，也不要按旧步骤安装依赖、运行测试或启动网站。
+
+### 保留与唯一写者
+
+- 保留所有原目录、分支、未提交文件及本机数据。禁止`reset --hard`、`clean`、强推、自动stash、覆盖目录或恢复`public/demo-meal.png`的原删除。
+- 01已在本人checkout以保留父提交的合并集成原Windows main的3次文档提交和01的4次文档提交：合并提交`da6cda9c85caa17f5066dc5165d8f79122d0cdd2`，父提交分别为`7e818628528473236f89f51225a41d24259a2282`及`ba4822b7dc54f95950ddf7814ae93b6b5a3b2a61`。产品、测试、依赖和工作流未因该合并改变。
+- Windows原目录`C:/Users/devin/健康网站`仍在原位置。01集成checkout为`C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站`。原目录更新前先确认Claude停写，未确认时保持原状；不直接更新另一个已checkout分支的ref来绕过检查。
+- 同一角色的Windows与Mac不能同时写同一份任务/记忆。当前01写者仍是Windows本会话；Mac本轮只做Git状态核对和接收同步，不另开第二个lead写者，不启动员工。
+- `.env`、密钥、数据库、上传照片、健康记录、缓存和本机技能路径不通过此次Git同步复制到Mac。
+
+### Mac先报告实际状态
+
+当前连接目录没有在线Mac；没有远程操作或核实Mac checkout。用户在Mac已存在的Forma目录打开终端，执行以下只读命令；不要先运行旧的启动命令：
+
+```bash
+pwd
+git status --short --branch
+git branch --show-current
+git log -1 --format='%H %s'
+git remote -v
+```
+
+回传目录、分支、SHA及是否有未提交内容即可，不发送`.env`、凭据、照片或数据库。如果remote URL带凭据，先去掉凭据再回传。未确认现有写者停写前不要继续；本会话也不会因收到同步任务自动给其他会话发消息。
+
+### Mac接收共同基线（条件满足后才执行）
+
+以下只适用于**原有main分支、工作区干净、Mac现有写者停写**的情况。任何条件不满足，保留原状，先回传状态；不自动改分支、合并本地业务提交或清理工作区。
+
+```bash
+git fetch origin
+git log --left-right --oneline HEAD...origin/main
+# 只有列表没有以“<”开头的本地独有提交，且工作区仍干净时：
+git merge --ff-only origin/main
+git status --short --branch
+git rev-parse HEAD
+git rev-parse origin/main
+git rev-parse HEAD:docs/collaboration/TASKS.md
+git rev-parse origin/main:docs/collaboration/TASKS.md
+```
+
+预期：Mac HEAD与最终GitHub main SHA完全相同，两次TASKS blob也完全相同，未提交内容不被丢弃。若在iPhone等功能分支，或者有未推送提交/未提交改动，停止在只读核对阶段；由01按实际diff设计保留式整合，不把`--ff-only`失败改成强制更新。
+
+尚未克隆时，等用户明确Mac目标位置及确认不会替代已有目录后，再给出克隆步骤；不假定`~/Developer/forma-health`已经存在。
+
+### 本轮不执行
+
+不执行`npm ci`、测试、build、模拟器、CI、启动网站、部署、Apple/Google申请、凭据轮换或真实设备同步。本轮最终SHA、各端已完成/未知状态及保留核对见[对齐回执](deliverables/lead/version-alignment-20261027/alignment.md)。尚未收到Mac回执前，Mac一栏必须保持未完成。
+
 ## Mac接手（2026-10-21）
 
 用户授权将已有工作同步GitHub，在另一台Mac继续操作。Windows原项目保持原位，不复制数据库或本机工具缓存。当前配置候选分支为`codex/mac-handoff-20261021`，包含现有网站代码和七人员工MD/记忆/任务配置；配置仍待独立审查，远端main不因此自动集成。这是源代码同步，不是网站部署，也不是用户健康记录同步。

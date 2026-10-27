@@ -1,4 +1,12 @@
-## 2026-10-26 REA-FORMA-20261026 静态交付（最新）
+## 2026-10-27 VERSION-ALIGN-01 版本与任务板同步（最新）
+
+唯一01 lead；用户只批准计划第1项，其余步骤不执行。checkout仍为C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站，codex/fud-food-photo-20261022，起点7e81862干净。已fetch核实GitHub main=0aa698db7d066655a2f1e10b8a0e156988529773，并用GitHub连接器读取TASKS佐证。正常merge原C main=ba4822b形成da6cda9c85caa17f5066dc5165d8f79122d0cdd2；01四次文档提交和02三次文档提交全部保留。相对01起点产品/测试/依赖/工作流无改动。
+
+原C目录仍有276个未跟踪文件与demo-meal.png删除，未暂存；已在本人忽略目录.forma-local/deliverables/version-alignment-20261027/windows-main-before.json保存文件hash清单，不复制文件正文或.env/data。原目录是否Claude已停写待用户回答，不能直接改ref/跨目录覆盖。Mac无在线设备连接、实际路径/SHA/dirty未知，已询问用户选择手动步骤或连接方式；未知时不试SSH、不编造同步完成。
+
+本轮文档范围：FORMA、唯一TASKS、WORKSPACES、decisions/20261027-version-alignment.md、deliverables/lead/version-alignment-20261027/alignment.md及本人status/HANDOFF。共同分发入口main，主管分支沿用；旧mac-handoff仅历史。下一步精确提交/正常push并验证远端SHA和TASKS blob；原C与Mac待writer及实际状态满足后只做安全Git同步。不能启动员工、安装、测试/build/网站/CI、部署或配置任何账号/真实设备。完成状态按[回执](../../deliverables/lead/version-alignment-20261027/alignment.md)更新，Apple待答卡不属于本轮前置条件。
+
+## 2026-10-26 REA-FORMA-20261026 静态交付（历史）
 
 01 lead；沿用fud-food-photo checkout/codex/fud-food-photo-20261022，起点2cc01d5f86c25d31508666d48c84004f30deb02c且干净。已完成[工作台草稿恢复静态报告](../../deliverables/lead/rea-forma-20261026/workbench-draft-static-review.md)，只写专属报告、TASKS及本人status/HANDOFF。原C主目录ba4822b及他人未提交内容未改。Claude/Mac活跃写者未知，不能因历史助手交回lead而暗中接管；Codex应用仅显示本人active与Forma前端notLoaded。
 

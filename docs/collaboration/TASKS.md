@@ -1,4 +1,24 @@
-# 2026-10-26 REA-FORMA-20261026 静态交付（当前）
+# 2026-10-27 版本与任务板对齐（当前唯一状态入口）
+
+用户本轮只授权计划第1项：对齐Windows、Mac、GitHub的代码版本与任务板，并保留既有改动。唯一owner为01 lead。允许为版本同步执行Git读取、fetch、保留历史的合并、精确文档提交及正常push；不启动网站、测试/构建、CI、安装、部署、账号/设备申请或下一阶段功能。此限定仅覆盖本轮同步所需Git操作，不扩大其他历史任务权限。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| VERSION-ALIGN-01 | lead：FORMA.md、WORKSPACES.md、本任务板、decisions/、deliverables/lead/version-alignment-20261027/及本人status/HANDOFF；既有Git分支的保留式同步 | doing | 已fetch核实GitHub main=0aa698d，合并保留01的4次文档提交与02的3次文档提交，合并提交da6cda9；产品/测试/依赖/工作流未变。Windows原目录276个未跟踪文件已建立SHA256清单，demo-meal.png原删除保留；原目录更新等待确认Claude停写。Mac无在线连接，等待本人选择同步方式及回传真实状态；共同基线和安全Mac步骤写WORKSPACES，不冒称三端已完成 |
+
+以下汇总优先于后方历史切片中的旧todo、旧“未配置”及旧完成说明。历史正文保留证据，不因同步而重新执行或重复派工。
+
+| 已有任务/范围 | 当前状态 | 未完成部分 / owner |
+|---|---|---|
+| FUD-01 / FUD-LIVE-01 | 代码与合成编辑保存已交付；2026-10-22真实示例识别成功，真实示例未保存 | 真实识别精度、更多实物样本与正式环境验收尚未进行；后续另派，不重复做接入 |
+| AUTH-SERVER / AUTH-WEB / AUTH-INTEGRATE | 实现已交付；429项与build为2026-10-24历史结果 | Google本机2026-10-25真实通过；邮件真实投递、正式域名/Google生产配置、Apple尚未完成；AUTH-ENABLE-01仍待用户与外部条件 |
+| HEALTH-SERVER / HEALTH-WEB / HEALTH-BASE | 基础契约、WHOOP/Oura/Google云端代码及连接审核页面已由HEALTH-SERVER/WEB覆盖 | 真实OAuth与同步未验收；HEALTH-CLOUD表示剩余真实联调/新增平台，不重建已完成基础 |
+| HEALTH-IOS / IOS-WK-REGRESSION | review；已有iPhone/HealthKit代码，完整验收未闭环 | cf2224d已有测试修补，是否已在Mac当前候选纳入未知；先核实再决定移植，真机签名/权限/数据同步另待执行授权 |
+| REA-FORMA-20261026 | done，仅静态报告 | 没有产品修复、测试或发布结果；不把静态报告当真机验收 |
+| CHAT-*、Garmin/Strava、华为/小米/Keep、Android、07/08岗位 | 候选或后续范围，未因本轮正式派发 | 02的已提交范围请求已保留；现有七身份不变，旧writer及具体路径需以后确认；不启动员工 |
+| 计划第2–6项 | 本轮不执行 | 域名/托管、登录开通、iOS修补验收、真实设备与整体试用均不开始 |
+
+# 2026-10-26 REA-FORMA-20261026 静态交付（历史切片）
 
 唯一owner为01 lead；沿用codex/fud-food-photo-20261022，文档起点2cc01d5f86c25d31508666d48c84004f30deb02c。完整源码按REA技能v39用普通Git/源码工具审查，不调用REA运行时或伪造Evidence。本轮禁止浏览器、网站/合成服务、测试/构建、CI、安装、凭据/权限变更、真实健康数据、业务文件修改和部署。
 
