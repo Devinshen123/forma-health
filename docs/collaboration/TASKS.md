@@ -1,4 +1,13 @@
-# 2026-10-27 版本与任务板对齐（当前唯一状态入口）
+# 2026-10-27 报告导航静态审查（最新任务）
+
+协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核，不操作共享Claude桌面。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | review | [静态报告](deliverables/lead/report-nav-static-20261028/report.md)与[原02复核包](deliverables/lead/report-nav-static-20261028/claude-review-request.md)已完成；源码固定7b260c2。发现Reports未接dirty/busy/beforeunload及关闭确认保护；现有harness不挂完整App，不能证明导航通过。已给13场景、最小Reports修复设计及证据边界，文档检查通过；没有产品修复/运行时验收，不重复iOS审计；独立复核未接收 |
+| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 拟原02 claude-lead本人；仅其已核实可写且不在冻结原C内的checkout中deliverables/claude-lead/report-navigation-review-20261028.md | blocked | 当前无真实接收、独立可写checkout或获准发送入口；共享桌面时隙未交回。01只准备lead目录复核包，不代写review、不创建新代理/06、不把Codex接收当Claude通过；实际审核人/工具/模型待其回执 |
+
+# 2026-10-27 版本与任务板对齐（状态保留）
 
 用户本轮只授权计划第1项：对齐Windows、Mac、GitHub的代码版本与任务板，并保留既有改动。唯一owner为01 lead。允许为版本同步执行Git读取、fetch、保留历史的合并、精确文档提交及正常push；不启动网站、测试/构建、CI、安装、部署、账号/设备申请或下一阶段功能。此限定仅覆盖本轮同步所需Git操作，不扩大其他历史任务权限。
 

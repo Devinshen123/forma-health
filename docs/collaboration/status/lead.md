@@ -1,4 +1,14 @@
-## 2026-10-27 VERSION-ALIGN-01 版本与任务板同步（最新）
+## 2026-10-27 FORMA-REPORT-NAV-STATIC-20261028（最新）
+
+01 lead / Codex，具体运行模型未核实；同一主管checkout/codex/fud-food-photo-20261022，开工7b260c2a21acfd2009a753e3b07385e5fe7320a5干净。仅写本任务lead专属deliverables、TASKS与本人status/HANDOFF；原C全目录未写、Mac未操作，VERSION-ALIGN原冻结仍保留。已读规则/本人入口记忆、02公开status/dispatch/HANDOFF、AUTH-DIAG-02候选及security-review技能；渲染技能仅阅读未执行。
+
+已完成[静态报告](../deliverables/lead/report-nav-static-20261028/report.md)和[原02复核包](../deliverables/lead/report-nav-static-20261028/claude-review-request.md)。固定当前健康报告入口，不混用趋势/WK或未知旧分支。F1为Reports未接useRecordGuard/onUnsavedChange/beforeunload/dirty关闭确认；pending=0时同步层不能替代未保存表单保护。Modal.showModal会阻止背景导航，报告明确不用强点背景作伪复现。C1为现有sleep-report-lifecycle harness不挂App且无回调，不能关闭导航验收。给出精确行号/源码blob、13场景矩阵与最小修复设计；没有改业务或测试源码。
+
+实际核对：Git状态/SHA/blob、普通有界源码/测试读取；Reports限定guard搜索无匹配，全文来源已核对；文档链接和git diff --check通过。报告本机字节SHA256 AFA3A84D8E8C615CD3598E70D74BF3430F666AEB4611CBA60D27C6E6C3B31957，未来审核须绑定文档提交及源码SHA。未运行浏览器、网站/server、测试/build/CI、安装、远端请求、push、合并或部署，未访问env/真实健康数据。
+
+独立复核blocked：原02只有2026-10-24历史公开状态，当前忙闲/模型/安全可写checkout未知；无真实接收。共享桌面尚未交回发送时隙，未核实可用非UI原02通道；没有鼠键/切窗口、新CLI、跨会话代投或新代理，也没有代写review/声称06通过。复核包已落盘待接收，原转交用户证据保留；下一步仅等待协调方提供合法入口/时隙，再由原02本人按固定版本审查，不扩展业务或提醒休息用户。
+
+## 2026-10-27 VERSION-ALIGN-01 版本与任务板同步（历史，阻塞保留）
 
 用户只批准计划第1项。01 lead沿用fud-food-photo checkout/codex/fud-food-photo-20261022；开工7e818628528473236f89f51225a41d24259a2282干净。git fetch成功，GitHub连接器TASKS核对及本机refs确认远端main为0aa698d；原C main为ba4822b且保留3个02独有文档提交。已在本人checkout正常merge形成da6cda9c85caa17f5066dc5165d8f79122d0cdd2，两个父提交完整保留，10项变更均为协作文档，产品/测试/依赖/工作流无变化。
 

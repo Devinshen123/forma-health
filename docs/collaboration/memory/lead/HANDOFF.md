@@ -1,4 +1,14 @@
-## 2026-10-27 VERSION-ALIGN-01 版本与任务板同步（最新）
+## 2026-10-27 FORMA-REPORT-NAV-STATIC-20261028（最新）
+
+唯一01 lead / Codex，实际模型精确型号未核实。主管checkout仍C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，开工7b260c2a21acfd2009a753e3b07385e5fe7320a5干净。源码固定该SHA，本轮只写lead/report-nav-static-20261028/两份文档、TASKS及本人status/HANDOFF；不更新原C整个目录、Mac或远端，不做新同步/合并/push。
+
+静态已完成：[报告](../../deliverables/lead/report-nav-static-20261028/report.md)、[原02独立复核包](../../deliverables/lead/report-nav-static-20261028/claude-review-request.md)。Reports组件未接dirty/busy回调与beforeunload、onClose直接清空未保存草稿；App通用离站保护只覆盖特定pending同步，不能覆盖pending=0的表单。原生dialog阻止背景点击，不能伪造侧栏复现；组件harness声明不挂完整App，不能证明导航验收。报告给出实际桌面/手机入口、鉴权/快照/附件/返回/刷新/退出调用链、具体行号、最小设计与13个未来场景。源码接线缺口与用户影响推断分开，未实测产品或宣称已修复。
+
+Git/source/blob、限定guard搜索、Markdown链接及git diff --check已核对。report.md本机工作区字节SHA256 AFA3A84D8E8C615CD3598E70D74BF3430F666AEB4611CBA60D27C6E6C3B31957；跨平台需以文档提交/blob加源码SHA绑定，不能只对换行敏感hash。没有浏览器、网站/server、测试/build/CI、安装、真实健康记录/env/凭据、远端请求、原目录写入或发布动作。仅本地精确提交文档，不推送。
+
+整体待独立复核：拟原02本人/Claude Code，未收到、未审核，06没有接收证明。02当前忙闲/模型/非冻结可写checkout未知；原公开状态只到2026-10-24。共享Claude桌面发送时隙未由协调方交回，也未核实允许的原02非UI通道；不要切窗口、鼠键、新CLI恢复旧会话或通过另一会话代投绕过。02复核文件仅由其本人在已确认安全checkout独占写，01未创建。下一步等合法入口/时隙再按复核包实际交付；不再重复10/26 iOS草稿审计/版本对齐，不扩展业务，不打扰休息用户。
+
+## 2026-10-27 VERSION-ALIGN-01 版本与任务板同步（历史，阻塞保留）
 
 唯一01 lead；用户只批准计划第1项，其余步骤不执行。checkout仍为C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站，codex/fud-food-photo-20261022，起点7e81862干净。已fetch核实GitHub main=0aa698db7d066655a2f1e10b8a0e156988529773，并用GitHub连接器读取TASKS佐证。正常merge原C main=ba4822b形成da6cda9c85caa17f5066dc5165d8f79122d0cdd2；01四次文档提交和02三次文档提交全部保留。相对01起点产品/测试/依赖/工作流无改动。
 
