@@ -1,4 +1,12 @@
-## 2026-10-27 原02独立结论收齐与文档小修订（最新）
+## 2026-10-27 原02限范围关闭复核静态通过（最新）
+
+协调方要求继续同一任务、对1ced520限范围关闭复核。ControlStatus ready/generation3/wait0，原Forma02会话等待输入/消息框空白，已各核实后仅发送一次；截图确认Thinking，输入时隙已释放。随后只读同会话约19:17–19:18 PDT收到实际结论“关闭复核静态通过”。实际原02再次确认claude-lead / Claude Code桌面版 / Claude Opus5.5（claude-opus-5-5），并自报get_session self核实原会话ID。读取HEAD1ced52006ca6b30cf6dfea42518d41fdf6fe1f6e、报告blob73fbd3d4eb5726f0c85bb7afda8884c0148d860d，均与本地/提交一致。
+
+通过仅覆盖本次四点文档：遮罩与背景不可点区别、pending充分示例范围、N5/N6/N7以及静态未实测边界；N11附件处理/首次摘录也获确认。[关闭回执](../deliverables/lead/report-nav-static-20261028/closure-review-receipt.md)在01自己目录保存真实来源、读版本、理由和未验层；首次a70f218“需小修订”原文保留，不冒写02/06。原02澄清首次文档是本地文件读取后hash-object核对、源码才git show；此无关结论措辞在新回执说明，不改已审核报告/blob或首次回执，避免无必要重审。
+
+静态交付和两轮真实独立意见已闭环，原有报告未二审措辞是其当时状态，由新回执更新。产品未修、N1–N13全未运行、06未验。原C全目录未写、Mac/远端未操作，无网站/浏览器/server/测试/build/CI/安装/新员工CLI或checkout/同步/push/合并/发布/权限动作；本地仅精确提交新回执、唯一TASKS与本人status/HANDOFF。后续产品实施不自动启动。
+
+## 2026-10-27 原02独立结论收齐与文档小修订（历史）
 
 本地约19:12–19:13 PDT，在原Forma 02当前窗口只读收到实际回复；未切到其他项目或重复派工。原02自报claude-lead / Claude Code桌面Code标签页 / Claude Opus5.5（claude-opus-5-5），未参与本报告写作；主管checkout codex分支读取HEAD a70f218，固定源码7b260c2，原report blob1a844250和SHA256均匹配。实际结论为“需修订（小修订）”，F1/C1及实际入口链成立；漏了Modal:43–53遮罩关闭路径。身份/时间/读版本/具体意见与未验层保存在本人[独立回执](../deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)，不是02作者文件。
 

@@ -1,11 +1,11 @@
 # 2026-10-27 报告导航静态审查（最新任务）
 
-协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核。协调方随后明确授予一次共享桌面发送时隙；01只向原Forma 02发送复核，确认消息显示且Working后已释放输入时隙，详见发送回执。
+协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核。协调方先授予一次共享桌面初审发送时隙，之后明确继续一次限范围关闭复核；两次都先确认原02/控制空闲，只各发送一次，验证后释放输入时隙，未中断其他项目。
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | done | 仅静态交付闭环：[报告](deliverables/lead/report-nav-static-20261028/report.md)、13场景矩阵、最小设计及[原02实际结论](deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)已收齐。源码固定7b260c2；原02核对首次文档a70f218/blob1a844250，确认F1/C1，要求补遮罩关闭。01已据其意见补F1、N5/N6/忙碌/附件数量与边界；修订版未二审，不称02通过。无产品修复/运行时验收，C原目录/Mac/远端未操作 |
-| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 实际既有原02 claude-lead本人 / Claude Code原会话；只读并在原会话回复，无review文件写入 | done | 本地2026-10-27约19:12–19:13 PDT只读收到原会话local_ccd8b410-dccb-411d-920f-ee3ad36f438f结论“需修订（小修订）”；自报Claude Opus5.5/claude-opus-5-5、独立上下文、主管checkout/codex分支读取HEAD a70f218、固定源码7b260c2与原报告hash匹配。只读审核完成而非产品通过；原文/证据/未验层见[01归属回执](deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)。不冒写02/06作者，输入时隙已释放，无重复消息/新代理 |
+| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | done | 仅静态交付闭环：[报告](deliverables/lead/report-nav-static-20261028/report.md)、13场景矩阵、最小设计及两轮独立意见已收齐。源码7b260c2；初审a70f218/blob1a844250需小修订，原文保留；修订文档1ced520/report blob73fbd3d4经原02四点[关闭复核静态通过](deliverables/lead/report-nav-static-20261028/closure-review-receipt.md)。已审核报告不再改写；无产品修复/运行时或06验收，原C/Mac/远端未操作 |
+| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 实际既有原02 claude-lead本人 / Claude Code原会话；只读并在原会话回复，无review文件写入 | done | 原会话local_ccd8b410-dccb-411d-920f-ee3ad36f438f，自报Claude Opus5.5/claude-opus-5-5；[首次回执](deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)约19:12–19:13 PDT为需小修订。约19:17–19:18 PDT对1ced520/blob73fbd3d4明确关闭复核静态通过：遮罩、pending、N5/N6/N7、静态边界均准确，摘录未曲解原意。实际版本/范围/无关措辞澄清见[第二次回执](deliverables/lead/report-nav-static-20261028/closure-review-receipt.md)。两结论分别绑定，非产品通过；不冒写02/06，时隙已释放 |
 
 # 2026-10-27 版本与任务板对齐（状态保留）
 
