@@ -4,8 +4,8 @@
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | review | [静态报告](deliverables/lead/report-nav-static-20261028/report.md)与[原02复核包](deliverables/lead/report-nav-static-20261028/claude-review-request.md)在本地提交a70f218；源码固定7b260c2。发现Reports未接dirty/busy/beforeunload及关闭确认保护；现有harness不挂完整App，不能证明导航通过。已给13场景、最小Reports修复设计及证据边界；无产品修复/运行时验收。原02消息已显示且Working，正式接单/结论待回执；[发送凭据](deliverables/lead/report-nav-static-20261028/delivery-receipt.md) |
-| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 既有原02 claude-lead本人 / Claude Code原会话；只读并在原会话回复，禁止写原C或任何review文件 | review | 2026-10-28约02:05 UTC：已核实原会话local_ccd8b410-dccb-411d-920f-ee3ad36f438f，向其发送一次，消息与Working已显示；UI模型为Opus 5.5 Extra，实际执行身份/模型/checkout/SHA待本人回执。Showroom运行未停止，发送输入时隙已释放。不把UI投递成功当审核通过，不代写02/06结论，不创建新代理；[凭据](deliverables/lead/report-nav-static-20261028/delivery-receipt.md)更新旧复核包通信状态 |
+| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | done | 仅静态交付闭环：[报告](deliverables/lead/report-nav-static-20261028/report.md)、13场景矩阵、最小设计及[原02实际结论](deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)已收齐。源码固定7b260c2；原02核对首次文档a70f218/blob1a844250，确认F1/C1，要求补遮罩关闭。01已据其意见补F1、N5/N6/忙碌/附件数量与边界；修订版未二审，不称02通过。无产品修复/运行时验收，C原目录/Mac/远端未操作 |
+| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 实际既有原02 claude-lead本人 / Claude Code原会话；只读并在原会话回复，无review文件写入 | done | 本地2026-10-27约19:12–19:13 PDT只读收到原会话local_ccd8b410-dccb-411d-920f-ee3ad36f438f结论“需修订（小修订）”；自报Claude Opus5.5/claude-opus-5-5、独立上下文、主管checkout/codex分支读取HEAD a70f218、固定源码7b260c2与原报告hash匹配。只读审核完成而非产品通过；原文/证据/未验层见[01归属回执](deliverables/lead/report-nav-static-20261028/independent-review-receipt.md)。不冒写02/06作者，输入时隙已释放，无重复消息/新代理 |
 
 # 2026-10-27 版本与任务板对齐（状态保留）
 
