@@ -1,11 +1,11 @@
 # 2026-10-27 报告导航静态审查（最新任务）
 
-协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核，不操作共享Claude桌面。
+协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核。协调方随后明确授予一次共享桌面发送时隙；01只向原Forma 02发送复核，确认消息显示且Working后已释放输入时隙，详见发送回执。
 
 | ID | owner / 独占范围 | 状态 | 依赖与验收 |
 |---|---|---|---|
-| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | review | [静态报告](deliverables/lead/report-nav-static-20261028/report.md)与[原02复核包](deliverables/lead/report-nav-static-20261028/claude-review-request.md)已完成；源码固定7b260c2。发现Reports未接dirty/busy/beforeunload及关闭确认保护；现有harness不挂完整App，不能证明导航通过。已给13场景、最小Reports修复设计及证据边界，文档检查通过；没有产品修复/运行时验收，不重复iOS审计；独立复核未接收 |
-| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 拟原02 claude-lead本人；仅其已核实可写且不在冻结原C内的checkout中deliverables/claude-lead/report-navigation-review-20261028.md | blocked | 当前无真实接收、独立可写checkout或获准发送入口；共享桌面时隙未交回。01只准备lead目录复核包，不代写review、不创建新代理/06、不把Codex接收当Claude通过；实际审核人/工具/模型待其回执 |
+| FORMA-REPORT-NAV-STATIC-20261028 | 01 lead / Codex：deliverables/lead/report-nav-static-20261028/、本任务板及本人status/HANDOFF | review | [静态报告](deliverables/lead/report-nav-static-20261028/report.md)与[原02复核包](deliverables/lead/report-nav-static-20261028/claude-review-request.md)在本地提交a70f218；源码固定7b260c2。发现Reports未接dirty/busy/beforeunload及关闭确认保护；现有harness不挂完整App，不能证明导航通过。已给13场景、最小Reports修复设计及证据边界；无产品修复/运行时验收。原02消息已显示且Working，正式接单/结论待回执；[发送凭据](deliverables/lead/report-nav-static-20261028/delivery-receipt.md) |
+| FORMA-REPORT-NAV-STATIC-20261028-REVIEW | 既有原02 claude-lead本人 / Claude Code原会话；只读并在原会话回复，禁止写原C或任何review文件 | review | 2026-10-28约02:05 UTC：已核实原会话local_ccd8b410-dccb-411d-920f-ee3ad36f438f，向其发送一次，消息与Working已显示；UI模型为Opus 5.5 Extra，实际执行身份/模型/checkout/SHA待本人回执。Showroom运行未停止，发送输入时隙已释放。不把UI投递成功当审核通过，不代写02/06结论，不创建新代理；[凭据](deliverables/lead/report-nav-static-20261028/delivery-receipt.md)更新旧复核包通信状态 |
 
 # 2026-10-27 版本与任务板对齐（状态保留）
 
