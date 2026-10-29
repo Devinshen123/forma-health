@@ -1,4 +1,14 @@
-# 2026-10-27 报告导航静态审查（最新任务）
+# 2026-10-29 报告编辑关闭规格（最新任务）
+
+FORMA-REPORT-CLOSE-DESIGN-20261029由协调方明确派发，仅沿原静态文档边界。源码固定7b260c2，上轮报告1ced520/blob73fbd3d4及42677f42二审回执保持不动，不重审/实施。原Windows C整个目录冻结，Mac身份不代选；禁止产品/网站/测试/build/CI及借环境规避、真实数据/env/凭据、账号/收费/依赖、同步/fetch/push/合并/发布/权限。协调方后转告Showroom02观察到共享Claude需重新登录且另一聊天有未发送草稿，取消发送时隙等待；01未切换/输入/尝试登录或替换入口，原02本轮未接收。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| FORMA-REPORT-CLOSE-DESIGN-20261029 | 01 lead：deliverables/lead/report-close-design-20261029/、唯一TASKS及本人status/HANDOFF | blocked | 01可做部分完成：[待投递原02包](deliverables/lead/report-close-design-20261029/request-for-02.md)、[固定源核对](deliverables/lead/report-close-design-20261029/source-contract-check.md)、[01自拟规格](deliverables/lead/report-close-design-20261029/interaction-spec-candidate.md)、[N1–N13 oracle](deliverables/lead/report-close-design-20261029/acceptance-oracles.md)。实际原02设计/01对其独立核对缺失；登录阻塞解除并协调交接后继续。不能称Claude方案/独立通过或产品完成 |
+| FORMA-REPORT-CLOSE-DESIGN-20261029-02 | 既有原02 claude-lead：本轮仅原会话回复方案，不写任何文件 | blocked | 协调方明确登录阻塞及另一聊天未发送草稿，取消等待时隙；01停止所有桌面交接、不登录/切换/代投。原02未收到，当前任务/用户后续决定未核实；旧回执或落盘不是本轮接单，不启动04/06、新员工/CLI/checkout |
+| FORMA-REPORT-CLOSE-DESIGN-20261029-01 | 01 lead：同上lead目录的接口核对/自拟规格/oracle，未来另记录对02真实方案的核对 | review | 01本地静态候选已完成，明确单飞/dirty基线/失败/双语/13场景证据层。只证明现有接口可复用，不是独立设计通过；实际对原02方案的独立评审因其未接收仍缺，保留主任务blocked |
+
+# 2026-10-27 报告导航静态审查（已完成，保留）
 
 协调消息派发FORMA-REPORT-NAV-STATIC-20261028（ID沿用消息中的UTC日期；本地为2026-10-27）。本轮仅在原01隔离checkout写静态文档与本人记录；不继承版本同步任务中的push许可，不修改业务/测试源码，不运行网站、浏览器、server、测试/build/CI，不触真实记录/env/凭据。原C整个目录保持不动，Mac仍未核。协调方先授予一次共享桌面初审发送时隙，之后明确继续一次限范围关闭复核；两次都先确认原02/控制空闲，只各发送一次，验证后释放输入时隙，未中断其他项目。
 

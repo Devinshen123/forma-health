@@ -1,4 +1,18 @@
-## 2026-10-27 原02限范围关闭复核静态通过（最新）
+## 2026-10-29 FORMA-REPORT-CLOSE-DESIGN-20261029（最新，登录交接阻塞）
+
+唯一01 / Codex，既有fud-food-photo checkout/codex分支，开工42677f42干净；原C整个目录继续冻结，Mac不代选。已显式读取根FORMA/AGENTS、角色/current/TEAM/TASKS、本人PROFILE/MEMORY/HANDOFF/status、02公开状态/相关请求、本地React/i18n、REA适用性与必要资源。上轮7b源码/1ced报告/42677f42关闭回执不重做，产品目录相对固定源无差异。
+
+已准备[发原02任务包](../deliverables/lead/report-close-design-20261029/request-for-02.md)及[01固定源接口核对](../deliverables/lead/report-close-design-20261029/source-contract-check.md)。独立前置结论：复用onUnsavedChange/useRecordGuard/Modal/RecordDiscardDialog，无须新接口；save成功不等于远端同步，submitted附件不能随取消删，busy effect不能代替同帧锁，清理失败oracle须区分自然UI与底层注入。原02本轮方案尚未收到，最终规格审查未做，不能称02/06通过。
+
+桌面只读：ControlStatus ready/generation1/wait0；现有Claude201514停在运行中Showroom03。只核当前标题/占用，未切会话/输入/Stop。协调方先暂停时隙，后明确据Showroom02观察共享Claude需重新登录且另一聊天有未发送草稿，取消等待发送时隙；01停止桌面，不登录/切换/改入口，原02本轮未收到。当前原02任务/后续用户决定未能读取，不用历史回执代替。
+
+本地允许部分已完成：[01候选规格](../deliverables/lead/report-close-design-20261029/interaction-spec-candidate.md)含状态/事件表、dirty/File/attempted基线、同步单飞、统一requestClose、附件归属/保存未确认、双语与无障碍；[N1–N13 oracle](../deliverables/lead/report-close-design-20261029/acceptance-oracles.md)区分L1/L2/L3、可达路径与注入分支、证据和失败处理。01自检修正锁二次获取与必须Keep首焦点的无必要通用接口歧义。均明确01作者、未运行、待原02完善；主任务blocked，01候选review，不宣称Claude创意或独立复核通过。
+
+实际核对：git diff --check exit0，23个本任务相对链接存在，N1–N13索引含完整场景/N8a+b；仅文档结构检查。相对42677f42产品/测试/ios/依赖/工作流无差异，旧报告blob仍73fbd3d4完整匹配；不将此当运行时通过。精确本地提交7份自有文档，无push。
+
+未执行网站/浏览器/server/产品/测试/build/CI/安装、真实数据/env/凭据、Apple/提供商/收费、Mac或远端操作；只本地精确文档提交。后续先解除真实登录阻塞并完成协调，再向既有原02投递一次任务包；允许其仅原会话方案，01归属记录/独立核对，不要求写冻结原目录。
+
+## 2026-10-27 原02限范围关闭复核静态通过（历史）
 
 协调方要求继续同一任务、对1ced520限范围关闭复核。ControlStatus ready/generation3/wait0，原Forma02会话等待输入/消息框空白，已各核实后仅发送一次；截图确认Thinking，输入时隙已释放。随后只读同会话约19:17–19:18 PDT收到实际结论“关闭复核静态通过”。实际原02再次确认claude-lead / Claude Code桌面版 / Claude Opus5.5（claude-opus-5-5），并自报get_session self核实原会话ID。读取HEAD1ced52006ca6b30cf6dfea42518d41fdf6fe1f6e、报告blob73fbd3d4eb5726f0c85bb7afda8884c0148d860d，均与本地/提交一致。
 

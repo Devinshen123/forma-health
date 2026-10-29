@@ -1,4 +1,20 @@
-## 2026-10-27 原02四点关闭复核静态通过（最新）
+## 2026-10-29 FORMA-REPORT-CLOSE-DESIGN-20261029（最新）
+
+唯一01继续原隔离C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站、codex/fud-food-photo-20261022，起点42677f42干净。新任务仅完善最小实施规格，原固定源码7b260c2、报告1ced520/73fbd3d4、关闭回执42677f42已完成不重审。已读角色/current/根手册/唯一任务板/本人记忆、02公开请求及React/i18n/REA必要技能；普通源码工具适用，未执行REA或产品。
+
+已落盘[原02任务包](../../deliverables/lead/report-close-design-20261029/request-for-02.md)与[01独立接口核对](../../deliverables/lead/report-close-design-20261029/source-contract-check.md)。01前置查明复用现有接口足够，save的离线成功/未同步、submitted附件保留、异步busy与单帧锁、清理故障可达性均须规格明确。新02方案及01对其最终评审仍待完成，不冒充已设计/已通过。
+
+本轮仅只读ControlStatus ready/generation1和Claude201514当前窗口，显示Showroom03运行；没有切换、输入、Stop或新会话。协调方先要求串行等待，后转告Showroom02实际观察到共享Claude需重新登录且另一聊天有未发送草稿，明确取消等待时隙；01已停止桌面，不登录/切换/替换入口，原02未收到，本轮任务/后续用户决定仍未知。旧时隙不延用；不借新CLI/代理/环境代投。
+
+允许的01本地候选规格和oracle已完成：[交互规格](../../deliverables/lead/report-close-design-20261029/interaction-spec-candidate.md)、[N1–N13](../../deliverables/lead/report-close-design-20261029/acceptance-oracles.md)。含四关闭入口、dirty/File/attempted/singleflight、失败/附件保留、双语、焦点与L1/L2/L3明确证据；01自检修正锁自锁和必须Keep首焦点问题。均为01自拟待原02完善，不冒充Claude方案/独立通过。主任务blocked，01候选review。
+
+本轮文档核对git diff --check exit0；23个本任务相对链接存在、N1–N13结构完整/N8有a+b；src/server/tests/ios/依赖/工作流相对42677f42无差异，旧report blob73fbd3d4未变。只提交本任务4个lead交付、唯一TASKS、本人status/HANDOFF共7个精确路径；不push，不把结构检查当场景实测。
+
+下一步先由外部恢复真实Claude登录并明确协调，再只向既有原02交接一次；此前不要再观察/输入/切换桌面。获准后先核原02当前任务/后续用户决定，默认仅原会话回复方案，01自己目录保存真实归属方案并独立核对。当前无需用户选择刷新路由/Apple/Mac身份。
+
+原Windows C整个目录冻结、Mac身份未知，不代选；无业务/测试/共享接口/依赖改动、产品/网站/browser/server/测试/build/CI、真实数据/env/Apple/提供商/收费/权限、fetch/push/合并/发布。当前只本地精确提交自有文档并保持等待；不能把主任务标done或停止在“材料已落盘”冒充完成。
+
+## 2026-10-27 原02四点关闭复核静态通过（历史）
 
 同一01/隔离checkout，起点1ced520干净。协调方明确要求继续一次限范围关闭复核；ControlStatus ready且原Forma02消息框空闲，向既有原会话仅发送一次，确认启动后释放输入时隙，未切其他项目或Stop。约19:17–19:18 PDT只读收到真实结论“关闭复核静态通过”；原02自报claude-lead、Claude Code桌面版、Claude Opus5.5（claude-opus-5-5），并用get_session self确认local_ccd8b410-dccb-411d-920f-ee3ad36f438f。实际读取主管HEAD1ced52006ca6b30cf6dfea42518d41fdf6fe1f6e及report blob73fbd3d4eb5726f0c85bb7afda8884c0148d860d。
 
