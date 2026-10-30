@@ -1,6 +1,6 @@
 # N1–N13：候选规格验收oracle与失败处理
 
-01 lead / Codex，2026-10-29，FORMA-REPORT-CLOSE-DESIGN-20261029。**全部未运行，作者为01，待原02完善；不是可运行脚本或已通过测试。** 固定源7b260c2，实施目标见[候选规格](interaction-spec-candidate.md)；本轮不运行/创建测试环境、不借其他环境绕过限制。
+01 lead / Codex，2026-10-29，延续FORMA-REPORT-CLOSE-CONSISTENCY-20261030。**全部未运行，作者/修订者为原01，待原Claude02独立静态审查；不是可运行脚本或已通过测试。** 固定源7b260c2，实施目标见[候选规格](interaction-spec-candidate.md)；本轮不运行/创建测试环境、不借其他环境绕过限制。aacdf31初稿与本轮修改关系见[一致性记录](consistency-review-20261030.md)。
 
 ## 证据层级与共同前提
 
@@ -17,12 +17,12 @@
 | N1 / L2 | A已完成引导、在线启动已取快照，桌面主侧栏点Reports | Health reports标题及选中项；列表仅A；记录入口截图、快照报告id集合和无横溢出 | 进了Onboarding则前置失败；不得直接挂Reports冒称桌面主入口通过 |
 | N2 / L2 | 390宽，点更多导航→Reports；在无编辑器时回今日→重进 | 侧栏可达并自动收起；回今日/重进正确；底部第6项不存在本来正常 | 菜单打不开为UI失败；不强点被dialog遮住的背景按钮 |
 | N3 / L2 | A零报告，或用无匹配日期筛选；清除筛选 | 正确空状态且能新增；清筛选恢复实际列表；未记录数值不填0；无新增save/DELETE | 表格数据缺失与展示0分开判定，不能用演示记录掩盖合成空账户 |
-| N4 / L1+L2 | 打开编辑器，真实输入名称但不保存；待guard渲染后真实reload/离站，选留在页面；另测clean关闭后reload | dirty/busy回调与监听注册/清理为L1；支持的浏览器在用户激活后出现原生提示、留页值不变为L2；clean且无同步pending时不因编辑器拦截 | 不断言原生提示的固定文案；浏览器禁提示则标能力未验，合成beforeunload事件不能代替真实对话框。基线与修复候选分别记录实际结果，不预造失败 |
+| N4 / L1+L2 | dirty且pending=0；另测dirty、pending>0但所有pending引擎enabled；均待guard渲染后真实reload/离站并留页；clean控制组pending=0 | L1分别核回调有/无两种前提、监听注册/清理；L2需真实输入激活浏览器，留页值不变；clean控制组无编辑器拦截。pending且disabled是App自带保护对照，不能归功Reports | 不断言原生文案；浏览器禁提示则能力未验，合成事件不能代替真实对话框。基线/修复候选各记实际结果；先隔离同步层原因，不用App提示假证Reports修复 |
 | N5 / L1+L2 | 同一dirty表单对Esc/X/取消/矩形外遮罩各执行一次；先Keep，再从同入口明确Discard | 只一个放弃确认；Keep或确认层Esc/X/遮罩均保留字段/File和dirty、不save/DELETE；Discard才经清理关闭。记录四入口和嵌套焦点 | 误点背景按钮不是遮罩复现；一个入口丢输入即失败，不把其余成功平均为通过 |
-| N6 / L1+L2 | 新建/编辑未改表单；另含原demoFiles文件；用正常关闭和遮罩；再正常导航 | 不弹放弃确认、可关闭；onUnsavedChange最终false/false；无DELETE既有asset/无上传demo附件；纯字段改回且未attempted也clean | JSON(File)导致替换漏报转入N5；若attempted过仍dirty是本候选明示选择，不能当clean前置 |
-| N7 / L1+L2 | 用闸门暂停选文件清理/上传/save/放弃清理；在每阶段试Esc/X/取消/遮罩、同帧重复点击；随后分别resolve/reject | busy回调true；关闭不执行、表单不丢；同一操作只一次调用/无并发DELETE或save；错误释放busy并保留可重试输入；成功按实际阶段结束 | 同帧拒绝用L1事件/锁计数举证；App背景导航busy拒绝只作L1回调/状态检查，不force-click冒L2。无可达UI的阶段按注入层标注 |
-| N8a / L1 | 明确依赖注入构造本编辑器未提交stage，删除promise reject，再重试resolve | 首次保留id/File/dirty/基线，编辑器可见安全双语错误；一次重试才清理关闭；无并行DELETE | 固定源活跃UI上传后立即retain，若自然UI不能停在此状态，应标L1保护分支，不能虚构“照片保存失败后未提交附件”的L2路径 |
-| N8b / L1+L2，必要L3 | 真实上传完成并retain；让save未确认或已入队但flush失败，然后确认关闭；另测offline enabled返回成功但pending>0 | submitted附件不发DELETE；原report.id不重新生成；关闭不撤同步；“已保存”不得扩张成“已同步”。保存未确认时保留输入、按既有SyncPanel/RecordDraft约束重试 | 关闭前save结果未知不能断言服务端未写；多一请求不自动等于重复记录，按最终事实id/数量判断。400/401/409等按原引擎规则，不无限自动重试 |
+| N6 / L1+L2 | 新建/编辑未改表单；另含原demoFiles文件；正常/遮罩关闭后导航；另测同一marker/key字段改回、重建marker及重选同元数据File | 未改/同一key完全改回且未attempted为clean，不弹确认、无DELETE既有asset/无上传demo；回调最终false/false。重建新key或新File引用仍dirty，按N5确认 | 必须分别记正反例；JSON(File)漏报为失败；attempted或新key/File不属于clean前置，不把候选明示的保守选择误判成随机脏状态 |
+| N7 / L1+L2 | 用闸门暂停选文件清理/上传/save/放弃清理；在每阶段试四种关闭与同帧重复点击，分别resolve/reject | busy回调true；按operationKind显示保存/附件变更/关闭清理/已有删除的双语阶段，无“清理却Saving”串态；只一次操作，无并发DELETE/save；失败释放busy保留输入，成功按该阶段结束 | 同帧与缺省回调用L1证据；App背景导航只作L1状态检查，不force-click冒L2。单飞锁只在最终执行入口拿一次，若自锁/误提前释放即失败；不可达UI阶段明确注入 |
+| N8a / L1 | 类级以真实AttachmentLifecycle.stage设置合成未提交id，remove先reject再resolve；组件层另以测试专用模块替身预置该真实实例，保持被验Reports关闭代码不变 | 类级仅证失败保留currentId/重试清除；组件层才证字段/File/dirty/基线保留、可见双语错误及重试关闭，无并行DELETE | 当前无自然活跃UI的await窗口；测试替身仅未来获准用于L1，不扩产品API。组件替身未建立或不可合法注入就明确未验，不用类级通过代替UI保持，更不冒充L2 |
+| N8b / L1+L2，必要L3 | 生产上传代码处理合成附件并retain；B1离线存储disabled、入队后flush网络失败；B2 enabled且persist成功、flush同样网络失败；另测400/401/403/409/413 | B1仍mounted时reject保留输入，确认关闭不DELETE submitted附件；B2可resolve关闭但pending>0，不能显示“已同步”。所列ApiError不误吞。原id不重建、关闭不撤同步，重试守RecordDraft/SyncPanel | 错误阶段/类型须真实可控；身份失效则优先N11，不要求保留过期A输入给B。未知结果不能断言未写，HTTP次数不等于重复事实；不无限重发 |
 | N9 / L2+L3 | 在线A，save和服务端持久确认完成、pending=0；关闭→今日→报告→刷新→手动重进 | 同一报告id内容/附件仍在、数量未增加；刷新当前回today符合现状，重进可见；记录确认时序和合成摘要 | 仅UI假save返回不证明持久化；缓存/待同步成功另归N8b，不能混成远端通过 |
 | N10 / L2展示+L3权限 | A在报告页打开自己的附件；无会话读取；A请求B附件及不存在id | 自己成功，无会话401，其他owner/不存在404；B内容不返回；真实中间件HTTP状态和合成asset owner计数，UI新标签行为独立记录 | 伪401/404仅证UI；任何跨owner正文先停止并封存脱敏证据，不继续展示/导出。不要把HTTP401当主页面必弹登录框 |
 | N11 / L1+L2，资源L3 | A编辑/上传中，另一标签合法账户变更或安全失效；迟到A结果在B会话后返回；另注入卸载清理失败 | 旧编辑器卸载，B无A字段/附件/notify/保存；旧回调不能清B的guard；A/B owner资源分别计数。清理失败可留A孤儿，但B不能访问，不阻碍安全重建 | 不用被modal挡住的退出按钮伪造切换；跨标签/安全事件为可达路径。若A输入流入B立即停止；孤儿数量属于清理风险，不混为泄漏证明 |
@@ -37,4 +37,4 @@ N8a/N8b是同一N8的两种oracle，保持N1–N13整体索引。只有层级和
 2. **行为失败**：关闭丢输入、保护/清理顺序错误、误删submitted附件、重复事实、忙碌并发等，绑定事件时序/计数报实现者，不扩范围自动修源代码。
 3. **安全失败**：跨账户字段或附件可见、旧账户写B，立即停止该用例，保留脱敏状态/id计数，不继续真实健康操作。
 4. **未知保存结果**：保留原输入/报告id/附件，查询既有同步状态，区分待处理与确定失败；不宣称回滚，不自动循环重提。
-5. **文档不足**：任何oracle要靠实现者猜测关键状态，先补规格；此轮仍只文档。本文件未执行、未生成截图/trace、没有脚本通过数，原02尚未接收/独立确认。
+5. **文档不足**：任何oracle要靠实现者猜测关键状态，先补规格；本轮仍只文档。原02负责独立审查而非方案作者；文件未执行、未生成截图/trace、没有脚本通过数，当前未接单/独立确认。

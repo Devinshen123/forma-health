@@ -1,29 +1,31 @@
 # 报告编辑关闭：01候选交互与接线规格
 
-任务FORMA-REPORT-CLOSE-DESIGN-20261029，2026-10-29。**作者是01 lead / Codex；原02尚未收到/完善本轮方案，本稿未获独立设计审核。** 这是授权静态范围内可交给原02完善的候选，不是产品代码、产品验收或06通过。
+任务FORMA-REPORT-CLOSE-DESIGN-20261029的延续：FORMA-REPORT-CLOSE-CONSISTENCY-20261030（派工为UTC10/30，本地2026-10-29）。**作者及修订写者为原01 lead / Codex；原Claude02负责独立静态审查，当前未接单/未审。** 本轮只落实静态文档修订，不是产品代码实现或06验收。aacdf31初稿保留于Git历史；本轮审查见[一致性记录](consistency-review-20261030.md)。
 
 源码固定7b260c2；上轮已审报告1ced520/blob73fbd3d4及42677f42回执不变。接口证据见[固定源核对](source-contract-check.md)，逐项验收见[oracle](acceptance-oracles.md)。只解决Reports编辑离开保护，不改变刷新回today、报告业务/同步协议、附件归属或其他页面。
 
 ## 1. 最小写入边界（未来另获准实施）
 
-未来实现者04应只在Reports.tsx接现有FeatureProps.onUnsavedChange/useRecordGuard/RecordDiscardDialog；可能增加的对应测试须另登记。当前不派04/06，不改任何源码或测试。Modal、hook、FeatureProps、App/save/API协议保持现状；若真实实现发现依赖不能满足，先向01记录具体接口证据，不能自行扩改。
+未来产品实现按本轮分工由正式登记的Codex唯一写者接手Reports.tsx，具体员工及对应测试范围须另派；不沿用初稿“04实施”的安排，也不因此修改员工表或启动执行者。当前仅01写文档，不改源码/测试。复用现有FeatureProps.onUnsavedChange/useRecordGuard/RecordDiscardDialog；Modal、hook、FeatureProps、App/save/API协议保持现状，若真实实施发现不能满足，先向01记录精确依赖，不能自行扩改。
 
 以下是01的普通技术选择，等待原02核对，不冒称用户逐项决定：
 
 - 草稿只在组件内存，不新增localStorage/IndexedDB草稿或路由恢复。
 - 初次打开未改的新增/编辑表单为clean。按“核对并保存”后即记attempted，校验失败也受保护；因此即使随后改回初始值，attempted仍保持dirty，直至保存成功或明确放弃。这沿Sleep既有模式，避免把失败输入当成无内容。
-- 字段改回基线且从未尝试保存则clean。重新选择File视为新附件，即使name/size/type/lastModified相同；不增加内容hash或磁盘读取。原demoFiles带入的同一File对象是打开基线，不误报dirty。
+- 同一marker/key等完整比较字段改回基线且从未尝试保存则clean；删除再重建marker会产生新key，不属于这一clean前提。重新选择File视为新附件，即使name/size/type/lastModified相同；不增加内容hash或磁盘读取。原demoFiles带入的同一File对象是打开基线，不误报dirty。
 - 确认“放弃输入并关闭”时先撤掉确认层、再进入已有清理关闭流程；失败回到可见报告编辑器显示错误，不把错误藏在确认层后面。再次关闭重新要求确认。
 
 ## 2. 状态及dirty/busy传播
 
-最小新增本地信息：open时的draft字段快照、File引用基线、attempted、discarding及一个同步单飞引用。保留既有draft/file/uploadedId/busy/error/mounted/ownerAccount/AttachmentLifecycle/RecordDraft，不另建保存引擎。
+最小新增本地信息：open时的draft字段快照、File引用基线、attempted、discarding、同步单飞引用和可渲染的operationKind。operationKind限定idle/save/attachment-change/close-cleanup/delete，由获得锁的入口设置，busy与该阶段在同次更新中可见；只在归属该操作的finally恢复idle。它仅用于区分保存与清理等本地状态，不是新的API字段。保留既有draft/file/uploadedId/busy/error/mounted/ownerAccount/AttachmentLifecycle/RecordDraft，不另建保存引擎。
 
 open在随机marker keys、新草稿id/日期和demo文件都确定后，用同一构造结果设置当前draft和基线；清attempted/discarding/error。draft快照涵盖所有编辑字段、marker顺序和key、assetId，不因每次render生成新key。File单独按引用比较，不用JSON.stringify(File)。
 
 候选dirty定义：draft存在，且attempted、draft字段不同、File引用不同或本编辑器uploadedId非空任一成立。上传ID表明仍有本次操作待处理，不能误当已同步。dirty是内存输入状态，不由state.reports是否改变决定。
 
 effectiveBusy覆盖Reports已有busy异步操作：选文件前清理、移除附件、上传/保存、放弃清理、同组件已有删除操作。将dirty/effectiveBusy传给既有useRecordGuard；它通过现有回调通知App并在dirty或busy时安装beforeunload，卸载回false/false。关闭/保存副作用留在事件处理，不用“设置状态→effect发请求”模式。
+
+onUnsavedChange保持可选，缺省时hook仍提供本组件beforeunload保护，不能因缺回调抛错；完整App必须传入既有真实回调。旧组件卸载会尝试false/false，但App:293只接收匹配epoch的回调，不能将过期清理结果发布给B。effect发布不是同步锁；不要求修改共享hook或把旧epoch回调改成跨账户全局写入。
 
 useRecordGuard的effect和React busy状态不能作为同帧互斥锁。所有进入异步Reports写入/附件清理的入口先用同一本地同步单飞引用拒绝重入，再设busy；finally仅在本实例仍mounted时恢复UI，锁按本次操作归属释放。不要把锁放模块全局；不影响其他账户组件。此锁是未来Reports内部接线细节，不改共享接口。
 
@@ -47,7 +49,7 @@ useRecordGuard的effect和React busy状态不能作为同帧互斥锁。所有�
 
 遮罩指dialog本身收到弹窗矩形外的点击（Modal:43–53），不是背景侧栏/导航按钮。确认框复用既有RecordDiscardDialog的onClose=Keep；不要求新busy参数。报告编辑Modal保持挂载直到真正关闭，确认层位于其上；Keep或清理失败要回到编辑器可用焦点，实际焦点行为留未来渲染验收。
 
-App现有navigate会busy拒绝、dirty弹离开框；Reports只提供回调，不增设路由或调用force navigate。报告modal在场时背景不可达，因此不强行点击背景来验App桥接。安全账户变更与用户普通导航是不同事件；普通关闭确认不能保留过期账户编辑器。
+App现有navigate会busy拒绝、dirty弹离开框；Reports只提供回调，不增设路由或调用force navigate。报告modal在场时背景不可达，因此不强行点击背景来验App桥接。上述“清理成功才关闭”只约束Reports四种普通关闭入口，不扩大成App force导航/安全卸载必须await附件清理的共享契约；卸载仍沿原best-effort路径。安全账户变更与用户普通导航是不同事件，确认不能保留过期账户编辑器。
 
 ## 4. 附件与保存结果语义
 
@@ -71,8 +73,10 @@ App现有navigate会busy拒绝、dirty弹离开框；Reports只提供回调，�
 | 确认正文 | 当前表单输入将丢失。已保存的记录和待同步的更改会保留；关闭表单不会撤销已提交的保存。 | Current form entries will be lost. Saved records and pending sync changes remain; closing this form does not undo a submitted save. | 既有，原文复用 |
 | 关闭标签 | 关闭 | Close | 现有Modal已有双语aria-label，不全局改造 |
 | 保存按钮 | 核对并保存 | Review and save | 既有Reports |
-| 保存忙碌 | 保存中… | Saving… | 既有；只在save/upload阶段使用 |
+| 保存忙碌 | 保存中… | Saving… | 既有文字；未来按operationKind=save使用。基线当前仅按busy显示，尚未实现阶段区分 |
 | 清理忙碌 | 正在清理未保存的附件… | Removing the unsaved attachment… | 候选，不把清理叫保存 |
+| 附件变更忙碌 | 正在更新附件… | Updating the attachment… | 候选，attachment-change时使用 |
+| 删除忙碌 | 正在删除报告… | Deleting the report… | 候选，只标已有删除操作阶段，不改变其业务流程 |
 | 清理失败 | 无法清理未保存的附件。输入已保留，请重试关闭。 | Could not remove the unsaved attachment. Your entries are kept. Try closing again. | 候选安全错误 |
 | 上传失败 | 附件上传失败。输入已保留，请重试保存。 | Attachment upload failed. Your entries are kept. Try saving again. | 候选，只用于确认上传阶段失败 |
 | 保存未确认 | 报告保存暂未确认。输入已保留，请查看同步状态后重试。 | Report save is not confirmed. Your entries are kept. Check the sync status before retrying. | 候选，不能宣称撤销/未写入 |
@@ -82,6 +86,6 @@ App现有navigate会busy拒绝、dirty弹离开框；Reports只提供回调，�
 
 ## 6. 规格状态与交付条件
 
-01前置静态判断：上述接线可使用现有接口，普通技术选择已显式标注；没有产品实现。本稿仍待原02完善和独立上下文意见。01以后会对其实际方案逐项核对来源/状态/所有权/oracle，不能把本稿自检冒充那次独立结论。
+01静态一致性判断：上述接线不要求更改现有共享签名，普通技术选择已标注，没有产品实现。本轮改为原Claude02独立审查01候选；其通过/需修订/阻塞结论必须绑定实际文档提交和源码SHA，不把01自检冒充独审。上轮1ced520报告通过不覆盖本候选。
 
-当前共享Claude需重新登录且另有聊天未发送草稿，来源为协调方Showroom02观察转告；01未自行操作登录或复核该屏幕。原02本轮未收到；停止等待旧发送时隙，不切窗口、输入或换入口规避。主规格任务保持blocked的外部交接部分，01静态候选已可审阅。原C冻结和所有执行限制继续保留。
+前轮登录/草稿观察不用于推断今天。本轮ControlStatus实际ready/generation1/wait0；随后协调方转交Showroom02在UTC10/30约06:16的新观察：仍需Claude重新登录、当前另一聊天有未发送草稿，未发送且已释放时隙。该信息不是01截图或原Forma02接单；01未操作窗口，原Forma02本轮任务/身份未复核、未接单/未审。保持不登录、不动草稿、不绕入口，不为相同缺口重复看窗口。交审清单见[审查包](request-for-02.md)，来源与静态结果见[一致性记录](consistency-review-20261030.md)。原C冻结及执行限制保持。

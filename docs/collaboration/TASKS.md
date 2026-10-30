@@ -1,4 +1,16 @@
-# 2026-10-29 报告编辑关闭规格（最新任务）
+# 2026-10-29 报告关闭候选一致性（UTC派工20261030，最新）
+
+FORMA-REPORT-CLOSE-CONSISTENCY-20261030延续aacdf31候选，仅原01隔离文档范围。当前分工为Codex作者/修订、原Claude02独立静态审查，不沿用旧02设计/04实现。固定源码7b260c2，已审核1ced520报告/blob73fbd3d4和42677f42回执/blob39775f5e保持不动。原C工作文件/主分支冻结、Mac身份不代选；禁止应用/测试/build/CI及借环境规避、真实数据/env/凭据、Apple、依赖/收费/权限、push/合并/部署。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| FORMA-REPORT-CLOSE-CONSISTENCY-20261030 | 原01 lead：deliverables/lead/report-close-design-20261029/、唯一TASKS及本人status/HANDOFF | blocked | 允许的Codex部分已完成：[D1–D6一致性核对](deliverables/lead/report-close-design-20261029/consistency-review-20261030.md)，已必要修订原4文档，不重做旧报告。Claude今天入口仍有转交的新登录/草稿阻塞报告，原Forma02未接单/独审；待审源码/文档版本固定后终态交付，不无限等入口，不称产品完成 |
+| FORMA-REPORT-CLOSE-CONSISTENCY-20261030-CODEX | 原01 lead / Codex：同上自有文档 | done | 仅静态一致性/修订：纠正作者分工，补operationKind、可选回调/epoch、四关闭与force/安全边界、N4同步层控制组、N6恢复正反例及N8a/b错误层；双语/刷新行为保持。真实文档校验和4个blob见一致性记录，未执行产品场景 |
+| FORMA-REPORT-CLOSE-CONSISTENCY-20261030-CLAUDE | 拟既有原02 claude-lead：核实原入口后只在原会话回复，不写文件 | blocked | 本轮01仅查ControlStatus ready/generation1/wait0和Showroom02 compact状态active，未操作窗口。协调方随后转交该原02今天约06:16 UTC新观察仍需登录/他聊草稿，未发且时隙已释放；非01截图、非Forma02 ACK。原Forma02身份/任务本轮未复核，未投递/未审；不代登录/碰草稿/CLI或API绕访问，不反复核同缺口；[精确审查包](deliverables/lead/report-close-design-20261029/request-for-02.md) |
+
+# 2026-10-29 报告编辑关闭规格（aacdf31历史准备）
+
+以下是前轮准备/阻塞记录，其02设计/01核对分工已被本轮顶部更新；保留事实历史，不作为重复的新派工或今天登录状态证明。
 
 FORMA-REPORT-CLOSE-DESIGN-20261029由协调方明确派发，仅沿原静态文档边界。源码固定7b260c2，上轮报告1ced520/blob73fbd3d4及42677f42二审回执保持不动，不重审/实施。原Windows C整个目录冻结，Mac身份不代选；禁止产品/网站/测试/build/CI及借环境规避、真实数据/env/凭据、账号/收费/依赖、同步/fetch/push/合并/发布/权限。协调方后转告Showroom02观察到共享Claude需重新登录且另一聊天有未发送草稿，取消发送时隙等待；01未切换/输入/尝试登录或替换入口，原02本轮未接收。
 
