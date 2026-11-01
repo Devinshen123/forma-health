@@ -1,4 +1,14 @@
-# 2026-10-29 报告关闭候选一致性（UTC派工20261030，最新）
+# 2026-11-01 GitHub同步（最新）
+
+用户将“上线”明确为“更新到github”。本轮只在原01隔离checkout正常同步已完成提交及必要回执，覆盖旧任务禁止push限定；原C工作文件/main继续冻结，不据此实现报告功能、启动网站/测试/构建、迁Mac或配置账号/付费资源。
+
+| ID | owner / 独占范围 | 状态 | 验收与剩余事项 |
+|---|---|---|---|
+| GITHUB-SYNC-20261101 | 原01 lead：既有codex/fud-food-photo-20261022的已提交文档、main正常快进；本任务板/本人status/HANDOFF及deliverables/lead/github-sync-20261101.md | done | 原6提交/13协作文档已原子push，main与主管分支从7b260c2→9e53886102ff9b47216da02edb28aae1d6408936；ls-remote与GitHub API TASKS blob一致。原C HEAD及277项状态清单前后不变。回执随本文件所属后续正常文档提交同步，不改业务或跑产品。见[同步记录与下一步](deliverables/lead/github-sync-20261101.md) |
+
+Mac尚未验证同步；报告未保存保护仍是待独审/实施规格；GitHub同步不是公网网站部署。以下旧任务的历史未完成项继续保留，旧登录观察不当作今天实测。
+
+# 2026-10-29 报告关闭候选一致性（UTC派工20261030，历史阶段）
 
 FORMA-REPORT-CLOSE-CONSISTENCY-20261030延续aacdf31候选，仅原01隔离文档范围。当前分工为Codex作者/修订、原Claude02独立静态审查，不沿用旧02设计/04实现。固定源码7b260c2，已审核1ced520报告/blob73fbd3d4和42677f42回执/blob39775f5e保持不动。原C工作文件/主分支冻结、Mac身份不代选；禁止应用/测试/build/CI及借环境规避、真实数据/env/凭据、Apple、依赖/收费/权限、push/合并/部署。
 

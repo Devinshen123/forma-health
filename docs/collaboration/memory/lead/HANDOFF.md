@@ -1,4 +1,12 @@
-## 2026-10-29 FORMA-REPORT-CLOSE-CONSISTENCY-20261030（最新）
+## 2026-11-01 GITHUB-SYNC-20261101（最新）
+
+唯一01，既有C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，起点9e53886干净。用户把“上线”澄清为“更新到github”；只授权本次必要Git同步/记录，旧禁止push限定由此覆盖，不恢复产品实现或公网部署。fetch确认origin/main及主管分支7b260c2，6提交13Markdown可快进、差异格式检查/限定凭据格式扫描通过。
+
+已atomic正常push至main/主管分支，9e53886102ff9b47216da02edb28aae1d6408936；ls-remote和GitHub API main TASKS blob c0534127与本地一致。原C main仍ba4822b，277项状态清单hash前后不变，原工作文件/索引未改，不纳入他人删除/未跟踪内容；不是逐文件内容hash重验。此回执/任务板随后精确正常提交同步，最终文档HEAD以所属commit和工具核对为准。[详情与下一步](../../deliverables/lead/github-sync-20261101.md)。
+
+未运行应用/测试/build/CI、未变更原本机网站/数据/密钥或Mac，未建公网服务/付费资源。下一步Mac先核现有分支/dirty，当前main干净才ff-only获取；报告保护仍只有规格，需真实独审后正式Codex实施及完整App/附件/账户验证；原Claude本轮未重测，不用10/30登录观察代表今天。若要公网网站另定持久服务/HTTPS，不把GitHub已更新当功能已实现或公网已部署。原C冻结保持。
+
+## 2026-10-29 FORMA-REPORT-CLOSE-CONSISTENCY-20261030（历史）
 
 原01唯一写者，UTC10/30派工、本地10/29。原隔离checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，起点aacdf319e8addfaa7ed8f7dd185fd2795cf2f1e2干净。已重新读当前共享手册/任务/角色记忆及相关技能。固定源码7b260c2未变，已审1ced520 report blob73fbd3d4与42677f42 receipt blob39775f5e保持不动，不重做报告。
 

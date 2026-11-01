@@ -1,4 +1,12 @@
-## 2026-10-29 FORMA-REPORT-CLOSE-CONSISTENCY-20261030（最新）
+## 2026-11-01 GITHUB-SYNC-20261101（最新）
+
+用户将“上线”明确为“更新到github”，本轮只Git同步已完成文档，不部署公网或实施功能。原01沿既有隔离checkout/codex分支，起点9e53886干净；fetch后远端main/主管均7b260c2，确认可正常快进。6个未上传提交仅13份协作Markdown，限定四类凭据格式扫描无匹配，未读env/数据；git diff --check通过。
+
+已实际atomic push两分支至9e53886102ff9b47216da02edb28aae1d6408936，exit0；ls-remote匹配，GitHub API main TASKS blob c0534127与本地一致。原C main仍ba4822b，原277项未提交/未跟踪状态清单digest前后相同；未改原工作文件/索引，未把这些变动纳入push。回执、任务板及本人交接另作正常文档提交同步，完整事实与下一步见[本轮回执](../deliverables/lead/github-sync-20261101.md)。
+
+未运行网站/测试/build/CI或停止服务；没有Mac/Apple/健康平台/凭据/权限/收费动作。当前Vercel Forma项目与teams只读返回空，不据此选择或创建服务器。Mac同步仍待真实状态，报告保护仍待独审/代码实施，原Claude入口本轮未重测；用户下一步先Mac保留改动后接手，再处理报告保护实现/验收，公网部署另有持久化/HTTPS前提。
+
+## 2026-10-29 FORMA-REPORT-CLOSE-CONSISTENCY-20261030（历史）
 
 派工为UTC10/30，本地10/29。唯一原01 / Codex，同一fud-food-photo checkout/codex分支，实际起点aacdf319e8addfaa7ed8f7dd185fd2795cf2f1e2干净；已重新读FORMA/任务板/角色入口/必要记忆与相关React/i18n资源，不以旧状态推断今天。固定7b源至HEAD无src/server/tests/ios差异，1ced520旧报告及42677f42关闭回执blob与HEAD一致，不重审/改写。
 
