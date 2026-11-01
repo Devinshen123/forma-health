@@ -1,4 +1,14 @@
-## 2026-11-01 GITHUB-SYNC-20261101（最新）
+## 2026-11-01 FORMA-DATE-STATIC-20261101（静态交付，待独审）
+
+既有01 lead本人已正式接单，不启动其他员工。主管隔离checkout C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，锁定f5180f0d72665c885aa6cdfa2e1210dc6a0376e7，开工干净。原C main实为ba4822b7dc54f95950ddf7814ae93b6b5a3b2a61，既有删除/未跟踪项保持；协调消息的短SHA笔误不作为基准。
+
+已完成[日期窗口静态报告](../deliverables/lead/date-window-static-20261101/report.md)，源码blob分别Dashboard=a5a46bab、Trends=c10e7875、types=babe476a，与固定HEAD一致。F1确认浏览器/档案时区选择不同，且首页today也影响行动新写入日期键；F2仅确认无效非nullish时区注入下无显示回退，不推断普通用户可达。R1为locale显示值当机器键的契约风险，R2为首页多次取时刻的午夜风险，均未运行复现。保留UTC锚点/日历步进/原date分组，候选不重写历史、不扩大聚合；档案优先/回退顺序明确仍是待确认建议。
+
+仅只读Dashboard/Trends/types日期调用链及必要旧需求；实际工具为普通Git/rg/PowerShell文件读取和文档检查/patch。文档相对链接检查首次因Split-Path参数组合失败，不当作缺失7文件或通过；改用Get-Item.DirectoryName后重验exit0：7引用、缺失0，18项矩阵行均NOT RUN。git diff --check与git diff --cached --check均exit0，暂存区精确3文档；src/server/tests/ios/依赖/工作流和旧报告关闭两目录无差异。提交前Git hooksPath未配置且默认hooks无非sample文件，未执行仓库/外部脚本。本地文档版本以所属commit绑定，无push。此为01静态自检，不是独立审查或日期算法执行。
+
+仅写本报告、TASKS与本status，按本轮精确范围不改HANDOFF或9e53886关闭包。不运行应用/服务/浏览器、仓库/外部脚本、日期算法、测试/build/CI，不碰真实健康数据/env/凭据、Mac/Apple、依赖/权限，不push/合并/部署。任务为review：01静态交付完成，原02合法入口/真实接单及独立结论仍待，本轮未操作其入口，不把旧登录报告当当前证据。T01–T18全部NOT RUN，产品未修；下一步独审固定文档，再明确候选契约/产品写者和后续运行验收范围，不自行启动员工。
+
+## 2026-11-01 GITHUB-SYNC-20261101（历史）
 
 用户将“上线”明确为“更新到github”，本轮只Git同步已完成文档，不部署公网或实施功能。原01沿既有隔离checkout/codex分支，起点9e53886干净；fetch后远端main/主管均7b260c2，确认可正常快进。6个未上传提交仅13份协作Markdown，限定四类凭据格式扫描无匹配，未读env/数据；git diff --check通过。
 

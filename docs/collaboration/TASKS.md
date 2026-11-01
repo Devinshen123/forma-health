@@ -1,4 +1,12 @@
-# 2026-11-01 GitHub同步（最新）
+# 2026-11-01 日期窗口静态审查（最新）
+
+协调方在主管协商后明确派发FORMA-DATE-STATIC-20261101；唯一主管/执行者为既有01 lead，不启动其他员工或第二名lead。基准为主管隔离checkout的f5180f0d72665c885aa6cdfa2e1210dc6a0376e7，原C main实际ba4822b7dc54f95950ddf7814ae93b6b5a3b2a61及既有改动继续冻结。本轮仅源码/既有需求只读审查与静态文档，不继承前轮push授权。
+
+| ID | owner / 独占写入范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| FORMA-DATE-STATIC-20261101 | 原01 lead：deliverables/lead/date-window-static-20261101/report.md、本任务板及本人status/lead.md；仅读Dashboard.tsx、Trends.tsx、types.ts的日期调用链和必要既有需求 | review | 01的[静态报告](deliverables/lead/date-window-static-20261101/report.md)已交付：完整基准/3源blob/实际行号、F1时区分歧及行动写键、F2条件回退缺口、R1序列化/R2午夜快照风险、保留正确行为、最小候选和T01–T18未来矩阵。7个引用文件存在，18行均NOT RUN；不称产品修复/运行验收。原02合法入口及真实接单/独审仍待，01不代称通过。不执行产品/脚本/测试/build/CI、真实数据/env/凭据、Mac/Apple、依赖/权限或push/合并/部署；仅精确本地文档提交 |
+
+# 2026-11-01 GitHub同步（已完成，保留）
 
 用户将“上线”明确为“更新到github”。本轮只在原01隔离checkout正常同步已完成提交及必要回执，覆盖旧任务禁止push限定；原C工作文件/main继续冻结，不据此实现报告功能、启动网站/测试/构建、迁Mac或配置账号/付费资源。
 
