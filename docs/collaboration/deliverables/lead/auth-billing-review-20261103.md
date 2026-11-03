@@ -24,3 +24,11 @@
 真实付款仍未配置；现有Lago只开源loopback sandbox。本轮不注册商户、不添加支付密钥、不公网部署，原健康库不作回归测试目标。
 
 最终加固候选01验证：23项专项、全套471/471（16.13秒、fail/skip/cancel=0）、完整build及真实OSS Lago隔离16项通过。最后三份日志D:/Forma/logs/auth-billing-review-final-tests-20261103.log、auth-billing-review-final-build-20261103.log、auth-billing-review-final-real-lago-20261103.log。Casdoor已有合成账户真实签名/原会话/PKCE7项也由01本轮重新执行通过（auth-billing-review-real-casdoor-20261103.log），未用主健康库。上述均为01结果，尚不替代06独立新SHA结论。
+
+## 正式06通过，准备集成
+
+06独立复验固定4f98d4a3d32f5de9dcd5ff2c92fcf760fab35bbd并提交[正式报告](../qa/auth-billing-review-20261103.md)76de55b8e0e70b5006cd4f07115c5307ddcbdf6e；01精确cherry-pick为e0f44fc，未改报告。本人核对报告只增专属93行文件，4f至集成候选的src/server/scripts/tests/依赖/配置没有新增产品差异。
+
+06本人86/86专项、471/471全套、完整build与中英callback/start503错误提示均通过，无未解决本地测试版合并阻塞；首次全套有ENOBUFS连接资源错误，构建完成后无并发原样重跑471全绿，未跳过用例。手机截图失败及真实provider/主数据/Mac/生产未测等边界原样保留，不能说所有浏览器/真实收费已验收。原“等02安排”的请求已由此次用户明确授权专项06实际执行满足，不冒称02接单。
+
+下一步01正常快进main并同步main/主管分支、对齐本机版本；真实计费保持sandbox，不开商户/真实扣款。最终远端/运行身份与数据复核在交付时绑定，不以初次测试PID或旧a72 URL代表最终服务。

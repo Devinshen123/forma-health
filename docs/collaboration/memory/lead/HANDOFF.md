@@ -1,5 +1,7 @@
 ## 2026-11-03 独立审查/修复/main集成（当前）
 
+最新：正式06已通过4f98d4（86专项/471全套/build及隔离中英UI），独立报告76de55b已cherry-pick e0f44fc，未改其报告。产品代码冻结，无剩余本地测试合并阻塞；初次ENOBUFS/手机像素未测/生产不通过均保留。下一步01核远端main仍为76dcbe2且可正常快进，合并并atomic推main/主管分支，再仅停止经D指针/绝对入口核验的本站旧进程、刷新源码包/发布标识/离线壳并启动同版，复核原40表/4私有文件/配置。当前主runtime还a72，不要触碰其真实用户会话或表单。最终文档仅元数据，不重跑产品全套；真实收费保持sandbox。
+
 当前产品861feed仍未独审通过：06第四反例复现客户端超时/远端晚commit，01继续加第6表billing_deleted_owners持久opaque删除标记、原子写队列、升级迁pending、15秒→1小时持续幂等清理。23专项绿（含跨磁盘重启晚commit），最终全套/build在跑；禁止凭861中途84项通过合并main。新增回归都由06独立提交后cherry-pick，fixture reopen句柄Windows释放错误由06修正；未改其隐私断言。下一步提交/push最终修复SHA，06再次专项/全套/build/UI复验，再取其独立报告。原健康/账户与配置、本轮40原表39同内容，仅签名通知摘要多8项；4份data/backups私有非DB文件已补D before-data-files，不冒称用户照片。旧未通过内容保留历史。
 
 06独立子会话已开始，自跑初始464/类型，并交QA-F1删号竞态2红例提交8f259a2（01cherry-pick12addc7）；01确认红后修复外部写liveness/清理意图排空保护，并补billing off删号队列。另发现并修新.env.example空Casdoor配置的CLI初始化失败，2测试红→绿。当前未提交产品改动仅本任务service/setup及回归/本人记录；先全套/build并push候选，再让06checkout复验固定SHA。06未给通过，main仍76dcbe2。QA新工作区缺忽略动作素材与vendor依赖已补D只读协作junction（不是权限隔离）；01不要同时构建。
