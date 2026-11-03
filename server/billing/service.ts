@@ -130,15 +130,21 @@ export class BillingService{
     // A raw receipt is acceptance, not a claim that async aggregation has finished.
     if(!this.closed)this.store.db.prepare("UPDATE billing_outbox SET status='accepted',attempts=attempts+1 WHERE transaction_id=?").run(String(row.transaction_id));
    }catch{if(!this.closed)this.store.db.prepare('UPDATE billing_outbox SET attempts=attempts+1,next_ms=? WHERE transaction_id=?').run(this.now()+Math.min(300000,1000*2**Math.min(Number(row.attempts),8)),String(row.transaction_id));}}
-   if(!owner&&!this.closed)for(const row of this.store.db.prepare('SELECT external_customer_id FROM billing_deletions LIMIT 10').all()){
-    const id=String(row.external_customer_id);if(this.store.db.prepare('SELECT 1 FROM accounts WHERE id=?').get(id))continue;
+   if(!owner&&!this.closed)for(const row of this.store.db.prepare('SELECT d.* FROM billing_deleted_owners d WHERE next_ms<=? AND NOT EXISTS(SELECT 1 FROM accounts WHERE id=d.external_customer_id) ORDER BY next_ms,created_ms LIMIT 10').all(this.now())){
+    const id=String(row.external_customer_id),delay=Math.min(3600000,15000*2**Math.min(Number(row.checks),8));
     try{
      await this.client.request('DELETE','/customers/'+encodeURIComponent(id),undefined,true);
      // A request already sent can commit after this DELETE. Keep the durable
      // intent until all tracked reads/mutations for that owner have settled,
      // then DELETE once more before acknowledging external cleanup.
-     if(!this.closed&&!this.refreshes.has(id)&&!this.mutations.has(id))this.store.db.prepare('DELETE FROM billing_deletions WHERE external_customer_id=?').run(id);
-    }catch{/* Durable cleanup retries without retaining names, email or health content. */}
+     if(!this.closed){
+      const inFlight=this.refreshes.has(id)||this.mutations.has(id);
+      if(!inFlight)this.store.db.prepare('DELETE FROM billing_deletions WHERE external_customer_id=?').run(id);
+      // Even a timed-out remote transaction can commit after its local promise
+      // settled. An opaque tombstone keeps cleanup alive across process restarts.
+      this.store.db.prepare('UPDATE billing_deleted_owners SET next_ms=?,checks=checks+1 WHERE external_customer_id=?').run(inFlight?0:this.now()+delay,id);
+     }
+    }catch{if(!this.closed)this.store.db.prepare('UPDATE billing_deleted_owners SET next_ms=?,checks=checks+1 WHERE external_customer_id=?').run(this.now()+delay,id);}
    }
   }finally{this.flushing=false;}
  }
@@ -155,5 +161,5 @@ export class BillingService{
   this.store.db.prepare('INSERT OR IGNORE INTO billing_webhook_receipts VALUES (?,?,?)').run(digest,createHash('sha256').update(delivery).digest('hex'),this.now());
  }
  export(owner:string){return this.ledger.export(owner);}
- scheduleDeletion(owner:string){this.store.db.prepare('INSERT OR IGNORE INTO billing_deletions VALUES (?,?)').run(owner,this.now());}
+ scheduleDeletion(owner:string){this.ledger.scheduleDeletion(owner,this.now());}
 }

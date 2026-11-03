@@ -12,6 +12,9 @@ export class BillingLedger{
  CREATE TABLE IF NOT EXISTS billing_outbox(transaction_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,subscription_id TEXT NOT NULL,timestamp_seconds REAL NOT NULL,status TEXT NOT NULL DEFAULT 'pending',attempts INTEGER NOT NULL DEFAULT 0,next_ms INTEGER NOT NULL DEFAULT 0);
  CREATE TABLE IF NOT EXISTS billing_webhook_receipts(body_hash TEXT PRIMARY KEY,delivery_hash TEXT NOT NULL,received_ms INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS billing_deletions(external_customer_id TEXT PRIMARY KEY,created_ms INTEGER NOT NULL);
+ CREATE TABLE IF NOT EXISTS billing_deleted_owners(external_customer_id TEXT PRIMARY KEY,created_ms INTEGER NOT NULL,next_ms INTEGER NOT NULL DEFAULT 0,checks INTEGER NOT NULL DEFAULT 0);
+ CREATE INDEX IF NOT EXISTS billing_deleted_owners_due ON billing_deleted_owners(next_ms);
+ INSERT OR IGNORE INTO billing_deleted_owners(external_customer_id,created_ms) SELECT external_customer_id,created_ms FROM billing_deletions;
  `);}
  transaction<T>(action:()=>T):T{this.db.exec('BEGIN IMMEDIATE');try{const r=action();this.db.exec('COMMIT');return r;}catch(e){this.db.exec('ROLLBACK');throw e;}}
  existing(owner:string,key:string){return this.db.prepare('SELECT * FROM billing_operations WHERE owner_id=? AND operation_key=?').get(owner,key);}
@@ -43,5 +46,9 @@ export class BillingLedger{
  }
  fail(owner:string,key:string,leaseMs:number){this.db.prepare("UPDATE billing_operations SET status='failed' WHERE owner_id=? AND operation_key=? AND status='pending' AND created_ms=?").run(owner,key,leaseMs);}
  save(owner:string,snapshot:unknown,now:number){this.db.prepare('INSERT INTO billing_memberships VALUES (?,?,?) ON CONFLICT(owner_id) DO UPDATE SET snapshot_json=excluded.snapshot_json,checked_ms=excluded.checked_ms').run(owner,JSON.stringify(snapshot),now);}
+ scheduleDeletion(owner:string,now:number){this.transaction(()=>{
+  this.db.prepare('INSERT OR IGNORE INTO billing_deletions VALUES (?,?)').run(owner,now);
+  this.db.prepare('INSERT OR IGNORE INTO billing_deleted_owners(external_customer_id,created_ms) VALUES (?,?)').run(owner,now);
+ });}
  export(owner:string){return{membership:this.db.prepare('SELECT snapshot_json FROM billing_memberships WHERE owner_id=?').get(owner)?.snapshot_json??null,operations:this.db.prepare('SELECT operation_key,status,period_start,period_end,created_ms FROM billing_operations WHERE owner_id=? ORDER BY created_ms').all(owner)};}
 }

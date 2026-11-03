@@ -1,5 +1,7 @@
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（进行中）
 
+861feed中途复验发现F1网络延伸，06独立第四红例证明本地请求超时后远端晚commit可绕过仅内存保护，未给通过。01已新增纯opaque持久删除标记第6表，原子队列/标记、迁旧pending及15秒至1小时持续退避清理，重启恢复；23专项绿，待最终全套/build和06新SHA复验。before数据文件备份补充并核39/40表同内容，仅签名通知摘要多8条，原账户/健康/4份非数据库私有文件/.env保持；不是4张照片。仍未main合并/真实收费。
+
 06继续独立发现QA-F2（off删号漏排外部清理，已由无条件队列修复）、QA-F3（统一登录默认隐藏回调错误，合成浏览器确认）。01已把error/notice提升为弹窗共享内容，各只渲染一次；06自己的三删除回归及便携fixture均已精确cherry-pick。469全套及一次完整build通过后，又有此UI修复，需重建并交新固定SHA复验；尚未main合并，真实收费关闭。
 
 专项06已自行运行初始464项/类型，通过；独立构建曾缺忽略动作素材和vendor依赖，已分别补本机同锁文件junction，不能把首次失败写通过。06独立复现P1 QA-F1删号时远端客户被旧初始化请求恢复，测试8f259a2已cherry-pick为12addc7，01复现2失败后修复：外部写/await后校验owner，DELETE成功仍保留有在途refresh/mutation的清理意图，排空后二次DELETE；billing off删号也留持久队列。01另修Casdoor新.env.example空占位初始化失败。当前三组回归20/20通过，下一步完整测试/build、push修复候选并由06独立复验，不提前main集成。详见[本轮记录](../deliverables/lead/auth-billing-review-20261103.md)。

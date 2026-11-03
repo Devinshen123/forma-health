@@ -181,6 +181,19 @@ test('account deletion cascades billing locally and retries external cleanup wit
  await service.flush();assert.equal(deletes,1);assert.equal(store.db.prepare('SELECT COUNT(*) n FROM billing_deletions').get()?.n,0);
 });
 
+test('deletion queue and opaque tombstone commit atomically and old pending cleanup migrates on restart',t=>{
+ const {store,owner,ledger}=fixture(t);
+ store.db.exec("CREATE TRIGGER fail_deletion_fence BEFORE INSERT ON billing_deleted_owners BEGIN SELECT RAISE(ABORT,'synthetic persistence failure'); END;");
+ assert.throws(()=>ledger.scheduleDeletion(owner,now));
+ assert.equal(store.db.prepare('SELECT COUNT(*) n FROM billing_deletions').get()?.n,0,'a partial deletion intent must roll back');
+ store.db.exec('DROP TRIGGER fail_deletion_fence; DROP TABLE billing_deleted_owners;');
+ store.db.prepare('INSERT INTO billing_deletions VALUES (?,?)').run(owner,now);
+ new BillingLedger(store.db);
+ const fence=store.db.prepare('SELECT * FROM billing_deleted_owners').get()!;
+ assert.equal(fence.external_customer_id,owner);assert.equal(fence.created_ms,now);assert.equal(fence.next_ms,0);
+ assert.deepEqual(Object.keys(fence),['external_customer_id','created_ms','next_ms','checks']);
+});
+
 test('server client pins destination, rejects redirect/error bodies and never exposes provider secrets',async()=>{
  const client=new LagoClient(resolveBillingConfig(config),async(_input,init)=>{assert.equal(init?.redirect,'error');return json({secret:'provider-private-sentinel'},422);});
  try{

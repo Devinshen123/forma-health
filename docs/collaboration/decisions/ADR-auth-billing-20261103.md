@@ -14,7 +14,7 @@
 ## LAGO-OSS-01 已实现契约
 
 - `src/billing.ts`定义公开BillingSnapshot/套餐/账单类型。GET `/api/billing/options`只返回公开测试套餐；GET `/api/billing/account`、POST `/api/billing/{subscribe,simulate-payment,cancel-renewal,sync}`均从原会话推导owner并校验X-Forma-Account。变更另受loopback Host/Origin和限流约束。客户端不能传客户编号、金额、额度或任意上游URL。
-- 新增5张billing表，不改accounts.id/健康表：membership缓存、operation预留/成功账本、持久outbox、已验签通知摘要、仅保留opaque编号的删除重试。导出增加安全计费元数据；本地删号级联计费记录，外部清理只在本地账户确实不存在后重试。
+- 新增6张billing表（初始5表，独立审查追加第6表），不改accounts.id/健康表：membership缓存、operation预留/成功账本、持久outbox、已验签通知摘要、opaque删除队列及持久删除标记。导出增加安全计费元数据；本地删号级联计费记录，外部清理只在本地账户确实不存在后重试。
 - 两个测试模板Free $0/3次、Pro $20/100次，不代表正式定价。Lago套餐、订阅及权益为来源；Pro需属于当前owner/当前内部订阅/当前账期的finalized+succeeded账单、有正subscription费且币种一致。旧账期付款和通知body不能授予新账期。权益直接取同一subscription响应内的entitlements，禁止拼接两个“当前active”读取结果。
 - 成功食物草稿才计1次，非食物/失败不计次。owner+asset+language的稳定操作键使丢失HTTP响应可返回原草稿；草稿/成功状态/唯一outbox在同一SQLite事务提交。5分钟预留租约限制并发，旧租约不能释放或提交新租约。预留及最终快照再次核对账期边界；同period_end的套餐切换继承已用次数。
 - 使用精确毫秒Unix秒值`created_ms/1000`发送事件，不能floor。发送前先GET已有原回执；404才POST，不确定POST失败后再查回执。严格核对transaction/code/subscription/毫秒时间/空properties；冲突保留pending，不产生替代ID。accepted只指原始回执核对，不代表异步聚合完成，lagoReported单独显示。隔离联调另外断言实际聚合达到3且不重复。
@@ -25,6 +25,8 @@
 
 ## 独立审查修正
 
-2026-11-03 QA-F1/F2：异步客户/订阅初始化、快照、套餐及模拟结算在外部写前和await后重新校验本地owner，已被删除则返回BILLING_ACCOUNT_REMOVED/410，不以旧会话继续创建远端客户。DELETE成功后如该owner仍有跟踪的refresh/mutation在途，持久清理意图不能清除，排空后再次DELETE再完成；即使billing off，删号也排入opaque ID清理队列，之后启用worker继续。该修复验证同进程/正常响应边界，不表示远端超时晚提交和跨进程崩溃已获严格分布式删除保证。
+2026-11-03 QA-F1/F2：异步客户/订阅初始化、快照、套餐及模拟结算在外部写前和await后重新校验本地owner，已被删除则返回BILLING_ACCOUNT_REMOVED/410，不以旧会话继续创建远端客户。DELETE成功后如该owner仍有跟踪的refresh/mutation在途，持久清理意图不能清除，排空后再次DELETE再完成；即使billing off，删号也排入opaque ID清理队列，之后启用worker继续。
+
+QA-F1复验延伸：本地超时不表示远端事务已停止，因此追加`billing_deleted_owners`，只持久保存opaque随机客户编号、创建时间、下次清理时间和检查次数，无姓名/邮箱/健康内容或FK。scheduleDeletion原子写队列及标记，升级时将既有pending迁入。正常pending可清除，但删除标记继续保留，worker仅对本地已不存在的账户持续幂等DELETE；首次15秒退避、上限1小时，失败保留并重试。重启后从同一SQLite恢复，避免远端晚commit永久漏清理；不承诺用户删号瞬间已同步删除所有外部事务。
 
 QA-F3：所有认证弹窗模式共享唯一error/notice呈现，启用统一登录后仍显示授权取消、启动错误与回调错误；不改OAuth票据或身份权限。
