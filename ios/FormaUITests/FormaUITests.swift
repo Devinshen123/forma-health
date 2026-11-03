@@ -383,10 +383,16 @@ final class FormaUITests: XCTestCase {
             let viewport = contentViewport(scroll)
             if target.exists {
                 let frame = target.frame
-                if validFrame(frame) && viewport.contains(frame) {
-                    attachControlGeometry(target, viewport: viewport)
-                    XCTAssertTrue(waitUntilHittable(target), "A fully visible native control must be hittable: \(target.identifier)")
-                    return
+                if validFrame(frame) && fullyVisible(frame, in: viewport) {
+                    if waitUntilHittable(target) {
+                        attachControlGeometry(target, viewport: viewport)
+                        return
+                    }
+                    // A tree read while a sheet or the keyboard is still moving can
+                    // report a frame as on screen a moment before something settles
+                    // over it. Measure again rather than calling a control that was
+                    // never reachable; the next pass sees the cover and scrolls.
+                    continue
                 }
                 // An upward-only swipe can move a top-of-page action away from
                 // the user. Read geometry first; do not ask AX to hit-test an
@@ -401,7 +407,7 @@ final class FormaUITests: XCTestCase {
             }
         }
         attachControlGeometry(target, viewport: contentViewport(scroll))
-        XCTFail("The native control \(target.identifier) did not become fully visible through normal scrolling")
+        XCTFail("The native control \(target.identifier) did not become visible and hittable through normal scrolling")
     }
 
     private func activeScrollContainer() -> XCUIElement {
@@ -413,25 +419,41 @@ final class FormaUITests: XCTestCase {
 
     private func contentViewport(_ scroll: XCUIElement) -> CGRect {
         var viewport = app.frame.intersection(scroll.frame)
-        for bar in app.navigationBars.allElementsBoundByIndex where bar.exists {
-            let frame = bar.frame
-            if validFrame(frame) && frame.intersects(viewport) {
-                let top = max(viewport.minY, frame.maxY)
-                viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
-            }
+        // Only the chrome in front of this container hides anything. A sheet is
+        // added after the page that presents it, so the last intersecting
+        // navigation bar is the one on top; subtracting the page's bar as well
+        // cut away the top of a sheet that bar no longer covers.
+        let bars = app.navigationBars.allElementsBoundByIndex.filter {
+            $0.exists && validFrame($0.frame) && $0.frame.intersects(viewport)
         }
+        if let front = bars.last?.frame {
+            let top = max(viewport.minY, front.maxY)
+            viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
+        }
+        // More than one bar over this container means a sheet is up, and the
+        // page's own banner and tab bar are behind it. The keyboard is not.
+        let presented = bars.count > 1
         let banner = element("demo.banner")
-        if banner.exists && validFrame(banner.frame) && banner.frame.intersects(viewport) {
+        if !presented && banner.exists && validFrame(banner.frame) && banner.frame.intersects(viewport) {
             let top = max(viewport.minY, banner.frame.maxY)
             viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
         }
-        for cover in [app.tabBars.firstMatch, app.keyboards.firstMatch] where cover.exists {
+        var covers = [app.keyboards.firstMatch]
+        if !presented { covers.insert(app.tabBars.firstMatch, at: 0) }
+        for cover in covers where cover.exists {
             let frame = cover.frame
             if validFrame(frame) && frame.intersects(viewport) {
                 viewport = CGRect(x: viewport.minX, y: viewport.minY, width: viewport.width, height: max(0, min(viewport.maxY, frame.minY) - viewport.minY))
             }
         }
         return viewport.insetBy(dx: 1, dy: 1)
+    }
+
+    // A control sitting flush against the bar above it is visible. The inset
+    // viewport reads that exact shared edge as hidden, so allow a point of
+    // rounding slack rather than scroll for something already on screen.
+    private func fullyVisible(_ frame: CGRect, in viewport: CGRect) -> Bool {
+        viewport.insetBy(dx: -2, dy: -2).contains(frame)
     }
 
     private func validFrame(_ frame: CGRect) -> Bool {
