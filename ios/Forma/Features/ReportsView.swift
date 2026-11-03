@@ -366,6 +366,8 @@ struct ReportsCard: View {
                     Image(systemName: "chevron.right").font(.footnote)
                         .foregroundStyle(FeatureTheme.muted).accessibilityHidden(true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("reports.card")
