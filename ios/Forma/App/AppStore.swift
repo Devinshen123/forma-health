@@ -355,6 +355,45 @@ final class AppStore {
         }
     }
 
+    // MARK: - Food photo estimates
+
+    /// What the connected deployment can actually do. Asked, never assumed: a service with no
+    /// model configured must say so plainly rather than have the app offer a feature it lacks.
+    func serviceCapabilities() async -> ServiceCapabilities? {
+        guard !isDemo, let api else { return nil }
+        let ticket = generation
+        do {
+            let data = try await api.send("/api/capabilities")
+            guard ticket == generation else { return nil }
+            return try JSONDecoder().decode(ServiceCapabilities.self, from: data)
+        } catch { return nil }
+    }
+
+    /// Asks the service to read an uploaded photo. The estimate that comes back is the
+    /// service's, not a record: nothing is saved here, and consent is sent explicitly because
+    /// the photo leaves the device to be read.
+    func analyseFoodPhoto(assetId: String) async -> FoodPhotoDraft? {
+        guard !isDemo else {
+            error = text("演示模式不会把照片发给服务识别。", "Demo mode never sends a photo to be read.")
+            return nil
+        }
+        guard let api, let user, UUID(uuidString: assetId) != nil else { return nil }
+        let ticket = generation
+        do {
+            let data = try await api.send("/api/food-photo-drafts", method: "POST", body: .object([
+                "assetId": .string(assetId), "consent": .bool(true), "language": .string(language),
+            ]), account: user.id)
+            guard ticket == generation else { return nil }
+            error = nil
+            return try JSONDecoder().decode(FoodPhotoDraft.self, from: data)
+        } catch {
+            guard ticket == generation else { return nil }
+            handleSessionFailure(error)
+            self.error = message(error)
+            return nil
+        }
+    }
+
     func attachmentMessage(_ refusal: AttachmentRefusal) -> String {
         switch refusal {
         case .empty: return text("这个文件是空的。", "That file is empty.")
@@ -504,6 +543,20 @@ final class AppStore {
         }
     }
 
+    /// A signed-in account with no profile is asked the website's six questions first. Until now
+    /// the plan page told such an account to finish onboarding that the app did not have.
+    var needsOnboarding: Bool { isReady && !isDemo && user != nil && Onboarding.needed(state) }
+
+    /// Saves the answers as the profile and the first plan, through the same atomic plan write
+    /// as every other plan change. Returns whether the account now has its profile.
+    func completeOnboarding(_ answers: OnboardingAnswers) async -> Bool {
+        await applyPlan(key: "onboarding") { [state, user, language] newId in
+            try Onboarding.documents(state: state, answers: answers, accountName: user?.name,
+                                     language: language, timezone: TimeZone.current.identifier, newId: newId)
+        }
+        return planError == nil && !Onboarding.needed(state)
+    }
+
     /// Builds one atomic mutation for the whole set of documents. Every change carries its own
     /// baseVersion, so a plan the service has moved on from returns 409 for the user to review
     /// rather than being overwritten.
@@ -603,6 +656,19 @@ final class AppStore {
 
     func planMessage(_ error: Error) -> String {
         switch error {
+        case OnboardingError.invalidTraining:
+            return text("训练每周 1–7 天，每次 10–180 分钟，都填整数。",
+                        "Training is 1–7 days a week and 10–180 minutes a session, in whole numbers.")
+        case OnboardingError.invalidSleep:
+            return text("睡眠目标请填 4–12 小时。", "Set a sleep goal of 4–12 hours.")
+        case OnboardingError.invalidNutrition:
+            return text("能量目标 500–8000 kcal（整数），蛋白质 1–400 g；不确定可以留空。",
+                        "Energy 500–8000 kcal (whole), protein 1–400 g; leave either blank if unsure.")
+        case OnboardingError.textTooLong:
+            return text("内容太长了：名字最多 160 字，过敏和饮食限制各 2000 字。",
+                        "That is too long: a name is up to 160 characters, allergies and restrictions 2000 each.")
+        case OnboardingError.invalidChoice, OnboardingError.invalidTimezone:
+            return text("请从给出的选项里选择。", "Choose one of the options offered.")
         case PlanError.missingCurrentPlan:
             return text("还没有计划可以调整。先完成引导，生成第一版计划。",
                         "There is no plan to adjust yet. Finish onboarding to create the first version.")

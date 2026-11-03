@@ -5,6 +5,7 @@ import FormaCore
 struct NutritionView: View {
     let store: AppStore
     @State private var showingEditor = false
+    @State private var showingPhoto = false
 
     private var summary: DayMetrics { Metrics.dailySummary(state: store.state, date: Date()) }
     private var meals: [FeatureRecord] { FeatureFormat.rows(FeatureFormat.latest(store.records("meals"))) }
@@ -13,6 +14,7 @@ struct NutritionView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 18) {
                 FeatureAction(title: store.text("记录饮食", "Record food"), symbol: "plus", identifier: "nutrition.add") { showingEditor = true }
+                FeatureAction(title: store.text("从照片估算", "Estimate from a photo"), symbol: "camera", identifier: "nutrition.photo") { showingPhoto = true }
                 FeatureCard {
                     Text(store.text("今日已记录", "Recorded today")).font(.headline)
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 20) {
@@ -35,6 +37,7 @@ struct NutritionView: View {
         .navigationTitle(store.text("饮食", "Nutrition"))
         .refreshable { await store.refresh() }
         .sheet(isPresented: $showingEditor) { MealEditor(store: store) }
+        .sheet(isPresented: $showingPhoto) { FoodPhotoFlow(store: store) }
         .accessibilityIdentifier("screen.nutrition")
     }
 }

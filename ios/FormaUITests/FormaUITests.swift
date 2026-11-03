@@ -49,6 +49,19 @@ final class FormaUITests: XCTestCase {
         assertMetric("nutrition.total.carbs", equals: 50)
         assertMetric("nutrition.total.fat", equals: 12.5)
 
+        // Reading a photo means sending it somewhere. The demo has no account and no service,
+        // so it must say so rather than offer an estimate it cannot make.
+        let photo = button("nutrition.photo")
+        reveal(photo, attempts: 24)
+        photo.tap()
+        XCTAssertTrue(element("nutrition.photo.unavailable").waitForExistence(timeout: 5),
+                      "A demo must say it cannot estimate from a photo")
+        XCTAssertFalse(element("nutrition.photo.pick").exists,
+                       "A demo must not offer to choose a photo at all")
+        attachScreenshot("Food photo demo gate")
+        button("nutrition.photo.cancel").tap()
+        XCTAssertTrue(element("screen.nutrition").waitForExistence(timeout: 5))
+
         selectTab("training", chinese: "训练", english: "Training")
         assertMetric("training.summary.minutes", equals: 30)
         XCTAssertEqual(metricText("training.summary.sets"), "—")
@@ -170,8 +183,15 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(waitUntilSelected(seal), "Choosing a character must take effect")
         XCTAssertEqual(element("companion.xp").label, xpBefore, "Switching character must not reset XP")
         XCTAssertTrue(element("companion.activeDays").label.contains("6"))
-        // The wardrobe is a lazy grid: scrolled away, its cells are discarded and absent from
-        // the tree. Look at it again, as a person would, rather than read a stale absence.
+        // The wardrobe is a lazy grid far above the characters, and sweeping back up a long page
+        // can fling straight past it before its cells exist. Leave and come back instead: the page
+        // opens at the top, and the claim is stronger - the wardrobe survives leaving, not just a redraw.
+        app.navigationBars.buttons.firstMatch.tap()
+        let reopen = element("companion.card")
+        XCTAssertTrue(reopen.waitForExistence(timeout: 10))
+        reveal(reopen)
+        reopen.tap()
+        assertScreen("companion")
         let keptItem = element("companion.item.cap")
         reveal(keptItem, attempts: 24)
         XCTAssertTrue(keptItem.exists, "The wardrobe survives a character switch")
@@ -514,9 +534,16 @@ final class FormaUITests: XCTestCase {
     private func replaceText(_ identifier: String, with value: String) {
         let field = app.textFields.matching(identifier: identifier).firstMatch
         reveal(field)
-        field.tap()
-        let previous = (field.value as? String) ?? ""
-        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + value)
+        // Typing before the keyboard is up drops characters: CI read back "Synthetic " for
+        // "Synthetic UI meal", and a plan field read back empty for "20". Wait for the keyboard,
+        // and if the field still disagrees, clear what landed and type it once more.
+        for _ in 0..<2 {
+            field.tap()
+            _ = app.keyboards.firstMatch.waitForExistence(timeout: 5)
+            let previous = (field.value as? String) ?? ""
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + value)
+            if field.value as? String == value { return }
+        }
         XCTAssertEqual(field.value as? String, value)
     }
 

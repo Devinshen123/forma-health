@@ -12,9 +12,11 @@ public enum NativeRecordError: Error, Equatable, Sendable, LocalizedError {
     case invalidDuration
     case invalidExercise
     case notesTooLong
+    case invalidAttachment
 
     public var errorDescription: String? {
         switch self {
+        case .invalidAttachment: return "This estimate has no attachment to trace it back to."
         case .invalidName: return "Enter a visible name of at most 160 characters."
         case .invalidDate: return "Choose a valid date."
         case .invalidServing: return "Enter a serving greater than zero and no more than 10,000 g."
@@ -52,6 +54,29 @@ public enum NativeRecords {
             "carbs": .number(carbs), "fat": .number(fat),
             "source": .string("manual"), "createdAt": .string(try RecordDates.instant(Date()))
         ])
+    }
+
+    /// A meal the person kept after reviewing a food-photo estimate. The numbers saved are
+    /// the ones they confirmed, validated exactly as a typed meal is; what the estimate added
+    /// is the trail back to it, so a record can always be told apart from one typed by hand.
+    public static func reviewedEstimate(
+        name: String, date: Date, grams: Double,
+        kcal: Double, protein: Double, carbs: Double, fat: Double, type: String,
+        assetId: String, draftId: String, itemIndex: Int
+    ) throws -> JSONValue {
+        guard UUID(uuidString: assetId) != nil, UUID(uuidString: draftId) != nil else {
+            throw NativeRecordError.invalidAttachment
+        }
+        guard itemIndex >= 0, itemIndex < 64 else { throw NativeRecordError.invalidAttachment }
+        guard case .object(var fields) = try meal(name: name, date: date, grams: grams, kcal: kcal,
+                                                  protein: protein, carbs: carbs, fat: fat, type: type) else {
+            throw NativeRecordError.invalidNutrients
+        }
+        fields["source"] = .string("ai_estimate")
+        fields["assetId"] = .string(assetId)
+        fields["aiDraftId"] = .string(draftId)
+        fields["aiItemIndex"] = .number(Double(itemIndex))
+        return .object(fields)
     }
 
     public static func sleep(

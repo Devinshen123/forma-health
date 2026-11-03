@@ -83,6 +83,49 @@ final class PlanStoreTests: XCTestCase {
         }
     }
 
+    // MARK: - Onboarding
+
+    @MainActor func testOnlyASignedInAccountWithoutAProfileIsSentToOnboarding() {
+        let store = AppStore(uiTesting: true)
+        store.isReady = true
+        store.user = FormaUser(id: "synthetic-account", email: "synthetic@example.test", name: "Synthetic")
+        store.isDemo = false
+        store.state = .object(["profile": .null, "planVersions": .array([])])
+        XCTAssertTrue(store.needsOnboarding, "The plan page would otherwise ask for an onboarding it cannot reach")
+
+        store.state = Self.planState
+        XCTAssertFalse(store.needsOnboarding, "An account that has a profile goes straight to the app")
+
+        store.state = .object(["profile": .null])
+        store.isDemo = true
+        XCTAssertFalse(store.needsOnboarding, "The demo has no account to give a profile to")
+        store.isDemo = false
+        store.user = nil
+        XCTAssertFalse(store.needsOnboarding, "Signed out is the connection screen, not onboarding")
+    }
+
+    @MainActor func testDemoRefusesOnboardingAndChangesNothing() async {
+        let store = makeStore(demo: true)
+        store.state = .object(["profile": .null])
+        let saved = await store.completeOnboarding(OnboardingAnswers())
+        XCTAssertFalse(saved)
+        XCTAssertEqual(store.state, .object(["profile": .null]))
+        XCTAssertTrue(store.planError?.contains("演示") ?? false)
+    }
+
+    @MainActor func testOnboardingTravelsAsOnePlanWriteTheServiceCanRefuseAsAWhole() throws {
+        let documents = try Onboarding.documents(state: .object(["profile": .null]), answers: OnboardingAnswers(),
+                                                 accountName: "Synthetic", language: "zh",
+                                                 timezone: "Asia/Shanghai", newId: "v1")
+        XCTAssertTrue(documents.allSatisfy { AppStore.planCollections.contains($0.collection) },
+                      "Onboarding goes through the plan path and touches nothing else")
+        let mutation = AppStore.planMutation(documents: documents, versions: [:], mutationId: "synthetic")
+        let changes = try XCTUnwrap(mutation["changes"].arrayValue)
+        XCTAssertEqual(changes.map { $0["collection"].stringValue }, ["planVersions", "currentPlanId", "profile"])
+        XCTAssertTrue(changes.allSatisfy { $0["baseVersion"].doubleValue == 0 },
+                      "A first profile and plan must not exist yet; a second device's answers are refused, not merged")
+    }
+
     // MARK: - Mutation assembly
 
     @MainActor func testEachChangeCarriesTheBaseVersionThisClientLastSaw() throws {

@@ -26,6 +26,9 @@ struct RootView: View {
             }
             else if !store.isReady || store.isPurging { ProgressView("Forma") }
             else if store.user == nil && !store.isDemo { ConnectionView(store: store) }
+            // As on the website, an account with no profile answers the six questions before the
+            // app proper; the plan page otherwise asks for an onboarding it cannot reach.
+            else if store.needsOnboarding { OnboardingView(store: store) }
             else { tabs }
         }
         .sheet(isPresented: $showSettings) { SettingsView(store: store) }
