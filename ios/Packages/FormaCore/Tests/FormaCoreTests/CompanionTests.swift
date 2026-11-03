@@ -132,11 +132,12 @@ final class CompanionTests: XCTestCase {
     }
 
     func testEveryCharacterAndItemHasBilingualPresentationDetail() {
-        XCTAssertEqual(CompanionCharacter.allCases.count, 6)
+        XCTAssertEqual(CompanionCharacter.legacy.count, 6)
+        XCTAssertEqual(CompanionCharacter.all.count, 6 + pokemonCatalog.count)
         XCTAssertEqual(CompanionItem.allCases.count, 6)
         XCTAssertEqual(CompanionQuest.allCases.count, 3)
-        for character in CompanionCharacter.allCases {
-            let detail = companionCharacterDetails[character]
+        for character in CompanionCharacter.all {
+            let detail = companionCharacterDetail(character)
             XCTAssertNotNil(detail, "\(character.rawValue) is missing presentation detail")
             XCTAssertFalse(detail?.zh.isEmpty ?? true)
             XCTAssertFalse(detail?.en.isEmpty ?? true)
@@ -145,6 +146,58 @@ final class CompanionTests: XCTestCase {
             XCTAssertEqual(detail?.color.count, 7, "\(character.rawValue) needs a #rrggbb tint")
             XCTAssertEqual(detail?.color.first, Character("#"))
         }
+    }
+
+    func testACatalogCharacterIsCarriedAndNamedWhileAnUnknownNumberIsRefused() throws {
+        let snapshot = try decode("""
+        {"ruleVersion":1,"character":"pokemon-25","day":"2026-10-22","xp":0,"level":1,"activeDays":0,
+         "equipped":null,"inventory":[],"quests":[],"chests":[],"challenge":null}
+        """)
+        XCTAssertEqual(snapshot.character, CompanionCharacter.pokemon(dex: 25))
+        XCTAssertEqual(companionCharacterDetail(snapshot.character)?.zh, "皮卡丘")
+        XCTAssertEqual(companionCharacterDetail(snapshot.character)?.en, "Pikachu")
+        // Electric, the first of its types, lends the tint - as it does on the website.
+        XCTAssertEqual(companionCharacterDetail(snapshot.character)?.color, pokemonTypeColors["electric"])
+        XCTAssertNil(CompanionCharacter(rawValue: "pokemon-9999"),
+                     "A number outside the catalog has no name or artwork, so it is not a character")
+        XCTAssertNil(CompanionCharacter(rawValue: "pokemon-"))
+        XCTAssertNotNil(CompanionCharacter(rawValue: "sprout"))
+    }
+
+    func testThePortraitFollowsTheLevelAlongTheCharactersOwnLine() {
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 1), "companions/forms/1.webp")
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 3), "companions/forms/2.webp")
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 5), "companions/forms/3.webp")
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 99), "companions/forms/3.webp",
+                       "A line that has ended stays at its last form")
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 0), "companions/forms/1.webp",
+                       "A level below the first is still the first form")
+        XCTAssertEqual(companionPortraitPath(.sprout, level: 1, thumbnail: true),
+                       "companions/forms/1-thumb.webp")
+        // Picked mid-line, a catalog character keeps only what it still has ahead of it.
+        XCTAssertEqual(companionEvolutionForms(.pokemon(dex: 2)).map(\.dex), [2, 3])
+        XCTAssertEqual(companionPortraitPath(.pokemon(dex: 2), level: 3), "companions/forms/3.webp")
+        XCTAssertEqual(companionEvolutionForms(.pokemon(dex: 25)).map(\.dex), [25, 26])
+        XCTAssertEqual(companionEvolutionForms(.pokemon(dex: 132)).map(\.dex), [132],
+                       "A character with no line of its own stays itself")
+        // Munchlax is outside the 151 the catalog holds, so the six keep their own forms.
+        XCTAssertEqual(companionEvolutionForms(.bear).map(\.dex), [446, 143])
+    }
+
+    func testEveryCatalogCharacterHasAFormToDraw() {
+        for character in CompanionCharacter.all {
+            XCTAssertNotNil(companionPortraitPath(character, level: 1),
+                            "\(character.rawValue) has no portrait")
+            XCTAssertNotNil(companionCharacterDetail(character)?.zh)
+        }
+    }
+
+    func testTheNextEvolutionCountsTheXPStillOwed() {
+        XCTAssertEqual(nextCompanionEvolution(.sprout, xp: 0)?.form.dex, 2)
+        XCTAssertEqual(nextCompanionEvolution(.sprout, xp: 0)?.remainingXP, 200)
+        XCTAssertEqual(nextCompanionEvolution(.sprout, xp: 150)?.remainingXP, 50)
+        XCTAssertEqual(nextCompanionEvolution(.sprout, xp: 200)?.form.dex, 3)
+        XCTAssertNil(nextCompanionEvolution(.sprout, xp: 400), "A finished line has nothing next")
     }
 
     func testDemoCompanionMatchesTheSharedDemoAndCarriesTodaysRewardDay() {

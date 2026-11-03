@@ -21,15 +21,19 @@ const assets = add('assets','isa = PBXFileReference; lastKnownFileType = folder.
 add('assets-build',`isa = PBXBuildFile; fileRef = ${assets};`);
 const privacy = add('privacy','isa = PBXFileReference; lastKnownFileType = text.xml; path = Forma/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT;');
 add('privacy-build',`isa = PBXBuildFile; fileRef = ${privacy};`);
+// A folder reference, not a group: the companion artwork ships as files the app reads by
+// name, so the whole directory is copied in as it stands.
+const media = add('media','isa = PBXFileReference; lastKnownFileType = folder; path = Forma/CompanionArt; sourceTree = SOURCE_ROOT;');
+add('media-build',`isa = PBXBuildFile; fileRef = ${media};`);
 const products = add('products',`isa = PBXGroup; children = (${appProduct},${testProduct},${nativeTestProduct}); name = Products; sourceTree = "<group>";`);
-const mainGroup = add('main-group',`isa = PBXGroup; children = (${[...refs.values(),assets,privacy,products].join(',')}); sourceTree = "<group>";`);
+const mainGroup = add('main-group',`isa = PBXGroup; children = (${[...refs.values(),assets,privacy,media,products].join(',')}); sourceTree = "<group>";`);
 const packageRef = add('package','isa = XCLocalSwiftPackageReference; relativePath = Packages/FormaCore;');
 const packageProduct = add('core-product',`isa = XCSwiftPackageProductDependency; package = ${packageRef}; productName = FormaCore;`);
 const coreBuild = add('core-build',`isa = PBXBuildFile; productRef = ${packageProduct};`);
 const sourcePhase = (key,list) => add(key,`isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (${list.map(f=>id(`build:${f}`)).join(',')}); runOnlyForDeploymentPostprocessing = 0;`);
 const appSources = sourcePhase('app-sources',app), testSources = sourcePhase('test-sources',tests);
 const nativeTestSources = sourcePhase('native-test-sources',nativeTests);
-const appResources = add('app-resources',`isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (${id('assets-build')},${id('privacy-build')}); runOnlyForDeploymentPostprocessing = 0;`);
+const appResources = add('app-resources',`isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (${id('assets-build')},${id('privacy-build')},${id('media-build')}); runOnlyForDeploymentPostprocessing = 0;`);
 const frameworks = add('app-frameworks',`isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (${coreBuild}); runOnlyForDeploymentPostprocessing = 0;`);
 const nativeCoreBuild = add('native-core-build',`isa = PBXBuildFile; productRef = ${packageProduct};`);
 const nativeFrameworks = add('native-test-frameworks',`isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (${nativeCoreBuild}); runOnlyForDeploymentPostprocessing = 0;`);

@@ -21,22 +21,43 @@ struct CompanionAvatar: View {
     let store: AppStore
     let character: CompanionCharacter
     let equipped: CompanionItem?
+    /// The portrait follows the level: a line's later forms are its reward for getting there.
+    var level: Int = 1
     var size: CGFloat = 96
     var thumbnail = false
 
-    private var detail: CompanionCharacterDetail? { companionCharacterDetails[character] }
+    private var detail: CompanionCharacterDetail? { companionCharacterDetail(character) }
     private var tint: Color { detail.flatMap { Color(companionHex: $0.color) } ?? FeatureTheme.border }
 
+    /// The portrait that ships with the app. The companion is the one thing that should look
+    /// like itself before anything is signed in, so the artwork is read from the bundle rather
+    /// than fetched - which also means a demo, a flight and a dead service all show the same.
+    private var bundledArtwork: UIImage? {
+        guard let form = companionForm(character, level: level) else { return nil }
+        let name = "\(form.dex)\(thumbnail ? "-thumb" : "")"
+        guard let url = Bundle.main.url(forResource: name, withExtension: "webp",
+                                        subdirectory: "CompanionArt")
+                ?? Bundle.main.url(forResource: name, withExtension: "webp"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return UIImage(data: data)
+    }
+
+    /// Only for a deployment whose artwork this build does not carry.
     private var artworkURL: URL? {
-        guard !store.isDemo, let base = store.baseURL else { return nil }
-        return base.appendingPathComponent("companions")
-            .appendingPathComponent(character.rawValue + (thumbnail ? "-thumb" : "") + ".webp")
+        guard !store.isDemo, let base = store.baseURL,
+              let path = companionPortraitPath(character, level: level, thumbnail: thumbnail),
+              var components = URLComponents(url: base.appendingPathComponent(path),
+                                             resolvingAgainstBaseURL: false) else { return nil }
+        components.queryItems = [URLQueryItem(name: "v", value: companionArtVersion)]
+        return components.url
     }
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size / 5).fill(tint)
-            if let artworkURL {
+            if let bundledArtwork {
+                Image(uiImage: bundledArtwork).resizable().scaledToFit().padding(size / 12)
+            } else if let artworkURL {
                 AsyncImage(url: artworkURL) { phase in
                     switch phase {
                     case .success(let image):
@@ -125,7 +146,8 @@ struct CompanionCard: View {
                 } label: {
                     HStack(spacing: 14) {
                         CompanionAvatar(store: store, character: companion.character,
-                                        equipped: companion.equipped, size: 64, thumbnail: true)
+                                        equipped: companion.equipped, level: companion.level,
+                                        size: 64, thumbnail: true)
                         VStack(alignment: .leading, spacing: 4) {
                             Text(companionName(companion.character))
                                 .font(.headline).foregroundStyle(FeatureTheme.ink)
@@ -163,7 +185,7 @@ struct CompanionCard: View {
     }
 
     private func companionName(_ character: CompanionCharacter) -> String {
-        guard let detail = companionCharacterDetails[character] else { return character.rawValue }
+        guard let detail = companionCharacterDetail(character) else { return character.rawValue }
         return store.language == "zh" ? detail.zh : detail.en
     }
 }

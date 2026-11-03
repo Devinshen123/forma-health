@@ -170,7 +170,11 @@ final class FormaUITests: XCTestCase {
         XCTAssertTrue(waitUntilSelected(seal), "Choosing a character must take effect")
         XCTAssertEqual(element("companion.xp").label, xpBefore, "Switching character must not reset XP")
         XCTAssertTrue(element("companion.activeDays").label.contains("6"))
-        XCTAssertTrue(element("companion.item.cap").exists, "The wardrobe survives a character switch")
+        // The wardrobe is a lazy grid: scrolled away, its cells are discarded and absent from
+        // the tree. Look at it again, as a person would, rather than read a stale absence.
+        let keptItem = element("companion.item.cap")
+        reveal(keptItem, attempts: 24)
+        XCTAssertTrue(keptItem.exists, "The wardrobe survives a character switch")
         attachScreenshot("Companion after switching character")
 
         // An invitation is refused until it matches the service's format. `isEnabled` is read from
@@ -185,6 +189,38 @@ final class FormaUITests: XCTestCase {
         XCTAssertFalse(join.isEnabled, "A 15-character invitation cannot be submitted")
         code.typeText("f")
         XCTAssertTrue(join.isEnabled, "A well-formed invitation can be submitted, lower case included")
+    }
+
+    /// The catalog gallery and the island are their own page-length walk. Kept in the growth
+    /// test they made one case scroll the page end to end several times, which is slow enough
+    /// to put the suite's CI budget at risk and reports a scroll as if it were a defect.
+    func testCompanionCatalogSearchesAndTheIslandNeedsAnAccount() throws {
+        selectTab("today", chinese: "今日", english: "Today")
+        let card = element("companion.card")
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        reveal(card)
+        card.tap()
+        assertScreen("companion")
+
+        // The gallery searches the catalog and pages through it, as the website does.
+        let search = element("companion.catalog.search")
+        reveal(search, attempts: 24)
+        search.tap()
+        search.typeText("025")
+        XCTAssertTrue(element("companion.character.pokemon-25").waitForExistence(timeout: 5),
+                      "A dex number must find its companion")
+        XCTAssertTrue(element("companion.catalog.count").label.contains("1"))
+        attachScreenshot("Companion catalog searched")
+
+        // The island is the website's 3D scene in a web view, so the demo - which has no
+        // service at all - must say it needs an account instead of opening an empty one.
+        let island = element("companion.island.open")
+        reveal(island, attempts: 24)
+        island.tap()
+        XCTAssertTrue(element("companion.island.demo-gate").waitForExistence(timeout: 5),
+                      "A demo island must say it needs an account")
+        XCTAssertEqual(app.webViews.count, 0, "The demo must not open a web view at all")
+        attachScreenshot("Companion island demo gate")
     }
 
     func testPlanPageIsNativeAndADemoPlanCannotBeSaved() throws {
@@ -378,48 +414,47 @@ final class FormaUITests: XCTestCase {
     }
 
     private func reveal(_ target: XCUIElement, attempts: Int = 8) {
-        let scroll = activeScrollContainer()
-        var lastSwipedDownFrom = CGRect.null
-        for _ in 0..<attempts {
+        let scroll = scrollContainer(for: target)
+        for attempt in 0..<attempts {
             let viewport = contentViewport(scroll)
             if target.exists {
                 let frame = target.frame
                 if validFrame(frame) && fullyVisible(frame, in: viewport) {
-                    if waitUntilHittable(target) {
-                        attachControlGeometry(target, viewport: viewport)
-                        return
-                    }
-                    // A tree read while a sheet or the keyboard is still moving can
-                    // report a frame as on screen a moment before something settles
-                    // over it. Measure again rather than calling a control that was
-                    // never reachable; the next pass sees the cover and scrolls.
-                    continue
+                    attachControlGeometry(target, viewport: viewport)
+                    XCTAssertTrue(waitUntilHittable(target), "A fully visible native control must be hittable: \(target.identifier)")
+                    return
                 }
                 // An upward-only swipe can move a top-of-page action away from
                 // the user. Read geometry first; do not ask AX to hit-test an
                 // empty/offscreen frame, which itself raises an XCTest issue.
-                // A swipe down inside a form already at its top scrolls nothing
-                // and reads as the gesture that dismisses a sheet, which takes the
-                // control away for good. One that moves nothing is not repeated.
-                if validFrame(frame) && frame.minY < viewport.minY && frame != lastSwipedDownFrom {
-                    lastSwipedDownFrom = frame
+                if validFrame(frame) && frame.minY < viewport.minY {
                     scroll.swipeDown()
                 } else {
                     scroll.swipeUp()
                 }
             } else {
-                scroll.swipeUp()
+                // A lazy grid keeps its distant cells out of the tree, so an absent control
+                // offers no direction at all. Carry on forward, then come back over the
+                // ground already covered rather than sweep one way and call it missing.
+                if attempt < attempts / 2 { scroll.swipeUp() } else { scroll.swipeDown() }
             }
         }
         attachControlGeometry(target, viewport: contentViewport(scroll))
-        XCTFail("The native control \(target.identifier) did not become visible and hittable through normal scrolling")
+        XCTFail("The native control \(target.identifier) did not become fully visible through normal scrolling")
     }
 
-    private func activeScrollContainer() -> XCUIElement {
-        let form = app.collectionViews.firstMatch
-        if form.exists { return form }
-        let scroll = app.scrollViews.firstMatch
-        return scroll.exists ? scroll : app
+    /// The scrolling area that holds this control. The first one in the tree is not it: a page
+    /// carries small inner scrollers, and a swipe on a 44-point strip moves the page not at all.
+    /// With the control off screen and no frame to compare, the page is the largest of them.
+    private func scrollContainer(for target: XCUIElement) -> XCUIElement {
+        let candidates = app.collectionViews.allElementsBoundByIndex + app.scrollViews.allElementsBoundByIndex
+        let usable = candidates.filter { $0.exists && validFrame($0.frame) }
+        guard !usable.isEmpty else { return app }
+        if target.exists, validFrame(target.frame) {
+            let holding = usable.filter { $0.frame.contains(target.frame) }
+            if let innermost = holding.min(by: { $0.frame.height < $1.frame.height }) { return innermost }
+        }
+        return usable.max(by: { $0.frame.height < $1.frame.height }) ?? app
     }
 
     private func contentViewport(_ scroll: XCUIElement) -> CGRect {

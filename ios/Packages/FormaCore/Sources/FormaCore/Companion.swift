@@ -4,9 +4,70 @@ import Foundation
 /// XP is game progress, never a health score, and never derived from health facts here.
 public let companionRuleVersion = 1
 
-public enum CompanionCharacter: String, Codable, CaseIterable, Sendable {
-    case sprout, bunny, otter, cloud, bear, seal
+/// A companion id from the shared contract: one of the six long-standing ids, or
+/// `pokemon-<dex>` for a catalog entry. An id this build cannot name or draw is refused,
+/// so a snapshot falls back to a character it can show instead of carrying a blank one.
+public struct CompanionCharacter: RawRepresentable, Hashable, Sendable, Codable {
+    public let rawValue: String
+    private static let pokemonPrefix = "pokemon-"
+
+    public init?(rawValue: String) {
+        guard Self.isKnown(rawValue) else { return nil }
+        self.rawValue = rawValue
+    }
+
+    private init(known: String) { rawValue = known }
+
+    public init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        guard let known = CompanionCharacter(rawValue: raw) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath,
+                                                    debugDescription: "Unknown companion character \(raw)"))
+        }
+        self = known
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+
+    private static func isKnown(_ raw: String) -> Bool {
+        if legacy.contains(where: { $0.rawValue == raw }) { return true }
+        guard let dex = dex(in: raw) else { return false }
+        return pokemonEntry(dex: dex) != nil
+    }
+
+    private static func dex(in raw: String) -> Int? {
+        guard raw.hasPrefix(pokemonPrefix) else { return nil }
+        return Int(raw.dropFirst(pokemonPrefix.count))
+    }
+
+    /// The catalog number behind this id, or nil for one of the six.
+    public var pokemonDex: Int? { Self.dex(in: rawValue) }
+
+    public static func pokemon(dex: Int) -> CompanionCharacter {
+        CompanionCharacter(known: "\(pokemonPrefix)\(dex)")
+    }
+
+    public static let sprout = CompanionCharacter(known: "sprout")
+    public static let bunny = CompanionCharacter(known: "bunny")
+    public static let otter = CompanionCharacter(known: "otter")
+    public static let cloud = CompanionCharacter(known: "cloud")
+    public static let bear = CompanionCharacter(known: "bear")
+    public static let seal = CompanionCharacter(known: "seal")
+
+    /// The six ids that predate the catalog, in the order the website lists them.
+    public static let legacy: [CompanionCharacter] = [.sprout, .bunny, .otter, .cloud, .bear, .seal]
+
+    /// Everything a person can choose: the six, then the catalog in its own order.
+    public static let all: [CompanionCharacter] = legacy + pokemonCatalog.map { pokemon(dex: $0.dex) }
 }
+
+let pokemonEntriesByDex: [Int: PokemonEntry] = Dictionary(
+    pokemonCatalog.map { ($0.dex, $0) }, uniquingKeysWith: { first, _ in first })
+
+func pokemonEntry(dex: Int) -> PokemonEntry? { pokemonEntriesByDex[dex] }
 
 public enum CompanionItem: String, Codable, CaseIterable, Sendable {
     case leaf, cap, star, scarf, flower, crown
@@ -34,14 +95,24 @@ public struct CompanionCharacterDetail: Equatable, Sendable {
 }
 
 /// Copied verbatim from `COMPANION_CHARACTER_DETAILS`; the artwork itself stays on the deployed service.
-public let companionCharacterDetails: [CompanionCharacter: CompanionCharacterDetail] = [
-    .sprout: .init(zh: "芽芽", en: "Sprout", descriptionZh: "一点一点，长成喜欢的样子。", descriptionEn: "A little growth, at your own pace.", color: "#edf5dd"),
-    .bunny: .init(zh: "糯糯", en: "Mochi", descriptionZh: "小步跳，也能走很远。", descriptionEn: "Little hops can take you far.", color: "#f8eee8"),
-    .otter: .init(zh: "桃桃", en: "Peach", descriptionZh: "把平常的一天，过得有点可爱。", descriptionEn: "A little joy in an ordinary day.", color: "#f9eae3"),
-    .cloud: .init(zh: "云云", en: "Nimbus", descriptionZh: "慢下来，也是一种前进。", descriptionEn: "Taking it slow is progress, too.", color: "#eaf2f9"),
-    .bear: .init(zh: "蜜蜜", en: "Honey", descriptionZh: "稳稳地，陪你继续。", descriptionEn: "Steady company for the next step.", color: "#f8f0dc"),
-    .seal: .init(zh: "月月", en: "Luna", descriptionZh: "今天也给自己一点温柔。", descriptionEn: "A little kindness for yourself today.", color: "#f0edf8"),
+public let legacyCompanionCharacterDetails: [CompanionCharacter: CompanionCharacterDetail] = [
+    .sprout: .init(zh: "妙蛙种子", en: "Bulbasaur", descriptionZh: "背着小种子，一点点长大。", descriptionEn: "Little steps, with a little seed.", color: "#e8f3e9"),
+    .bunny: .init(zh: "皮卡丘", en: "Pikachu", descriptionZh: "电力满满，也记得休息。", descriptionEn: "Full of sparks. Make time to rest, too.", color: "#fcf4d9"),
+    .otter: .init(zh: "杰尼龟", en: "Squirtle", descriptionZh: "不着急，按自己的节奏前进。", descriptionEn: "Take it easy, at your own pace.", color: "#e8f3f7"),
+    .cloud: .init(zh: "胖丁", en: "Jigglypuff", descriptionZh: "软乎乎地，陪你过好每一天。", descriptionEn: "A soft little friend for every day.", color: "#faeaf0"),
+    .bear: .init(zh: "小卡比兽", en: "Munchlax", descriptionZh: "慢慢来，睡饱再出发。", descriptionEn: "Rest well. Your next step can wait.", color: "#e8eff0"),
+    .seal: .init(zh: "伊布", en: "Eevee", descriptionZh: "每一种成长，都有自己的可爱。", descriptionEn: "Every way of growing has its own charm.", color: "#f5ecdf"),
 ]
+
+/// A catalog character takes its name from the catalog and its tint from its first type,
+/// as the website does; the six keep the wording written for them.
+public func companionCharacterDetail(_ character: CompanionCharacter) -> CompanionCharacterDetail? {
+    if let detail = legacyCompanionCharacterDetails[character] { return detail }
+    guard let dex = character.pokemonDex, let entry = pokemonEntry(dex: dex) else { return nil }
+    return .init(zh: entry.zh, en: entry.en,
+                 descriptionZh: "一起走自己的节奏。", descriptionEn: "Together, at your own pace.",
+                 color: entry.types.first.flatMap { pokemonTypeColors[$0] } ?? "#f2eee7")
+}
 
 public struct CompanionChest: Codable, Equatable, Sendable, Identifiable {
     public let id: String

@@ -1,4 +1,5 @@
 import Foundation
+import PhotosUI
 import SwiftUI
 import UIKit
 import FormaCore
@@ -69,8 +70,8 @@ struct ReportsView: View {
             Text(store.text("指标由你照抄原件；本应用不读取、不解析、不换算你的报告，也不给出诊断。",
                             "You transcribe the markers yourself. This app does not read, interpret or convert your document, and gives no diagnosis."))
                 .font(.caption).foregroundStyle(FeatureTheme.muted)
-            Text(store.text("原件上传还没有做到 iPhone 上：现在请在网站添加附件，这里可以查看和移除已有附件。",
-                            "Uploading an original is not in the iPhone app yet: add attachments on the website. Here you can view and remove the ones you already have."))
+            Text(store.text("原件可以从照片或文件里添加，和网站一样存在你的账户下；演示模式不会上传。",
+                            "Add an original from your photos or files; it is stored under your account just as on the website. The demo never uploads."))
                 .font(.caption).foregroundStyle(FeatureTheme.muted)
                 .accessibilityIdentifier("reports.upload.notice")
             FeatureAction(title: store.text("新建报告", "New report"),
@@ -180,6 +181,9 @@ struct ReportEditorFields: Identifiable {
     var name: String
     var date: Date
     var markers: [MarkerDraft]
+    /// The original this draft would save with. It survives editing, and dropping it here
+    /// only unlinks it; the upload itself is removed when the report is saved without it.
+    var assetId: String?
 
     init() {
         id = UUID().uuidString.lowercased()
@@ -187,6 +191,7 @@ struct ReportEditorFields: Identifiable {
         name = ""
         date = Date()
         markers = [MarkerDraft()]
+        assetId = nil
     }
 
     init(report: ReportView) {
@@ -195,11 +200,12 @@ struct ReportEditorFields: Identifiable {
         name = report.name
         date = (try? NativeReports.day(report.date)) ?? Date()
         markers = report.markers.isEmpty ? [MarkerDraft()] : report.markers.map(MarkerDraft.init)
+        assetId = report.assetId
     }
 
     /// The report document this draft would save, or the refusal explaining why it cannot.
     func build() throws -> JSONValue {
-        try NativeReports.report(id: id, name: name, date: date, assetId: existing?.assetId,
+        try NativeReports.report(id: id, name: name, date: date, assetId: assetId,
                                  markers: markers.map(\.marker), createdAt: existing?.createdAt)
     }
 
@@ -212,6 +218,9 @@ struct ReportEditorSheet: View {
     let store: AppStore
     @State private var values: ReportEditorFields
     @State private var saving = false
+    @State private var photo: PhotosPickerItem?
+    @State private var uploading = false
+    @State private var choosingFile = false
 
     init(store: AppStore, fields: ReportEditorFields) {
         self.store = store
@@ -221,6 +230,14 @@ struct ReportEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                // A refusal belongs where the eye already is. At the foot of a long form it
+                // is off screen when the save is refused, which reads as nothing happening.
+                if let error = store.reportError {
+                    Section {
+                        Text(error).font(.footnote).foregroundStyle(.red)
+                            .accessibilityIdentifier("reports.editor.error")
+                    }
+                }
                 Section {
                     TextField(store.text("报告名称", "Report name"), text: $values.name)
                         .accessibilityIdentifier("reports.editor.name")
@@ -247,6 +264,43 @@ struct ReportEditorSheet: View {
                     }
                 }
                 Section {
+                    if let assetId = values.assetId {
+                        LabeledContent(store.text("原件", "Original")) {
+                            Text(assetId.prefix(8)).font(.caption.monospaced())
+                                .foregroundStyle(FeatureTheme.muted)
+                        }
+                        .accessibilityIdentifier("reports.editor.attachment")
+                        Button(store.text("移除原件", "Remove original"), role: .destructive) {
+                            values.assetId = nil
+                        }
+                        .disabled(saving || uploading)
+                        .accessibilityIdentifier("reports.editor.attachment.remove")
+                    } else {
+                        PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
+                            Text(store.text("从照片添加原件", "Add an original from Photos"))
+                        }
+                        .disabled(saving || uploading || store.isDemo)
+                        .accessibilityIdentifier("reports.editor.attachment.photo")
+                        Button(store.text("从文件添加原件（含 PDF）", "Add an original from Files (PDF included)")) {
+                            choosingFile = true
+                        }
+                        .disabled(saving || uploading || store.isDemo)
+                        .accessibilityIdentifier("reports.editor.attachment.file")
+                    }
+                    if uploading {
+                        ProgressView(store.text("正在上传…", "Uploading…"))
+                            .accessibilityIdentifier("reports.editor.attachment.uploading")
+                    }
+                } header: {
+                    Text(store.text("原件", "Original"))
+                } footer: {
+                    Text(store.isDemo
+                         ? store.text("演示模式不会上传原件，也不会保存到真实账户。",
+                                      "The demo never uploads an original or saves it to a real account.")
+                         : store.text("原件存在你的账户下，最大 10 MB。本应用不读取它的内容。",
+                                      "The original is stored under your account, up to 10 MB. This app never reads what is in it."))
+                }
+                Section {
                     Button(store.text("再加一个指标", "Add another marker")) {
                         values.markers.append(ReportEditorFields.MarkerDraft())
                     }
@@ -256,16 +310,19 @@ struct ReportEditorSheet: View {
                     Text(store.text("留空的指标不会保存。名称和原始数值都必须填写。",
                                     "A blank marker is not saved. A name and the original value are both required."))
                 }
-                if let error = store.reportError {
-                    Section {
-                        Text(error).font(.footnote).foregroundStyle(.red)
-                            .accessibilityIdentifier("reports.editor.error")
-                    }
-                }
             }
             .navigationTitle(values.existing == nil
                              ? store.text("新建报告", "New report")
                              : store.text("编辑报告", "Edit report"))
+            .onChange(of: photo) { item in
+                guard let item else { return }
+                Task { await attach(item) }
+            }
+            .fileImporter(isPresented: $choosingFile,
+                          allowedContentTypes: [.png, .jpeg, .webP, .gif, .pdf]) { result in
+                guard case .success(let url) = result else { return }
+                Task { await attach(url) }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(store.text("取消", "Cancel")) { dismiss() }
@@ -273,7 +330,15 @@ struct ReportEditorSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        guard let document = try? values.build() else { return }
+                        let document: JSONValue
+                        do {
+                            document = try values.build()
+                        } catch {
+                            // A refused document is explained, never swallowed: a save button
+                            // that does nothing leaves no way to find out what is wrong.
+                            store.reportError = store.reportMessage(error)
+                            return
+                        }
                         saving = true
                         Task {
                             await store.saveReport(document)
@@ -287,6 +352,44 @@ struct ReportEditorSheet: View {
                     .accessibilityIdentifier("reports.editor.save")
                 }
             }
+        }
+    }
+
+    /// Uploads a chosen original and links it to this draft. A refusal leaves the draft as it
+    /// was: nothing half-attached is ever saved, and the message says which rule was broken.
+    @MainActor private func attach(_ item: PhotosPickerItem) async {
+        uploading = true
+        defer { uploading = false; photo = nil }
+        guard let data = try? await item.loadTransferable(type: Data.self) else {
+            store.reportError = store.text("读不出这张照片。", "That photo could not be read.")
+            return
+        }
+        if let id = await store.uploadAttachment(data, name: "report-\(values.id).\(suffix(for: data))") {
+            values.assetId = id
+        }
+    }
+
+    @MainActor private func attach(_ url: URL) async {
+        uploading = true
+        defer { uploading = false }
+        let opened = url.startAccessingSecurityScopedResource()
+        defer { if opened { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else {
+            store.reportError = store.text("读不出这个文件。", "That file could not be read.")
+            return
+        }
+        if let id = await store.uploadAttachment(data, name: url.lastPathComponent) {
+            values.assetId = id
+        }
+    }
+
+    private func suffix(for data: Data) -> String {
+        switch Attachment.type(of: data) {
+        case "image/png": return "png"
+        case "image/webp": return "webp"
+        case "image/gif": return "gif"
+        case "application/pdf": return "pdf"
+        default: return "jpg"
         }
     }
 }

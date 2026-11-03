@@ -324,6 +324,48 @@ final class AppStore {
         }
     }
 
+    /// Uploads an original and returns its attachment id. The type is read from the bytes,
+    /// not from the picker's claim, so a file the service would reject is refused before a
+    /// 10 MB round trip. Nothing is uploaded in demo mode: there is no account to own it.
+    func uploadAttachment(_ data: Data, name: String, photoOnly: Bool = false) async -> String? {
+        guard !isDemo else {
+            reportError = text("演示模式不会上传原件。", "Demo mode never uploads an original.")
+            return nil
+        }
+        guard let api, let user else { return nil }
+        if let refusal = Attachment.refusal(for: data, photoOnly: photoOnly) {
+            reportError = attachmentMessage(refusal)
+            return nil
+        }
+        guard let mime = Attachment.type(of: data) else { return nil }
+        let ticket = generation
+        do {
+            let created = try await api.json("/api/assets", method: "POST", body: .object([
+                "name": .string(name), "mime": .string(mime),
+                "base64": .string(data.base64EncodedString()),
+            ]), account: user.id)
+            guard ticket == generation else { return nil }
+            reportError = nil
+            return created["id"].stringValue
+        } catch {
+            guard ticket == generation else { return nil }
+            handleSessionFailure(error)
+            reportError = reportMessage(error)
+            return nil
+        }
+    }
+
+    func attachmentMessage(_ refusal: AttachmentRefusal) -> String {
+        switch refusal {
+        case .empty: return text("这个文件是空的。", "That file is empty.")
+        case .tooLarge: return text("原件要小于 10 MB。", "Attachments must be 10 MB or smaller.")
+        case .unsupported: return text("只支持 PNG、JPEG、WebP、GIF 和 PDF。",
+                                       "Only PNG, JPEG, WebP, GIF and PDF are supported.")
+        case .notAPhoto: return text("这里只能用照片：PNG、JPEG 或 WebP。",
+                                     "This takes a photo only: PNG, JPEG or WebP.")
+        }
+    }
+
     func saveReport(_ report: JSONValue) async {
         guard !isDemo else {
             reportError = text("演示模式不会把报告保存到真实账户。", "Demo mode never saves a report to a real account.")

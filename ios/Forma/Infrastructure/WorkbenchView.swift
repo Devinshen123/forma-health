@@ -54,7 +54,9 @@ struct WorkbenchView: View {
     }
 }
 
-private struct AuthorizedWebView: UIViewRepresentable {
+/// Shared by the training workbench and the companion island: one account-scoped
+/// web view per session, detached rather than destroyed when its screen closes.
+struct AuthorizedWebView: UIViewRepresentable {
     let session: NativeWorkbenchSession
     @Binding var failed: Bool
     func makeCoordinator() -> NativeWorkbenchSession { session }
