@@ -32,11 +32,11 @@ function fixture(t: TestContext) {
   const store = new Store(dir);
   const owner = store.createAccount(randomUUID() + '@example.test', 'Independent synthetic QA', 'fake-hash', 'fake-salt').id;
   t.after(() => {
-    store.close();
+    if (store.db.isOpen) store.close();
     assert.ok(resolve(dir).startsWith(root + sep));
     rmSync(dir, { recursive: true, force: true });
   });
-  return { store, owner };
+  return { dir, store, owner };
 }
 
 for (const pausedAt of ['customer read', 'customer creation'] as const) test(`QA privacy: deleting during ${pausedAt} cannot leave a recreated remote customer after cleanup`, async t => {
@@ -118,9 +118,9 @@ test('QA privacy: deleting while billing is disabled keeps cleanup intent for re
 });
 
 test('QA privacy: a timed-out remote creation cannot outlive durable deletion cleanup', async t => {
-  const { store, owner } = fixture(t);
+  const { dir, store, owner } = fixture(t);
   const creationStarted = deferred<void>();
-  let remoteCustomer = false, remoteCreationAccepted = false;
+  let remoteCustomer = false, remoteCreationAccepted = false, clock = now;
   const transport: typeof fetch = async (input, init) => {
     const path = new URL(String(input)).pathname, method = init?.method;
     if (path.includes('/plans/')) {
@@ -143,7 +143,7 @@ test('QA privacy: a timed-out remote creation cannot outlive durable deletion cl
     }
     throw new Error('Unrecognized synthetic route: ' + method + ' ' + path);
   };
-  const service = new BillingService(store, { ...config, timeoutMs: 50 }, transport, () => now);
+  const service = new BillingService(store, { ...config, timeoutMs: 50 }, transport, () => clock);
   t.after(() => service.close());
   const refresh = service.snapshot(owner).then(() => null, error => error);
   await creationStarted.promise;
@@ -151,9 +151,16 @@ test('QA privacy: a timed-out remote creation cannot outlive durable deletion cl
   store.deleteAccount(owner);
   await service.flush();
   await refresh; // The client timed out; local refresh/mutation maps have drained.
+  clock += 2 * 3600000; // Permit a bounded, persisted cleanup backoff.
   await service.flush();
   assert.equal(remoteCreationAccepted, true);
   remoteCustomer = true; // The previously accepted remote transaction now commits.
-  await service.flush();
+  service.close();
+  store.close();
+  clock += 2 * 3600000;
+  const reopened = new Store(dir);
+  const restarted = new BillingService(reopened, { ...config, timeoutMs: 50 }, transport, () => clock);
+  t.after(() => { restarted.close(); reopened.close(); });
+  await restarted.flush();
   assert.equal(remoteCustomer, false, 'a client timeout must not discard cleanup for a remote write whose outcome is still uncertain');
 });
