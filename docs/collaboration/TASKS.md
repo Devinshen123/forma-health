@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| AGENTS-GITHUB-AUTOSYNC-20261102 | 原01 lead：主管checkout根AGENTS.md、FORMA.md引用、唯一TASKS及本人status/HANDOFF；原C根AGENTS.md仅追加同一规则 | doing | 两入口含同一长期规则：必要验证后精确提交/push、核对远端并给SHA/链接、不重复询问常规推送、保护敏感信息及既有改动；保留现有审查/集成与任务边界。仅正常快进同步GitHub，核对原C除AGENTS之外状态清单/HEAD/index不变 |
+| AGENTS-GITHUB-AUTOSYNC-20261102 | 原01 lead：主管checkout根AGENTS.md、FORMA.md引用、唯一TASKS及本人status/HANDOFF；原C根AGENTS.md仅追加同一规则 | done | 两入口追加同一规则并保留原文，FORMA只加引用。规则5文档提交ff0be24f854b1ac89e5d34584de459d3f9f8f4f3已atomic正常push至main及主管分支，ls-remote一致；GitHub API AGENTS blob ab95bcb24c12b7c94e234868f674071c5b2b0ef2匹配本地。diff及cached检查通过，限定常见凭据格式扫描无匹配；原C除AGENTS外277项状态清单/HEAD/index不变。本完成回执随后精确正常提交同步，不改规则blob、业务或未完成独审状态 |
 
 # 2026-11-02 GitHub同步（已完成，保留）
 
