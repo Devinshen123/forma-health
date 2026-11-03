@@ -1,4 +1,10 @@
-## 2026-11-02 GITHUB-SYNC-20261102（最新）
+## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（进行中）
+
+用户要求把每次修改完成后同步GitHub写进AGENTS，覆盖较早禁止push的限定，但不扩大业务实现/运行/部署范围。唯一01沿主管checkout/codex/fud-food-photo-20261022，起点e87c1476b994075aba0416b496ead742b69c262e干净。只写主管AGENTS、FORMA引用、TASKS、本人status/HANDOFF；原C仅给明确目标AGENTS追加同一规则，保留原接手入口，其余工作文件/索引/main不动。
+
+规则包含代码/配置/文档/任务板，要求必要验证后精确提交及及时push、远端核对及交付SHA/链接；常规Git操作无需重复确认。保留候选分支/主管集成、独审边界、密钥/健康数据不上传及既有改动保护；GitHub同步不等于公网部署。完成前核对两入口规则一致和精确变更范围，随后正常同步并验证远端。
+
+## 2026-11-02 GITHUB-SYNC-20261102（历史）
 
 用户明确要求同步GitHub。原01沿既有隔离checkout/codex/fud-food-photo-20261022，开工6106dfee3c43962bcded23acf56116600da116c3干净；两远端ref均f5180f0。fetch后两边仍可正常快进（0/1），原待上传提交仅日期报告、TASKS、本人status。限定三文档常见凭据格式扫描无匹配，差异格式检查通过；没有读取env/真实记录。
 

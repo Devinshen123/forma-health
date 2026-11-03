@@ -96,6 +96,7 @@
 - **契约变更**（`src/types.ts`、`src/api.ts`、API 路由形状）：提请求给 lead。lead 改完后在 `docs/collaboration/decisions/` 记录决定，并在 TASKS.md 里通知受影响的角色。
 - **开工前**：读FORMA.md、TASKS.md 最新所有权表、自己的 current 启动说明、自己的 PROFILE.md / MEMORY.md / HANDOFF.md、自己的 status 文件和发给自己的请求；核对 checkout 与 git 状态，再接明确派发的任务。按 §6 处理过期记忆；不确定的事实先核实，影响契约或所有权且无法核实时写请求。
 - **提交**：仓库是 git 时，每完成一个任务，只 `git add` 自己所有权内的路径并提交，提交信息以 `[角色]` 开头，例如 `[backend] add session auth`。不要 `git add -A`，不要改写历史，不要 force push。
+- **GitHub同步**：用户2026-11-02明确要求把“每次修改完成后同步GitHub”作为长期规则写入根[AGENTS.md](AGENTS.md#每次修改完成后同步-github)，后续按该规则执行；不沿用旧任务的禁止push限定覆盖这项较新的用户授权，原有业务范围与独立审查/集成条件保持。
 - **完成的定义**：
   - 自己的验收标准通过；
   - `npm run build` 不因你的文件报错；

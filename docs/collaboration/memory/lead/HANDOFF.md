@@ -1,4 +1,10 @@
-## 2026-11-02 GITHUB-SYNC-20261102（最新）
+## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（进行中）
+
+既有唯一01，主管checkout/codex/fud-food-photo-20261022，起点e87c1476b994075aba0416b496ead742b69c262e干净。用户本轮要求在AGENTS写长期“每次修改完成后同步GitHub”；常规Git提交/fetch/push获持续授权，未来不等再次提醒，仍按现有候选分支/独审/主管集成要求，不扩大业务或部署。
+
+仅主管AGENTS、FORMA引用、TASKS、本人status/HANDOFF；原C AGENTS是本次用户明确目标的窄例外，仅追加规则并保留接手文字。原C main/索引与其他既有文件冻结；开始已记录HEAD、除AGENTS外277项状态清单digest/index hash。下一步检查两入口新增区块相同、原C旧入口保留、其余状态不变，精确提交并正常推送后核远端。无业务/服务/测试/build/CI、真实数据/env、账号/权限/依赖/付费动作。
+
+## 2026-11-02 GITHUB-SYNC-20261102（历史）
 
 唯一01 lead，既有C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，起点6106dfee3c43962bcded23acf56116600da116c3干净。用户确认需要同步GitHub，只做正常Git同步和本人必要文档记录，原C main/工作文件/索引继续保留。
 
