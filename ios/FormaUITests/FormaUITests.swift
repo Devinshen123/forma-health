@@ -379,6 +379,7 @@ final class FormaUITests: XCTestCase {
 
     private func reveal(_ target: XCUIElement, attempts: Int = 8) {
         let scroll = activeScrollContainer()
+        var lastSwipedDownFrom = CGRect.null
         for _ in 0..<attempts {
             let viewport = contentViewport(scroll)
             if target.exists {
@@ -397,7 +398,11 @@ final class FormaUITests: XCTestCase {
                 // An upward-only swipe can move a top-of-page action away from
                 // the user. Read geometry first; do not ask AX to hit-test an
                 // empty/offscreen frame, which itself raises an XCTest issue.
-                if validFrame(frame) && frame.minY < viewport.minY {
+                // A swipe down inside a form already at its top scrolls nothing
+                // and reads as the gesture that dismisses a sheet, which takes the
+                // control away for good. One that moves nothing is not repeated.
+                if validFrame(frame) && frame.minY < viewport.minY && frame != lastSwipedDownFrom {
+                    lastSwipedDownFrom = frame
                     scroll.swipeDown()
                 } else {
                     scroll.swipeUp()
@@ -419,14 +424,15 @@ final class FormaUITests: XCTestCase {
 
     private func contentViewport(_ scroll: XCUIElement) -> CGRect {
         var viewport = app.frame.intersection(scroll.frame)
-        // Only the chrome in front of this container hides anything. A sheet is
-        // added after the page that presents it, so the last intersecting
-        // navigation bar is the one on top; subtracting the page's bar as well
-        // cut away the top of a sheet that bar no longer covers.
+        // Only the chrome in front of this container hides anything, and index
+        // order does not say which that is: with the report editor open, index 0
+        // was the sheet's own bar and index 1 the covered page's. The layer in
+        // front sits higher, so take the shallowest bar; subtracting the page's
+        // as well cut away the top of a sheet it no longer covers.
         let bars = app.navigationBars.allElementsBoundByIndex.filter {
             $0.exists && validFrame($0.frame) && $0.frame.intersects(viewport)
         }
-        if let front = bars.last?.frame {
+        if let front = bars.map(\.frame).min(by: { $0.maxY < $1.maxY }) {
             let top = max(viewport.minY, front.maxY)
             viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
         }
