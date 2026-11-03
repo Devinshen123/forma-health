@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| FORMA-MOVE-D-20261102 | 原01 lead：D:/Forma/source主源码/运行；D:/Forma下私有备份/下载/cache/logs；根MD、活跃启动Prompt/团队路径/技能registry、本人记录与迁移交付；scripts/start-forma-local.ps1、verify-forma-team.cjs、source-policy.mjs及其tests/source-policy.test.ts最小迁移回归；旧C入口只加指针 | doing | 277个未提交文件/1删除意图已备份；动作11328文件SHA通过；配置两模式15/15、技能12/110、全套429与新增发布策略专项3/3通过，完整build通过。已将7个私有数据文件及.env逐文件校验复制D，SQLite quick_check通过，D盘PID49804运行、首页/视频200；私有路径只返回公开HTML，不是数据。最后完成页面/最终版本与GitHub核对；旧C原件/分支保留，其他writer/Mac不接管 |
+| FORMA-MOVE-D-20261102 | 原01 lead：D:/Forma/source主源码/运行；D:/Forma下私有备份/下载/cache/logs；根MD、活跃启动Prompt/团队路径/技能registry、本人记录与迁移交付；scripts/start-forma-local.ps1、verify-forma-team.cjs、source-policy.mjs及其tests/source-policy.test.ts最小迁移回归；旧C入口只加指针 | done | [迁移回执](deliverables/lead/d-drive-migration-20261102.md)：277旧文件/1删除意图备份、11328素材SHA、两模式15/15、技能12/110、全套429及专项3/3、完整build通过；7私有文件/.env校验、SQLite通过，D入口/数据运行、首页/视频200及真实浏览器演示首页可见，私有URL只返公开壳。28文件迁移提交e72beb7f490da5981882f507088b1204016919fd已atomic正常push两分支，ls-remote/AGENTS blob一致；完成回执随后同步，交付前以最终运行标识/远端复核绑定。C旧原件/索引/分支保留，其他已备份文件hash差异0；未接管Mac/他人writer，不实现业务或替代独审 |
 
 # 2026-11-02 每次修改同步GitHub规则（已完成，保留）
 

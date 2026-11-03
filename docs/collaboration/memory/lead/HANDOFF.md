@@ -1,4 +1,4 @@
-## 2026-11-02 FORMA-MOVE-D-20261102（验证完成，最终同步中）
+## 2026-11-02 FORMA-MOVE-D-20261102（完成）
 
 唯一01 lead本人已从旧C主管worktree切到D:/Forma/source，分支codex/fud-food-photo-20261022，迁移起点05958dd5263a3bc9545594301cb94c783f7dcad7。用户明确迁移覆盖旧留C限定；C原件/分支保留回退，只给两个旧AGENTS加D指针，不创建第二lead。新Git独立，无C objects alternates。
 
@@ -6,7 +6,9 @@
 
 本轮D盘实际验证：Windows/portable各15/15，技能12/110（已知缺失脚本保留），全套npm test429/429，新增源码发布精确ps1回归后专项3/3，完整build通过。首页/视频200，私有路径只返回公开HTML壳而非文件，启动器幂等。少量初次路径/白名单/SPA状态假设错误及修正详见[迁移回执](../../deliverables/lead/d-drive-migration-20261102.md)，不能把失败尝试抹成通过。src/server业务代码未变，未实现付费/日期/报告、调用真实提供商/登录或部署公网。
 
-下一步仅最终文档/精确差异检查、正常commit/push，更新构建标识/离线清单后重启确属本站的D进程并核最终UI/运行SHA/远端一致，再补完成回执。所有新产物D盘；其他会话/机器未自动采用，Mac仍须拉取。当前app附件历史sourceCwd可能仍C，不能当实际主源码；使用D盘工程命令/界面打开Dsource。回退前保留D中新记录，不能用旧C数据覆盖。
+迁移28文件提交e72beb7f490da5981882f507088b1204016919fd已atomic正常push main及主管分支，ls-remote一致，GitHub API main AGENTS blob8d4f39f2a5fb73be9cbb04fc42e9ffa4ccecf533匹配。23本次文档文件链接存在、缺失0，diff/cached通过。浏览器真实演示首页可见，未提交任何健康事实；旧C除入口外已备份文件再查差异0，原C HEAD ba4822b、原索引hash不变，旧主管HEAD05958dd保留。本完成回执随后正常提交同步，交付前更新源码包/构建标识/离线清单并启动对应D版，以实际current.json/server.pid/HTTP和远端绑定最终版本，不把初次PID49804当永久进程。
+
+后续所有工程操作、新文件/下载默认D盘，并按AGENTS每次验证/commit/push。其他会话/机器未自动采用，Mac仍须拉取；当前app附件历史sourceCwd可能仍C，不能当实际主源码，界面也应打开D:/Forma/source。原日期/报告独审、付款与真实平台接入不因迁移完成。回退前保留D中新记录，不能用旧C数据覆盖；C旧副本未删除，不声称已释放其空间。
 
 ## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（历史）
 
