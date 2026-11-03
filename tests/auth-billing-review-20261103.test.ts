@@ -160,7 +160,11 @@ test('QA privacy: a timed-out remote creation cannot outlive durable deletion cl
   clock += 2 * 3600000;
   const reopened = new Store(dir);
   const restarted = new BillingService(reopened, { ...config, timeoutMs: 50 }, transport, () => clock);
-  t.after(() => { restarted.close(); reopened.close(); });
-  await restarted.flush();
-  assert.equal(remoteCustomer, false, 'a client timeout must not discard cleanup for a remote write whose outcome is still uncertain');
+  try {
+    await restarted.flush();
+    assert.equal(remoteCustomer, false, 'a client timeout must not discard cleanup for a remote write whose outcome is still uncertain');
+  } finally {
+    restarted.close();
+    reopened.close();
+  }
 });
