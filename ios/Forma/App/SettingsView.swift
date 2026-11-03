@@ -1,3 +1,4 @@
+import FormaCore
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -19,6 +20,18 @@ struct SettingsView: View {
     @State private var busy = false
     @State private var message: String?
     @State private var confirmLogout = false
+    @State private var capabilities: ServiceCapabilities?
+    @State private var capabilitiesLoading = false
+    @State private var capabilitiesFailed = false
+
+    /// Asks the deployment what it can do. The demo has no service to ask, and says so instead.
+    private func loadCapabilities() async {
+        guard !store.isDemo else { return }
+        capabilitiesLoading = true
+        defer { capabilitiesLoading = false }
+        capabilities = await store.serviceCapabilities()
+        capabilitiesFailed = capabilities == nil
+    }
     var body: some View {
         NavigationStack {
             Form {
@@ -53,6 +66,30 @@ struct SettingsView: View {
                     Text(store.text("导出包含服务端记录及附件清单，附件原文件须另行下载。导出文件含私人信息，请选择安全位置。", "The export includes server records and an attachment manifest; original attachment files must be downloaded separately. Choose a private location for this sensitive file."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
+                Section {
+                    LabeledContent(store.text("食物照片识别", "Food photo analysis"),
+                                   value: store.isDemo ? store.text("演示模式", "Demo mode")
+                                       : capabilitiesLoading ? store.text("读取状态中…", "Reading status…")
+                                       : FoodPhotoStatus.badge(capabilities, failed: capabilitiesFailed, store: store))
+                        .accessibilityIdentifier("settings.photo.status")
+                    if store.isDemo {
+                        Text(store.text("演示模式不会调用 AI，也不会生成假识别结果。创建账户后再使用照片识别。",
+                                        "Demo mode does not call AI or generate simulated results. Create an account before using photo analysis."))
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else if !capabilitiesLoading, capabilities?.foodPhoto?.available != true {
+                        Text(FoodPhotoStatus.explanation(capabilitiesFailed ? nil : capabilities?.foodPhoto?.reason, store: store))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Button(store.text("刷新识图状态", "Refresh photo-analysis status")) { Task { await loadCapabilities() } }
+                        .disabled(store.isDemo || capabilitiesLoading)
+                    LabeledContent(store.text("报告 OCR", "Report OCR"), value: store.text("尚未接入", "Not connected"))
+                    Link(store.text("查看 OpenAI 数据政策", "View OpenAI data policy"), destination: FoodPhotoStatus.policy)
+                } header: {
+                    Text(store.text("AI 与数据处理", "AI & data processing"))
+                } footer: {
+                    Text(store.text("处理方为 OpenAI。每次发送前单独同意，识别结果经你逐项校正后才保存；配置存在不代表已验证真实照片效果。报告图片与 PDF 可以私有保存，指标仍需手动填写与校正。",
+                                    "Processed by OpenAI. Each send requires consent, and results are saved only after your review; configuration does not verify real-photo quality. Report images and PDFs can be saved privately; markers are entered and corrected manually."))
+                }
                 Section(store.text("连接状态", "Connections")) {
                     LabeledContent("HealthKit", value: store.text("尚未接入", "Not connected"))
                     LabeledContent(store.text("Apple 登录", "Sign in with Apple"), value: store.text("尚未接入", "Not connected"))
@@ -70,6 +107,7 @@ struct SettingsView: View {
             }
             .disabled(busy)
             .navigationTitle(store.text("设置", "Settings"))
+            .task { await loadCapabilities() }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button(store.text("完成", "Done")) { dismiss() }.accessibilityIdentifier("settings.done") } }
             .fileExporter(isPresented: $exporting, document: export, contentType: .json, defaultFilename: "forma-export") { result in
                 if case .failure = result { message = store.text("导出未保存，请重试。", "The export was not saved. Please try again.") }

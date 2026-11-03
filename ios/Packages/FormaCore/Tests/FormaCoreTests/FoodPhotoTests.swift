@@ -37,11 +37,11 @@ final class FoodPhotoTests: XCTestCase {
     func testCapabilitiesSayWhetherThisDeploymentCanEstimateAtAll() throws {
         let off: ServiceCapabilities = try decode("""
         {"ai":false,"apple":false,"healthkit":false,"mode":"local",
-         "foodPhoto":{"available":false,"provider":"openai","reason":"missing_api_key"}}
+         "foodPhoto":{"available":false,"provider":"openai","reason":"not_configured"}}
         """)
         XCTAssertFalse(off.ai)
         XCTAssertEqual(off.foodPhoto?.available, false)
-        XCTAssertEqual(off.foodPhoto?.reason, "missing_api_key", "The service's own word for why is kept")
+        XCTAssertEqual(off.foodPhoto?.reason, "not_configured", "The service's own word for why is kept")
         // A service that says nothing about the feature is read as not offering it.
         let silent: ServiceCapabilities = try decode(#"{"apple":false}"#)
         XCTAssertFalse(silent.ai)

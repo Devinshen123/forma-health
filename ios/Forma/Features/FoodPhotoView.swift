@@ -87,19 +87,10 @@ struct FoodPhotoFlow: View {
         .accessibilityIdentifier("nutrition.photo.unavailable")
     }
 
-    /// The service's own word for why, said plainly rather than guessed at.
+    /// The service's own word for why - `not_configured` or `invalid_config`, the only two it
+    /// gives - in the website's words. Anything else means the status could not be read at all.
     private func serviceReason(_ reason: String?) -> String {
-        switch reason {
-        case "missing_api_key":
-            return store.text("这个部署没有配置识别服务。记录仍然可以手动填写。",
-                              "This deployment has no reading service configured. Food can still be entered by hand.")
-        case "daily_limit", "budget":
-            return store.text("今天的识别次数已经用完。明天再试，或手动填写。",
-                              "Today's estimates are used up. Try tomorrow, or enter the food by hand.")
-        default:
-            return store.text("服务没有提供识别功能。记录仍然可以手动填写。",
-                              "The service does not offer this. Food can still be entered by hand.")
-        }
+        FoodPhotoStatus.explanation(reason, store: store)
     }
 
     private var consent: some View {
@@ -114,8 +105,14 @@ struct FoodPhotoFlow: View {
             } header: {
                 Text(store.text("照片", "Photo"))
             } footer: {
-                Text(store.text("照片会上传到你的账户，并发给服务读取。它读出来的是估算，不是诊断，也不是你的记录——每个数值你都可以改，确认之后才会保存。",
-                                "The photo is uploaded to your account and sent to the service to be read. What comes back is an estimate, not a diagnosis and not yet your record: every value is yours to correct, and nothing is saved until you confirm."))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(store.text("选择照片即表示同意本次发送：照片上传到你的账户，处理方为 OpenAI。只有这张照片的副本和输出语言会发给 OpenAI，其他账户资料和记录不会随请求发送；供应商的数据保留按其政策执行。",
+                                    "Choosing a photo consents to this one send: it is uploaded to your account and processed by OpenAI. Only this photo's copy and the output language go to OpenAI; other account details and records are not sent with it. Provider retention follows its policies."))
+                    Text(store.text("读出来的是估算，不是诊断，也不是你的记录——每个数值你都可以改，确认之后才会保存。",
+                                    "What comes back is an estimate, not a diagnosis and not yet your record: every value is yours to correct, and nothing is saved until you confirm."))
+                    Link(store.text("查看 OpenAI 数据政策", "View OpenAI data policy"), destination: FoodPhotoStatus.policy)
+                        .accessibilityIdentifier("nutrition.photo.policy")
+                }
             }
             if let message {
                 Section { Text(message).font(.footnote).foregroundStyle(.red)
@@ -299,6 +296,36 @@ struct FoodPhotoFlow: View {
             } else {
                 message = store.error ?? store.message(error)
             }
+        }
+    }
+}
+
+/// The website's wording for the photo-reading status, shared by the estimate flow and Settings
+/// so the two never describe the same deployment differently.
+@MainActor
+enum FoodPhotoStatus {
+    static let policy = URL(string: "https://developers.openai.com/api/docs/guides/your-data")!
+
+    /// The short badge: configured, invalid, waiting for a key, or unreadable.
+    static func badge(_ capabilities: ServiceCapabilities?, failed: Bool, store: AppStore) -> String {
+        if failed { return store.text("状态暂不可用", "Status unavailable") }
+        if capabilities?.foodPhoto?.available == true { return store.text("识图已配置", "Photo analysis configured") }
+        if capabilities?.foodPhoto?.reason == "invalid_config" { return store.text("配置无效", "Invalid configuration") }
+        return store.text("待配置 OpenAI 密钥", "Waiting for OpenAI key")
+    }
+
+    /// Why it cannot be used, and that manual entry still works.
+    static func explanation(_ reason: String?, store: AppStore) -> String {
+        switch reason {
+        case "invalid_config":
+            return store.text("请联系本机管理员核对配置。现在仍可手动填写。",
+                              "Ask the local administrator to check configuration. Manual entry is still available.")
+        case "not_configured":
+            return store.text("尚未配置识图服务。你可以先手动记录，密钥由本机管理员在服务端配置。",
+                              "Photo analysis is not configured. Log manually for now; the local administrator configures the key on the server.")
+        default:
+            return store.text("无法读取配置状态。你仍可使用手动饮食记录，不会在这里请求识别。",
+                              "Could not read the configuration. Manual food logging is still available; this page does not request analysis.")
         }
     }
 }

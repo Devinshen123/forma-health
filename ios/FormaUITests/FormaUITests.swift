@@ -553,6 +553,11 @@ final class FormaUITests: XCTestCase {
         settings.tap()
         let picker = app.segmentedControls.matching(identifier: "settings.language").firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        // The demo has no deployment to ask, so it must not report one as waiting for a key.
+        let photoStatus = element("settings.photo.status")
+        XCTAssertTrue(photoStatus.exists, "Settings must say whether photos can be read")
+        let reported = "\(photoStatus.label) \(photoStatus.value as? String ?? "")"
+        XCTAssertTrue(reported.contains("演示") || reported.contains("Demo"), "The demo reports itself: \(reported)")
         let option = picker.buttons[label]
         XCTAssertTrue(waitUntilHittable(option))
         option.tap()
