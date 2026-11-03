@@ -1,7 +1,7 @@
-export type SignInProvider = 'google' | 'apple';
+export type SignInProvider = 'google' | 'apple' | 'casdoor';
 export interface AuthOptions {
   email: { available: true; mailAvailable: boolean };
-  providers: Record<SignInProvider, { available: boolean; reason: 'ready' | 'not_configured' | 'invalid_configuration' }>;
+  providers: Record<SignInProvider, { available: boolean; reason: 'ready' | 'not_configured' | 'invalid_configuration'; authorizationEndpoint?: string }>;
 }
 export interface AccountSecurity {
   emailVerified: boolean;

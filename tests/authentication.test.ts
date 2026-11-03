@@ -18,13 +18,14 @@ const APPLE_CLIENT_KEY = generateKeyPairSync('ec', { namedCurve: 'prime256v1' })
 const APPLE_PEM = APPLE_CLIENT_KEY.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
 const ORIGIN = 'http://127.0.0.1:5173';
 const PUBLIC_URL = 'https://forma.example.test';
+const CASDOOR_ISSUER = 'https://identity.forma.example.test';
 const NOW = Date.parse('2026-10-24T18:00:00Z');
 const PASSWORD = 'Synthetic-QA-password-2026';
 const NEW_PASSWORD = 'Synthetic-QA-new-password-2026';
 const PRIVATE = 'QA_PRIVATE_OAUTH_ERROR_MUST_NOT_LEAK';
 const ACCESS = 'QA_SYNTHETIC_PROVIDER_ACCESS_SECRET';
 const REFRESH = 'QA_SYNTHETIC_PROVIDER_REFRESH_SECRET';
-const CLIENT_IDS: Record<SignInProvider, string> = { google: 'google-fixture-client', apple: 'com.forma.service' };
+const CLIENT_IDS: Record<SignInProvider, string> = { google: 'google-fixture-client', apple: 'com.forma.service', casdoor: 'casdoor-fixture-client' };
 type AuthConfig = NonNullable<AppOptions['auth']>;
 type Mail = { to: string; subject: string; text: string };
 type Session = { id: string; email: string; cookie: string };
@@ -35,17 +36,17 @@ const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('
 function signedToken(spec: TokenSpec, now: number) {
   if (spec.raw !== undefined) return spec.raw;
   const header = encode({ alg: 'RS256', typ: 'JWT', kid: `qa-${spec.provider}-key`, ...spec.header });
-  const payload = encode({ iss: spec.provider === 'google' ? 'https://accounts.google.com' : 'https://appleid.apple.com',
+  const payload = encode({ iss: spec.provider === 'casdoor' ? CASDOOR_ISSUER : spec.provider === 'google' ? 'https://accounts.google.com' : 'https://appleid.apple.com',
     aud: CLIENT_IDS[spec.provider], sub: `qa-${spec.provider}-subject`, nonce: spec.nonce,
     iat: Math.floor(now / 1000), exp: Math.floor(now / 1000) + 600,
     email: `${spec.provider}-qa@example.test`, email_verified: spec.provider === 'apple' ? 'true' : true,
-    name: 'Synthetic provider user', ...spec.claims });
+    name: 'Synthetic provider user', ...(spec.provider === 'casdoor' ? { tokenType: 'id-token' } : {}), ...spec.claims });
   const input = `${header}.${payload}`;
   return `${input}.${sign('sha256', Buffer.from(input), spec.key ?? RSA.privateKey).toString('base64url')}`;
 }
 function authConfig(): AuthConfig {
   return { publicBaseUrl: PUBLIC_URL, google: { clientId: CLIENT_IDS.google, clientSecret: 'google-fixture-secret' },
-    apple: { clientId: CLIENT_IDS.apple, teamId: 'TEAM123', keyId: 'KEY123', privateKey: APPLE_PEM }, timeoutMs: 1000 };
+    apple: { clientId: CLIENT_IDS.apple, teamId: 'TEAM123', keyId: 'KEY123', privateKey: APPLE_PEM }, casdoor: { issuer: CASDOOR_ISSUER, application: 'forma-web', clientId: CLIENT_IDS.casdoor, clientSecret: 'synthetic-casdoor-secret' }, timeoutMs: 1000 };
 }
 async function fixture(t: TestContext, options: { auth?: AuthConfig; health?: AppOptions['health']; now?: () => number; mailer?: (mail: Mail) => Promise<void>; fetch?: (call: Captured) => Response | undefined | Promise<Response | undefined>; mail?: boolean; seed?: (directory: string) => void } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'forma-independent-auth-qa-'));
@@ -56,11 +57,11 @@ async function fixture(t: TestContext, options: { auth?: AuthConfig; health?: Ap
     const call = { url: new URL(String(input)), headers: new Headers(init?.headers), body: new URLSearchParams(String(init?.body ?? '')), init };
     calls.push(call);
     if (options.fetch) { const response = await options.fetch(call); if (response) return response; }
-    if (call.url.href === 'https://www.googleapis.com/oauth2/v3/certs' || call.url.href === 'https://appleid.apple.com/auth/keys') {
-      const provider = call.url.hostname === 'appleid.apple.com' ? 'apple' : 'google';
+    if (call.url.href === 'https://www.googleapis.com/oauth2/v3/certs' || call.url.href === 'https://appleid.apple.com/auth/keys' || call.url.href === `${CASDOOR_ISSUER}/.well-known/forma-web/jwks`) {
+      const provider = call.url.origin === CASDOOR_ISSUER ? 'casdoor' : call.url.hostname === 'appleid.apple.com' ? 'apple' : 'google';
       return json({ keys: [{ ...RSA.publicKey.export({ format: 'jwk' }), kid: `qa-${provider}-key`, alg: 'RS256', use: 'sig' }] });
     }
-    if (call.url.href === 'https://oauth2.googleapis.com/token' || call.url.href === 'https://appleid.apple.com/auth/token') {
+    if (call.url.href === 'https://oauth2.googleapis.com/token' || call.url.href === 'https://appleid.apple.com/auth/token' || call.url.href === `${CASDOOR_ISSUER}/api/login/oauth/access_token`) {
       const spec = codes.get(call.body.get('code') ?? '');
       assert.ok(spec, 'production must exchange the exact code from the browser callback');
       return json({ token_type: 'Bearer', access_token: ACCESS, refresh_token: REFRESH, expires_in: 3600, id_token: signedToken(spec, now()) });
@@ -119,7 +120,7 @@ async function fixture(t: TestContext, options: { auth?: AuthConfig; health?: Ap
     const fields = { state: flow.state, code };
     return flow.provider === 'apple'
       ? request('POST', '/auth/callback/apple', new URLSearchParams(fields).toString(), undefined, { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://appleid.apple.com', ...extra }, true)
-      : request('GET', `/auth/callback/google?${new URLSearchParams(fields)}`, undefined, undefined, extra);
+      : request('GET', `/auth/callback/${flow.provider}?${new URLSearchParams(fields)}`, undefined, undefined, extra);
   };
   const ticketFrom = (result: Awaited<ReturnType<typeof request>>) => {
     assert.equal(result.status, 303, result.text);
@@ -622,4 +623,92 @@ test('AUTH-QA: a legacy three-column session database migrates without losing it
   const row = h.service.store.db.prepare('SELECT state_json,revision FROM states WHERE owner_id=?').get(owner.id)!;
   assert.equal(row.revision, revision); assert.deepEqual(JSON.parse(String(row.state_json)), state);
   assert.deepEqual(h.service.store.db.prepare('PRAGMA foreign_key_check').all(), []);
+});
+
+test('CASDOOR: signed standard ID token completes PKCE login, creates empty owner and rejects replay', async t => {
+  const h = await fixture(t), flow = await h.startFlow('casdoor');
+  assert.equal(flow.authorization.origin, CASDOOR_ISSUER);
+  assert.equal(flow.authorization.pathname, '/login/oauth/authorize');
+  assert.equal(flow.authorization.searchParams.get('scope'), 'openid email profile');
+  assert.equal(flow.authorization.searchParams.get('code_challenge_method'), 'S256');
+  const ticket = h.ticketFrom(await h.callback(flow));
+  const tokenCall = h.calls.find(c => c.url.pathname === '/api/login/oauth/access_token')!;
+  assert.equal(createHash('sha256').update(tokenCall.body.get('code_verifier')!).digest('base64url'), flow.authorization.searchParams.get('code_challenge'));
+  const result = await h.complete(flow, ticket); assert.equal(result.status, 200, result.text);
+  const owner = h.sessionFrom(result);
+  assert.deepEqual((await h.account(owner)).providers, ['casdoor']);
+  const row = h.service.store.db.prepare('SELECT * FROM states WHERE owner_id=?').get(owner.id)!;
+  assert.deepEqual(JSON.parse(String(row.state_json)), emptyState());
+  assert.notEqual((await h.complete(flow, ticket)).status, 200);
+  const options = await h.request('GET', '/api/auth/options');
+  assert.equal(options.body.providers.casdoor.authorizationEndpoint, CASDOOR_ISSUER + '/login/oauth/authorize');
+  assert.ok(!options.text.includes('synthetic-casdoor-secret'));
+});
+
+test('CASDOOR: matching email cannot merge an old owner; explicit password-confirmed link preserves all original account/state values', async t => {
+  const h = await fixture(t), owner = await h.register('kept-account@example.test');
+  h.service.store.db.prepare('UPDATE states SET revision=17 WHERE owner_id=?').run(owner.id);
+  const beforeAccount = h.service.store.db.prepare('SELECT * FROM accounts WHERE id=?').get(owner.id);
+  const beforeState = h.service.store.db.prepare('SELECT * FROM states WHERE owner_id=?').get(owner.id);
+  const duplicate = await h.startFlow('casdoor');
+  const duplicateTicket = h.ticketFrom(await h.callback(duplicate, { claims: { email: owner.email } }));
+  const rejected = await h.complete(duplicate, duplicateTicket);
+  assert.equal(rejected.status, 409); assert.equal(rejected.body.code, 'AUTH_ACCOUNT_EXISTS');
+  const linked = await h.startFlow('casdoor', owner, 'link', PASSWORD);
+  const ticket = h.ticketFrom(await h.callback(linked, { claims: { email: owner.email } }));
+  const result = await h.complete(linked, ticket, owner); assert.equal(result.status, 200, result.text);
+  assert.equal(h.sessionFrom(result).id, owner.id);
+  assert.deepEqual(h.service.store.db.prepare('SELECT * FROM accounts WHERE id=?').get(owner.id), beforeAccount);
+  assert.deepEqual(h.service.store.db.prepare('SELECT * FROM states WHERE owner_id=?').get(owner.id), beforeState);
+  const login = await h.social('casdoor', { email: 'changed-in-casdoor@example.test' });
+  assert.equal(login.id, owner.id); assert.equal(login.email, owner.email);
+});
+
+test('CASDOOR: Google-only accounts cannot bypass original password confirmation; logout invalidates pending link', async t => {
+  const h = await fixture(t), google = await h.social('google');
+  const denied = await h.request('POST', '/api/auth/casdoor/start', { intent: 'link', password: PASSWORD }, google);
+  assert.equal(denied.status, 401);
+  const owner = await h.register(), flow = await h.startFlow('casdoor', owner, 'link', PASSWORD);
+  const ticket = h.ticketFrom(await h.callback(flow));
+  assert.equal((await h.request('POST', '/api/auth/logout', {}, owner)).status, 200);
+  assert.notEqual((await h.complete(flow, ticket, owner)).status, 200);
+  assert.equal(h.service.store.db.prepare("SELECT COUNT(*) AS n FROM auth_identities WHERE owner_id=? AND provider='casdoor'").get(owner.id)?.n, 0);
+});
+
+test('CASDOOR: issuer, audience, nonce, signature, ID-token type and lifetime are all checked', async t => {
+  for (const [name, change] of [
+    ['issuer', { claims: { iss: 'https://other-issuer.example.test' } }],
+    ['audience', { claims: { aud: 'another-application' } }],
+    ['nonce', { claims: { nonce: 'wrong-nonce' } }],
+    ['access token', { claims: { tokenType: 'access-token' } }],
+    ['expiry', { claims: { exp: Math.floor(NOW / 1000) - 1 } }],
+    ['long lifetime', { claims: { exp: Math.floor(NOW / 1000) + 90000 } }],
+    ['signature', { key: OTHER_RSA.privateKey }],
+  ] as [string, Partial<TokenSpec>][]) await t.test(name, async sub => {
+    const h = await fixture(sub), flow = await h.startFlow('casdoor'), response = await h.callback(flow, change);
+    assert.match(response.headers.get('location')!, /auth=error/);
+    assert.equal(h.service.store.db.prepare("SELECT COUNT(*) AS n FROM auth_identities WHERE provider='casdoor'").get()?.n, 0);
+  });
+});
+
+test('CASDOOR: unverified new email is rejected and identity key includes canonical issuer', async t => {
+  const { casdoorSubject } = await import('../server/auth/oidc');
+  assert.notEqual(casdoorSubject(CASDOOR_ISSUER, 'same-sub'), casdoorSubject('https://other.example.test', 'same-sub'));
+  const h = await fixture(t), flow = await h.startFlow('casdoor');
+  const ticket = h.ticketFrom(await h.callback(flow, { claims: { email_verified: false } }));
+  const result = await h.complete(flow, ticket); assert.equal(result.status, 409); assert.equal(result.body.code, 'AUTH_PROVIDER_EMAIL_REQUIRED');
+});
+
+test('CASDOOR: configuration rejects non-loopback HTTP, URL credentials, paths and application traversal without transport calls', async t => {
+  for (const bad of [
+    { issuer: 'http://identity.example.test' }, { issuer: 'https://user:password@identity.example.test' },
+    { issuer: CASDOOR_ISSUER + '/other' }, { application: '../other' },
+  ]) await t.test(JSON.stringify(bad), async sub => {
+    const config = authConfig(); config.casdoor = { ...config.casdoor!, ...bad };
+    const h = await fixture(sub, { auth: config });
+    const options = await h.request('GET', '/api/auth/options');
+    assert.equal(options.body.providers.casdoor.available, false);
+    assert.equal((await h.request('POST', '/api/auth/casdoor/start', { intent: 'login' })).status, 503);
+    assert.equal(h.calls.length, 0);
+  });
 });

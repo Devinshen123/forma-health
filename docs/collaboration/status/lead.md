@@ -2,7 +2,7 @@
 
 01唯一写者，D:/Forma/source，主管分支，起点0cc595d；用户已批准Casdoor登录保留旧账户，再做开源自托管Lago测试计费，每阶段同步GitHub，不扣真实款。已登记独占路径与[实施设计](../deliverables/lead/auth-billing-20261103/design.md)，当前数据35表/4附件/.env在线私有备份并校验，Docker可用且磁盘在D；不改其他项目容器，不创建第二lead。
 
-只读技术辅助审查已经返回，非06产品验收。固定Casdoor4.25/Lago1.56，修正OSS普通手工支付Premium限制，选开源invoice状态更新作明确模拟结算；签名/raw路由/防重、issuer+sub、原账户显式绑定和Fud草稿/用量/outbox事务要求纳入设计。先实现并验证Casdoor，随后Lago；真实快捷登录回调、邮件/商户等外部未配置项不得冒称开通。
+Casdoor阶段：认证62＋导航1、全套448/448、类型及完整build通过；真实Casdoor验证码注册/签名会话7项、重启/强制重建后原cookie和subject/PKCE7项通过，均为隔离健康库。账户中心真实中英表单/语言切换及console检查通过，图片D日志。辅助审查指出/tmp会话路径后已修正并实测；未指出其他材料级认证回归，非06产品验收。契约ADR已记录，候选正常推主管分支后启本站复核新入口，再进入Lago。真实Google经Casdoor/Apple/邮件投递及商户外部未配置项不得冒称开通。
 
 ## 2026-11-03 FORMA-C-CLEANUP-20261103（完成）
 

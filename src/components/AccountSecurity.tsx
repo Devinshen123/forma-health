@@ -110,10 +110,10 @@ export function AccountSecurity({ lang, accountId, onSessionChanged }: {
     if (!provider || !security?.hasPassword || !options?.providers[provider].available) return;
     await runAction(async (signal, current) => {
       const result = await api.startSignIn(provider, 'link', linkPassword, accountId, signal);
-      if (current()) { setLinkPassword(''); navigateToSignIn(result.authorizationUrl, provider); redirecting.current = true; }
+      if (current()) { setLinkPassword(''); navigateToSignIn(result.authorizationUrl, provider, options?.providers.casdoor?.authorizationEndpoint); redirecting.current = true; }
     });
   }
-  const providerName = (provider: SignInProvider) => provider === 'google' ? 'Google' : 'Apple';
+  const providerName = (provider: SignInProvider) => provider === 'google' ? 'Google' : provider === 'apple' ? 'Apple' : zh ? 'Forma 统一账户' : 'Forma account';
   return <section className="panel stack account-security" aria-busy={pending || loading}>
     <div className="section-title"><h2><ShieldCheck size={20} aria-hidden="true" /> {zh ? '账户与登录安全' : 'Account and sign-in security'}</h2><button type="button" className="btn btn-ghost" disabled={pending || loading} onClick={() => void load()}><RefreshCw size={16} aria-hidden="true" />{zh ? '刷新状态' : 'Refresh status'}</button></div>
     {loading ? <p className="muted" role="status">{zh ? '正在读取账户安全状态…' : 'Loading account security…'}</p> : null}
@@ -135,12 +135,12 @@ export function AccountSecurity({ lang, accountId, onSessionChanged }: {
       <div className="account-security-providers stack">
         <div><h3>{zh ? '快捷登录方式' : 'Sign-in providers'}</h3><p className="muted">{zh ? '绑定前需要确认当前账户密码，再由平台授权。相同邮箱不会自动合并账户。' : 'Link a provider by confirming your account password, then authorizing with the provider. Matching emails do not merge accounts automatically.'}</p></div>
         {!security.hasPassword ? <p className="hint">{zh ? '先设置账户密码，才能绑定其他快捷登录方式。' : 'Set an account password before linking another sign-in provider.'}</p> : null}
-        <div className="auth-provider-list">{(['google', 'apple'] as const).map(provider => {
+        <div className="auth-provider-list">{(['casdoor', 'google', 'apple'] as const).map(provider => {
           const linked = security.providers.includes(provider);
-          const available = options.providers[provider].available;
+          const available = options.providers[provider]?.available ?? false;
           return <div key={provider} className="auth-provider-option">
             <div className="account-security-status"><strong>{providerName(provider)}</strong><span className="badge">{linked ? zh ? '已绑定' : 'Linked' : zh ? '未绑定' : 'Not linked'}</span></div>
-            {!available ? <p className="auth-provider-status" id={'auth-link-config-' + provider}>{options.providers[provider].reason === 'invalid_configuration' ? zh ? '快捷登录配置需要检查，暂不可用。' : 'Sign-in configuration needs attention and is unavailable.' : zh ? '此快捷登录尚未配置。' : 'This sign-in provider is not configured.'}</p> : null}
+            {!available ? <p className="auth-provider-status" id={'auth-link-config-' + provider}>{options.providers[provider]?.reason === 'invalid_configuration' ? zh ? '快捷登录配置需要检查，暂不可用。' : 'Sign-in configuration needs attention and is unavailable.' : zh ? '此快捷登录尚未配置。' : 'This sign-in provider is not configured.'}</p> : null}
             {!linked ? <button className="btn btn-secondary full-width" type="button" disabled={pending || loading || !available || !security.hasPassword} aria-describedby={!available ? 'auth-link-config-' + provider : undefined} onClick={() => { if (!pendingRef.current) { setLinkProvider(provider); setLinkPassword(''); setError(''); setNotice(''); } }}>{zh ? '绑定 ' : 'Link '}{providerName(provider)}</button> : null}
           </div>;
         })}</div>

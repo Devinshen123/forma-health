@@ -154,7 +154,7 @@ export class AuthLedger {
         if (!identity.email || !identity.emailVerified) throw new AuthError('AUTH_PROVIDER_EMAIL_REQUIRED', 409);
         if (this.db.prepare('SELECT id FROM accounts WHERE email=?').get(identity.email)) throw new AuthError('AUTH_ACCOUNT_EXISTS', 409);
         owner = randomUUID();
-        this.db.prepare('INSERT INTO accounts VALUES (?,?,?,?,?,?)').run(owner, identity.email, identity.name || (entry.provider === 'apple' ? 'Apple member' : 'Google member'), randomBytes(64).toString('hex'), randomBytes(16).toString('hex'), new Date(now).toISOString());
+        this.db.prepare('INSERT INTO accounts VALUES (?,?,?,?,?,?)').run(owner, identity.email, identity.name || (entry.provider === 'apple' ? 'Apple member' : entry.provider === 'google' ? 'Google member' : 'Forma member'), randomBytes(64).toString('hex'), randomBytes(16).toString('hex'), new Date(now).toISOString());
         this.db.prepare('INSERT INTO states(owner_id,state_json) VALUES (?,?)').run(owner, JSON.stringify(emptyState()));
         this.db.prepare('INSERT INTO auth_account_security(owner_id,email_verified_at,has_password) VALUES (?,?,0)').run(owner, new Date(now).toISOString());
       }

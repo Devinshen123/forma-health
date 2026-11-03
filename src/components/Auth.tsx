@@ -4,6 +4,7 @@ import { Modal } from './Modal';
 import * as api from '../api';
 import type { AuthEntry, AuthOptions, SignInProvider } from '../auth';
 import type { Language, User } from '../types';
+import {validateSignInDestination} from '../auth-navigation';
 import '../auth.css';
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset' | 'verify' | 'oauth';
@@ -70,14 +71,8 @@ export function PasswordField({ label, value, onChange, autoComplete = 'new-pass
   </div>;
 }
 
-/** A server-provided sign-in destination still must be an official HTTPS authorization host. */
-export function navigateToSignIn(authorizationUrl: string, provider: SignInProvider) {
-  const url = new URL(authorizationUrl);
-  if (url.protocol !== 'https:' || url.username || url.password ||
-    (url.port !== '' && url.port !== '443') || url.hash ||
-    url.hostname !== (provider === 'google' ? 'accounts.google.com' : 'appleid.apple.com') ||
-    url.pathname !== (provider === 'google' ? '/o/oauth2/v2/auth' : '/auth/authorize')) throw new Error('Invalid authorization destination');
-  window.location.assign(url.href);
+export function navigateToSignIn(authorizationUrl: string, provider: SignInProvider, casdoorEndpoint?: string) {
+  window.location.assign(validateSignInDestination(authorizationUrl, provider, casdoorEndpoint));
 }
 
 const initialMode = (entry?: AuthEntry): AuthMode => entry && entry.kind !== 'error' ? entry.kind : 'login';
@@ -102,6 +97,7 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
   const [options, setOptions] = useState<AuthOptions | null>(null);
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [optionsFailed, setOptionsFailed] = useState(false);
+  const [legacyMode, setLegacyMode] = useState(false);
   const mounted = useRef(false);
   const epoch = useRef(0);
   const pendingRef = useRef(false);
@@ -161,7 +157,7 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
   }
   function changeMode(next: AuthMode) {
     if (pendingRef.current) return;
-    setMode(next); setError(''); setNotice(''); setPassword(''); setConfirmation(''); setCompleted(false);
+    setMode(next); setLegacyMode(false); setError(''); setNotice(''); setPassword(''); setConfirmation(''); setCompleted(false);
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -201,7 +197,7 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
     if (!options?.providers[provider].available) return;
     void runAction(async (signal, current) => {
       const result = await api.startSignIn(provider, 'login', undefined, undefined, signal);
-      if (current()) { navigateToSignIn(result.authorizationUrl, provider); redirecting.current = true; }
+      if (current()) { navigateToSignIn(result.authorizationUrl, provider, options?.providers.casdoor?.authorizationEndpoint); redirecting.current = true; }
     });
   }
   const ordinary = mode === 'login' || mode === 'register';
@@ -218,8 +214,8 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
           {(['login', 'register'] as const).map(next => <button type="button" key={next} disabled={pending} className={mode === next ? 'selected' : ''} aria-pressed={mode === next} onClick={() => changeMode(next)}>{next === 'login' ? zh ? '登录' : 'Sign in' : zh ? '创建账户' : 'Create account'}</button>)}
         </div>
         <div className="auth-provider-list">
-          {(['google', 'apple'] as const).map(provider => <div className="auth-provider-option" key={provider}>
-            <button type="button" className="btn btn-secondary full-width" disabled={pending || optionsLoading || !options?.providers[provider].available} onClick={() => socialSignIn(provider)}>{zh ? '使用 ' : 'Continue with '}{provider === 'google' ? 'Google' : 'Apple'}{zh ? ' 登录' : ''}</button>
+          {(['casdoor', 'google', 'apple'] as const).filter(provider => provider !== 'casdoor' || options?.providers.casdoor?.available).map(provider => <div className="auth-provider-option" key={provider}>
+            <button type="button" className={`btn ${provider === 'casdoor' ? 'btn-primary' : 'btn-secondary'} full-width`} disabled={pending || optionsLoading || !options?.providers[provider].available} onClick={() => socialSignIn(provider)}>{zh ? '使用 ' : 'Continue with '}{provider === 'google' ? 'Google' : provider === 'apple' ? 'Apple' : zh ? 'Forma 统一账户' : 'Forma account'}{zh ? ' 登录' : ''}</button>
             {!optionsLoading && !optionsFailed && !options?.providers[provider].available ? <p className="auth-provider-status">{options?.providers[provider].reason === 'invalid_configuration' ? zh ? '配置需要检查，可使用邮箱和密码登录。' : 'Configuration needs attention. Use email and password.' : zh ? '尚未配置，可使用邮箱和密码登录。' : 'Not configured. Use email and password.'}</p> : null}
           </div>)}
         </div>
@@ -232,6 +228,9 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
         <strong>{mode === 'reset' ? zh ? '密码已重置，请使用新密码重新登录。' : 'Password reset. Sign in with your new password.' : zh ? '邮箱已验证。' : 'Your email is verified.'}</strong>
         <button className="btn btn-primary" type="button" onClick={() => changeMode('login')}>{zh ? '继续登录' : 'Continue to sign-in'}</button>
         {mode === 'verify' ? <button className="btn btn-ghost" type="button" onClick={onClose}>{zh ? '关闭' : 'Close'}</button> : null}
+      </div> : ordinary && options?.providers.casdoor?.available && !legacyMode ? <div className="stack">
+        <p className="hint">{zh ? '使用上方的 Forma 统一账户入口登录或注册。旧账户的饮食、训练与照片会保留；先用原方式登录，再到设置中绑定统一账户。' : 'Use the Forma account button above to sign in or register. Existing meals, workouts and photos stay with your original account: sign in the old way, then link your Forma account in Settings.'}</p>
+        <button className="btn btn-ghost" type="button" disabled={pending} onClick={() => { setLegacyMode(true); setMode('login'); }}>{zh ? '使用原有邮箱和密码登录' : 'Sign in with an existing email and password'}</button>
       </div> : <form onSubmit={submit} className="stack auth-form">
         <fieldset disabled={pending} className="auth-fieldset stack">
           {mode === 'register' ? <label className="field">{zh ? '怎么称呼你' : 'Your name'}<input className="input" required maxLength={60} value={name} onChange={event => setName(event.target.value)} autoComplete="given-name" /></label> : null}

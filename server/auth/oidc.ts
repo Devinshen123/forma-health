@@ -12,13 +12,14 @@ import type { SignInProvider } from '../../src/auth';
 import { AuthError, emailSchema, endpoints } from './config';
 
 export const digestAuth = (value: string) => createHash('sha256').update(value).digest('hex');
-export interface VerifiedIdentity { subject: string; email?: string; emailVerified: boolean; name?: string }
+export interface VerifiedIdentity { subject: string; issuer?: string; email?: string; emailVerified: boolean; name?: string }
+export const casdoorSubject = (issuer: string, subject: string) => digestAuth(JSON.stringify([issuer, subject]));
 export class AuthHttp {
   private readonly active = new Set<AbortController>();
-  constructor(private readonly transport: typeof fetch, private readonly timeoutMs: number) {}
+  constructor(private readonly transport: typeof fetch, private readonly timeoutMs: number, private readonly additionalEndpoints: readonly string[] = []) {}
   close() { for (const item of this.active) item.abort(); this.active.clear(); }
   async json(url: string, init: RequestInit = {}, limit = 128 * 1024): Promise<unknown> {
-    if (![endpoints.google.token, endpoints.google.jwks, endpoints.apple.token, endpoints.apple.jwks, 'https://api.resend.com/emails'].includes(url as any)) throw new AuthError('AUTH_INVALID_ENDPOINT', 500);
+    if (![endpoints.google.token, endpoints.google.jwks, endpoints.apple.token, endpoints.apple.jwks, 'https://api.resend.com/emails', ...this.additionalEndpoints].includes(url)) throw new AuthError('AUTH_INVALID_ENDPOINT', 500);
     const controller = new AbortController(); this.active.add(controller);
     let timer: ReturnType<typeof setTimeout> | undefined;
     const operation = (async () => {
@@ -45,11 +46,13 @@ export class AuthHttp {
 
 export class OidcVerifier {
   private readonly cache = new Map<SignInProvider, { until: number; loaded: number; keys: Map<string, KeyObject> }>();
-  constructor(private readonly http: AuthHttp, private readonly now: () => number) {}
+  constructor(private readonly http: AuthHttp, private readonly now: () => number, private readonly casdoor?: { issuer: string; jwks: string }) {}
   private async keys(provider: SignInProvider, kid: string) {
     let cached = this.cache.get(provider);
     if (cached && cached.until > this.now() && (cached.keys.has(kid) || this.now() - cached.loaded < 30000)) return cached.keys;
-    const response = await this.http.json(endpoints[provider].jwks, {}, 64 * 1024);
+    const url = provider === 'casdoor' ? this.casdoor?.jwks : endpoints[provider].jwks;
+    if (!url) throw new AuthError('AUTH_PROVIDER_NOT_CONFIGURED', 503);
+    const response = await this.http.json(url, {}, 64 * 1024);
     const parsed = z.object({ keys: z.array(z.object({ kty: z.literal('RSA'), kid: z.string().min(1).max(200), n: z.string().min(1).max(1500).regex(/^[A-Za-z0-9_-]+$/), e: z.string().min(1).max(20).regex(/^[A-Za-z0-9_-]+$/), alg: z.literal('RS256').optional(), use: z.literal('sig').optional() }).passthrough()).min(1).max(20) }).passthrough().safeParse(response);
     if (!parsed.success) throw new AuthError('AUTH_INVALID_ID_TOKEN', 400);
     const keys = new Map<string, KeyObject>();
@@ -73,12 +76,12 @@ export class OidcVerifier {
       const key = (await this.keys(provider, header.kid)).get(header.kid);
       if (!key || !verify('RSA-SHA256', Buffer.from(`${head}.${body}`), key, Buffer.from(signature, 'base64url'))) throw new AuthError('AUTH_INVALID_ID_TOKEN');
       const claims = z.object({ iss: z.string(), sub: z.string().min(1).max(255).regex(/^[\x21-\x7e]+$/), aud: z.union([z.string(), z.array(z.string()).min(1).max(10)]), exp: z.number().int(), iat: z.number().int(), nbf: z.number().int().optional(), azp: z.string().optional(), nonce: z.string().min(1).max(256), email: z.string().optional(), email_verified: z.union([z.boolean(), z.literal('true'), z.literal('false')]).optional(), name: z.string().max(160).optional() }).passthrough().parse(JSON.parse(Buffer.from(body, 'base64url').toString('utf8')));
-      const issuerValid = provider === 'google' ? ['accounts.google.com', 'https://accounts.google.com'].includes(claims.iss) : claims.iss === 'https://appleid.apple.com';
+      const issuerValid = provider === 'casdoor' ? !!this.casdoor && claims.iss === this.casdoor.issuer && claims.tokenType === 'id-token' : provider === 'google' ? ['accounts.google.com', 'https://accounts.google.com'].includes(claims.iss) : claims.iss === 'https://appleid.apple.com';
       const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud], now = Math.floor(this.now() / 1000);
       if (!issuerValid || !audiences.includes(clientId) || audiences.length > 1 && claims.azp !== clientId || claims.azp !== undefined && claims.azp !== clientId ||
           claims.exp <= now || claims.iat > now + 60 || claims.iat > claims.exp || claims.exp - claims.iat > 86400 || (claims.nbf ?? 0) > now + 60 || digestAuth(claims.nonce) !== nonceHash) throw new AuthError('AUTH_INVALID_ID_TOKEN');
       const email = emailSchema.safeParse(claims.email), name = claims.name?.trim();
-      return { subject: claims.sub, ...(email.success ? { email: email.data } : {}), emailVerified: claims.email_verified === true || claims.email_verified === 'true', ...(name && !/[\x00-\x1f\x7f]/.test(name) ? { name } : {}) };
+      return { subject: provider === 'casdoor' ? casdoorSubject(claims.iss, claims.sub) : claims.sub, ...(provider === 'casdoor' ? { issuer: claims.iss } : {}), ...(email.success ? { email: email.data } : {}), emailVerified: claims.email_verified === true || claims.email_verified === 'true', ...(name && !/[\x00-\x1f\x7f]/.test(name) ? { name } : {}) };
     } catch (error) { throw error instanceof AuthError ? error : new AuthError('AUTH_INVALID_ID_TOKEN'); }
   }
 }

@@ -2,7 +2,9 @@
 
 用户已批准先Casdoor登录保留现有账户，再接开源自托管Lago测试计费，每完成阶段正常push，禁止真实扣费。既有01 D:/Forma/source/codex-fud分支唯一写者，起点0cc595d；TASKS登记具体源码/前端/脚本范围、FORMA当前授权覆盖旧不支付限定。数据35表/4附件/.env已在线备份D:/Forma/backups/auth-billing-20261103/before，未覆盖旧备份。Docker29.8.2/Compose5.5.1运行，WSL盘D:/HeyGem/Docker/wsl-data/main；只建独立Forma服务，禁止动其他项目现有容器。
 
-[设计](../../deliverables/lead/auth-billing-20261103/design.md)已结合只读辅助builder审查（非编号06/产品验收）修订：Casdoor4.25 JWT-Standard/RS256/非共享/ID-token<=24h/issuer+sub命名空间，显式旧密码绑定、Google-only先设置Forma密码；Lago1.56普通POST/payments需Premium，改已定稿invoice PUT payment_status作loopback sandbox显式模拟结算；raw精确webhook前置、可信配置算法、签名body摘要与权威重读防重/乱序；Fud草稿+用户用量+outbox原子事务和lost-response幂等。原Google直连保留，真实Casdoor Google/Apple/邮件未配置不得伪称完成。先Casdoor阶段验证/push再Lago，不新建编号员工、不冒写他人记忆。
+[设计](../../deliverables/lead/auth-billing-20261103/design.md)已结合只读辅助builder审查（非编号06/产品验收）修订：Casdoor4.25 JWT-Standard/RS256/非共享/ID-token<=24h/issuer+sub命名空间，显式旧密码绑定、Google-only先设置Forma密码；Lago1.56普通POST/payments需Premium，改已定稿invoice PUT payment_status作loopback sandbox显式模拟结算；raw精确webhook前置、可信配置算法、签名body摘要与权威重读防重/乱序；Fud草稿+用户用量+outbox原子事务和lost-response幂等。原Google直连保留，真实Casdoor Google/Apple/邮件未配置不得伪称完成。
+
+Casdoor已实现并验证：auth62＋导航1、全套448、类型/完整build通过，实际服务验证7项。initAdminPassword强随机、NewOnly首次配置保留用户Id/证书；SMTP只到本机Mailpit。辅助代码审查唯一实质问题是Casdoor实际会话目录/tmp而非配置/sessions，已改D绑定并强制重建容器，原provider cookie/get-account与subject、签名/PKCE7项通过。账户中心中英表单真实切换、console无相关错误，D日志有截图；Forma新入口随阶段commit启动后复核。候选先推主管分支，正式06仍待安排；然后做Lago。启动/验证脚本及ADR、.env.example不包含真实凭据，私有state/初始化/实际.env仅D盘。不新建编号员工、不冒写他人记忆。
 
 ## 2026-11-03 FORMA-C-CLEANUP-20261103（完成）
 

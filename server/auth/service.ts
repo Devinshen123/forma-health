@@ -18,11 +18,11 @@ export class AuthService {
   private closed = false;
   constructor(private readonly store: Store, config: AuthConfig | undefined, transport: typeof fetch = fetch, private readonly now: () => number = Date.now, private readonly mailer?: AuthMailer) {
     this.config = resolveAuthConfig(config); this.ledger = new AuthLedger(store.db);
-    this.http = new AuthHttp(transport, this.config.timeoutMs); this.verifier = new OidcVerifier(this.http, now);
+    this.http = new AuthHttp(transport, this.config.timeoutMs, this.config.casdoor ? [this.config.casdoor.token, this.config.casdoor.jwks] : []); this.verifier = new OidcVerifier(this.http, now, this.config.casdoor);
   }
   close() { this.closed = true; this.http.close(); this.pkce.clear(); }
   mailAvailable() { return !!this.config.baseUrl && (!!this.mailer || !!this.config.resend); }
-  options(): AuthOptions { return { email: { available: true, mailAvailable: this.mailAvailable() }, providers: { google: { available: !!this.config.providers.google, reason: this.config.reasons.google }, apple: { available: !!this.config.providers.apple, reason: this.config.reasons.apple } } }; }
+  options(): AuthOptions { return { email: { available: true, mailAvailable: this.mailAvailable() }, providers: { google: { available: !!this.config.providers.google, reason: this.config.reasons.google }, apple: { available: !!this.config.providers.apple, reason: this.config.reasons.apple }, casdoor: { available: !!this.config.providers.casdoor, reason: this.config.reasons.casdoor, ...(this.config.casdoor ? { authorizationEndpoint: this.config.casdoor.authorization } : {}) } } }; }
   security(owner: string) { return this.ledger.security(owner, this.mailAvailable()); }
   cancelSession(token: string) { this.ledger.revokeSession(token); }
   cancelAccount(owner: string) { this.ledger.revokeAccount(owner); }
@@ -108,11 +108,12 @@ export class AuthService {
     for (const [key, entry] of this.pkce) if (entry.expires <= now) this.pkce.delete(key);
     if (this.pkce.size > 5000) throw new AuthError('AUTH_RATE_LIMIT', 429);
     this.ledger.start({ state_hash: stateHash, provider, intent, owner_id: session?.owner ?? null, session_hash: session ? digestAuth(session.token) : null, binding_hash: digestAuth(binding), nonce_hash: digestAuth(nonce), phase: 'started', created_ms: now, expires_ms: now + 10 * 60000, password_version: version }, now);
-    const url = new URL(endpoints[provider].authorization);
+    const remote = provider === 'casdoor' ? this.config.casdoor! : endpoints[provider];
+    const url = new URL(remote.authorization);
     url.searchParams.set('client_id', config.clientId); url.searchParams.set('redirect_uri', `${this.config.baseUrl}/auth/callback/${provider}`);
-    url.searchParams.set('response_type', 'code'); url.searchParams.set('scope', provider === 'google' ? 'openid email profile' : 'email');
+    url.searchParams.set('response_type', 'code'); url.searchParams.set('scope', provider === 'apple' ? 'email' : 'openid email profile');
     url.searchParams.set('state', state); url.searchParams.set('nonce', nonce);
-    if (provider === 'google') {
+    if (provider !== 'apple') {
       const verifier = randomBytes(48).toString('base64url'); this.pkce.set(stateHash, { value: verifier, expires: now + 10 * 60000 });
       url.searchParams.set('code_challenge', createHash('sha256').update(verifier).digest('base64url')); url.searchParams.set('code_challenge_method', 'S256');
     } else url.searchParams.set('response_mode', 'form_post');
@@ -124,10 +125,11 @@ export class AuthService {
     const pending = this.ledger.takeCallback(digestAuth(state), provider, this.now());
     const verifier = this.pkce.get(pending.state_hash); this.pkce.delete(pending.state_hash);
     if (denied) throw new AuthError('AUTH_CONSENT_DENIED');
-    if (!code || provider === 'google' && (!verifier || verifier.expires <= this.now())) throw new AuthError('AUTH_INVALID_STATE');
+    if (!code || provider !== 'apple' && (!verifier || verifier.expires <= this.now())) throw new AuthError('AUTH_INVALID_STATE');
     const body = new URLSearchParams({ grant_type: 'authorization_code', code, client_id: config.clientId, client_secret: provider === 'apple' ? appleClientSecret(config, this.now()) : config.clientSecret!, redirect_uri: `${this.config.baseUrl}/auth/callback/${provider}` });
-    if (provider === 'google') body.set('code_verifier', verifier!.value);
-    const raw = await this.http.json(endpoints[provider].token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
+    if (provider !== 'apple') body.set('code_verifier', verifier!.value);
+    const remote = provider === 'casdoor' ? this.config.casdoor! : endpoints[provider];
+    const raw = await this.http.json(remote.token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
     const response = z.object({ id_token: z.string().min(1).max(20000) }).passthrough().safeParse(raw);
     if (!response.success) throw new AuthError('AUTH_INVALID_PROVIDER_RESPONSE', 502);
     const identity = await this.verifier.verify(response.data.id_token, provider, config.clientId, pending.nonce_hash);

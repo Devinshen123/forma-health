@@ -6,6 +6,7 @@ export interface AuthConfig {
   publicBaseUrl?: string;
   google?: { clientId: string; clientSecret: string };
   apple?: { clientId: string; teamId: string; keyId: string; privateKey: string };
+  casdoor?: { issuer: string; application: string; clientId: string; clientSecret: string };
   resend?: { apiKey: string; from: string };
   timeoutMs?: number;
 }
@@ -14,7 +15,7 @@ export type AuthMailer = (message: AuthMail) => Promise<void>;
 export class AuthError extends Error {
   constructor(readonly code: string, readonly status = 400) { super('Authentication could not complete this request'); }
 }
-export const providerSchema = z.enum(['google', 'apple']);
+export const providerSchema = z.enum(['google', 'apple', 'casdoor']);
 export const authTokenSchema = z.string().regex(/^[a-f0-9]{64}$/);
 export const emailSchema = z.string().trim().email().max(254).transform(value => value.toLowerCase());
 export const newPasswordSchema = z.string().min(10).max(128);
@@ -28,6 +29,7 @@ export function resolveAuthConfig(overrides?: AuthConfig) {
     publicBaseUrl: process.env.FORMA_AUTH_PUBLIC_BASE_URL,
     google: { clientId: process.env.FORMA_AUTH_GOOGLE_CLIENT_ID ?? '', clientSecret: process.env.FORMA_AUTH_GOOGLE_CLIENT_SECRET ?? '' },
     apple: { clientId: process.env.FORMA_AUTH_APPLE_CLIENT_ID ?? '', teamId: process.env.FORMA_AUTH_APPLE_TEAM_ID ?? '', keyId: process.env.FORMA_AUTH_APPLE_KEY_ID ?? '', privateKey: (process.env.FORMA_AUTH_APPLE_PRIVATE_KEY ?? '').replaceAll('\\n', '\n') },
+    casdoor: { issuer: process.env.FORMA_AUTH_CASDOOR_ISSUER ?? '', application: process.env.FORMA_AUTH_CASDOOR_APPLICATION ?? '', clientId: process.env.FORMA_AUTH_CASDOOR_CLIENT_ID ?? '', clientSecret: process.env.FORMA_AUTH_CASDOOR_CLIENT_SECRET ?? '' },
     resend: { apiKey: process.env.FORMA_AUTH_RESEND_API_KEY ?? '', from: process.env.FORMA_AUTH_MAIL_FROM ?? '' },
   };
   let baseUrl: string | null = null;
@@ -48,11 +50,21 @@ export function resolveAuthConfig(overrides?: AuthConfig) {
   const resend = config.resend && secret.safeParse(config.resend.apiKey).success && typeof from === 'string' && from.length <= 254 && !/[\r\n]/.test(from) &&
     (/^[^<>]+<[^<>]+>$/.test(from) ? emailSchema.safeParse(from.slice(from.indexOf('<') + 1, -1)).success : emailSchema.safeParse(from).success) ? config.resend : undefined;
   const timeout = z.number().int().min(10).max(30000).safeParse(config.timeoutMs ?? 10000);
+  const parsedCasdoor = z.object({ issuer: z.string().min(1).max(2048), application: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/), clientId: secret, clientSecret: secret }).strict().safeParse(config.casdoor);
+  let casdoor: (NonNullable<AuthConfig['casdoor']> & { authorization: string; token: string; jwks: string }) | undefined;
+  if (parsedCasdoor.success && baseUrl && timeout.success) try {
+    const url = new URL(parsedCasdoor.data.issuer);
+    if (url.username || url.password || url.pathname !== '/' || url.hash || url.search ||
+        ![url.origin, url.origin + '/'].includes(parsedCasdoor.data.issuer) ||
+        url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) throw new Error();
+    casdoor = { ...parsedCasdoor.data, issuer: url.origin, authorization: `${url.origin}/login/oauth/authorize`, token: `${url.origin}/api/login/oauth/access_token`, jwks: `${url.origin}/.well-known/${parsedCasdoor.data.application}/jwks` };
+  } catch { /* Only this configured provider is disabled; never trust discovered remote URLs. */ }
   const providers: Partial<Record<SignInProvider, { clientId: string; clientSecret?: string; teamId?: string; keyId?: string; privateKey?: KeyObject }>> = {};
   if (google.success && baseUrl && timeout.success) providers.google = google.data;
   if (apple.success && appleKey && baseUrl?.startsWith('https://') && !['localhost', '127.0.0.1', '[::1]'].includes(new URL(baseUrl).hostname) && timeout.success)
     providers.apple = { clientId: apple.data.clientId, teamId: apple.data.teamId, keyId: apple.data.keyId, privateKey: appleKey };
-  return { baseUrl, providers, resend, timeoutMs: timeout.success ? timeout.data : 10000,
-    reasons: Object.fromEntries((['google', 'apple'] as const).map(provider => [provider, providers[provider] ? 'ready' :
+  if (casdoor) providers.casdoor = { clientId: casdoor.clientId, clientSecret: casdoor.clientSecret };
+  return { baseUrl, providers, casdoor, resend, timeoutMs: timeout.success ? timeout.data : 10000,
+    reasons: Object.fromEntries((['google', 'apple', 'casdoor'] as const).map(provider => [provider, providers[provider] ? 'ready' :
       config[provider] && Object.values(config[provider]!).some(Boolean) ? 'invalid_configuration' : 'not_configured'])) as Record<SignInProvider, 'ready' | 'not_configured' | 'invalid_configuration'> };
 }

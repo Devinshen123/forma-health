@@ -57,7 +57,7 @@ export function authCallbackRouter(service: AuthService) {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('Content-Security-Policy', "default-src 'none'; base-uri 'none'; frame-ancestors 'none'");
     try {
       const provider = providerSchema.parse(req.params.provider);
-      if (provider === 'apple' && req.method !== 'POST' || provider === 'google' && req.method !== 'GET') throw new AuthError('AUTH_INVALID_STATE');
+      if (provider === 'apple' && req.method !== 'POST' || provider !== 'apple' && req.method !== 'GET') throw new AuthError('AUTH_INVALID_STATE');
       const input = z.object({ state: authTokenSchema, code: z.string().min(1).max(4096).regex(/^[\x21-\x7e]+$/).optional(), error: z.string().min(1).max(200).optional() }).passthrough().parse(req.method === 'POST' ? req.body : req.query);
       const ticket = await service.callback(provider, input.state, input.code, input.error !== undefined);
       res.redirect(303, service.resultUrl('oauth', ticket));
