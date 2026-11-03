@@ -1,14 +1,16 @@
 import { test, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
+import { tmpdir } from 'node:os';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { Store } from '../server/store';
 import { BillingService } from '../server/billing/service';
 import type { BillingConfig } from '../server/billing/config';
 
 // Independent QA: synthetic local storage, generated keys and injected HTTP only.
-const root = resolve('D:/Forma/cache/tmp');
+const root = resolve(tmpdir()); // Windows review commands explicitly set TEMP/TMP to D:/Forma/cache/tmp.
+mkdirSync(root, { recursive: true });
 const { publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const config: BillingConfig = {
   mode: 'sandbox', lagoUrl: 'http://127.0.0.1:3442',
