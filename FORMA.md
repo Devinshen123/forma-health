@@ -1,6 +1,8 @@
 # FORMA — 唯一共享项目手册
 
-更新：2026-10-21；当前主仓库：`C:\Users\devin\健康网站`。最新用户要求保留C盘，取消此前D盘项目迁移计划。其他项目规则不适用。
+更新：2026-11-02；当前Windows主源码与运行目录统一为 `D:\Forma\source`。用户最新明确要求迁移D盘，覆盖此前保留C盘/取消迁移的历史决定。旧C盘目录保留回退，不作为当前写入/运行目录。其他项目规则不适用。
+
+2026-11-02迁移范围：既有01继续唯一lead，主源码、依赖、构建、数据库/附件和私有.env统一在D盘；本项目后续文件/下载默认D:/Forma，精确位置见根AGENTS与WORKSPACES。本轮允许必要复制/私有备份、路径配置、构建/校验、仅本站服务切换及正常Git同步；不实现支付、日期或报告业务功能，不新建员工/代登录或部署公网。
 
 2026-10-21跨机器补充：用户授权通过GitHub在另一台Mac继续操作。Windows原仓库保持原位；Mac可使用自己的克隆目录，所有仓库相对路径以实际checkout为根。文档、启动Prompt及team-config中的C/D盘绝对路径是Windows登记值，不要求Mac创建同名目录或搬迁Windows文件。Mac接手步骤见[WORKSPACES](docs/collaboration/WORKSPACES.md#mac接手2026-10-21)。同一角色仍同时只有一个写入者。
 
@@ -82,10 +84,10 @@
 
 ## 4. 目录与唯一所有权
 
-- 主仓库保留原C盘位置，不复制或整体移动原项目。原worktree保持原状；新worktree需完成旧写入者核对与Git权限核验后单独登记。
-- 本机临时验证、导出和截图：`.forma-local/runtime/`、`.forma-local/deliverables/`；未来独立worktree预留`.forma-local/worktrees/`，均在当前C盘项目下且Git忽略。不要在这些位置存正式健康数据。
+- Windows主源码/运行目录为 `D:/Forma/source`。旧C仓库/worktree保留历史和回退，旧未提交改动私有备份后不盲目覆盖最新源码；新worktree仍须核对写入者并登记，默认建于 `D:/Forma/worktrees`。
+- 本机临时验证/导出/截图使用D盘源码下`.forma-local/runtime/`、`.forma-local/deliverables/`；下载默认`D:/Forma/downloads`、缓存/临时`D:/Forma/cache`、日志`D:/Forma/logs`、私有备份`D:/Forma/backups`。数据只在`D:/Forma/source/data`，私有配置只在`D:/Forma/source/.env`，不得上传Git。
 - 员工MD、记忆、状态、任务与决定统一在`docs/collaboration/`。工具软件与内部缓存不迁移。
-- 技能复用其现有真实位置，包括D盘既有共享技能库；本次不迁移、覆盖用户级链接，也不把“留C盘项目”解释成迁移全部技能。技能路径、来源与状态见[SKILLS-MATRIX](docs/collaboration/SKILLS-MATRIX.md)。
+- 技能优先复用D盘既有共享库；本项目原本机技能已复制到D盘，agent-development使用`D:/Forma/skills/agent-development`。不迁移其他项目或全局工具，路径/来源/已知缺失见SKILLS-MATRIX与registry。
 - 所有可写路径与交接冻结条件仅见[TASKS](docs/collaboration/TASKS.md#当前唯一所有权表)。MD路径约束是协作规则，不能代替操作系统或工具权限。
 
 ## 5. 协作协议

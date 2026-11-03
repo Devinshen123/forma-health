@@ -4,6 +4,7 @@ const explicit = new Set([
   'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'index.html',
   'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', '.env.example',
   'Dockerfile', '.dockerignore', 'public/favicon.svg',
+  'scripts/start-forma-local.ps1',
   'vendor/opengym/frontend/index.html', 'vendor/opengym/frontend/package.json',
   'vendor/opengym/frontend/package-lock.json', 'vendor/opengym/frontend/vite.config.js',
   'vendor/opengym/LICENSE', 'vendor/opengym/NOTICE.md',

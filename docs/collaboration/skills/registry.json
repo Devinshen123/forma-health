@@ -4,7 +4,7 @@
   "skills": [
     {
       "name": "agent-development",
-      "directory": "C:/Users/devin/Desktop/Skills/agent-development",
+      "directory": "D:/Forma/skills/agent-development",
       "source": "本机Desktop Skills；声明来源anthropics/claude-code/plugins/plugin-dev/skills/agent-development，但正文与当前上游blob不同",
       "version": "0.1.0（本机变体）",
       "license": "未附独立许可；当前anthropics/claude-code根LICENSE.md为Anthropic商业条款，不能假定MIT；仅引用现有本机副本",

@@ -2,6 +2,12 @@
 
 Forma 提供中英双语网站：饮食记录、训练、手动睡眠、趋势与周回顾，以及独立的 SwiftUI iPhone 工程。
 
+## 本机Windows目录（2026-11-02）
+
+当前源码和网站统一运行于 `D:\Forma\source`，数据/附件在其`data`目录，私有配置在其`.env`；下载、缓存、日志和私有备份分别使用`D:\Forma\downloads`、`cache`、`logs`、`backups`。C盘旧副本只作回退，不是新工作入口。
+
+已有本机安装可运行 `D:\Forma\Start-Forma.ps1`，或在源码目录执行 `powershell -NoProfile -File scripts/start-forma-local.ps1`；脚本保留127.0.0.1:3001、原数据和配置，不停止其他服务。首次克隆仍需完成下方依赖/素材安装和构建。Mac保持下方npm流程及实际本机路径。详情见[迁移记录](docs/collaboration/deliverables/lead/d-drive-migration-20261102.md)。
+
 ## 当前版本
 
 - **5,632 个动画动作**：中文/英文/编号搜索、器械与肌群筛选、18区正背面人体探索、动作教学和动画播放；保留旧记录ID兼容。

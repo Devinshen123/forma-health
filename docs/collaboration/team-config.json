@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "date": "2026-10-21",
-  "projectRoot": "C:\\Users\\devin\\健康网站",
+  "date": "2026-11-02",
+  "projectRoot": "D:\\Forma\\source",
   "baseline": "e4c6a1b98761e88ceda84b89ae9688343610b2c5",
   "taskWriter": "lead",
   "roles": [
@@ -42,7 +42,7 @@
       "memory": "docs/collaboration/memory/lead",
       "status": "docs/collaboration/status/lead.md",
       "checkoutStatus": "current",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站"
+      "plannedCheckout": "D:\\Forma\\source"
     },
     {
       "number": "02",
@@ -62,7 +62,7 @@
       "memory": "docs/collaboration/memory/claude-lead",
       "status": "docs/collaboration/status/claude-lead.md",
       "checkoutStatus": "not-adopted",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\02-claude-lead"
+      "plannedCheckout": "D:\\Forma\\worktrees\\02-claude-lead"
     },
     {
       "number": "03",
@@ -80,7 +80,7 @@
       "memory": "docs/collaboration/memory/product",
       "status": "docs/collaboration/status/product.md",
       "checkoutStatus": "not-adopted",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\03-product"
+      "plannedCheckout": "D:\\Forma\\worktrees\\03-product"
     },
     {
       "number": "04",
@@ -100,7 +100,7 @@
       "memory": "docs/collaboration/memory/frontend",
       "status": "docs/collaboration/status/frontend.md",
       "checkoutStatus": "not-adopted",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\04-frontend"
+      "plannedCheckout": "D:\\Forma\\worktrees\\04-frontend"
     },
     {
       "number": "05",
@@ -119,7 +119,7 @@
       "memory": "docs/collaboration/memory/backend",
       "status": "docs/collaboration/status/backend.md",
       "checkoutStatus": "not-adopted",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\05-backend"
+      "plannedCheckout": "D:\\Forma\\worktrees\\05-backend"
     },
     {
       "number": "06",
@@ -139,7 +139,7 @@
       "memory": "docs/collaboration/memory/qa",
       "status": "docs/collaboration/status/qa.md",
       "checkoutStatus": "not-adopted",
-      "plannedCheckout": "C:\\Users\\devin\\健康网站\\.forma-local\\worktrees\\06-reviewer"
+      "plannedCheckout": "D:\\Forma\\worktrees\\06-qa"
     }
   ],
   "retired": [

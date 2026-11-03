@@ -1,4 +1,14 @@
-## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（已同步）
+## 2026-11-02 FORMA-MOVE-D-20261102（验证完成，最终同步中）
+
+唯一01 lead本人已从旧C主管worktree切到D:/Forma/source，分支codex/fud-food-photo-20261022，迁移起点05958dd5263a3bc9545594301cb94c783f7dcad7。用户明确迁移覆盖旧留C限定；C原件/分支保留回退，只给两个旧AGENTS加D指针，不创建第二lead。新Git独立，无C objects alternates。
+
+277旧未提交文件与1删除意图已私有备份，不覆盖新源码；现有依赖锁相同后复制D，素材11328 SHA通过。数据在停止本人旧PID11568后完整复制到D:/Forma/source/data并另备份：7文件2,385,776字节，原/新/备份校验一致，.env相同且私有ACL，SQLite quick_check=ok。初次新服务PID49804，入口和配置均为D绝对路径；旧D启动器已转发新根，不再加载C配置。最终进程/构建身份还要随提交复核。
+
+本轮D盘实际验证：Windows/portable各15/15，技能12/110（已知缺失脚本保留），全套npm test429/429，新增源码发布精确ps1回归后专项3/3，完整build通过。首页/视频200，私有路径只返回公开HTML壳而非文件，启动器幂等。少量初次路径/白名单/SPA状态假设错误及修正详见[迁移回执](../../deliverables/lead/d-drive-migration-20261102.md)，不能把失败尝试抹成通过。src/server业务代码未变，未实现付费/日期/报告、调用真实提供商/登录或部署公网。
+
+下一步仅最终文档/精确差异检查、正常commit/push，更新构建标识/离线清单后重启确属本站的D进程并核最终UI/运行SHA/远端一致，再补完成回执。所有新产物D盘；其他会话/机器未自动采用，Mac仍须拉取。当前app附件历史sourceCwd可能仍C，不能当实际主源码；使用D盘工程命令/界面打开Dsource。回退前保留D中新记录，不能用旧C数据覆盖。
+
+## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（历史）
 
 既有唯一01，主管checkout/codex/fud-food-photo-20261022，起点e87c1476b994075aba0416b496ead742b69c262e干净。用户本轮要求在AGENTS写长期“每次修改完成后同步GitHub”；常规Git提交/fetch/push获持续授权，未来不等再次提醒，仍按现有候选分支/独审/主管集成要求，不扩大业务或部署。
 

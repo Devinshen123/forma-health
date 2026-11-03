@@ -1,4 +1,12 @@
-# 2026-11-02 每次修改同步GitHub规则（最新）
+# 2026-11-02 Forma统一迁移D盘（最新）
+
+用户最新明确要求将源码和运行目录统一迁到D盘，并在MD规定后续项目文件/下载默认使用D盘。该要求覆盖2026-10-21/27保留C盘及本任务必要执行限制；仅做迁移、路径/启动配置、必要构建验证与Git同步，不实施支付、日期或报告业务功能。既有01 lead是唯一执行者，已在D:/Forma/source建立独立Git副本，起点05958dd5263a3bc9545594301cb94c783f7dcad7；从此本人工程写入切至该目录，不启动第二名lead。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| FORMA-MOVE-D-20261102 | 原01 lead：D:/Forma/source主源码/运行；D:/Forma下私有备份/下载/cache/logs；根MD、活跃启动Prompt/团队路径/技能registry、本人记录与迁移交付；scripts/start-forma-local.ps1、verify-forma-team.cjs、source-policy.mjs及其tests/source-policy.test.ts最小迁移回归；旧C入口只加指针 | doing | 277个未提交文件/1删除意图已备份；动作11328文件SHA通过；配置两模式15/15、技能12/110、全套429与新增发布策略专项3/3通过，完整build通过。已将7个私有数据文件及.env逐文件校验复制D，SQLite quick_check通过，D盘PID49804运行、首页/视频200；私有路径只返回公开HTML，不是数据。最后完成页面/最终版本与GitHub核对；旧C原件/分支保留，其他writer/Mac不接管 |
+
+# 2026-11-02 每次修改同步GitHub规则（已完成，保留）
 
 用户要求将每次修改完成后同步GitHub写入AGENTS.md。本任务仍由既有01 lead执行；只更新规则入口、共享手册引用和本人必要记录，不实施业务。原C冻结仅对用户此次明确指定的AGENTS.md作追加规则的单文件例外，其他工作文件/索引/main及既有改动保留。
 

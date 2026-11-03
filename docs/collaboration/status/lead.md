@@ -1,4 +1,14 @@
-## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（已同步）
+## 2026-11-02 FORMA-MOVE-D-20261102（验证完成，最终同步中）
+
+原01唯一写者，主源码/运行目录已切D:/Forma/source，既有codex分支从05958dd起，不再写旧C工程。用户新迁移授权覆盖历史留C冻结及迁移必要脚本/构建/服务/Git限制，不扩大业务/账号/收费/公网范围。活跃MD、七份launch及START-PROMPTS、团队配置、技能位置改D；历史基线不重写，旧C两入口仅加D指针，原件/分支不删除。
+
+已备份277旧未提交文件与1删除意图并验证SHA；依赖锁相同后复制，动作11328 SHA通过。旧本站PID11568确认后停止；7私有文件2,385,776字节及.env复制D且另备份，前后/三份目录hash相同，SQLite quick_check通过，无账户/健康行查询。新服务PID49804从D绝对入口/配置运行，数据Dsource/data；首页/视频200、两个启动器幂等，私有URL返回与首页完全一致的HTML壳，无私有文件内容。
+
+实际D盘Windows/portable各15/15、技能12/110，全套429/429（复制真实.env前），新增精确发布脚本白名单回归3/3及完整build通过；日志D:/Forma/logs。早期public素材路径、绝对路径拼接、未允许ps1构建、强求私有路径404的检查失败均已修正并在[回执](../deliverables/lead/d-drive-migration-20261102.md)保留，不冒称初次全绿或独立审查。当前仅迁移/启动配置，src/server无差异。
+
+剩余：最终记录精确commit/push并核远端，更新构建标识与最终进程/UI核对，补完成回执。旧C私有原件留回退，app附件仍可能显示C；没有自动切换他人聊天/Mac。原日期/报告review、真实设备与付费系统均不因迁移完成。今后默认D盘且每次修改完成正常同步GitHub。
+
+## 2026-11-02 AGENTS-GITHUB-AUTOSYNC-20261102（历史）
 
 用户要求把每次修改完成后同步GitHub写进AGENTS，覆盖较早禁止push的限定，但不扩大业务实现/运行/部署范围。唯一01沿主管checkout/codex/fud-food-photo-20261022，起点e87c1476b994075aba0416b496ead742b69c262e干净。只写主管AGENTS、FORMA引用、TASKS、本人status/HANDOFF；原C仅给明确目标AGENTS追加同一规则，保留原接手入口，其余工作文件/索引/main不动。
 

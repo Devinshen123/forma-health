@@ -1,3 +1,7 @@
+## 2026-11-02 已验证 · D盘主源码与运行迁移
+
+FORMA-MOVE-D-20261102：同一01改在D:/Forma/source独立Git工作/运行，数据和.env在该源码根的data/.env；下载/cache/logs/backups默认D:/Forma。旧C有277文件和1删除意图私有校验备份，原件未删除；新Git没有C对象依赖。停旧本站后复制7个私有文件/配置，hash一致、SQLite quick_check通过，未查询健康记录；先校验再启新服务，回退须保留D中新写入。Windows/portable15项、技能12/110、全套429及新增源码白名单专项3项、完整build通过。配置原件/数据不能进Git。启动入口D:/Forma/Start-Forma.ps1，旧AI-tools入口转发同一脚本。来源：本轮迁移回执/决策与本人日志，适用Windows本机，不是Mac或真实提供商验收。此前“保留C盘取消迁移”已被新用户要求替代，不据旧历史写回C。
+
 ## 2026-10-25 已验证 · Google本机真实登录
 
 AUTH-ENABLE-01：5e6b34c运行于127.0.0.1:3001，用户具体确认后Google真实授权→回调→同源显式完成→空新账户引导，刷新保持认证均通过。首个久置流程失效，重新发起即时成功；state/PKCE/binding为10分钟、完成ticket为2分钟，不能因人工等待失败降低校验。服务端配置仅本机忽略.env，PID95536；没有真实健康事实或计划写入。成功证据开通记录与本机google-live-success-20261025.png。旧secret停用/正式使用前私下轮换、正式域名/Google生产核验、Apple与其他设备/账号仍未验；旧记录中“Google真实provider未测”由本条替代。

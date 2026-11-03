@@ -1,5 +1,26 @@
 # Forma 工作目录与迁移决定
 
+## 当前主目录：D盘（2026-11-02 / FORMA-MOVE-D-20261102）
+
+用户最新要求将源码/运行目录统一迁到D盘，覆盖下文10月21/27日保留C盘的历史决定。既有01本人继续唯一lead，在独立Git副本`D:/Forma/source`工作并直接运行；旧C主仓库及linked worktree不删除/不改分支，保留回退，不能继续作新工作入口。
+
+| 用途 | 当前Windows位置 |
+|---|---|
+| 主源码、依赖与运行构建 | `D:/Forma/source`（同一目录，不另用旧release做新源码） |
+| 数据库/私有附件 | `D:/Forma/source/data` |
+| 私有服务端配置 | `D:/Forma/source/.env`（不上传Git） |
+| 下载、解压源包 | `D:/Forma/downloads` |
+| npm缓存/临时文件 | `D:/Forma/cache/npm`、`D:/Forma/cache/tmp` |
+| 日志、私有备份 | `D:/Forma/logs`、`D:/Forma/backups` |
+| 后续独立checkout预留 | `D:/Forma/worktrees`（未据此启动员工） |
+| 本机启动入口 | `D:/Forma/Start-Forma.ps1` → 源码`scripts/start-forma-local.ps1` |
+
+项目命令显式使用D盘工作目录；此规则不改其他项目/已安装软件本体或浏览器全局设置。旧C非提交文件及删除意图保存在D盘私有迁移备份，不把旧分支内容覆盖当前源码。数据库/配置只作私有校验复制，不进公开仓库。源代码通过现有GitHub main/主管分支正常同步；Mac仍须自己核对dirty并拉取，不要求D盘。
+
+Codex当前聊天附件的历史sourceCwd可能仍显示C盘；这不是新源码位置。已由同一01明确改用D:/Forma/source执行工程命令，旧C的AGENTS会指向这里；在软件界面选择项目时也应打开D盘源码目录，不能声称其他会话/机器已自动换根。完整操作、实际验证与回退边界见[迁移记录](deliverables/lead/d-drive-migration-20261102.md)。
+
+## 下方为历史版本对齐记录，不再定义当前Windows位置
+
 ## 当前跨机器同步入口（2026-10-27 / VERSION-ALIGN-01）
 
 用户本轮只授权代码版本、协作规则和任务板对齐。共同分发入口为`Devinshen123/forma-health`的`main`；01继续沿用`codex/fud-food-photo-20261022`及现有checkout，两者以本轮最终回执SHA为准。下面2026-10-21的旧`codex/mac-handoff-20261021`步骤仅作历史，不能再当最新版本入口，也不要按旧步骤安装依赖、运行测试或启动网站。
