@@ -173,16 +173,16 @@ final class AppStore {
         }
     }
 
-    /// Deletes one meal or sleep, as the website does. The change carries the version this device
+    /// Deletes one meal, sleep or report, as the website does. The change carries the version this device
     /// last saw, so a record edited elsewhere in the meantime comes back as a conflict to review
     /// rather than being deleted unseen. It shares the save slot, so a retry repeats this exact
     /// mutation and an unconfirmed save blocks a delete until it is settled, and vice versa.
     func deleteRecord(collection: String, id: String) async throws {
-        guard !isDemo, let api, let user, !isBusy, ["meals", "sleeps"].contains(collection) else {
+        guard !isDemo, let api, let user, !isBusy, ["meals", "sleeps", "reports"].contains(collection) else {
             throw NativeAPIError.invalidSession
         }
         let key = "\(collection):\(id)"
-        guard let original = records(collection).first(where: { $0["id"].stringValue == id }) else {
+        guard records(collection).contains(where: { $0["id"].stringValue == id }) else {
             // Already gone: a confirmed retry, or deleted elsewhere. Either way there is nothing to undo.
             if pending?.key == key { pending = nil }
             return
@@ -209,11 +209,8 @@ final class AppStore {
             handleSessionFailure(error)
             throw error
         }
-        // A photo no other meal or report still shows has no reason to stay on the service.
-        if let assetId = original["assetId"].stringValue,
-           !ReportState.attachmentIsReferenced(state, assetId: assetId) {
-            await deleteOrphanAttachment(assetId)
-        }
+        // No separate request for an original this record was the last to show: the service
+        // deletes it in the same commit, and asking again afterwards only earns a 404.
     }
 
     func logout() async {
@@ -486,6 +483,9 @@ final class AppStore {
             reportError = nil
         } catch {
             guard ticket == generation else { return }
+            // The service deletes an original in the same commit that stops referencing it, so by
+            // now it is usually gone already. Gone is what was asked for, not a failure to retry.
+            if Self.isAlreadyGone(error) { reportError = nil; return }
             handleSessionFailure(error)
             reportError = text("报告已不再引用该附件，但删除附件本身没有成功，可以重试。",
                                "The report no longer references the attachment, but deleting the attachment itself did not succeed. You can retry.")
@@ -510,9 +510,16 @@ final class AppStore {
             reportError = nil
         } catch {
             guard ticket == generation else { return }
+            if Self.isAlreadyGone(error) { reportError = nil; return }
             handleSessionFailure(error)
             reportError = reportMessage(error)
         }
+    }
+
+    /// A 404 from deleting an original means it no longer exists - the outcome a delete wants.
+    static func isAlreadyGone(_ error: Error) -> Bool {
+        if case let NativeAPIError.http(status, _, _) = error { return status == 404 }
+        return false
     }
 
     func reportMessage(_ error: Error) -> String {

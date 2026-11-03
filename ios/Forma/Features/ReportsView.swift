@@ -221,6 +221,7 @@ struct ReportEditorSheet: View {
     @State private var photo: PhotosPickerItem?
     @State private var uploading = false
     @State private var choosingFile = false
+    @State private var confirmDelete = false
 
     init(store: AppStore, fields: ReportEditorFields) {
         self.store = store
@@ -310,6 +311,23 @@ struct ReportEditorSheet: View {
                     Text(store.text("留空的指标不会保存。名称和原始数值都必须填写。",
                                     "A blank marker is not saved. A name and the original value are both required."))
                 }
+                if values.existing != nil {
+                    Section {
+                        Button(store.text("删除这份报告", "Delete this report"), role: .destructive) { confirmDelete = true }
+                            .disabled(saving || uploading || store.isDemo)
+                            .accessibilityIdentifier("reports.editor.delete")
+                    } footer: {
+                        Text(store.text("删除此报告及其手动指标；它的原件如果没有别的记录在用，也会一并删除。",
+                                        "Deletes this report and its manual markers; its original goes too unless another record still uses it."))
+                    }
+                }
+            }
+            .confirmationDialog(store.text("删除这份报告？", "Delete this report?"), isPresented: $confirmDelete,
+                                titleVisibility: .visible) {
+                Button(store.text("删除记录", "Delete report"), role: .destructive) { Task { await delete() } }
+                Button(store.text("保留", "Keep"), role: .cancel) {}
+            } message: {
+                Text(values.existing?.name ?? "")
             }
             .navigationTitle(values.existing == nil
                              ? store.text("新建报告", "New report")
@@ -352,6 +370,19 @@ struct ReportEditorSheet: View {
                     .accessibilityIdentifier("reports.editor.save")
                 }
             }
+        }
+    }
+
+    @MainActor private func delete() async {
+        guard let id = values.existing?.id, !saving else { return }
+        saving = true
+        defer { saving = false }
+        do {
+            try await store.deleteRecord(collection: "reports", id: id)
+            store.reportError = nil
+            dismiss()
+        } catch {
+            store.reportError = store.reportMessage(error)
         }
     }
 
