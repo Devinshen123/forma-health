@@ -48,7 +48,13 @@ if(process.argv.includes('--write-env')){
  const original=fs.readFileSync(envFile,'utf8'),block=[start,`FORMA_AUTH_CASDOOR_ISSUER=${issuer}`,`FORMA_AUTH_CASDOOR_APPLICATION=${application}`,`FORMA_AUTH_CASDOOR_CLIENT_ID=${state.clientId}`,`FORMA_AUTH_CASDOOR_CLIENT_SECRET=${state.clientSecret}`,end].join('\n');
  const begin=original.indexOf(start),finish=original.indexOf(end);
  if(begin>=0&&finish>=begin)fs.writeFileSync(envFile,original.slice(0,begin)+block+original.slice(finish+end.length),{mode:0o600});
- else{if(/^FORMA_AUTH_CASDOOR_.*=/m.test(original))throw new Error('Unmanaged Casdoor config already exists; preserve it and configure explicitly.');fs.appendFileSync(envFile,'\n'+block+'\n',{mode:0o600});}
+ else{
+  const lines=original.split(/\r?\n/),settings=lines.filter(line=>/^FORMA_AUTH_CASDOOR_.*=/.test(line));
+  if(settings.some(line=>line.slice(line.indexOf('=')+1).trim()!==''))throw new Error('Unmanaged Casdoor config already exists; preserve it and configure explicitly.');
+  // Fresh .env.example placeholders are empty, so replace only those lines.
+  // Non-empty unmanaged credentials must never be overwritten.
+  fs.writeFileSync(envFile,lines.filter(line=>!/^FORMA_AUTH_CASDOOR_.*=/.test(line)).join('\n')+'\n'+block+'\n',{mode:0o600});
+ }
 }
 if(process.argv.includes('--start')){
  const result=spawnSync('docker',['compose','-f',composeFile,'up','-d'],{stdio:'inherit'});

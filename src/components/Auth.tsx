@@ -223,6 +223,8 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
         {optionsFailed ? <div className="auth-status-row"><p className="auth-provider-status">{zh ? '暂时无法读取快捷登录状态，邮箱密码仍可使用。' : 'Provider status is unavailable. Email and password are still available.'}</p><button type="button" className="btn btn-ghost" disabled={pending} onClick={() => void loadOptions()}><RefreshCw size={15} />{zh ? '重试' : 'Retry'}</button></div> : null}
         <div className="auth-divider"><span>{zh ? '或使用邮箱' : 'or use email'}</span></div>
       </> : null}
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+      {notice ? <p className="auth-notice" role="status">{notice}</p> : null}
       {completed ? <div className="auth-complete stack" role="status">
         <CheckCircle2 size={30} aria-hidden="true" />
         <strong>{mode === 'reset' ? zh ? '密码已重置，请使用新密码重新登录。' : 'Password reset. Sign in with your new password.' : zh ? '邮箱已验证。' : 'Your email is verified.'}</strong>
@@ -244,8 +246,6 @@ export function Auth({ lang, onClose, onAuthenticated, onPasswordReset, entry }:
           {mode === 'reset' ? <p className="hint">{zh ? '确认后会重置密码并退出所有已有会话。' : 'Confirming resets your password and signs out all existing sessions.'}</p> : null}
           {mode === 'verify' ? <p className="hint">{zh ? '点击下方按钮确认验证此链接对应的邮箱。打开页面本身不会完成验证。' : 'Confirm below to verify the email associated with this link. Opening the page does not verify it.'}</p> : null}
           {mode === 'oauth' ? <p className="hint">{zh ? '授权已返回 Forma。点击下方按钮完成本次登录或账户绑定。' : 'Authorization returned to Forma. Confirm below to complete this sign-in or account link.'}</p> : null}
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
-          {notice ? <p className="auth-notice" role="status">{notice}</p> : null}
           <button className="btn btn-primary full-width" type="submit" disabled={pending || (mode === 'forgot' && (optionsLoading || !options?.email.mailAvailable))}>
             {pending ? zh ? '正在处理…' : 'Working…' : mode === 'register' ? zh ? '创建账户' : 'Create account' : mode === 'forgot' ? zh ? '发送重置链接' : 'Send reset link' : mode === 'reset' ? zh ? '重置密码' : 'Reset password' : mode === 'verify' ? zh ? '确认验证邮箱' : 'Verify this email' : mode === 'oauth' ? zh ? '完成登录或绑定' : 'Complete sign-in or link' : zh ? '登录我的账户' : 'Sign in'}<ArrowRight size={18} aria-hidden="true" />
           </button>

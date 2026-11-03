@@ -22,3 +22,9 @@
 - 普通账单POST `/payments`需要商业能力，本实现完全不用。开源沙盒通过PUT finalized invoice的payment_status显式模拟结算；拒绝已连接支付商的客户，只允许本机，不会扣真实款。取消续费使用同external subscription降级安排下一期Free，保留当前已付款Pro；不开真实支付、PDF/邮件账单投递。
 
 上游契约核对固定v1.56.0：[订阅含权益](https://github.com/getlago/lago-api/blob/v1.56.0/app/controllers/api/v1/subscriptions_controller.rb)、[事件时间精度](https://github.com/getlago/lago-api/blob/v1.56.0/app/services/events/timestamp_window.rb)、[原始事件查询](https://github.com/getlago/lago-api/blob/v1.56.0/app/controllers/api/v1/events_controller.rb)。未复制Lago应用源码到Forma，通过独立服务REST对接；Lago自身许可证及修改/分发义务继续适用。
+
+## 独立审查修正
+
+2026-11-03 QA-F1/F2：异步客户/订阅初始化、快照、套餐及模拟结算在外部写前和await后重新校验本地owner，已被删除则返回BILLING_ACCOUNT_REMOVED/410，不以旧会话继续创建远端客户。DELETE成功后如该owner仍有跟踪的refresh/mutation在途，持久清理意图不能清除，排空后再次DELETE再完成；即使billing off，删号也排入opaque ID清理队列，之后启用worker继续。该修复验证同进程/正常响应边界，不表示远端超时晚提交和跨进程崩溃已获严格分布式删除保证。
+
+QA-F3：所有认证弹窗模式共享唯一error/notice呈现，启用统一登录后仍显示授权取消、启动错误与回调错误；不改OAuth票据或身份权限。

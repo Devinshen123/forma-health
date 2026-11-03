@@ -33,19 +33,29 @@ export class BillingService{
  }
  close(){this.closed=true;if(this.timer)clearInterval(this.timer);this.client.close();}
  private ready(){if(!this.config.enabled||!this.config.valid||this.closed)throw new BillingError('BILLING_UNAVAILABLE');}
+ private liveOwner(owner:string){
+  if(this.closed||!this.store.db.isOpen)throw new BillingError('BILLING_UNAVAILABLE');
+  if(!this.store.db.prepare('SELECT 1 FROM accounts WHERE id=?').get(owner))throw new BillingError('BILLING_ACCOUNT_REMOVED',410);
+ }
  options():BillingSnapshot{return{mode:this.config.enabled?'sandbox':'off',available:this.config.valid,reason:!this.config.enabled?'not_configured':this.config.valid?'ready':'invalid_configuration',plans:[],subscription:null,usage:{used:0,reserved:0,limit:0,remaining:0,lagoReported:null,pendingEvents:0},invoices:[]};}
  async plans():Promise<BillingPlan[]>{
   this.ready();return Promise.all(PLAN_CODES.map(async code=>{const {plan}=await this.client.request('GET','/plans/'+code);const p=parse(z.object({code:z.literal(code),name:z.string().max(160),amount_cents:z.number().int().min(code==='free_test'?0:1).max(code==='free_test'?0:100000000),amount_currency:z.literal('USD'),interval:z.literal('monthly'),entitlements:z.array(z.unknown())}).passthrough(),plan);return{code:p.code,name:p.name,amountCents:p.amount_cents,currency:p.amount_currency,monthlyPhotoLimit:quota(p.entitlements)};}));
  }
  private external(owner:string){parse(z.string().uuid(),owner);return'forma_'+owner;}
  private async customer(owner:string){
+  this.liveOwner(owner);
   let response=await this.client.request('GET','/customers/'+encodeURIComponent(owner),undefined,true);
+  this.liveOwner(owner);
   if(!response)response=await this.client.request('POST','/customers',{customer:{external_id:owner,currency:'USD',timezone:'UTC',billing_configuration:{payment_provider:null}}});
+  this.liveOwner(owner);
   if(response.customer?.external_id!==owner||response.customer?.billing_configuration?.payment_provider)throw new BillingError('BILLING_NOT_SANDBOX_CUSTOMER',409);
  }
  private async sub(owner:string,create=true):Promise<Sub|null>{
+  this.liveOwner(owner);
   const external=this.external(owner);let response=await this.client.request('GET','/subscriptions/'+external+'?status=active',undefined,true);
+  this.liveOwner(owner);
   if(!response&&create){await this.customer(owner);response=await this.client.request('POST','/subscriptions',{subscription:{external_customer_id:owner,external_id:external,plan_code:'free_test',billing_time:'anniversary'}});}
+  this.liveOwner(owner);
   if(!response)return null;const s=parse(subscriptionSchema,response.subscription);
   if(s.external_id!==external||s.external_customer_id!==owner)throw new BillingError('BILLING_ACCOUNT_MISMATCH',403);return s;
  }
@@ -62,7 +72,9 @@ export class BillingService{
   const work=this.refresh(owner).finally(()=>this.refreshes.delete(owner));this.refreshes.set(owner,work);return work;
  }
  private async refresh(owner:string):Promise<BillingSnapshot>{
+  this.liveOwner(owner);
   const plans=await this.plans(),sub=(await this.sub(owner))!,invoices=await this.invoices(owner),now=this.now();
+  this.liveOwner(owner);
   if(sub.status!=='active'||Date.parse(sub.current_billing_period_started_at)>now||Date.parse(sub.current_billing_period_ending_at)<now)throw new BillingError('BILLING_PERIOD_UNAVAILABLE');
   const paid=sub.plan_code==='free_test'||invoices.some(i=>paidForPeriod(i,sub,owner,now)),effective=paid?sub.plan_code:'free_test';
   // Read entitlement values from the SAME subscription response as its identity/plan.
@@ -70,7 +82,7 @@ export class BillingService{
   const limit=effective===sub.plan_code?quota(sub.entitlements):plans.find(p=>p.code==='free_test')!.monthlyPhotoLimit;
   let reported:number|null=null;
   try{const r=await this.client.request('GET','/customers/'+owner+'/current_usage?external_subscription_id='+this.external(owner));const entries=r.customer_usage?.charges_usage;if(Array.isArray(entries)){const metric=entries.find(e=>e?.billable_metric?.code==='photo_recognition_success');if(metric){const n=Number(metric.units);if(Number.isFinite(n)&&n>=0)reported=n;}}}catch{/* Current usage is async; atomic admission is the durable local ledger. */}
-  const checkedAt=this.now();if(Date.parse(sub.current_billing_period_started_at)>checkedAt||Date.parse(sub.current_billing_period_ending_at)<checkedAt)throw new BillingError('BILLING_PERIOD_UNAVAILABLE');
+  this.liveOwner(owner);const checkedAt=this.now();if(Date.parse(sub.current_billing_period_started_at)>checkedAt||Date.parse(sub.current_billing_period_ending_at)<checkedAt)throw new BillingError('BILLING_PERIOD_UNAVAILABLE');
   const usage=this.ledger.usage(owner,sub.current_billing_period_ending_at,checkedAt);
   const snapshot:BillingSnapshot={mode:'sandbox',available:true,reason:'ready',plans,subscription:{planCode:sub.plan_code,effectivePlanCode:effective,status:sub.status,paid,periodStart:sub.current_billing_period_started_at,periodEnd:sub.current_billing_period_ending_at,cancelAtPeriodEnd:sub.next_plan_code==='free_test'},usage:{...usage,limit,remaining:Math.max(0,limit-usage.used-usage.reserved),lagoReported:reported},invoices:invoices.map(i=>this.displayInvoice(i,sub))};
   if(this.closed)throw new BillingError('BILLING_UNAVAILABLE');this.ledger.save(owner,snapshot,now);return snapshot;
@@ -81,6 +93,7 @@ export class BillingService{
  }
  async select(owner:string,code:typeof PLAN_CODES[number]){return this.mutate(owner,async()=>{
   this.ready();const current=(await this.snapshot(owner)).subscription!;await this.customer(owner);
+  this.liveOwner(owner);
   if(current.planCode!==code)await this.client.request('POST','/subscriptions',{subscription:{external_customer_id:owner,external_id:this.external(owner),plan_code:code,billing_time:'anniversary'}});
  });}
  async settle(owner:string,id:string){return this.mutate(owner,async()=>{
@@ -88,6 +101,7 @@ export class BillingService{
   const {invoice}=await this.client.request('GET','/invoices/'+id),checked=parse(invoiceSchema,invoice),sub=(await this.sub(owner,false));
   if(checked.customer.external_id!==owner||!sub||!checked.subscriptions.some(s=>s.lago_id===sub.lago_id&&s.external_id===sub.external_id))throw new BillingError('BILLING_ACCOUNT_MISMATCH',403);
   if(checked.customer.billing_configuration?.payment_provider||checked.status!=='finalized'||checked.currency!=='USD'||checked.total_amount_cents>100000000)throw new BillingError('BILLING_NOT_SANDBOX_CUSTOMER',409);
+  this.liveOwner(owner);
   if(checked.payment_status!=='succeeded')await this.client.request('PUT','/invoices/'+id,{invoice:{payment_status:'succeeded'}});
  });}
  async cancelRenewal(owner:string){return this.select(owner,'free_test');}
@@ -118,7 +132,13 @@ export class BillingService{
    }catch{if(!this.closed)this.store.db.prepare('UPDATE billing_outbox SET attempts=attempts+1,next_ms=? WHERE transaction_id=?').run(this.now()+Math.min(300000,1000*2**Math.min(Number(row.attempts),8)),String(row.transaction_id));}}
    if(!owner&&!this.closed)for(const row of this.store.db.prepare('SELECT external_customer_id FROM billing_deletions LIMIT 10').all()){
     const id=String(row.external_customer_id);if(this.store.db.prepare('SELECT 1 FROM accounts WHERE id=?').get(id))continue;
-    try{await this.client.request('DELETE','/customers/'+encodeURIComponent(id),undefined,true);if(!this.closed)this.store.db.prepare('DELETE FROM billing_deletions WHERE external_customer_id=?').run(id);}catch{/* Durable cleanup retries without retaining names, email or health content. */}
+    try{
+     await this.client.request('DELETE','/customers/'+encodeURIComponent(id),undefined,true);
+     // A request already sent can commit after this DELETE. Keep the durable
+     // intent until all tracked reads/mutations for that owner have settled,
+     // then DELETE once more before acknowledging external cleanup.
+     if(!this.closed&&!this.refreshes.has(id)&&!this.mutations.has(id))this.store.db.prepare('DELETE FROM billing_deletions WHERE external_customer_id=?').run(id);
+    }catch{/* Durable cleanup retries without retaining names, email or health content. */}
    }
   }finally{this.flushing=false;}
  }
@@ -135,5 +155,5 @@ export class BillingService{
   this.store.db.prepare('INSERT OR IGNORE INTO billing_webhook_receipts VALUES (?,?,?)').run(digest,createHash('sha256').update(delivery).digest('hex'),this.now());
  }
  export(owner:string){return this.ledger.export(owner);}
- scheduleDeletion(owner:string){if(this.config.enabled)this.store.db.prepare('INSERT OR IGNORE INTO billing_deletions VALUES (?,?)').run(owner,this.now());}
+ scheduleDeletion(owner:string){this.store.db.prepare('INSERT OR IGNORE INTO billing_deletions VALUES (?,?)').run(owner,this.now());}
 }

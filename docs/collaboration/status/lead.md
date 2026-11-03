@@ -1,5 +1,9 @@
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（进行中）
 
+06继续独立发现QA-F2（off删号漏排外部清理，已由无条件队列修复）、QA-F3（统一登录默认隐藏回调错误，合成浏览器确认）。01已把error/notice提升为弹窗共享内容，各只渲染一次；06自己的三删除回归及便携fixture均已精确cherry-pick。469全套及一次完整build通过后，又有此UI修复，需重建并交新固定SHA复验；尚未main合并，真实收费关闭。
+
+专项06已自行运行初始464项/类型，通过；独立构建曾缺忽略动作素材和vendor依赖，已分别补本机同锁文件junction，不能把首次失败写通过。06独立复现P1 QA-F1删号时远端客户被旧初始化请求恢复，测试8f259a2已cherry-pick为12addc7，01复现2失败后修复：外部写/await后校验owner，DELETE成功仍保留有在途refresh/mutation的清理意图，排空后二次DELETE；billing off删号也留持久队列。01另修Casdoor新.env.example空占位初始化失败。当前三组回归20/20通过，下一步完整测试/build、push修复候选并由06独立复验，不提前main集成。详见[本轮记录](../deliverables/lead/auth-billing-review-20261103.md)。
+
 最新用户直接授权安排独立审查、修复并复验通过后main/GitHub集成，不开真实收费。既有01 D:/Forma/source/codex-fud分支唯一产品写者；开工a72d72d干净，远端候选a72d72d/main76dcbe2。已读取项目/本人/06入口和状态、当前团队无活动06，旧06配置未接手；按TASKS安排新专项独立审查子会话，D盘独立checkout，不复用已参与上一轮实现讨论的辅助审查者或代写旧QA记忆。先登记/同步，之后独立验收固定SHA，问题由01修、06复验后再集成。
 
 ## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（前轮候选待正式审查）

@@ -1,5 +1,7 @@
 ## 2026-11-03 独立审查/修复/main集成（当前）
 
+06独立子会话已开始，自跑初始464/类型，并交QA-F1删号竞态2红例提交8f259a2（01cherry-pick12addc7）；01确认红后修复外部写liveness/清理意图排空保护，并补billing off删号队列。另发现并修新.env.example空Casdoor配置的CLI初始化失败，2测试红→绿。当前未提交产品改动仅本任务service/setup及回归/本人记录；先全套/build并push候选，再让06checkout复验固定SHA。06未给通过，main仍76dcbe2。QA新工作区缺忽略动作素材与vendor依赖已补D只读协作junction（不是权限隔离）；01不要同时构建。
+
 用户明确批准安排独立审查、修好问题、通过后合并main并同步GitHub，禁止真实收费。01继续D:/Forma/source唯一产品写者，开工a72d72d干净，main76dcbe2；旧辅助审查已结束且不算06。本轮登记新的专项06独立子会话（Codex、单独D checkout、不复用辅助审查者），只写专属新报告/回归测试，不接管旧QA工作区/记忆。TASKS为唯一派工，FORMA新增授权覆盖前轮不启动员工限定的本轮专项。下一步建独立checkout于本次派工SHA，委派固定版本审查；修复归01，06复验通过才main正常集成/push。私有配置、主健康库、真实支付/AI不作独立测试目标。
 
 ## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（前轮候选待正式审查）

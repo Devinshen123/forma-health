@@ -2,6 +2,7 @@ import {test,type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,rmSync} from 'node:fs';
 import {resolve,join,sep} from 'node:path';
+import {tmpdir} from 'node:os';
 import {randomUUID,generateKeyPairSync,sign} from 'node:crypto';
 import {Store} from '../server/store';
 import {BillingLedger,operationKey} from '../server/billing/ledger';
@@ -12,7 +13,7 @@ import {createApp} from '../server/app';
 import type {FoodPhotoDraft} from '../src/types';
 
 // Disposable databases and injected transports only. No real Lago, AI or health data.
-const tempRoot=resolve(process.env.TEMP||'D:/Forma/cache/tmp');
+const tempRoot=resolve(tmpdir());
 mkdirSync(tempRoot,{recursive:true});
 const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
 const config:BillingConfig={mode:'sandbox',lagoUrl:'http://127.0.0.1:3442',publicBaseUrl:'http://127.0.0.1:3001',apiKey:'fixture-not-a-real-api-key',webhookPublicKey:publicKey.export({type:'spki',format:'pem'}).toString()};
