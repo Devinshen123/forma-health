@@ -5,7 +5,7 @@
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
 | CASDOOR-01 | 既有01 lead：server/auth/、src/auth.ts、auth-navigation.ts及登录/账户页面增量、.env.example/必要客户端衔接、auth测试、独立本机Casdoor服务配置/脚本、本人文档/ADR；既有业务/数据不重写 | review | [阶段证据](deliverables/lead/auth-billing-20261103/casdoor.md)：认证62＋导航1、全套448/448、类型/完整build通过；真实本机注册/邮件码/签名登录7项，重启及重建容器后的原cookie/subject/PKCE7项通过，健康库不作测试目标。账户中心中英表单真实渲染/切换、console无相关错误；辅助审查的/tmp会话绑定已修并实测，非06产品验收。候选先推主管分支，Forma入口启动后复核，正式独审待安排 |
-| LAGO-OSS-01 | 既有01 lead：server/billing/、src/billing.ts、会员/账单页面与必要api/App衔接、Fud用量钩子、独立开源Lago服务及脚本、测试、配置示例/运行说明；数据库仅新增计费表 | pending | 依赖CASDOOR-01阶段验证；自托管开源固定版本，测试客户/套餐/用量/账单/显式模拟结算，重复通知/请求不重复记账；仅后端权益和额度校验、失败不扣额度；不伪装真实收款，不传健康内容，旧记录不丢失；测试/必要build及Git同步 |
+| LAGO-OSS-01 | 既有01 lead：server/billing/、src/billing.ts、会员/账单页面与必要api/App衔接、Fud用量钩子/错误提示、独立开源Lago服务及脚本、测试、配置示例/运行说明、必要导出/删除衔接；数据库仅新增计费表 | review | [阶段回执](deliverables/lead/auth-billing-20261103/lago.md)：本机真实OSS Lago16项、隔离回归16项、全套464/464及完整build通过；不扣真实款/不请求真实AI。保留原35表中的33表全部内容，2个OAuth/安全时钟表仅正常认证变化，4附件/原私有配置相同。辅助审查的丢回执/跨账期/权益读取竞态已修复并回归，非06验收；候选推主管分支，随后更新本站并检查会员页，正式06/main集成待安排 |
 | AUTH-BILLING-DESIGN-REVIEW | 01安排的只读技术辅助审查（不是编号06、不是第二lead；不写项目文件） | done | 已只读核对固定上游Casdoor4.25/Lago1.56及当前代码，指出issuer命名空间/旧Google账户绑定、前端白名单、Lago普通手工付款Premium限制、准确签名/raw路由/防重及成功草稿事务要求，均纳入设计；不是产品验收，不替代独立06 |
 
 设计：[Casdoor与Lago实施设计](deliverables/lead/auth-billing-20261103/design.md)。本轮由01直接承担已登记集成范围；没有其他活跃写者，不代写其他员工记忆。

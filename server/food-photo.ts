@@ -135,7 +135,7 @@ export class FoodPhotoService {
     const current = this.active.get(ownerId);
     if (current) { current.cancelled = true; current.controller?.abort(); }
   }
-  async analyze(ownerId: string, asset: Asset, language: 'zh' | 'en'): Promise<FoodPhotoDraft> {
+  async analyze(ownerId: string, asset: Asset, language: 'zh' | 'en', persist?: (draft: FoodPhotoDraft, reservationId: string) => void): Promise<FoodPhotoDraft> {
     if (this.reason !== 'ready' || !this.config?.apiKey) throw new AiError(this.reason === 'invalid_config' ? 'AI_CONFIG_INVALID' : 'AI_NOT_CONFIGURED');
     if (this.active.has(ownerId)) throw new AiError('AI_RATE_LIMIT');
     const config = this.config;
@@ -167,7 +167,8 @@ export class FoodPhotoService {
           const result = await Promise.race([operation, new Promise<never>((_resolve, reject) => { timer = setTimeout(() => { controller.abort(); reject(new AiError('AI_TIMEOUT')); }, config.timeoutMs); })]);
           if (active.cancelled || !this.store.asset(ownerId, asset.id)) throw new AiError('AI_IMAGE_INVALID');
           const draft: FoodPhotoDraft = { id: randomUUID(), assetId: asset.id, provider: 'openai', model: FOOD_PHOTO_MODEL, analysisEngine: { ...FUD_AI_ANALYSIS_ENGINE }, createdAt: new Date(this.now()).toISOString(), consent: { acceptedAt: new Date(started).toISOString(), version: 'food-photo-v1', language }, ...result };
-          this.store.addAiDraft(ownerId, draft); this.store.finishAiAttempt(ownerId, reservationId, 'success');
+          if (persist) persist(draft, reservationId);
+          else { this.store.addAiDraft(ownerId, draft); this.store.finishAiAttempt(ownerId, reservationId, 'success'); }
           outcome = 'success'; return draft;
         } catch (error) {
           const failure = active.cancelled ? new AiError('AI_IMAGE_INVALID') : error instanceof AiError ? error : new AiError(controller.signal.aborted ? 'AI_TIMEOUT' : 'AI_UNAVAILABLE');

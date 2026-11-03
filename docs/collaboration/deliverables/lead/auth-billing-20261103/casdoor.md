@@ -36,7 +36,7 @@ Casdoor v4.25.0，Mailpit v1.33.0均固定官方镜像。initAdminPassword首次
 - 只重启本项目Casdoor后，使用同一实际注册账号复验6项通过，原subject保持相同。Forma验收数据库为D盘独立临时目录，不在真实健康库创建测试记录。
 - 未配置或配置错误只禁用Casdoor入口，不影响原邮箱/Google。未把旧scrypt密码导入/改写，没有按邮箱合并或迁走健康数据。
 
-完整npm build通过，无新增依赖；既有大chunk提示保留。账户中心真实浏览器显示Forma标题、完整注册/邮箱验证码表单，中英语言切换实际通过、无框架错误或相关console错误，截图D:/Forma/logs/casdoor-signup-20261103.png。Forma新入口随阶段提交启动后再核对，不把API成功当全部页面验收。
+完整npm build通过，无新增依赖；既有大chunk提示保留。账户中心真实浏览器显示Forma标题、完整注册/邮箱验证码表单，中英语言切换实际通过、无框架错误或相关console错误，截图D:/Forma/logs/casdoor-signup-20261103.png。候选41055327ae5b5698482905b8aa98a4d0d373111e已推主管分支并启动D盘：真实Forma弹窗显示统一账户主入口、Google可用/Apple待配、原邮箱密码表单可展开；点击统一入口成功跳转配置账户中心并显示实际登录/注册/找回密码控件，未输入真实凭据或完成真实账户登录。console无相关错误，截图D:/Forma/logs/forma-unified-login-20261103.png；正式06验收和共享main集成未冒称通过。
 
 辅助代码审查指出4.25源码硬编码文件会话为/tmp，最初/sessions配置被忽略；已更正绑定，实际强制重建本项目Casdoor容器后用原cookie读取原账户、同subject完成签名登录/PKCE7项全部通过。没有其他材料级认证或旧数据回归被审查指出；这不是06本人产品验收，最终独审/集成状态见TASKS。
 

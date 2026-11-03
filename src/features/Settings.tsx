@@ -14,6 +14,7 @@ import { getCapabilities, request } from "../api";
 import { Modal } from "../components/Modal";
 import HealthConnections from './HealthConnections';
 import { AccountSecurity } from '../components/AccountSecurity';
+import { Billing } from '../components/Billing';
 export default function Settings({
   state,
   lang,
@@ -152,6 +153,7 @@ export default function Settings({
           )}
         </button>
       </section>
+      <Billing key={`billing:${demo?'demo':accountId}`} lang={lang} accountId={demo?undefined:accountId} onSignIn={onCreate}/>
       {!demo && accountId && <AccountSecurity key={accountId} lang={lang} accountId={accountId} onSessionChanged={onSessionChanged} />}
       <section className="panel">
         <div className="section-heading">

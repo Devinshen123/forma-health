@@ -34,6 +34,9 @@ import { AuthService } from './auth/service';
 import { AuthError, type AuthConfig, type AuthMailer } from './auth/config';
 import { authCallbackRouter, authRouter, clearAuthBrowserCookie } from './auth/router';
 import { derivePassword as derive, checkPassword as verifyPassword } from './auth/password';
+import { BillingService } from './billing/service';
+import { BillingError, type BillingConfig } from './billing/config';
+import { billingRouter } from './billing/router';
 
 const COOKIE = "forma_session";
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -131,6 +134,9 @@ export interface AppOptions {
   authFetch?: typeof fetch;
   authNow?: () => number;
   authMailer?: AuthMailer;
+  billing?: BillingConfig;
+  billingFetch?: typeof fetch;
+  billingNow?: () => number;
   trustProxy?: number;
 }
 export function createApp(options: AppOptions) {
@@ -139,6 +145,7 @@ export function createApp(options: AppOptions) {
   const foodPhoto = new FoodPhotoService(store, options.ai, options.aiFetch, options.aiNow);
   const health = new HealthService(store, options.health, options.healthFetch, options.healthNow);
   const authentication = new AuthService(store, options.auth, options.authFetch, options.authNow, options.authMailer);
+  const billing = new BillingService(store, options.billing, options.billingFetch, options.billingNow);
   const secureCookies =
     options.secureCookies ?? process.env.NODE_ENV === "production";
   const cookieOptions = {
@@ -154,6 +161,13 @@ export function createApp(options: AppOptions) {
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("X-Frame-Options", "DENY");
     next();
+  });
+  // Only this exact signed server-to-server callback bypasses browser Origin/JSON guards.
+  app.post('/api/billing/webhooks/lago', express.raw({ type: 'application/json', limit: '256kb' }), (req, res, next) => rateLimit(req, res, next), async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.originalUrl !== '/api/billing/webhooks/lago' || !Buffer.isBuffer(req.body)) throw new BillingError('BILLING_INVALID_SIGNATURE', 401);
+    await billing.webhook(req.body, req.get('X-Lago-Signature') || '', req.get('X-Lago-Unique-Key') || '');
+    res.status(204).end();
   });
   app.use("/api", (req, res, next) => {
     res.setHeader("Cache-Control", "no-store");
@@ -253,6 +267,7 @@ export function createApp(options: AppOptions) {
     clearAuthBrowserCookie(res, secureCookies);
   };
   app.use('/api/auth', authRouter(authentication, { auth, rateLimit, secureCookies, sessionOf, issueSession, cancelHealth: owner => health.cancelAccount(owner) }));
+  app.use('/api/billing', billingRouter(billing, auth, rateLimit));
   app.get("/api/capabilities", (_req, res) =>
     res.json(foodPhoto.capabilities()),
   );
@@ -262,7 +277,7 @@ export function createApp(options: AppOptions) {
     const asset = store.asset(res.locals.account.id, assetId);
     if (!asset) return res.status(404).json({ error: 'Attachment not found' });
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(asset.mime) || asset.size > 5 * 1024 * 1024) throw new AiError('AI_IMAGE_INVALID');
-    res.status(201).json(await foodPhoto.analyze(res.locals.account.id, asset, language));
+    res.status(201).json(await billing.analyze(res.locals.account.id, asset, language, foodPhoto));
   });
   app.get("/api/auth/me", (req, res) => {
     const account = sessionOf(req)?.account;
@@ -462,6 +477,7 @@ export function createApp(options: AppOptions) {
       trainingWorkbench: store.exportWorkbench(account.id),
       companion: store.exportCompanion(account.id),
       health: health.ledger.export(account.id),
+      billing: billing.export(account.id),
     });
   });
   app.delete("/api/account", auth, rateLimit, async (req, res) => {
@@ -475,6 +491,7 @@ export function createApp(options: AppOptions) {
     foodPhoto.cancelAccount(account.id);
     authentication.cancelAccount(account.id);
     health.cancelAccount(account.id);
+    billing.scheduleDeletion(account.id);
     store.deleteAccount(account.id);
     res.clearCookie(COOKIE, cookieOptions);
     clearHealthCallbackCookies(res, secureCookies);
@@ -507,6 +524,7 @@ export function createApp(options: AppOptions) {
       }
       if (error instanceof HealthError) return res.status(error.status).json({ error: 'Health integration could not complete this request', code: error.code });
       if (error instanceof AuthError) return res.status(error.status).json({ error: error.message, code: error.code });
+      if (error instanceof BillingError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
       if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
@@ -533,5 +551,5 @@ export function createApp(options: AppOptions) {
         .json({ error: "The local server could not complete this request" });
     },
   );
-  return { app, store, health, authentication, close: () => { authentication.close(); health.close(); store.close(); } };
+  return { app, store, health, authentication, billing, close: () => { billing.close(); authentication.close(); health.close(); store.close(); } };
 }

@@ -1,0 +1,9 @@
+.billing-test-notice{padding:14px 16px;border:1px solid var(--border,#d9e4dd);border-radius:14px;background:var(--surface-alt,#f2f7f3)}
+.billing-test-notice p{margin:6px 0 0;font-size:.9rem}
+.billing-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.billing-plan{border:1px solid var(--border,#d9e4dd);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.billing-plan h3,.billing-plan p{margin:0}.billing-plan .btn{margin-top:auto}.billing-price{font-size:1.8rem}.billing-price small{font-size:.85rem;font-weight:400}
+.billing-usage{padding:16px 0;border-top:1px solid var(--border,#d9e4dd)}.billing-usage p{margin:0}
+.billing-table-wrap{overflow-x:auto}.billing-table-wrap table{width:100%;border-collapse:collapse;text-align:left}
+.billing-table-wrap th,.billing-table-wrap td{padding:12px 8px;border-bottom:1px solid var(--border,#d9e4dd);vertical-align:top}.billing-table-wrap small{display:block;font-size:.8rem;color:var(--muted,#657568)}
+@media(max-width:650px){.billing-plans{grid-template-columns:1fr}.billing-plan{padding:16px}.billing-table-wrap .btn{white-space:normal;min-width:130px}}

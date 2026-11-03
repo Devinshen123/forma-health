@@ -32,6 +32,10 @@ const photoError = (cause: unknown, zh: boolean) => {
     AI_INVALID_OUTPUT: ["识别结果未通过校验，没有保存饮食记录。请换一张照片或手动填写。", "The analysis did not pass validation. No meal was saved. Choose another photo or enter the meal manually."],
     AI_REFUSED: ["这张照片未能生成食物草稿。请换一张照片或手动填写。", "This photo could not produce a food draft. Choose another photo or continue manually."],
     AI_IMAGE_INVALID: ["照片无法读取，请选择有效的 JPEG、PNG 或 WebP 图片。", "The photo could not be read. Choose a valid JPEG, PNG or WebP image."],
+    BILLING_QUOTA_EXCEEDED: ["本周期识别次数已用完。请在设置的会员与账单中查看额度，仍可手动记录。", "This period’s photo allowance is used up. Check Membership and billing in Settings; manual logging is still available."],
+    BILLING_IN_PROGRESS: ["这张照片正在识别，请稍后重试，不会重复扣次数。", "This photo is already being analyzed. Retry shortly; it will not be counted twice."],
+    BILLING_UNAVAILABLE: ["暂时无法核对会员额度，请稍后重试或手动填写。", "Your photo allowance could not be checked. Retry later or enter the meal manually."],
+    BILLING_SERVICE_UNAVAILABLE: ["会员服务暂不可用，请稍后重试或手动填写。", "Membership is temporarily unavailable. Retry later or enter the meal manually."],
   };
   if (code && messages[code]) return messages[code][zh ? 0 : 1];
   if (cause instanceof ApiError && cause.status === 401) return zh ? "登录已失效，请重新登录；未保存这餐。" : "Your session has expired. Sign in again; this meal was not saved.";

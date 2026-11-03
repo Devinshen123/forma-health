@@ -1,6 +1,7 @@
 import type { AppState, User, Capabilities, FoodPhotoDraft, Language, SyncSnapshot, SyncMutation } from "./types";
 import type { CompanionSnapshot, CompanionItem, CompanionCharacter } from "./companion";
 import type { AccountSecurity, AuthMailResult, AuthOptions, SignInProvider } from './auth';
+import type { BillingSnapshot } from './billing';
 export interface Snapshot {
   state: AppState;
   revision: number;
@@ -54,6 +55,10 @@ function errorMessage(message: string, status: number, code?: string) {
     AI_INVALID_OUTPUT: "识别结果未通过检查，请重试或手动记录。",
     AI_REFUSED: "这张照片无法用于食物识别，请更换照片或手动记录。",
     AI_IMAGE_INVALID: "请使用有效的 JPEG、PNG 或 WebP 图片（最大 5 MB、2000 万像素）。",
+    BILLING_QUOTA_EXCEEDED: "本周期识别次数已用完，可在设置的会员与账单中查看额度；手动记录仍可使用。",
+    BILLING_IN_PROGRESS: "这张照片正在识别，请稍后重试，不会重复扣次数。",
+    BILLING_UNAVAILABLE: "会员服务暂不可用，可继续查看记录或手动填写。",
+    BILLING_SERVICE_UNAVAILABLE: "暂时无法核对会员额度，请稍后重试。",
   };
   if (code && aiMessages[code]) return aiMessages[code];
   if (/already exists/.test(message)) return "这个邮箱已有账户，请改用登录。";
@@ -172,6 +177,11 @@ export async function uploadFile(
 }
 export const assetUrl = (id: string) => `/api/assets/${encodeURIComponent(id)}`;
 export const getCapabilities = () => request<Capabilities>("/capabilities");
+export const getBillingOptions = (signal?: AbortSignal) => request<BillingSnapshot>('/billing/options', { signal });
+export const getBillingAccount = (accountId: string, signal?: AbortSignal) => request<BillingSnapshot>('/billing/account', { signal, headers: { 'X-Forma-Account': accountId } });
+export const selectBillingPlan = (accountId: string, planCode: string, signal?: AbortSignal) => request<BillingSnapshot>('/billing/subscribe', { method: 'POST', signal, headers: { 'X-Forma-Account': accountId }, body: JSON.stringify({ planCode }) });
+export const simulateBillingPayment = (accountId: string, invoiceId: string, signal?: AbortSignal) => request<BillingSnapshot>('/billing/simulate-payment', { method: 'POST', signal, headers: { 'X-Forma-Account': accountId }, body: JSON.stringify({ invoiceId }) });
+export const cancelBillingRenewal = (accountId: string, signal?: AbortSignal) => request<BillingSnapshot>('/billing/cancel-renewal', { method: 'POST', signal, headers: { 'X-Forma-Account': accountId }, body: '{}' });
 export const analyzeFoodPhoto = (
   assetId: string,
   language: Language,

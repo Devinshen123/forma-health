@@ -1,4 +1,6 @@
-## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（实施中）
+## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（候选待正式审查）
+
+Lago阶段本人新增16项回归、真实开源Lago16项均通过，全套464/464、完整build通过（现有大chunk警告）。同响应订阅权益、账期末再检查、事务预留、精确毫秒事件和丢回执GET恢复均已落实；原库33/35表完全相同，只有OAuth临时状态与安全单调时钟正常变化，4附件/原.env保持。详见[计费回执](../deliverables/lead/auth-billing-20261103/lago.md)与ADR。候选先同步主管分支，随后对齐本机发布身份/真实设置页；不将辅助审查写为06验收，不合并main或收真实款。
 
 01唯一写者，D:/Forma/source，主管分支，起点0cc595d；用户已批准Casdoor登录保留旧账户，再做开源自托管Lago测试计费，每阶段同步GitHub，不扣真实款。已登记独占路径与[实施设计](../deliverables/lead/auth-billing-20261103/design.md)，当前数据35表/4附件/.env在线私有备份并校验，Docker可用且磁盘在D；不改其他项目容器，不创建第二lead。
 

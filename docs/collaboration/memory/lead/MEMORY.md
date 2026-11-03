@@ -20,6 +20,8 @@ AUTH-INTEGRATE：Apple跨站form_post不带Strict/Lax会话，回调只产一次
 2026-10-22｜已验证（代码/夹具，真实模型未测）｜FUD-01：Fud upstream 6fa1602的照片输出为整份/ingredients营养，必须按已知克重归一化到Forma每100g契约；食材取代整餐行，不能双计。缺克重不使用上游1g默认，未知保留null。capabilities/draft的analysisEngine标Fud实现来源，provider仍OpenAI，二者不可混称。来源：server/fud-ai-food-photo.ts、reuse-log、345项完整测试及CUA合成回执；运行代码28a9936，本机3001。密钥稍后配置，后续真实照片需重新实测。
 # 01｜Codex项目主管 · MEMORY
 
+2026-11-03｜已验证（01本机隔离）｜Lago OSS1.56普通POST/payments为Premium；本轮loopback sandbox以PUT finalized invoice payment_status模拟结算。事件时间必须保留created_ms/1000，否则同秒订阅首事件可入库但漏聚合；GET原始回执不是聚合证明，丢回执重试须先GET避免重复POST422永久pending。quota须取同一subscription响应的entitlements防Free混入未付款Pro，预留与返回快照需用当前时钟复核账期。来源：ADR-auth-billing-20261103、tests/billing.test.ts16项、真实隔离Lago16项、lago.md；不代表生产支付或06审查。
+
 2026-10-21｜已验证｜Git checkout-index会应用当前机器换行转换；仅在原工作目录验证不等于克隆后可用。实际暂存导出发现Claude入口解析需兼容CRLF/LF，注册哈希资源及混合行尾原报告需.gitattributes的-text以保持原字节；新增属性后对精确路径git add --renormalize才能刷新已暂存blob。来源：GITHUB-MAC-01、scripts/verify-forma-team.cjs、.gitattributes及status；Windows导出复验通过，不冒充Mac实机。
 
 2026-10-21｜已验证（Windows本轮）｜GITHUB-MAC-01：Git索引精确暂存成功，旧Permission denied不再作为当前实测；GitHub API/CLI确认仓库当前PUBLIC，不能继续宣称私有。Mac通过实际checkout解释仓库相对路径，原C/D盘为Windows历史登记；Skills可用.forma-local/skills-paths.json本机覆盖，--portable结构检查不证明外置Skills安装。来源：本轮status、WORKSPACES、scripts/forma-skills.cjs与verify-forma-team.cjs；适用配置候选，不代表Mac已实测或06审查通过。

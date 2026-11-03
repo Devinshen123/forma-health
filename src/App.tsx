@@ -394,7 +394,7 @@ export default function App() {
         </header>
         {!demo&&sync.current&&syncStatus&&<SyncPanel key={`sync:${user?.id}:${writeBinding.epoch}`} engine={sync.current} status={syncStatus} lang={lang} expanded={page==='settings'} onReauthenticate={()=>setAuth(true)}/>}
         <Fragment key={`features:${user?.id ?? 'demo'}:${writeBinding.epoch}`}>
-        {onboarding ? (
+        {onboarding && page !== "settings" ? (
           <Onboarding
             {...props}
             accountName={user?.name}
