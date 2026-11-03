@@ -98,6 +98,25 @@ public enum Metrics {
         return daySummary(state: state, day: day)
     }
 
+    /// Mirrors the website dashboard's "weekly rhythm": the seven days ending today, oldest first,
+    /// each with its saved training minutes - nil, never zero, on a day with no workout - plus how
+    /// many workouts those days hold and on how many of them food was recorded.
+    public static func weeklyRhythm(state: JSONValue, today: Date = Date(),
+                                    timeZone: TimeZone = .current) -> WeeklyRhythm {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let days = (0..<7).compactMap { offset -> String? in
+            guard let date = calendar.date(byAdding: .day, value: offset - 6, to: today) else { return nil }
+            return try? RecordDates.day(date, timeZone: timeZone)
+        }
+        let daily = days.map { daySummary(state: state, day: $0) }
+        return WeeklyRhythm(
+            days: daily.map { WeekDay(day: $0.day, trainingMinutes: $0.trainingMinutes) },
+            workouts: daily.reduce(0) { $0 + $1.workoutRecords },
+            mealDays: daily.filter { $0.mealRecords > 0 }.count
+        )
+    }
+
     /// Uses persisted calendar dates. Days with no usable record remain absent from metric totals.
     public static func summary(state: JSONValue, days: [String]) -> RangeMetrics {
         let days = Set(days.filter(RecordDates.isDay)).sorted()
@@ -201,4 +220,16 @@ public enum Metrics {
         }
         return (seconds + end.timeIntervalSince(start)) / 3_600
     }
+}
+
+public struct WeekDay: Equatable, Sendable {
+    public let day: String
+    /// Saved minutes, or nil when nothing was recorded that day - an empty day is not a zero.
+    public let trainingMinutes: Double?
+}
+
+public struct WeeklyRhythm: Equatable, Sendable {
+    public let days: [WeekDay]
+    public let workouts: Int
+    public let mealDays: Int
 }

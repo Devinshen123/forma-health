@@ -42,6 +42,11 @@ final class FormaUITests: XCTestCase {
         assertMetric("today.nutrition.kcal", equals: 500)
         assertMetric("today.training.minutes", equals: 30)
         assertMetric("today.sleep.hours", equals: 8)
+        // The weekly rhythm counts the demo's one workout and its one day of food this week.
+        let workouts = element("today.week.workouts")
+        XCTAssertTrue(workouts.waitForExistence(timeout: 5), "Today must show the weekly rhythm")
+        XCTAssertTrue(workouts.label.hasPrefix("1"), "One demo workout this week: \(workouts.label)")
+        XCTAssertTrue(element("today.week.mealDays").label.hasPrefix("1"))
 
         selectTab("nutrition", chinese: "饮食", english: "Nutrition")
         assertMetric("nutrition.total.kcal", equals: 500)
