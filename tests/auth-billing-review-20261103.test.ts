@@ -93,3 +93,24 @@ for (const pausedAt of ['customer read', 'customer creation'] as const) test(`QA
   assert.equal(remoteSubscription, false, 'a deleted account must not retain an external subscription');
   assert.equal(store.db.prepare('SELECT COUNT(*) n FROM billing_memberships').get()?.n, 0);
 });
+
+test('QA privacy: deleting while billing is disabled keeps cleanup intent for re-enable and restart', async t => {
+  const { store, owner } = fixture(t);
+  const neverNetwork: typeof fetch = async () => { throw new Error('Disabled billing must stay offline'); };
+  const disabled = new BillingService(store, {}, neverNetwork, () => now);
+  disabled.scheduleDeletion(owner);
+  store.deleteAccount(owner);
+  await disabled.flush();
+  disabled.close();
+  let deletes = 0;
+  const enabled = new BillingService(store, config, async (input, init) => {
+    assert.equal(init?.method, 'DELETE');
+    assert.equal(new URL(String(input)).pathname, '/api/v1/customers/' + owner);
+    deletes++;
+    return new Response(null, { status: 204 });
+  }, () => now);
+  t.after(() => enabled.close());
+  await enabled.flush();
+  assert.equal(deletes, 1, 'temporarily disabling billing must not discard cleanup for an existing external customer');
+  assert.equal(store.db.prepare('SELECT COUNT(*) n FROM billing_deletions').get()?.n, 0);
+});
