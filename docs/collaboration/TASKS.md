@@ -1,5 +1,7 @@
 # 2026-11-03 Casdoor与开源Lago接入（最新）
 
+本轮后续：用户明确授权“安排独立审查、修好问题、通过后合并main并同步GitHub，先不开真实收费”。既有01继续唯一lead及产品修复写者，专项06由新的独立审查子会话承担，工具Codex（身份定义中Claude Code为建议，工具变化不改变职责）；不复用上一轮辅助审查者，不冒称02已接单。已核当前团队无活动06，原06记忆仍是未接手配置；只写新专项交付，不接管其旧目录/记忆。正式报告须绑定候选与复验SHA，由本人实测，不以01旧464项报告代替。
+
 用户批准依次实施Casdoor登录/保留既有账户与数据、开源自托管Lago测试计费；完成的阶段正常提交并同步GitHub。本机独立服务/配置/备份/工程输出统一D盘，不启用真实扣款、公网部署或付费云服务，不开展旧日期/报告任务，不创建第二lead。
 
 | ID | owner / 独占范围 | 状态 | 验收 |
@@ -7,6 +9,8 @@
 | CASDOOR-01 | 既有01 lead：server/auth/、src/auth.ts、auth-navigation.ts及登录/账户页面增量、.env.example/必要客户端衔接、auth测试、独立本机Casdoor服务配置/脚本、本人文档/ADR；既有业务/数据不重写 | review | [阶段证据](deliverables/lead/auth-billing-20261103/casdoor.md)：认证62＋导航1、全套448/448、类型/完整build通过；真实本机注册/邮件码/签名登录7项，重启及重建容器后的原cookie/subject/PKCE7项通过，健康库不作测试目标。账户中心中英表单真实渲染/切换、console无相关错误；辅助审查的/tmp会话绑定已修并实测，非06产品验收。候选先推主管分支，Forma入口启动后复核，正式独审待安排 |
 | LAGO-OSS-01 | 既有01 lead：server/billing/、src/billing.ts、会员/账单页面与必要api/App衔接、Fud用量钩子/错误提示、独立开源Lago服务及脚本、测试、配置示例/运行说明、必要导出/删除衔接；数据库仅新增计费表 | review | [阶段回执](deliverables/lead/auth-billing-20261103/lago.md)：本机真实OSS Lago16项、隔离回归16项、全套464/464及完整build通过；不扣真实款/不请求真实AI。保留原35表中的33表全部内容，2个OAuth/安全时钟表仅正常认证变化，4附件/原私有配置相同。辅助审查的丢回执/跨账期/权益读取竞态已修复并回归，非06验收；候选推主管分支，随后更新本站并检查会员页，正式06/main集成待安排 |
 | AUTH-BILLING-DESIGN-REVIEW | 01安排的只读技术辅助审查（不是编号06、不是第二lead；不写项目文件） | done | 已只读核对固定上游Casdoor4.25/Lago1.56及当前代码，指出issuer命名空间/旧Google账户绑定、前端白名单、Lago普通手工付款Premium限制、准确签名/raw路由/防重及成功草稿事务要求，均纳入设计；不是产品验收，不替代独立06 |
+| AUTH-BILLING-REVIEW-06 | 专项06 qa独立子会话，D:/Forma/worktrees/qa-auth-billing-20261103，codex/qa-auth-billing-20261103；仅该checkout的tests/auth-billing-review-20261103.test.ts、docs/collaboration/deliverables/qa/auth-billing-review-20261103.md与D盘专属合成临时产物，其他源码/主目录/私有配置数据只读或不访问 | doing | 独立检查main76dcbe2至a72d72d中Casdoor4105532及Lago f41b4cd；初始候选以本次派工提交绑定，实际自行运行认证/计费/全套回归、代码/安全与明确未验证。问题给01修；复验修复SHA后无未解决的合并阻塞才给本地测试范围通过。不能读取真实.env/服务state/健康库或调用真实AI/支付；不修改产品源码、不自行push/main合并 |
+| AUTH-BILLING-FIX-INTEGRATE-01 | 既有01，D:/Forma/source现主管分支；限定Casdoor/Lago发现的产品/测试/脚本修复、共享契约/本任务板/本人交接及Git同步/最终main与本机版本绑定 | doing | 修复专项06可复现问题并提交push，专项06复验固定SHA通过后正常集成main并核远端；保留原账户/数据与D备份，测试收费仍loopback sandbox，不接真实商户/扣款 |
 
 设计：[Casdoor与Lago实施设计](deliverables/lead/auth-billing-20261103/design.md)。本轮由01直接承担已登记集成范围；没有其他活跃写者，不代写其他员工记忆。
 
