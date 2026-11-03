@@ -67,7 +67,11 @@ final class FormaUITests: XCTestCase {
         // Matched by identifier alone: a whole-card button is not exposed as a Button on every iOS.
         let meal = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier BEGINSWITH 'nutrition.meal.'")).firstMatch
-        reveal(meal, attempts: 24)
+        // Not `reveal`: with one demo meal the page is barely taller than the screen, and on iOS 18
+        // the card's lower edge rests under the tab bar at every scroll position - CI swept 24
+        // times and the page bounced back each time. A person taps the part they can see.
+        XCTAssertTrue(meal.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntilHittable(meal), "The saved meal must be tappable where it shows")
         meal.tap()
         let name = app.textFields.matching(identifier: "record.name").firstMatch
         XCTAssertTrue(name.waitForExistence(timeout: 5))
