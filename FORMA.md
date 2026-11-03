@@ -1,6 +1,6 @@
 # FORMA — 唯一共享项目手册
 
-更新：2026-11-02；当前Windows主源码与运行目录统一为 `D:\Forma\source`。用户最新明确要求迁移D盘，覆盖此前保留C盘/取消迁移的历史决定。旧C盘目录保留回退，不作为当前写入/运行目录。其他项目规则不适用。
+更新：2026-11-03；当前Windows主源码与运行目录统一为 `D:\Forma\source`。用户明确要求先验证D盘再清理C盘旧副本：15个旧目录已完成私有备份、逐文件校验和清理，旧主目录/旧主管入口各仅留AGENTS跳转说明。历史回退保存在D:/Forma/backups/c-cleanup-20261103，migration-20261102也保留；覆盖此前保留C盘/取消迁移的历史决定。其他项目规则不适用。
 
 2026-11-02迁移范围：既有01继续唯一lead，主源码、依赖、构建、数据库/附件和私有.env统一在D盘；本项目后续文件/下载默认D:/Forma，精确位置见根AGENTS与WORKSPACES。本轮允许必要复制/私有备份、路径配置、构建/校验、仅本站服务切换及正常Git同步；不实现支付、日期或报告业务功能，不新建员工/代登录或部署公网。
 
@@ -84,7 +84,7 @@
 
 ## 4. 目录与唯一所有权
 
-- Windows主源码/运行目录为 `D:/Forma/source`。旧C仓库/worktree保留历史和回退，旧未提交改动私有备份后不盲目覆盖最新源码；新worktree仍须核对写入者并登记，默认建于 `D:/Forma/worktrees`。
+- Windows主源码/运行目录为 `D:/Forma/source`。旧C仓库/worktree已清理，历史与未提交改动在D盘私有归档保留，不盲目覆盖最新源码；新worktree仍须核对写入者并登记，默认建于 `D:/Forma/worktrees`。清理详情见[回执](docs/collaboration/deliverables/lead/c-drive-cleanup-20261103.md)。
 - 本机临时验证/导出/截图使用D盘源码下`.forma-local/runtime/`、`.forma-local/deliverables/`；下载默认`D:/Forma/downloads`、缓存/临时`D:/Forma/cache`、日志`D:/Forma/logs`、私有备份`D:/Forma/backups`。数据只在`D:/Forma/source/data`，私有配置只在`D:/Forma/source/.env`，不得上传Git。
 - 员工MD、记忆、状态、任务与决定统一在`docs/collaboration/`。工具软件与内部缓存不迁移。
 - 技能优先复用D盘既有共享库；本项目原本机技能已复制到D盘，agent-development使用`D:/Forma/skills/agent-development`。不迁移其他项目或全局工具，路径/来源/已知缺失见SKILLS-MATRIX与registry。

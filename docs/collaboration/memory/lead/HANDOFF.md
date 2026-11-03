@@ -1,3 +1,13 @@
+## 2026-11-03 FORMA-C-CLEANUP-20261103（完成）
+
+01 / lead唯一写者，D:/Forma/source，codex/fud-food-photo-20261022，起点0ebb56f7e900e1c8fd677f723c970701e73d3ba3。用户明确授权先核验D再清理旧C，旧保留C要求仅作历史。D网站绝对入口/.env/数据均在D，未动业务或其他员工/项目。
+
+D:/Forma/backups/c-cleanup-20261103保存本次当前数据在线快照、4附件、私有配置，以及15个C旧目录206,151文件/9,880,354,801字节完整备份；逐文件SHA相同，删除前再次全量源hash通过。13个旧Git工作区HEAD/dirty状态一致、fsck通过，原始Git管理资料/D历史工作区另备份后repair，D:/CodexTaskData/claude-forma-docs-20261019的common Git现在是D盘legacy-main/.git；3个旧依赖链接已改D。此前migration-20261102不动。所有实际删除目标先精确绝对路径及reparse验证，其他项目/系统软件未删除、没有结束编辑器。
+
+C盘15目标已清理；旧C主目录及旧主管worktree各只留678字节AGENTS跳转说明，另13目录不存在，没有C→D链接。清理后D数据库quick_check/FK通过、35张表逻辑内容与新快照逐表相同、.env相同，首页/视频200、匿名state401、私有URL仅公开壳；11,328媒体SHA通过。当前D Git连接性检查退出0。实际命令由本人执行，未查询/输出健康内容或密钥，不冒称独审或Mac验收。少量初次诊断/临时Shell解析失败已修正，详见[回执](../../deliverables/lead/c-drive-cleanup-20261103.md)。
+
+清理后Windows配置15/15通过，保留既有agent-development缺脚本警告；本次10文档88个相对链接均存在，凭据格式扫描与diff检查通过。本次只更新当前根MD、WORKSPACES、TASKS、本人MEMORY/HANDOFF/status和专属回执，按长期规则精确提交/正常推送main和主管分支；交付前核对远端/运行提交并更新本机发布标识。最终SHA以所属提交和远端为准。私有目录/清单/.env/数据不能进Git；无业务改动不重复全套产品测试。Codex现有C项目/附件不会因此自动绑定D，用户界面应选择D:/Forma/source；不要在旧入口重新安装或克隆。恢复旧记录前先备份当前D新记录，另选D位置、按私有清单恢复，不覆盖现用数据。
+
 ## 2026-11-02 FORMA-MOVE-D-20261102（完成）
 
 唯一01 lead本人已从旧C主管worktree切到D:/Forma/source，分支codex/fud-food-photo-20261022，迁移起点05958dd5263a3bc9545594301cb94c783f7dcad7。用户明确迁移覆盖旧留C限定；C原件/分支保留回退，只给两个旧AGENTS加D指针，不创建第二lead。新Git独立，无C objects alternates。

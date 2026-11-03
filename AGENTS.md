@@ -1,13 +1,13 @@
 # Forma
 
-## Windows目录与下载默认位置（2026-11-02最新用户要求）
+## Windows目录与下载默认位置（2026-11-03最新状态）
 
 - 本项目主源码和实际运行目录统一为 `D:\Forma\source`。先在此目录读取[FORMA.md](FORMA.md)、唯一TASKS及本人入口/记忆；沿用既有01 lead，不创建第二名主管。
 - 本项目后续新建、克隆、下载、解压、构建、导出、截图、日志和临时文件默认写入D盘：下载 `D:\Forma\downloads`，缓存/临时 `D:\Forma\cache`，日志 `D:\Forma\logs`，私有备份 `D:\Forma\backups`，后续独立工作区 `D:\Forma\worktrees`。
 - 数据库/附件使用 `D:\Forma\source\data`，私有服务配置使用 `D:\Forma\source\.env`；二者不得提交GitHub。项目内的 `.forma-local`、node_modules及dist也必须位于D盘源码目录下。
 - 每次执行工程命令显式使用D盘工作目录；不再把C盘旧目录、桌面、Downloads或系统临时目录作为本项目的新产物默认位置。已安装软件本体和其他项目不随本规则迁移。
 - Windows构建/测试/下载前，在当前进程把 `TEMP`、`TMP` 设为 `D:\Forma\cache\tmp`，把 `npm_config_cache` 设为 `D:\Forma\cache\npm`；不改系统全局环境。工具无法选择落盘路径时，完成后转存D盘并核对实际位置，不把应用自身缓存冒称项目产物已迁移。
-- C盘原仓库及旧worktree仅作为历史/回退副本，禁止据其旧MD继续派工或恢复为主目录；旧未审改动按备份保留，不覆盖新源码。迁移历史见[WORKSPACES](docs/collaboration/WORKSPACES.md)。
+- C盘Forma旧源码/运行/测试副本已在完整校验备份后清理，旧主目录及旧主管入口各只留AGENTS跳转说明，不是可用Git仓库。历史代码、未提交改动、私有数据/配置保存在 `D:\Forma\backups\c-cleanup-20261103`，此前 `migration-20261102` 备份也保留。禁止据备份旧MD继续派工或覆盖新源码；当前规则以D盘本入口为准。迁移与清理历史见[WORKSPACES](docs/collaboration/WORKSPACES.md)。
 - Mac使用其实际checkout和本机存储位置，不要求创建Windows的D盘；同一角色仍只有一个写入者。
 
 2026-10-22：用户明确撤销此前所有 AGENTS.md 项目指令。本文件不再保留旧的角色权限、任务冻结或审批规则。项目技术说明与运行方式见 README.md。
