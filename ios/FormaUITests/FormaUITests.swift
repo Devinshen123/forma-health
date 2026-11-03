@@ -62,6 +62,23 @@ final class FormaUITests: XCTestCase {
         button("nutrition.photo.cancel").tap()
         XCTAssertTrue(element("screen.nutrition").waitForExistence(timeout: 5))
 
+        // A saved meal opens for correction with its own values, as on the website. The demo can
+        // look and change the fields but neither save nor delete: it has no account to change.
+        let meal = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'nutrition.meal.'")).firstMatch
+        reveal(meal, attempts: 24)
+        meal.tap()
+        let name = app.textFields.matching(identifier: "record.name").firstMatch
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertFalse((name.value as? String ?? "").isEmpty, "The meal opens with its own name, not a blank form")
+        let delete = button("record.delete")
+        reveal(delete, attempts: 24)
+        XCTAssertFalse(delete.isEnabled, "The demo must not offer to delete a record")
+        attachScreenshot("Meal opened for correction")
+        let close = button("record.cancel")
+        XCTAssertTrue(waitUntilHittable(close))
+        close.tap()
+        XCTAssertTrue(element("screen.nutrition").waitForExistence(timeout: 5))
+
         selectTab("training", chinese: "训练", english: "Training")
         assertMetric("training.summary.minutes", equals: 30)
         XCTAssertEqual(metricText("training.summary.sets"), "—")
@@ -222,16 +239,8 @@ final class FormaUITests: XCTestCase {
         card.tap()
         assertScreen("companion")
 
-        // The gallery searches the catalog and pages through it, as the website does.
-        let search = element("companion.catalog.search")
-        reveal(search, attempts: 24)
-        search.tap()
-        search.typeText("025")
-        XCTAssertTrue(element("companion.character.pokemon-25").waitForExistence(timeout: 5),
-                      "A dex number must find its companion")
-        XCTAssertTrue(element("companion.catalog.count").label.contains("1"))
-        attachScreenshot("Companion catalog searched")
-
+        // Controls are visited top to bottom so the page only ever scrolls down: going back up a
+        // long page, with the keyboard still open from the search, is what failed on CI.
         // The island is the website's 3D scene in a web view, so the demo - which has no
         // service at all - must say it needs an account instead of opening an empty one.
         let island = element("companion.island.open")
@@ -241,6 +250,18 @@ final class FormaUITests: XCTestCase {
                       "A demo island must say it needs an account")
         XCTAssertEqual(app.webViews.count, 0, "The demo must not open a web view at all")
         attachScreenshot("Companion island demo gate")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        assertScreen("companion")
+
+        // The gallery searches the catalog and pages through it, as the website does.
+        let search = element("companion.catalog.search")
+        reveal(search, attempts: 24)
+        search.tap()
+        search.typeText("025")
+        XCTAssertTrue(element("companion.character.pokemon-25").waitForExistence(timeout: 5),
+                      "A dex number must find its companion")
+        XCTAssertTrue(element("companion.catalog.count").label.contains("1"))
+        attachScreenshot("Companion catalog searched")
     }
 
     func testPlanPageIsNativeAndADemoPlanCannotBeSaved() throws {

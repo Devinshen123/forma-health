@@ -26,6 +26,14 @@ enum FeatureFormat {
         return formatter.string(from: NSNumber(value: value)) ?? "—"
     }
 
+    /// A saved value put back into a field to be corrected: exact, with no grouping separators
+    /// and no decimal tail on a whole number, so it reads back through `input` unchanged.
+    static func editable(_ value: Double) -> String {
+        guard value.isFinite else { return "" }
+        if value == value.rounded(), abs(value) < 1e15 { return String(Int64(value)) }
+        return String(value)
+    }
+
     static func input(_ value: String) -> Double? {
         let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ".")
         guard let result = Double(normalized), result.isFinite else { return nil }

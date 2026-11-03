@@ -79,6 +79,17 @@ public enum NativeRecords {
         return .object(fields)
     }
 
+    /// An edit keeps what identifies a record and where it came from - its id, when it was first
+    /// recorded, how it was made and, for a reviewed photo estimate, the photo, draft and item
+    /// behind it - and takes every value the person can change from the fresh entry.
+    public static func revised(_ original: JSONValue, with fresh: JSONValue) -> JSONValue {
+        guard var result = fresh.objectValue, let kept = original.objectValue else { return fresh }
+        for key in ["id", "createdAt", "source", "assetId", "aiDraftId", "aiItemIndex"] {
+            if let value = kept[key] { result[key] = value } else { result.removeValue(forKey: key) }
+        }
+        return .object(result)
+    }
+
     public static func sleep(
         start: Date, end: Date, quality: Int, energy: Int, timezone: String
     ) throws -> JSONValue {

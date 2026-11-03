@@ -5,6 +5,7 @@ import FormaCore
 struct SleepView: View {
     let store: AppStore
     @State private var showingEditor = false
+    @State private var editing: FeatureRecord?
 
     private var summary: DayMetrics { Metrics.dailySummary(state: store.state, date: Date()) }
     private var sleeps: [FeatureRecord] { FeatureFormat.rows(FeatureFormat.latest(store.records("sleeps"))) }
@@ -22,13 +23,18 @@ struct SleepView: View {
                 if sleeps.isEmpty {
                     FeatureEmpty(title: store.text("还没有睡眠记录", "No sleep records yet"), message: store.text("手动记录真实入睡和醒来时间，再选择当时的感受与精力。", "Record actual sleep and wake-up times, then choose your sleep quality and energy."), symbol: "moon")
                 }
-                ForEach(sleeps) { row in SleepHistoryCard(record: row.value, store: store) }
+                ForEach(sleeps) { row in
+                    Button { editing = row } label: { SleepHistoryCard(record: row.value, store: store) }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("sleep.record.\(row.value["id"].stringValue ?? "")")
+                }
             }.padding(20)
         }
         .background(FeatureTheme.background)
         .navigationTitle(store.text("睡眠", "Sleep"))
         .refreshable { await store.refresh() }
         .sheet(isPresented: $showingEditor) { SleepEditor(store: store) }
+        .sheet(item: $editing) { row in SleepEditor(store: store, existing: row.value) }
         .accessibilityIdentifier("screen.sleep")
     }
 }
@@ -96,13 +102,20 @@ private struct SleepEditor: View {
     @State private var saving = false
     @State private var cachedRecord: JSONValue?
     @State private var message: String?
+    @State private var confirmDelete = false
+    /// The saved sleep being corrected, or nil for a new one.
+    private let existing: JSONValue?
 
-    init(store: AppStore) {
+    init(store: AppStore, existing: JSONValue? = nil) {
         self.store = store
+        self.existing = existing
         let now = Date()
         _boundAccount = State(initialValue: store.user?.id)
-        _start = State(initialValue: now)
-        _end = State(initialValue: now)
+        _start = State(initialValue: FeatureFormat.instant(existing?["start"].stringValue) ?? now)
+        _end = State(initialValue: FeatureFormat.instant(existing?["end"].stringValue) ?? now)
+        _quality = State(initialValue: existing?["quality"].intValue)
+        _energy = State(initialValue: existing?["energy"].intValue)
+        _timezone = State(initialValue: existing?["timezone"].stringValue ?? TimeZone.current.identifier)
     }
 
     private var canSave: Bool {
@@ -127,10 +140,25 @@ private struct SleepEditor: View {
                     Text(store.text("这是你自行填写的感受，不是健康评分或诊断。", "These are your own observations, not a health score or diagnosis."))
                         .font(.footnote).foregroundStyle(FeatureTheme.muted)
                 }.disabled(saving || cachedRecord != nil)
+                if existing != nil {
+                    Section {
+                        Button(store.text("删除这段睡眠", "Delete this sleep"), role: .destructive) { confirmDelete = true }
+                            .disabled(saving || store.isDemo)
+                            .accessibilityIdentifier("record.delete")
+                    } footer: {
+                        Text(store.text("删除后，这段睡眠不再计入休息与趋势。", "Once deleted, this sleep no longer counts toward rest or trends."))
+                    }
+                }
                 if let message { Section { Text(message).foregroundStyle(.red).accessibilityIdentifier("record.error") } }
             }
             .scrollContentBackground(.hidden).background(FeatureTheme.background)
-            .navigationTitle(store.text("记录睡眠", "Record sleep"))
+            .navigationTitle(existing == nil ? store.text("记录睡眠", "Record sleep") : store.text("编辑这段睡眠", "Edit this sleep"))
+            .confirmationDialog(store.text("删除这段睡眠？", "Delete this sleep?"), isPresented: $confirmDelete, titleVisibility: .visible) {
+                Button(store.text("删除记录", "Delete record"), role: .destructive) { Task { await delete() } }
+                Button(store.text("取消", "Cancel"), role: .cancel) {}
+            } message: {
+                Text(store.text("删除后，这段睡眠不再计入休息与趋势。", "Once deleted, this sleep no longer counts toward rest or trends."))
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { RecordToolbar(store: store, canSave: canSave, saving: saving, retry: cachedRecord != nil, save: beginSave, cancel: { dismiss() }) }
         }
@@ -147,6 +175,18 @@ private struct SleepEditor: View {
 
     private func beginSave() { Task { await save() } }
 
+    private func delete() async {
+        guard let id = existing?["id"].stringValue, !saving else { return }
+        saving = true; message = nil
+        defer { saving = false }
+        do {
+            try await store.deleteRecord(collection: "sleeps", id: id)
+            if boundAccount == store.user?.id { dismiss() }
+        } catch {
+            message = store.error ?? store.message(error)
+        }
+    }
+
     private func save() async {
         guard canSave, !saving else { return }
         saving = true; message = nil
@@ -156,7 +196,8 @@ private struct SleepEditor: View {
             if let cachedRecord { record = cachedRecord }
             else {
                 guard let quality, let energy else { return }
-                record = try NativeRecords.sleep(start: start, end: end, quality: quality, energy: energy, timezone: timezone)
+                let fresh = try NativeRecords.sleep(start: start, end: end, quality: quality, energy: energy, timezone: timezone)
+                record = existing.map { NativeRecords.revised($0, with: fresh) } ?? fresh
                 cachedRecord = record
             }
             try await store.saveRecord(collection: "sleeps", value: record)

@@ -101,8 +101,12 @@ public enum ReportState {
 
     /// Whether any record still points at this attachment. The service refuses to delete one that
     /// is referenced, so the reference is removed first.
+    /// Mirrors the service's `referencedAssets`: meals and reports both point at originals, and
+    /// one photo can stand behind several reviewed meals. Asking only the reports would call a
+    /// photo unused while a meal still shows it, and the service would refuse the delete.
     public static func attachmentIsReferenced(_ state: JSONValue, assetId: String) -> Bool {
-        reports(state).contains { $0.assetId == assetId }
+        let records = (state["meals"].arrayValue ?? []) + (state["reports"].arrayValue ?? [])
+        return records.contains { $0["assetId"].stringValue == assetId }
     }
 }
 

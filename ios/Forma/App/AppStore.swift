@@ -173,6 +173,49 @@ final class AppStore {
         }
     }
 
+    /// Deletes one meal or sleep, as the website does. The change carries the version this device
+    /// last saw, so a record edited elsewhere in the meantime comes back as a conflict to review
+    /// rather than being deleted unseen. It shares the save slot, so a retry repeats this exact
+    /// mutation and an unconfirmed save blocks a delete until it is settled, and vice versa.
+    func deleteRecord(collection: String, id: String) async throws {
+        guard !isDemo, let api, let user, !isBusy, ["meals", "sleeps"].contains(collection) else {
+            throw NativeAPIError.invalidSession
+        }
+        let key = "\(collection):\(id)"
+        guard let original = records(collection).first(where: { $0["id"].stringValue == id }) else {
+            // Already gone: a confirmed retry, or deleted elsewhere. Either way there is nothing to undo.
+            if pending?.key == key { pending = nil }
+            return
+        }
+        if let pending, pending.key != key || pending.value != .null {
+            throw NativeAPIError.http(409, "PENDING_SAVE", nil)
+        }
+        isBusy = true; defer { isBusy = false }
+        let ticket = generation
+        let mutation = pending?.mutation ?? .object([
+            "mutationId": .string(UUID().uuidString.lowercased()),
+            "changes": .array([.object(["collection": .string(collection), "id": .string(id),
+                                       "baseVersion": .number(Double(versions[key] ?? 0)), "kind": .string("delete")])])
+        ])
+        pending = (key, .null, mutation)
+        do {
+            let data = try await api.send("/api/sync", method: "POST", body: mutation, account: user.id)
+            let snapshot = try JSONDecoder().decode(SyncSnapshot.self, from: data)
+            guard ticket == generation else { throw NativeAPIError.staleSession }
+            state = snapshot.state; versions = snapshot.entityVersions; pending = nil; self.error = nil
+        } catch {
+            guard ticket == generation else { throw NativeAPIError.staleSession }
+            if case let NativeAPIError.http(status, _, _) = error, (400..<500).contains(status), status != 401 { pending = nil }
+            handleSessionFailure(error)
+            throw error
+        }
+        // A photo no other meal or report still shows has no reason to stay on the service.
+        if let assetId = original["assetId"].stringValue,
+           !ReportState.attachmentIsReferenced(state, assetId: assetId) {
+            await deleteOrphanAttachment(assetId)
+        }
+    }
+
     func logout() async {
         let client = api; let account = user?.id
         // Lock the UI and invalidate delayed responses before waiting for the server.

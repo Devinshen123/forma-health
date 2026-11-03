@@ -6,6 +6,7 @@ struct NutritionView: View {
     let store: AppStore
     @State private var showingEditor = false
     @State private var showingPhoto = false
+    @State private var editing: FeatureRecord?
 
     private var summary: DayMetrics { Metrics.dailySummary(state: store.state, date: Date()) }
     private var meals: [FeatureRecord] { FeatureFormat.rows(FeatureFormat.latest(store.records("meals"))) }
@@ -30,7 +31,11 @@ struct NutritionView: View {
                 if meals.isEmpty {
                     FeatureEmpty(title: store.text("还没有饮食记录", "No food records yet"), message: store.text("手动填写食物、份量和每100克营养，核对后再保存。", "Enter the food, portion and nutrition per 100 g, then review before saving."), symbol: "fork.knife")
                 }
-                ForEach(meals) { row in MealHistoryCard(record: row.value, language: store.language) }
+                ForEach(meals) { row in
+                    Button { editing = row } label: { MealHistoryCard(record: row.value, language: store.language) }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("nutrition.meal.\(row.value["id"].stringValue ?? "")")
+                }
             }.padding(20)
         }
         .background(FeatureTheme.background)
@@ -38,6 +43,7 @@ struct NutritionView: View {
         .refreshable { await store.refresh() }
         .sheet(isPresented: $showingEditor) { MealEditor(store: store) }
         .sheet(isPresented: $showingPhoto) { FoodPhotoFlow(store: store) }
+        .sheet(item: $editing) { row in MealEditor(store: store, existing: row.value) }
         .accessibilityIdentifier("screen.nutrition")
     }
 }
@@ -74,10 +80,24 @@ private struct MealEditor: View {
     @State private var saving = false
     @State private var message: String?
     @State private var cachedRecord: JSONValue?
+    @State private var confirmDelete = false
+    /// The saved meal being corrected, or nil for a new one.
+    private let existing: JSONValue?
 
-    init(store: AppStore) {
+    init(store: AppStore, existing: JSONValue? = nil) {
         self.store = store
+        self.existing = existing
         _boundAccount = State(initialValue: store.user?.id)
+        guard let existing else { return }
+        _name = State(initialValue: existing["name"].stringValue ?? "")
+        _date = State(initialValue: existing["date"].stringValue.flatMap { try? NativeReports.day($0) } ?? Date())
+        _type = State(initialValue: existing["type"].stringValue ?? "lunch")
+        func text(_ key: String) -> String { existing[key].doubleValue.map { FeatureFormat.editable($0) } ?? "" }
+        _grams = State(initialValue: text("grams"))
+        _kcal = State(initialValue: text("kcal"))
+        _protein = State(initialValue: text("protein"))
+        _carbs = State(initialValue: text("carbs"))
+        _fat = State(initialValue: text("fat"))
     }
 
     private var canSave: Bool {
@@ -117,10 +137,25 @@ private struct MealEditor: View {
                     Text(store.text("按实际份量换算；营养未知时请先核对，明确为0才填写0。", "Values are scaled to the portion. Check unknown nutrients first; enter 0 only when it is known."))
                         .font(.footnote).foregroundStyle(FeatureTheme.muted)
                 }
+                if existing != nil {
+                    Section {
+                        Button(store.text("删除这一餐", "Delete this meal"), role: .destructive) { confirmDelete = true }
+                            .disabled(saving || store.isDemo)
+                            .accessibilityIdentifier("record.delete")
+                    } footer: {
+                        Text(store.text("删除后，这餐不再计入摄入与趋势。", "Once deleted, this meal no longer counts toward intake or trends."))
+                    }
+                }
                 if let message { Section { Text(message).foregroundStyle(.red).accessibilityIdentifier("record.error") } }
             }
             .scrollContentBackground(.hidden).background(FeatureTheme.background)
-            .navigationTitle(store.text("记录饮食", "Record food"))
+            .navigationTitle(existing == nil ? store.text("记录饮食", "Record food") : store.text("编辑这一餐", "Edit this meal"))
+            .confirmationDialog(store.text("删除这一餐？", "Delete this meal?"), isPresented: $confirmDelete, titleVisibility: .visible) {
+                Button(store.text("删除记录", "Delete record"), role: .destructive) { Task { await delete() } }
+                Button(store.text("取消", "Cancel"), role: .cancel) {}
+            } message: {
+                Text(store.text("删除后，这餐不再计入摄入与趋势。", "Once deleted, this meal no longer counts toward intake or trends."))
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { RecordToolbar(store: store, canSave: canSave, saving: saving, retry: cachedRecord != nil, save: beginSave, cancel: { dismiss() }) }
         }
@@ -129,6 +164,18 @@ private struct MealEditor: View {
     }
 
     private func beginSave() { Task { await save() } }
+
+    private func delete() async {
+        guard let id = existing?["id"].stringValue, !saving else { return }
+        saving = true; message = nil
+        defer { saving = false }
+        do {
+            try await store.deleteRecord(collection: "meals", id: id)
+            if boundAccount == store.user?.id { dismiss() }
+        } catch {
+            message = store.error ?? store.message(error)
+        }
+    }
 
     private func save() async {
         guard canSave, !saving else { return }
@@ -139,7 +186,8 @@ private struct MealEditor: View {
             if let cachedRecord { record = cachedRecord }
             else {
                 guard let g = FeatureFormat.input(grams), let k = FeatureFormat.input(kcal), let p = FeatureFormat.input(protein), let c = FeatureFormat.input(carbs), let f = FeatureFormat.input(fat) else { return }
-                record = try NativeRecords.meal(name: name, date: date, grams: g, kcal: k, protein: p, carbs: c, fat: f, type: type)
+                let fresh = try NativeRecords.meal(name: name, date: date, grams: g, kcal: k, protein: p, carbs: c, fat: f, type: type)
+                record = existing.map { NativeRecords.revised($0, with: fresh) } ?? fresh
                 cachedRecord = record
             }
             try await store.saveRecord(collection: "meals", value: record)
