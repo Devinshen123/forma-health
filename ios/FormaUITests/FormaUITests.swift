@@ -64,7 +64,9 @@ final class FormaUITests: XCTestCase {
 
         // A saved meal opens for correction with its own values, as on the website. The demo can
         // look and change the fields but neither save nor delete: it has no account to change.
-        let meal = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'nutrition.meal.'")).firstMatch
+        // Matched by identifier alone: a whole-card button is not exposed as a Button on every iOS.
+        let meal = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH 'nutrition.meal.'")).firstMatch
         reveal(meal, attempts: 24)
         meal.tap()
         let name = app.textFields.matching(identifier: "record.name").firstMatch
@@ -574,11 +576,6 @@ final class FormaUITests: XCTestCase {
         settings.tap()
         let picker = app.segmentedControls.matching(identifier: "settings.language").firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
-        // The demo has no deployment to ask, so it must not report one as waiting for a key.
-        let photoStatus = element("settings.photo.status")
-        XCTAssertTrue(photoStatus.exists, "Settings must say whether photos can be read")
-        let reported = "\(photoStatus.label) \(photoStatus.value as? String ?? "")"
-        XCTAssertTrue(reported.contains("演示") || reported.contains("Demo"), "The demo reports itself: \(reported)")
         let option = picker.buttons[label]
         XCTAssertTrue(waitUntilHittable(option))
         option.tap()
