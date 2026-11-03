@@ -10,7 +10,7 @@
 | LAGO-OSS-01 | 既有01 lead：server/billing/、src/billing.ts、会员/账单页面与必要api/App衔接、Fud用量钩子/错误提示、独立开源Lago服务及脚本、测试、配置示例/运行说明、必要导出/删除衔接；数据库仅新增计费表 | done | [06报告](deliverables/qa/auth-billing-review-20261103.md)对4f98d4通过：专项86、完整471、build及隔离UI；3项发现及超时晚commit/重启延伸全关闭。01真实OSS Lago隔离16通过，不扣真实款/真实AI；初始5计费表外追加第6纯opaque删除标记。原账户/健康/私有文件/配置保持，不伪称真实收费/商户或生产验收，main最终绑定由集成任务完成 |
 | AUTH-BILLING-DESIGN-REVIEW | 01安排的只读技术辅助审查（不是编号06、不是第二lead；不写项目文件） | done | 已只读核对固定上游Casdoor4.25/Lago1.56及当前代码，指出issuer命名空间/旧Google账户绑定、前端白名单、Lago普通手工付款Premium限制、准确签名/raw路由/防重及成功草稿事务要求，均纳入设计；不是产品验收，不替代独立06 |
 | AUTH-BILLING-REVIEW-06 | 专项06 qa独立子会话，D:/Forma/worktrees/qa-auth-billing-20261103，初始codex/qa-auth-billing-20261103、复验detached固定SHA；只写自有新测试/专项报告，不接管旧QA记忆 | done | 最终4f98d4a3d32f5de9dcd5ff2c92fcf760fab35bbd获[正式独立通过](deliverables/qa/auth-billing-review-20261103.md)，报告提交76de55b由01精确cherry-pick e0f44fc；86专项、471全套、完整build、中英回调/启动503错误显示。首轮红例/构建缺素材/依赖及最终首次ENOBUFS保留，随后无并发原样471全绿；手机截图失败只报DOM布局通过。未触碰主3001会话/私有数据或真实服务，不是生产/真实收费通过 |
-| AUTH-BILLING-FIX-INTEGRATE-01 | 既有01，D:/Forma/source现主管分支；限定Casdoor/Lago发现的产品/测试/脚本修复、共享契约/本任务板/本人交接及Git同步/最终main与本机版本绑定 | doing | 修复专项06可复现问题并提交push，专项06复验固定SHA通过后正常集成main并核远端；保留原账户/数据与D备份，测试收费仍loopback sandbox，不接真实商户/扣款 |
+| AUTH-BILLING-FIX-INTEGRATE-01 | 既有01，D:/Forma/source，集成后main；限定Casdoor/Lago发现的产品/测试/脚本修复、共享契约/本任务板/本人交接及Git同步/最终main与本机版本绑定 | done | 正式06通过4f98d4后正常快进main76dcbe2→1d04c75并atomic同步main/主管分支，ls-remote相同；D本站main同版已启、测试计费可用。原40表39同内容，仅签名通知摘要+16，原账户/健康/4私有文件/.env保持，新增第6计费表总41；after-main81文件/3SQLite快照/可读Lago归档保留。最终回执仅文档，交付前再绑定最终HEAD；无真实扣款/公网部署 |
 
 设计：[Casdoor与Lago实施设计](deliverables/lead/auth-billing-20261103/design.md)。本轮由01直接承担已登记集成范围；没有其他活跃写者，不代写其他员工记忆。
 
@@ -19,6 +19,8 @@
 本轮专项审查进展：06已交QA-F1(P1删号竞态)、F2(P2 off删号漏清理)、F3(P2统一登录隐藏回调错误)，01修复并另改新.env.example空项初始化/测试tmpdir便携性。01全套469/469、含UI修复完整build、真实OSS Lago隔离16项通过，均非06复验；新修复候选正常push后交06固定SHA复验，之前不能main集成。详见[01修复记录](deliverables/lead/auth-billing-review-20261103.md)。
 
 继续复验确认F1网络超时晚commit延伸，861feed不通过；现新增第6计费表持久opaque删除标记，恢复/持续退避清理，06第四独立反例包含磁盘重启。01最终23专项、471全套、完整build、真实Lago16和Casdoor已有测试账户7项均通过，尚须06对最终提交专项/全套/build/UI独立复验。未开真实收费/main未提前合并。
+
+最终：06已对4f98d4独立通过并交付报告，01只集成其原报告及必要回执，产品树无后续差异；main/主管分支1d04c75正常同步并启D本站，全部本轮任务完成。后续最终文档提交也同步并更新本机发布标识；生产真实收费、邮件/Apple等未配置事项保持边界，不因main集成而声称开通。
 
 # 2026-11-03 核验D盘并清理C盘旧副本（历史，已完成）
 

@@ -32,3 +32,13 @@
 06本人86/86专项、471/471全套、完整build与中英callback/start503错误提示均通过，无未解决本地测试版合并阻塞；首次全套有ENOBUFS连接资源错误，构建完成后无并发原样重跑471全绿，未跳过用例。手机截图失败及真实provider/主数据/Mac/生产未测等边界原样保留，不能说所有浏览器/真实收费已验收。原“等02安排”的请求已由此次用户明确授权专项06实际执行满足，不冒称02接单。
 
 下一步01正常快进main并同步main/主管分支、对齐本机版本；真实计费保持sandbox，不开商户/真实扣款。最终远端/运行身份与数据复核在交付时绑定，不以初次测试PID或旧a72 URL代表最终服务。
+
+## main集成与运行复核（完成）
+
+01核对origin/main仍76dcbe2、候选可正常快进，创建本地main跟踪origin/main并`git merge --ff-only codex/fud-food-photo-20261022`；无force/reset/clean/stash，现有改动未丢弃。已atomic推main及主管分支到1d04c75809de6994ab9356d8d1e89f8d070128e4，ls-remote两ref一致。核对4f获审代码至main的src/server/scripts/tests/依赖/配置无差异，后续只有独立报告与01协作文档。
+
+本人核对D:/Forma/server.pid与3001监听PID1856一致、绝对D入口及.env后只重启该本站。源码包/发布标识/离线壳重生后，D盘main服务1d04c75启动，release-info与Git相同；billing sandbox可用2套餐，Casdoor/原Google可用、Apple仍未配。没有读取或操作已登录真实用户的浏览器会话/表单。
+
+发布后SQLite总41表；本轮原40表中39逻辑内容相同，仅合法签名通知摘要由0至16，原账户/健康表、4份非DB私有文件和实际.env完全相同，quick_check=ok、外键错误0。另存D:/Forma/backups/auth-billing-review-20261103/after-main：81私有文件，Forma/Casdoor/Mailpit三份在线SQLite快照检查通过、Lago pg_dump可列目录，包含所有非数据库私有文件和服务配置/会话，未演练完整恢复，旧备份不动。
+
+此完成回执仅文档，随后正常提交/atomic同步main和主管分支，并更新最终源码包/release-info/运行指针；最终SHA以所属提交、远端与HTTP发布身份复核为准，无需重复未改的471产品测试。本次交付为本地测试版+GitHub main，真实收费/商户/公网部署未开启。
