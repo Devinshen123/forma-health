@@ -1,4 +1,12 @@
-## 2026-11-01 GITHUB-SYNC-20261101（最新）
+## 2026-11-02 GITHUB-SYNC-20261102（最新）
+
+唯一01 lead，既有C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，起点6106dfee3c43962bcded23acf56116600da116c3干净。用户确认需要同步GitHub，只做正常Git同步和本人必要文档记录，原C main/工作文件/索引继续保留。
+
+已fetch并确认0/1可快进；常见凭据格式限定扫描和git diff --check通过，未读env/健康记录。已atomic正常push main及主管分支f5180f0→6106dfe，exit0。ls-remote均6106dfee3c43962bcded23acf56116600da116c3；GitHub API main日期报告blob4f9cf26e10d7beb6fbbd4b4caba4561b935ff334与本地一致。原C HEAD ba4822b、277项状态清单digest/index文件SHA256前后相同；未逐项hash未跟踪文件内容。本次回执仅TASKS/status/HANDOFF，所属后续正常提交一并同步，以最终远端/HEAD复核绑定，不改固定报告。
+
+本轮没有产品实现、应用/服务/浏览器/测试/build/CI、依赖安装、健康/账号/凭据/Mac/Apple/付费或部署操作，不改变此前已打开的本机网站。日期静态任务6106dfe仍review、18项全NOT RUN，旧报告关闭包不变；原02本轮无真实接收/独审证据。fetch看到iOS远端分支更新仅是元数据，不合并/移植、不当Mac当前状态。后续如需Mac接手，先核其实际目录/分支/SHA/dirty并保留改动；独审与业务实施需各自明确范围，不因同步自动开工。
+
+## 2026-11-01 GITHUB-SYNC-20261101（历史）
 
 唯一01，既有C:/Users/devin/.codex/worktrees/fud-food-photo/健康网站 / codex/fud-food-photo-20261022，起点9e53886干净。用户把“上线”澄清为“更新到github”；只授权本次必要Git同步/记录，旧禁止push限定由此覆盖，不恢复产品实现或公网部署。fetch确认origin/main及主管分支7b260c2，6提交13Markdown可快进、差异格式检查/限定凭据格式扫描通过。
 
