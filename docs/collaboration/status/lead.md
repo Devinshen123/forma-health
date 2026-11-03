@@ -1,3 +1,9 @@
+## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（实施中）
+
+01唯一写者，D:/Forma/source，主管分支，起点0cc595d；用户已批准Casdoor登录保留旧账户，再做开源自托管Lago测试计费，每阶段同步GitHub，不扣真实款。已登记独占路径与[实施设计](../deliverables/lead/auth-billing-20261103/design.md)，当前数据35表/4附件/.env在线私有备份并校验，Docker可用且磁盘在D；不改其他项目容器，不创建第二lead。
+
+只读技术辅助审查已经返回，非06产品验收。固定Casdoor4.25/Lago1.56，修正OSS普通手工支付Premium限制，选开源invoice状态更新作明确模拟结算；签名/raw路由/防重、issuer+sub、原账户显式绑定和Fud草稿/用量/outbox事务要求纳入设计。先实现并验证Casdoor，随后Lago；真实快捷登录回调、邮件/商户等外部未配置项不得冒称开通。
+
 ## 2026-11-03 FORMA-C-CLEANUP-20261103（完成）
 
 01 / lead，同一唯一写者；D:/Forma/source、codex/fud-food-photo-20261022，起点0ebb56f。用户授权核验D盘后清理C盘，覆盖旧留C要求；未开展业务、平台或新员工任务。

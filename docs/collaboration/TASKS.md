@@ -1,4 +1,16 @@
-# 2026-11-03 核验D盘并清理C盘旧副本（最新）
+# 2026-11-03 Casdoor与开源Lago接入（最新）
+
+用户批准依次实施Casdoor登录/保留既有账户与数据、开源自托管Lago测试计费；完成的阶段正常提交并同步GitHub。本机独立服务/配置/备份/工程输出统一D盘，不启用真实扣款、公网部署或付费云服务，不开展旧日期/报告任务，不创建第二lead。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| CASDOOR-01 | 既有01 lead：server/auth/、src/auth.ts及对应客户端/登录/账户页面的Casdoor增量、必要app/index/types衔接、auth测试、独立本机Casdoor服务配置/脚本、本人文档；既有业务/数据不重写 | doing | OIDC code+PKCE+nonce/issuer/audience/签名校验；新身份按issuer+sub绑定既有Forma owner，旧账户只经本人登录后显式绑定，禁止邮箱自动合并；旧登录保留可回退，原数据逐项核对；本机独立Casdoor真实流程和隔离测试，候选先推主管分支 |
+| LAGO-OSS-01 | 既有01 lead：server/billing/、src/billing.ts、会员/账单页面与必要api/App衔接、Fud用量钩子、独立开源Lago服务及脚本、测试、配置示例/运行说明；数据库仅新增计费表 | pending | 依赖CASDOOR-01阶段验证；自托管开源固定版本，测试客户/套餐/用量/账单/显式模拟结算，重复通知/请求不重复记账；仅后端权益和额度校验、失败不扣额度；不伪装真实收款，不传健康内容，旧记录不丢失；测试/必要build及Git同步 |
+| AUTH-BILLING-DESIGN-REVIEW | 01安排的只读技术辅助审查（不是编号06、不是第二lead；不写项目文件） | done | 已只读核对固定上游Casdoor4.25/Lago1.56及当前代码，指出issuer命名空间/旧Google账户绑定、前端白名单、Lago普通手工付款Premium限制、准确签名/raw路由/防重及成功草稿事务要求，均纳入设计；不是产品验收，不替代独立06 |
+
+设计：[Casdoor与Lago实施设计](deliverables/lead/auth-billing-20261103/design.md)。本轮由01直接承担已登记集成范围；没有其他活跃写者，不代写其他员工记忆。
+
+# 2026-11-03 核验D盘并清理C盘旧副本（历史，已完成）
 
 用户明确要求先确认D盘网站/数据，再安全清理C盘Forma旧副本并保留D盘备份，覆盖此前仅保留C盘的历史限定。既有01 lead唯一执行；不启动其他员工，不实现业务或部署公网。
 

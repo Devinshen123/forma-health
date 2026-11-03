@@ -1,3 +1,9 @@
+## 2026-11-03 CASDOOR-01 / LAGO-OSS-01（实施中）
+
+用户已批准先Casdoor登录保留现有账户，再接开源自托管Lago测试计费，每完成阶段正常push，禁止真实扣费。既有01 D:/Forma/source/codex-fud分支唯一写者，起点0cc595d；TASKS登记具体源码/前端/脚本范围、FORMA当前授权覆盖旧不支付限定。数据35表/4附件/.env已在线备份D:/Forma/backups/auth-billing-20261103/before，未覆盖旧备份。Docker29.8.2/Compose5.5.1运行，WSL盘D:/HeyGem/Docker/wsl-data/main；只建独立Forma服务，禁止动其他项目现有容器。
+
+[设计](../../deliverables/lead/auth-billing-20261103/design.md)已结合只读辅助builder审查（非编号06/产品验收）修订：Casdoor4.25 JWT-Standard/RS256/非共享/ID-token<=24h/issuer+sub命名空间，显式旧密码绑定、Google-only先设置Forma密码；Lago1.56普通POST/payments需Premium，改已定稿invoice PUT payment_status作loopback sandbox显式模拟结算；raw精确webhook前置、可信配置算法、签名body摘要与权威重读防重/乱序；Fud草稿+用户用量+outbox原子事务和lost-response幂等。原Google直连保留，真实Casdoor Google/Apple/邮件未配置不得伪称完成。先Casdoor阶段验证/push再Lago，不新建编号员工、不冒写他人记忆。
+
 ## 2026-11-03 FORMA-C-CLEANUP-20261103（完成）
 
 01 / lead唯一写者，D:/Forma/source，codex/fud-food-photo-20261022，起点0ebb56f7e900e1c8fd677f723c970701e73d3ba3。用户明确授权先核验D再清理旧C，旧保留C要求仅作历史。D网站绝对入口/.env/数据均在D，未动业务或其他员工/项目。
