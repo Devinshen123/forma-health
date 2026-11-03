@@ -116,3 +116,44 @@ test('QA privacy: deleting while billing is disabled keeps cleanup intent for re
   assert.equal(deletes, 1, 'temporarily disabling billing must not discard cleanup for an existing external customer');
   assert.equal(store.db.prepare('SELECT COUNT(*) n FROM billing_deletions').get()?.n, 0);
 });
+
+test('QA privacy: a timed-out remote creation cannot outlive durable deletion cleanup', async t => {
+  const { store, owner } = fixture(t);
+  const creationStarted = deferred<void>();
+  let remoteCustomer = false, remoteCreationAccepted = false;
+  const transport: typeof fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname, method = init?.method;
+    if (path.includes('/plans/')) {
+      const code = path.split('/').at(-1)!;
+      return json({ plan: { code, name: code, amount_cents: code === 'free_test' ? 0 : 2000, amount_currency: 'USD', interval: 'monthly', entitlements: entitlements(code === 'free_test' ? 3 : 100) } });
+    }
+    if (method === 'GET' && (path.includes('/subscriptions/') || path.endsWith('/customers/' + owner))) return json({}, 404);
+    if (path.endsWith('/customers') && method === 'POST') {
+      remoteCreationAccepted = true;
+      creationStarted.resolve();
+      // Model a server that accepted the request but continues its transaction
+      // after the client's request was aborted. No actual server is contacted.
+      return new Promise<Response>((_resolve, reject) => {
+        init!.signal!.addEventListener('abort', () => reject(new Error('Synthetic client timeout')), { once: true });
+      });
+    }
+    if (path.endsWith('/customers/' + owner) && method === 'DELETE') {
+      remoteCustomer = false;
+      return new Response(null, { status: 204 });
+    }
+    throw new Error('Unrecognized synthetic route: ' + method + ' ' + path);
+  };
+  const service = new BillingService(store, { ...config, timeoutMs: 50 }, transport, () => now);
+  t.after(() => service.close());
+  const refresh = service.snapshot(owner).then(() => null, error => error);
+  await creationStarted.promise;
+  service.scheduleDeletion(owner);
+  store.deleteAccount(owner);
+  await service.flush();
+  await refresh; // The client timed out; local refresh/mutation maps have drained.
+  await service.flush();
+  assert.equal(remoteCreationAccepted, true);
+  remoteCustomer = true; // The previously accepted remote transaction now commits.
+  await service.flush();
+  assert.equal(remoteCustomer, false, 'a client timeout must not discard cleanup for a remote write whose outcome is still uncertain');
+});
