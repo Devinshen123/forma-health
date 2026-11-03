@@ -41,4 +41,25 @@ Mac需从主管候选分支拉取，自行准备Docker及本机私有配置/数�
 
 ## 待完成的正式事项
 
-本候选的真实浏览器会员页检查、最终提交/运行身份绑定在发布后补充；正式06产品审查与共享main集成未通过，不将01自测写为独审。正式收费仍需收款主体/地区、域名/HTTPS、商户渠道、正式价格额度及续费/退款/条款；本任务不擅自开通。Casdoor真实邮件、经Casdoor的Google回调及Apple仍是外部配置事项。
+正式06产品审查与共享main集成未通过，不将01自测写为独审。正式收费仍需收款主体/地区、域名/HTTPS、商户渠道、正式价格额度及续费/退款/条款；本任务不擅自开通。Casdoor真实邮件、经Casdoor的Google回调及Apple仍是外部配置事项。
+
+## 发布后复核
+
+代码候选f41b4cdf9c60c06b72a9481c1bac322c0b1d5510已正常推主管分支，ls-remote一致；包含上一步Casdoor4105532。main仍76dcbe26ad56f20dee08110ff9b6f4657d2106d0文档范围，未绕过06独立审查合并。本人核对原D入口/配置/PID所有权后只切换本站，当前服务绝对D路径、API沙盒可用2套餐、HTTP release-info与代码候选相同，最终文档交付后运行标识再绑定最终HEAD。
+
+真实浏览器验证路径：新版首页→设置→会员与账单→选择Pro的“登录后选择”→出现Casdoor统一入口/原邮箱密码与旧Google入口，关闭后返回会员页。仅演示模式检查，不使用或创建主健康库测试账户；登录后账单/模拟结算等流程由上述真实API隔离联调覆盖，不能称已浏览器端真实账户付款。
+
+| 检查 | 结果与证据 |
+|---|---|
+| 页面身份/内容/错误层 | 标题Forma、URL带f41b4cd，设置和套餐真实渲染，无框架错误层 |
+| 桌面布局 | 默认1265×712，Free/Pro双卡、明确本地测试不扣款说明，未见新增遮挡/裁切 |
+| 中英文/交互 | 实际切英文再中文，价格/额度及说明更新；未登录选择套餐实际打开登录弹窗 |
+| 手机断点 | 临时390×844（DOM内容宽375），两卡单列，scrollWidth=clientWidth=375，无水平溢出；随后恢复默认窗口 |
+| Console | 新标签error/warn均空，不冒称所有历史标签无错误 |
+| 图片 | D:/Forma/logs/forma-billing-desktop-20261103.png、forma-billing-mobile-20261103.png，本机私有产物，不入Git |
+
+发布后主库总计40表（新增5计费表），原35表仍33完全同SHA，仅OAuth临时状态/安全单调时钟变化；原账户/健康表、4附件与原.env内容保持，quick_check=ok、外键错误0。独立Casdoor/Mailpit、Lago六服务均运行，API/DB/Redis健康。
+
+另保留D:/Forma/backups/auth-billing-20261103/after：77私有文件，Forma/Casdoor/Mailpit三份在线SQLite快照检查通过、Lago pg_dump归档可由pg_restore --list读取，含各服务私有配置和现有附件；未覆盖before/c-cleanup/migration备份。没有演练完整恢复，不能将归档可读称完整恢复验收。
+
+正式审查请求见[给02/06的请求](../../../requests/20261103-1025-lead-to-claude-lead-auth-billing-review.md)。本轮只写请求/保持review，不自动启动编号员工或代写其记忆。

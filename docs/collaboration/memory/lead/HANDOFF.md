@@ -2,7 +2,7 @@
 
 Casdoor候选41055327ae5b5698482905b8aa98a4d0d373111e已正常推主管分支/本地启用。Lago增量已实现，新增16项、真实OSS服务隔离16项、全套464/464、完整build通过。schema只新增5计费表；原数据核33表完全相同，2认证瞬态表正常变化，4附件/原配置保持。真实测试不使用主健康库，不扣费/调用真实AI。辅助审查修复outbox丢回执、跨账期和Free读到未付款Pro权益，不能冒称编号06。
 
-当前收尾：精确提交本阶段并push现有主管分支，刷新本机构建身份/启动对应服务，真实浏览器检查设置会员页，再补发布回执同步。main仍76dcbe2文档范围，正式独审/集成待02/06；新代码不能声称已在main。私有Lago配置D:/Forma/services/lago、API3442/管理3443，Casdoor3440/测试收件箱3441；不入Git。禁止重置/覆盖服务数据或旧D备份。正式收款/SMTP/Casdoor Google迁移/Apple均未开通，详见lago.md。
+代码f41b4cdf9c60c06b72a9481c1bac322c0b1d5510已精确提交并推主管分支，本机D本站启用，桌面/手机中英会员页与选择套餐→登录弹窗实测通过、无相关console错误；主库新增5表总40，原账户/健康数据保留，after私有备份77文件另存。最终回执提交仅文档，随后更新源码包/运行标识/指针为最终HEAD。main仍76dcbe2文档范围，已写给02的正式06请求，未启动其员工或取得独审；新代码不能声称已在main。私有Lago配置D:/Forma/services/lago、API3442/管理3443，Casdoor3440/测试收件箱3441；不入Git。禁止重置/覆盖服务数据或旧D备份。正式收款/SMTP/Casdoor Google迁移/Apple均未开通，详见lago.md。下次先核review请求/固定SHA，避免重做接入或按旧main覆盖候选。
 
 用户已批准先Casdoor登录保留现有账户，再接开源自托管Lago测试计费，每完成阶段正常push，禁止真实扣费。既有01 D:/Forma/source/codex-fud分支唯一写者，起点0cc595d；TASKS登记具体源码/前端/脚本范围、FORMA当前授权覆盖旧不支付限定。数据35表/4附件/.env已在线备份D:/Forma/backups/auth-billing-20261103/before，未覆盖旧备份。Docker29.8.2/Compose5.5.1运行，WSL盘D:/HeyGem/Docker/wsl-data/main；只建独立Forma服务，禁止动其他项目现有容器。
 
