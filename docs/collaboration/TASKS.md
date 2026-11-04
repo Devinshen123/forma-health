@@ -1,11 +1,11 @@
 # 2026-11-03 员工MD与Superpowers配置（当前）
 
-用户已批准上一轮方案并要求执行：保留七身份、原有六份MD改动和所有既有工作，独立审查通过后同步GitHub，不改业务。01唯一写入者01沿用D:/Forma/source，专用分支codex/team-superpowers-20261103，基线70170640b74c9067291eb2195aef17ca4a6a9fb3；远端main同SHA，无需先下载更新。仅本配置任务允许通过后push，不授权合并main/业务/iOS修复/部署/生产/安装/凭据/视频派工。
+用户已批准上一轮方案并要求执行：保留七身份、原有六份MD改动和所有既有工作，独立审查通过后同步GitHub，不改业务。唯一01沿用D:/Forma/source，专用分支codex/team-superpowers-20261103，基线70170640b74c9067291eb2195aef17ca4a6a9fb3；开工远端main同SHA，无需先下载更新。仅本配置任务允许通过后push，不授权合并main/业务/iOS修复/部署/生产/安装/凭据/视频派工。
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| TEAM-SUPERPOWERS-20261103 | 既有01 lead：AGENTS/FORMA/CLAUDE、TEAM-ROSTER、SKILLS-MATRIX、team-config、技能registry/项目适配、七份公共员工MD/current/launch/resume、START-PROMPTS、三份Claude薄适配器、配置读取/生成/验证脚本与专项CLI测试、本任务板、本人交付/status/HANDOFF | doing | [批准方案及计划](deliverables/lead/team-superpowers-20261103/plan.md)；七ID/角色关系/旧技能和他人记忆不变，固定Superpowers7.0.2/22f0b46，可验证读取/资源hash/跨平台边界，生成一致性、独审双结论通过后仅配置分支push |
-| TEAM-SUPERPOWERS-REVIEW-20261103 | 新专项06独立审查子会话，独立于01实现者；只读候选产品/配置，仅可新增deliverables/qa/team-superpowers-review-20261103.md，不代写旧06记忆或状态、不创建第二lead | todo | 本地固定BASE/HEAD及完整差异、计划；独立验证结构、资源和生成/CLI边界，分别给需求符合/质量安全结论，记录未测，01修问题后复验新SHA，不能先push |
+| TEAM-SUPERPOWERS-20261103 | 既有01 lead：AGENTS/FORMA/CLAUDE、TEAM-ROSTER、SKILLS-MATRIX、team-config、技能registry/项目适配、七份公共员工MD/current/launch/resume、START-PROMPTS、三份Claude薄适配器、配置读取/生成/验证脚本与专项CLI测试、本任务板、本人交付/status/HANDOFF | review（双通过，待最终上传） | [实施与验证](deliverables/lead/team-superpowers-20261103/implementation.md)；正式独审对7e56e95通过，七身份/旧技能保留；8专项、Windows/portable各18、25技能160资源及生成/反例均通过。F1已修；源树冻结，后续仅报告/收尾元数据，最终复核后只上传配置分支 |
+| TEAM-SUPERPOWERS-REVIEW-20261103 | 新专项06 `/root/team_config_independent`，工具Codex，独立于01；只新增自身报告，不代写旧06记忆或创建第二lead | done | [正式报告](deliverables/qa/team-superpowers-review-20261103.md)对7e56e950a842b0b7fe9b033cea3017ce5a79f112需求符合/质量安全双通过，F1关闭；原环境缺旧技能失败及映射复验保留。原报告a619b65精确集成为2fc06c5；Mac/原生触发/业务未验，不冒称Claude审查 |
 
 本轮允许01维护公开员工定义及工具适配；他人memory/PROFILE/MEMORY/HANDOFF、status、既有deliverables、退休入口和历史归档只读。原六MD逐文件hash备份D:/Forma/backups/team-superpowers-20261103-before，授权纳入本次审查和上传；并非未知来源dirty，可在同基线任务分支继续。iPhone原任务和指定视频会话不受本轮派工影响。
 
@@ -15,7 +15,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 / 边界 |
 |---|---|---|---|
-| GITHUB-WORKFLOW-20261103 | 既有01 lead：AGENTS.md、FORMA.md、CLAUDE.md、本任务板与本人status/HANDOFF | review（本地文档，未提交/未推送） | 开工D:/Forma/source main@7017064干净；只读ls-remote核实远端main同SHA。更新安全同步、保留dirty/唯一写者、固定候选审查、修复复验及上传前再次检查要求；保留此前iPhone协调任务禁推送/禁合并等边界，不修改产品或启动重复修复 |
+| GITHUB-WORKFLOW-20261103 | 既有01 lead：AGENTS.md、FORMA.md、CLAUDE.md、本任务板与本人status/HANDOFF | review（已随本批独审通过，待上传） | 六MD保留并进入本批BASE至7e56e95完整独审；修改前检查远端、安全同步、审查后上传和范围边界均保留。当前用户明确批准此配置分支审查后上传，其他任务禁推送/禁合并边界不解除 |
 
 # 2026-11-03 Casdoor与开源Lago接入（历史，已完成）
 
