@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| TEAM-SUPERPOWERS-20261103 | 既有01 lead：AGENTS/FORMA/CLAUDE、TEAM-ROSTER、SKILLS-MATRIX、team-config、技能registry/项目适配、七份公共员工MD/current/launch/resume、START-PROMPTS、三份Claude薄适配器、配置读取/生成/验证脚本与专项CLI测试、本任务板、本人交付/status/HANDOFF | review（双通过，待最终上传） | [实施与验证](deliverables/lead/team-superpowers-20261103/implementation.md)；正式独审对7e56e95通过，七身份/旧技能保留；8专项、Windows/portable各18、25技能160资源及生成/反例均通过。F1已修；源树冻结，后续仅报告/收尾元数据，最终复核后只上传配置分支 |
+| TEAM-SUPERPOWERS-20261103 | 既有01 lead：AGENTS/FORMA/CLAUDE、TEAM-ROSTER、SKILLS-MATRIX、team-config、技能registry/项目适配、七份公共员工MD/current/launch/resume、START-PROMPTS、三份Claude薄适配器、配置读取/生成/验证脚本与专项CLI测试、本任务板、本人交付/status/HANDOFF | done | [实施与验证](deliverables/lead/team-superpowers-20261103/implementation.md)；独审对7e56e95双通过、F1关闭，收尾a19d600另获独立复核后已正常推送配置分支，ls-remote同SHA，main仍7017064。8专项、两模式各18、25技能160资源通过；后续仅收尾元数据，最终版本以该分支HEAD/远端及交付回执为准，不合并main/不改业务 |
 | TEAM-SUPERPOWERS-REVIEW-20261103 | 新专项06 `/root/team_config_independent`，工具Codex，独立于01；只新增自身报告，不代写旧06记忆或创建第二lead | done | [正式报告](deliverables/qa/team-superpowers-review-20261103.md)对7e56e950a842b0b7fe9b033cea3017ce5a79f112需求符合/质量安全双通过，F1关闭；原环境缺旧技能失败及映射复验保留。原报告a619b65精确集成为2fc06c5；Mac/原生触发/业务未验，不冒称Claude审查 |
 
 本轮允许01维护公开员工定义及工具适配；他人memory/PROFILE/MEMORY/HANDOFF、status、既有deliverables、退休入口和历史归档只读。原六MD逐文件hash备份D:/Forma/backups/team-superpowers-20261103-before，授权纳入本次审查和上传；并非未知来源dirty，可在同基线任务分支继续。iPhone原任务和指定视频会话不受本轮派工影响。
@@ -15,7 +15,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 / 边界 |
 |---|---|---|---|
-| GITHUB-WORKFLOW-20261103 | 既有01 lead：AGENTS.md、FORMA.md、CLAUDE.md、本任务板与本人status/HANDOFF | review（已随本批独审通过，待上传） | 六MD保留并进入本批BASE至7e56e95完整独审；修改前检查远端、安全同步、审查后上传和范围边界均保留。当前用户明确批准此配置分支审查后上传，其他任务禁推送/禁合并边界不解除 |
+| GITHUB-WORKFLOW-20261103 | 既有01 lead：AGENTS.md、FORMA.md、CLAUDE.md、本任务板与本人status/HANDOFF | done | 原六MD保留并进入完整独审，随a19d600已正常上传配置分支并核实远端；修改前查更新、安全同步、审查后上传及范围边界均保留。其他任务禁推送/禁合并边界不解除，main未变 |
 
 # 2026-11-03 Casdoor与开源Lago接入（历史，已完成）
 
