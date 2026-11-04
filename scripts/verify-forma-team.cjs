@@ -32,6 +32,7 @@ check('first-use and continuing adapters are distinct and checkout-relative',()=
   assert.ok(first.includes('模式：首次接手ONBOARD-'+r.number));assert.ok(resume.includes('模式：已有身份日常接续'));
   for(const s of [first,resume]){assert.ok(s.includes(r.md));assert.ok(s.includes('AGENTS.md'));assert.ok(s.includes('SUPERPOWERS.md'));assert.ok(s.includes('Mac使用实际checkout'));assert.ok(!s.includes('C:\\Users\\devin'));}
   const md=read(r.md);assert.ok(md.includes('已有身份接到明确任务'));assert.ok(!md.includes('你只写本人docs/collaboration/memory/'));
+  if(r.id==='lead'){assert.ok(md.includes('01仅在TASKS本人精确授权内维护共享契约'));assert.ok(!md.includes('未派发路径、共享契约与他人记忆只读'));}
  }
 });
 check('registered Superpowers resources include bodies and preserve legacy skills',()=>{
@@ -46,7 +47,15 @@ check('only three explicit Claude adapters with valid inherited models',()=>{
  for(const name of entries){const text=read('.claude/agents/'+name),fm=text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);assert.ok(fm);const fields=Object.fromEntries(fm[1].split(/\r?\n/).map(l=>{const i=l.indexOf(':');return[l.slice(0,i),l.slice(i+1).trim()];}));assert.match(fields.name,/^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/);assert.equal(fields.model,'inherit');assert.ok(fields.description.startsWith('Use this agent when'));assert.ok(fields.description.includes('Typical triggers'));assert.ok(['cyan','green','red'].includes(fields.color));assert.ok(JSON.parse(fields.tools).includes('Read'));assert.ok(text.includes('仅首次接手且无执行任务时ONBOARD-'));assert.ok(text.includes('已有身份按最新正式任务执行'));}
 });
 check('retired entry points block new assignments',()=>{for(const id of config.retired)assert.ok(read('docs/collaboration/agent-prompts/current/'+id+'.md').includes('不要以该ID接新任务'));});
-check(portable?'assigned skill registry and bundled resources (external skills not certified)':'every assigned skill exists in registry and all stored resources readable',()=>{const registry=JSON.parse(read('docs/collaboration/skills/registry.json'));for(const r of config.roles)for(const s of r.skills)assert.ok(registry.skills.some(x=>x.name===s));for(const s of registry.skills){const dir=path.resolve(root,s.directory);const bundled=s.directory.startsWith('docs/collaboration/skills/vendor/');if(portable&&!bundled){result.warnings.push(s.name+': external installation not validated; run forma-skills.cjs list/read/verify on this host');continue;}for(const file of s.resources)assert.ok(fs.existsSync(path.join(dir,file.path)));if(s.knownMissing.length)result.warnings.push(s.name+': '+s.knownMissing.join(', '));}});
+check(portable?'assigned skill registry and bundled resources (external skills not certified)':'every assigned skill exists in registry and all stored resources readable',()=>{
+ const registry=JSON.parse(read('docs/collaboration/skills/registry.json'));
+ const mappingFile=path.join(root,'.forma-local/skills-paths.json');
+ const overrides=fs.existsSync(mappingFile)?JSON.parse(fs.readFileSync(mappingFile,'utf8')):{};
+ assert.ok(overrides&&typeof overrides==='object'&&!Array.isArray(overrides),'Invalid host skill mapping');
+ for(const [name,dir] of Object.entries(overrides))assert.ok(registry.skills.some(s=>s.name===name)&&typeof dir==='string'&&path.isAbsolute(dir),'Mapping must use registered names and absolute local directories: '+name);
+ for(const r of config.roles)for(const s of r.skills)assert.ok(registry.skills.some(x=>x.name===s));
+ for(const s of registry.skills){const dir=path.resolve(root,overrides[s.name]||s.directory);const bundled=!overrides[s.name]&&s.directory.startsWith('docs/collaboration/skills/vendor/');if(portable&&!bundled){result.warnings.push(s.name+': external installation not validated; run forma-skills.cjs list/read/verify on this host');continue;}for(const file of s.resources)assert.ok(fs.existsSync(path.join(dir,file.path)),s.name+': missing '+file.path);if(s.knownMissing.length)result.warnings.push(s.name+': '+s.knownMissing.join(', '));}
+});
 // The original temp path is historical, not a live dependency after migration.
 // Both modes verify the frozen archive bytes against the recorded SHA256.
 check('archive report SHA256 and historical date/baseline retained',()=>{const b=JSON.parse(read('docs/collaboration/configuration-baseline.json'));const bytes=fs.readFileSync(path.join(root,b.reportDest));assert.equal(require('node:crypto').createHash('sha256').update(bytes).digest('hex'),b.reportSha256);const md=read('docs/architecture/reviews/README.md');assert.ok(md.includes('2026-10-20'));assert.ok(md.includes('ac56b65'));});
