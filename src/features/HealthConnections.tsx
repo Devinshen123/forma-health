@@ -4,6 +4,7 @@ import { ApiError, request } from '../api';
 import type { Language } from '../types';
 import { HEALTH_PROVIDERS, type HealthConnection, type HealthConnectionsResponse, type HealthKind, type HealthProvider, type HealthRecordsResponse, type HealthSyncResponse, type ImportedHealthRecord } from '../health';
 import { Modal } from '../components/Modal';
+import { healthActionErrorText, healthLastErrorText, healthStateHint, healthStatusText, healthViewState } from '../health-copy';
 
 const names: Record<HealthProvider, string> = { whoop: 'WHOOP', oura: 'Oura Ring', 'google-health': 'Google Health', 'apple-health': 'Apple Health / Apple Watch' };
 const applications: Record<HealthProvider, string> = {
@@ -17,28 +18,12 @@ const labels: Record<HealthKind, [string, string]> = {
   sleep: ['睡眠', 'Sleep'], workout: ['运动', 'Workout'], recovery: ['WHOOP 恢复', 'WHOOP recovery'],
   readiness: ['Oura 准备度', 'Oura readiness'], weight: ['体重', 'Weight'], oxygen_saturation: ['血氧', 'Oxygen saturation'],
 };
-function statusText(connection: HealthConnection | undefined, zh: boolean, demo: boolean) {
-  if (demo) return zh ? '登录后查看连接' : 'Sign in to view connections';
-  if (!connection) return '—';
-  const texts: Record<HealthConnection['status'], [string, string]> = {
-    not_configured: ['待配置开发者应用', 'Developer app not configured'], disconnected: ['未连接', 'Not connected'],
-    connected: ['已连接', 'Connected'], reauthorize: ['需要重新授权', 'Authorization required'], needs_iphone: ['需要 iPhone 授权', 'Requires iPhone authorization'],
-  };
-  return texts[connection.status]?.[zh ? 0 : 1] ?? '—';
-}
-function healthError(error: unknown, zh: boolean) {
-  if (error instanceof ApiError) {
-    if (error.status === 401) return zh ? '账户已变化或登录失效，请重新登录。' : 'Your account changed or session expired. Sign in again.';
-    if (error.status === 429) return zh ? '正在同步或请求过于频繁，请稍后重试。' : 'Sync is running or requests are too frequent. Try again shortly.';
-    if (error.status === 503) return zh ? '连接尚未配置完成，请先完成开发者应用与服务端设置。' : 'Complete developer registration and server configuration first.';
-  }
-  return zh ? '暂时无法完成操作。请刷新连接状态后重试。' : 'The request could not finish. Refresh connection status and try again.';
-}
+const healthErrorText = (error: unknown, zh: boolean) => error instanceof ApiError ? healthActionErrorText(error.status, error.code, zh) : healthActionErrorText(undefined, undefined, zh);
 
 export default function HealthConnections({ lang, demo, accountId, onCreate }: { lang: Language; demo: boolean; accountId?: string; onCreate: () => void }) {
   const zh = lang === 'zh';
   const [connections, setConnections] = useState<HealthConnection[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!demo && !!accountId);
   const [busy, setBusy] = useState<HealthProvider | 'refresh' | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -65,7 +50,7 @@ export default function HealthConnections({ lang, demo, accountId, onCreate }: {
     if (!demo && accountId) {
       setLoading(true);
       void refresh(abort.signal, ticket).catch((failure) => {
-        if (ticket === epoch.current && !abort.signal.aborted) setError(healthError(failure, zh));
+        if (ticket === epoch.current && !abort.signal.aborted) setError(healthErrorText(failure, zh));
       }).finally(() => { if (ticket === epoch.current) setLoading(false); });
     } else setLoading(false);
     return () => { ++epoch.current; ++readEpoch.current; abort.abort(); };
@@ -101,7 +86,7 @@ export default function HealthConnections({ lang, demo, accountId, onCreate }: {
         await refresh(init.signal, ticket);
       }
     } catch (failure) {
-      if (ticket === epoch.current) { setError(healthError(failure, zh)); try { await refresh(controller.current?.signal, ticket); } catch { /* Preserve the actionable error. */ } }
+      if (ticket === epoch.current) { setError(healthErrorText(failure, zh)); try { await refresh(controller.current?.signal, ticket); } catch { /* Preserve the actionable error. */ } }
     } finally {
       if (ticket === epoch.current) { activeRequest.current = false; setBusy(null); }
     }
@@ -116,7 +101,7 @@ export default function HealthConnections({ lang, demo, accountId, onCreate }: {
       const result = await request<HealthRecordsResponse>(`/health/records?${query}`, { headers, signal: controller.current?.signal });
       if (ticket !== epoch.current || readTicket !== readEpoch.current) return;
       setSelected(provider); setRecords(previous => more ? [...previous, ...result.records] : result.records); setCursor(result.nextCursor);
-    } catch (failure) { if (ticket === epoch.current) setError(healthError(failure, zh)); }
+    } catch (failure) { if (ticket === epoch.current) setError(healthErrorText(failure, zh)); }
     finally { if (ticket === epoch.current) { activeRequest.current = false; setBusy(null); } }
   }
   const date = (value: string | null) => value ? new Date(value).toLocaleString(zh ? 'zh-CN' : 'en-US') : '—';
@@ -139,11 +124,15 @@ export default function HealthConnections({ lang, demo, accountId, onCreate }: {
     <div className="health-provider-grid">{HEALTH_PROVIDERS.map(provider => {
       const connection = connections.find(item => item.provider === provider);
       const native = provider === 'apple-health';
+      const state = healthViewState(connection, { demo, loading });
+      const hint = healthStateHint(state, connection, zh);
+      const lastError = healthLastErrorText(connection?.lastError ?? null, zh);
       return <article className="health-provider" key={provider}>
-        <div className="health-provider-heading"><h3>{names[provider]}</h3><span className="badge">{statusText(connection, zh, demo)}</span></div>
+        <div className="health-provider-heading"><h3>{names[provider]}</h3><span className={`badge health-status-${state}`} data-health-state={state}>{healthStatusText(state, zh)}</span></div>
         <p className="muted">{native ? (zh ? '在 Forma iPhone App 内授权只读访问，再核对并确认上传。Apple Watch 的数据通过 Apple Health 导入。' : 'Authorize read-only access in the Forma iPhone app, then review and confirm upload. Apple Watch data is imported through Apple Health.') : provider === 'google-health' ? (zh ? '使用 Google Health 云端账户授权。Android Health Connect 是另一条接入通道。' : 'Authorize your Google Health cloud account. Android Health Connect is a separate integration.') : (zh ? '由官方授权页面决定共享范围，可以随时断开连接。' : 'Choose sharing permissions on the official authorization page. You can disconnect at any time.')}</p>
         {!demo && connection && <dl className="health-connection-details"><div><dt>{zh ? '已导入' : 'Imported'}</dt><dd>{connection.recordCount} {zh ? '项' : 'records'}</dd></div><div><dt>{zh ? '上次同步' : 'Last sync'}</dt><dd>{date(connection.lastSyncAt)}</dd></div></dl>}
-        {connection?.lastError && <p className="hint" role="status">{zh ? '上次同步未完成，请检查授权和连接后重试。' : 'The last sync did not finish. Check authorization and try again.'}</p>}
+        {hint && <p className="hint health-state-hint">{hint}</p>}
+        {lastError && <p className="hint health-last-error" role="status">{lastError}</p>}
         <div className="health-actions">
           {!native && <button className="btn btn-primary" disabled={demo || loading || !!busy || !connection?.configured || connection.status === 'connected'} onClick={() => void action(provider, 'connect')}><Link2 size={16} />{connection?.status === 'reauthorize' ? (zh ? '重新授权' : 'Authorize again') : (zh ? '连接账户' : 'Connect account')}</button>}
           {connection?.status === 'connected' && !native && <button className="btn btn-secondary" disabled={!!busy} onClick={() => void action(provider, 'sync')}><RefreshCw size={16} />{busy === provider ? (zh ? '正在处理…' : 'Working…') : (zh ? '立即同步' : 'Sync now')}</button>}
