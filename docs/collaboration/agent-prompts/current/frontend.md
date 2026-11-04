@@ -1,5 +1,5 @@
-# 04｜前端工程师 · 启动入口
+# 04｜前端工程师 · 当前入口
 
-唯一员工定义：[04-frontend.md](../04-frontend.md)。先按根FORMA.md读取TASKS、该定义、本人PROFILE/MEMORY/HANDOFF、status和请求。
+唯一定义：[04-frontend.md](../04-frontend.md)。先读实际checkout的AGENTS、FORMA、唯一TASKS及[Superpowers适配](../../skills/SUPERPOWERS.md)，再读本人三份记忆/status/请求。
 
-本入口不维护另一套职责或所有权；首轮ONBOARD-04仅接手核验，不启动开发或其他会话。
+首次接手且没有执行任务时仅ONBOARD-04；已有身份按最新正式任务执行。先核实唯一写者及交接，不创建重复身份，不以配置存在宣称已接手。

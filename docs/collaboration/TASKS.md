@@ -1,4 +1,23 @@
-# 2026-11-03 Casdoor与开源Lago接入（最新）
+# 2026-11-03 员工MD与Superpowers配置（当前）
+
+用户已批准上一轮方案并要求执行：保留七身份、原有六份MD改动和所有既有工作，独立审查通过后同步GitHub，不改业务。01唯一写入者01沿用D:/Forma/source，专用分支codex/team-superpowers-20261103，基线70170640b74c9067291eb2195aef17ca4a6a9fb3；远端main同SHA，无需先下载更新。仅本配置任务允许通过后push，不授权合并main/业务/iOS修复/部署/生产/安装/凭据/视频派工。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| TEAM-SUPERPOWERS-20261103 | 既有01 lead：AGENTS/FORMA/CLAUDE、TEAM-ROSTER、SKILLS-MATRIX、team-config、技能registry/项目适配、七份公共员工MD/current/launch/resume、START-PROMPTS、三份Claude薄适配器、配置读取/生成/验证脚本与专项CLI测试、本任务板、本人交付/status/HANDOFF | doing | [批准方案及计划](deliverables/lead/team-superpowers-20261103/plan.md)；七ID/角色关系/旧技能和他人记忆不变，固定Superpowers7.0.2/22f0b46，可验证读取/资源hash/跨平台边界，生成一致性、独审双结论通过后仅配置分支push |
+| TEAM-SUPERPOWERS-REVIEW-20261103 | 新专项06独立审查子会话，独立于01实现者；只读候选产品/配置，仅可新增deliverables/qa/team-superpowers-review-20261103.md，不代写旧06记忆或状态、不创建第二lead | todo | 本地固定BASE/HEAD及完整差异、计划；独立验证结构、资源和生成/CLI边界，分别给需求符合/质量安全结论，记录未测，01修问题后复验新SHA，不能先push |
+
+本轮允许01维护公开员工定义及工具适配；他人memory/PROFILE/MEMORY/HANDOFF、status、既有deliverables、退休入口和历史归档只读。原六MD逐文件hash备份D:/Forma/backups/team-superpowers-20261103-before，授权纳入本次审查和上传；并非未知来源dirty，可在同基线任务分支继续。iPhone原任务和指定视频会话不受本轮派工影响。
+
+# 2026-11-03 GitHub同步顺序更新（纳入当前配置审查）
+
+用户要求在MD增加“修改前检查远端、有更新先安全同步、修改后审查通过再上传”，具体执行以根[AGENTS.md](../../AGENTS.md#开工前同步与审查后上传-github)为准。覆盖下方历史任务中“候选先上传再独审”的顺序，不改写历史交付事实。
+
+| ID | owner / 独占范围 | 状态 | 验收 / 边界 |
+|---|---|---|---|
+| GITHUB-WORKFLOW-20261103 | 既有01 lead：AGENTS.md、FORMA.md、CLAUDE.md、本任务板与本人status/HANDOFF | review（本地文档，未提交/未推送） | 开工D:/Forma/source main@7017064干净；只读ls-remote核实远端main同SHA。更新安全同步、保留dirty/唯一写者、固定候选审查、修复复验及上传前再次检查要求；保留此前iPhone协调任务禁推送/禁合并等边界，不修改产品或启动重复修复 |
+
+# 2026-11-03 Casdoor与开源Lago接入（历史，已完成）
 
 本轮后续：用户明确授权“安排独立审查、修好问题、通过后合并main并同步GitHub，先不开真实收费”。既有01继续唯一lead及产品修复写者，专项06由新的独立审查子会话承担，工具Codex（身份定义中Claude Code为建议，工具变化不改变职责）；不复用上一轮辅助审查者，不冒称02已接单。已核当前团队无活动06，原06记忆仍是未接手配置；只写新专项交付，不接管其旧目录/记忆。正式报告须绑定候选与复验SHA，由本人实测，不以01旧464项报告代替。
 

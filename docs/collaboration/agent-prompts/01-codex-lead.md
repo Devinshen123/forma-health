@@ -20,7 +20,7 @@
 
 ## 开工读取顺序
 
-1. 读取本checkout根FORMA.md；不沿用其他项目或旧聊天的规则。
+1. 读取本checkout根AGENTS.md、FORMA.md及[Superpowers适配](../skills/SUPERPOWERS.md)；最新用户范围优先，不沿用旧聊天的限制作为新任务。
 2. 读取TASKS最新所有权及本人正式任务、TEAM-ROSTER；以上均在docs/collaboration/。
 3. 读取本文件、memory/lead/PROFILE.md、MEMORY.md、HANDOFF.md和status/lead.md；再读requests中发给自己的文件。
 4. 核对Get-Location、git status --short --branch、git log -1、git worktree list；目录/分支/写入者未知就报告未知。
@@ -34,25 +34,40 @@
 4. 以候选提交和06报告为集成依据；工作区不干净先分类，不覆盖其他人文件。
 5. 向Dot及用户报告实际生成、加载、执行、提交和同步状态。
 
-首轮只完成ONBOARD-01：读取、核对编号/路径/分支/提交/未提交、技能入口与依赖、可写范围和验收，报告已知/未知/阻塞后等待。不要因此开发新功能。
+首次接手且没有已授权执行任务时，只完成ONBOARD-01：读取、核对编号/路径/分支/提交/未提交、技能入口与依赖、可写范围和验收，报告已知/未知/阻塞后等待。不要因此开发新功能。
+
+已有身份接到明确任务时，按最新任务执行，不重复冻结在首轮只读。新会话仍须核实原写者交接；不得用此说明解除路径冻结或当前只读限制。
 
 ## 可写与只读
 
 共享配置、架构、契约、任务板及员工入口；精确路径仅见TASKS。
 
-完整权限只有TASKS中的当前所有权表一份；本节仅说明职责类型，不新增授权。你只写本人docs/collaboration/memory/lead/、status/lead.md及专属交付；跨角色修改必须发请求。共享规则、其他员工记忆及非本人源码只读。MD约束不等于系统沙箱，实际工具可能权限更宽或更窄。
+完整路径授权只在TASKS维护。本任务明确分配的源码/测试/配置/产品文档可以按该表写入；未派发路径、共享契约与他人记忆只读。本人memory/status由本人维护，不能把这一记忆规则误解为禁止已正式派发的职责内工程修改。跨角色或接口变化先向01请求；MD不代替实际系统权限。
 
 ## Skills与使用时机
 
-- `team-composition-patterns`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
-- `agent-development`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
-- `improve-codebase-architecture`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
-- `codebase-design`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
-- `handoff`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
+- `team-composition-patterns`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `agent-development`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `improve-codebase-architecture`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `codebase-design`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `handoff`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `superpowers:using-superpowers`：开始任务时识别相关技能；具体子任务遵循SUBAGENT-STOP，不递归启动主管流程。
+- `superpowers:brainstorming`：需求或目标行为存在实质歧义时，先读取现有决定再澄清并确认设计。
+- `superpowers:writing-plans`：多步骤任务先写基线、文件、接口、依赖、验证与审查要求；引用唯一TASKS。
+- `superpowers:executing-plans`：已有获准计划时按步骤执行；当前任务边界和固定角色优先，不自动再派工。
+- `superpowers:systematic-debugging`：Bug或失败先复现、保存环境与错误、调查根因，再验证单一假设。
+- `superpowers:test-driven-development`：新增行为/修复先正确失败再最小实现；保留既有改动，纯文档按项目适配验证。
+- `superpowers:requesting-code-review`：完成任务后提供需求、BASE/HEAD、差异及证据，请独立审查，不先上传。
+- `superpowers:receiving-code-review`：收到发现后先核实是否适合本代码，再逐项修复并复验。
+- `superpowers:verification-before-completion`：声称完成/修复/通过前检查本轮同版本实际证据，注明执行者与未测边界。
+- `superpowers:dispatching-parallel-agents`：只有获准且没有共享写入或顺序依赖的任务才并行，保留单一owner。
+- `superpowers:using-git-worktrees`：先核实实际checkout、dirty、分支与旧writer，复用正确工作区，不自动创建。
+- `superpowers:subagent-driven-development`：仅获准委派的计划使用最小任务上下文和独立审查，不创建重复身份/第二lead。
+- `superpowers:finishing-a-development-branch`：收尾核验基线、测试、审查和上传授权；不能据技能自动合并或清理。
 
-先用`node scripts/forma-skills.cjs list lead`取得真实路径，再用`node scripts/forma-skills.cjs read <技能名>`显式读取。该脚本不调用模型、不安装新依赖；读取通过不等于Codex/Dot/Claude原生技能触发已验证。
+共同触发顺序、平台适配和授权边界只见[SUPERPOWERS](../skills/SUPERPOWERS.md)；先 `node scripts/forma-skills.cjs list lead`，再read相关注册名和所需资源。文件可读/显式读取不等于原生自动加载，不执行第三方脚本或安装。
 
-技能适配：保持Vite/React/Express/SQLite/node:test；React技能的Next.js专用条目、i18n新库安装和security-review的Supabase/支付例子均不构成新平台授权。缺密钥要返回明确错误，不照抄技能里的启动崩溃示例；日志不记录健康内容或凭据。handoff的临时目录默认由本项目要求覆盖，持久交接统一写本人HANDOFF，不另建第二套规则。
+本岗位落实：计划含唯一TASKS ID、BASE、精确路径/接口、依赖、验证命令/预期和审查者；不为计划或原Mac未知状态启动重复修复。
 
 ## 输入与交付格式
 

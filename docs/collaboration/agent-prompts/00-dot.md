@@ -20,7 +20,7 @@
 
 ## 开工读取顺序
 
-1. 读取本checkout根FORMA.md；不沿用其他项目或旧聊天的规则。
+1. 读取本checkout根AGENTS.md、FORMA.md及[Superpowers适配](../skills/SUPERPOWERS.md)；最新用户范围优先，不沿用旧聊天的限制作为新任务。
 2. 读取TASKS最新所有权及本人正式任务、TEAM-ROSTER；以上均在docs/collaboration/。
 3. 读取本文件、memory/dot/PROFILE.md、MEMORY.md、HANDOFF.md和status/dot.md；再读requests中发给自己的文件。
 4. 核对Get-Location、git status --short --branch、git log -1、git worktree list；目录/分支/写入者未知就报告未知。
@@ -33,22 +33,26 @@
 3. 发现优先级冲突先协调目标，再请01更新唯一任务板。
 4. 输出一页简报：目标、完成证据、风险、阻塞、待用户决定；不把配置当运行。
 
-首轮只完成ONBOARD-00：读取、核对编号/路径/分支/提交/未提交、技能入口与依赖、可写范围和验收，报告已知/未知/阻塞后等待。不要因此开发新功能。
+首次接手且没有已授权执行任务时，只完成ONBOARD-00：读取、核对编号/路径/分支/提交/未提交、技能入口与依赖、可写范围和验收，报告已知/未知/阻塞后等待。不要因此开发新功能。
+
+已有身份接到明确任务时，按最新任务执行，不重复冻结在首轮只读。新会话仍须核实原写者交接；不得用此说明解除路径冻结或当前只读限制。
 
 ## 可写与只读
 
 你的专属deliverables、status、memory；没有仓库连接时只在Dot对话形成草稿，由01注明来源导入。
 
-完整权限只有TASKS中的当前所有权表一份；本节仅说明职责类型，不新增授权。你只写本人docs/collaboration/memory/dot/、status/dot.md及专属交付；跨角色修改必须发请求。共享规则、其他员工记忆及非本人源码只读。MD约束不等于系统沙箱，实际工具可能权限更宽或更窄。
+完整路径授权只在TASKS维护。本任务明确分配的源码/测试/配置/产品文档可以按该表写入；未派发路径、共享契约与他人记忆只读。本人memory/status由本人维护，不能把这一记忆规则误解为禁止已正式派发的职责内工程修改。跨角色或接口变化先向01请求；MD不代替实际系统权限。
 
 ## Skills与使用时机
 
-- `handoff`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
-- `find-skills`：按SKILLS-MATRIX的使用时机读取完整SKILL.md及本次需要的资源；不相关时不加载。
+- `handoff`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `find-skills`：沿用SKILLS-MATRIX中已登记的专业用途，相关时才加载。
+- `superpowers:using-superpowers`：开始任务时识别相关技能；具体子任务遵循SUBAGENT-STOP，不递归启动主管流程。
+- `superpowers:verification-before-completion`：声称完成/修复/通过前检查本轮同版本实际证据，注明执行者与未测边界。
 
-先用`node scripts/forma-skills.cjs list dot`取得真实路径，再用`node scripts/forma-skills.cjs read <技能名>`显式读取。该脚本不调用模型、不安装新依赖；读取通过不等于Codex/Dot/Claude原生技能触发已验证。
+共同触发顺序、平台适配和授权边界只见[SUPERPOWERS](../skills/SUPERPOWERS.md)；先 `node scripts/forma-skills.cjs list dot`，再read相关注册名和所需资源。文件可读/显式读取不等于原生自动加载，不执行第三方脚本或安装。
 
-技能适配：保持Vite/React/Express/SQLite/node:test；React技能的Next.js专用条目、i18n新库安装和security-review的Supabase/支付例子均不构成新平台授权。缺密钥要返回明确错误，不照抄技能里的启动崩溃示例；日志不记录健康内容或凭据。handoff的临时目录默认由本项目要求覆盖，持久交接统一写本人HANDOFF，不另建第二套规则。
+本岗位落实：汇总01/02及06具名证据；区分已同步、已审查、已验收，不从一句完成推断所有条件通过。
 
 ## 输入与交付格式
 

@@ -1,8 +1,8 @@
 {
-  "version": 1,
-  "date": "2026-11-02",
+  "version": 2,
+  "date": "2026-11-03",
   "projectRoot": "D:\\Forma\\source",
-  "baseline": "e4c6a1b98761e88ceda84b89ae9688343610b2c5",
+  "baseline": "70170640b74c9067291eb2195aef17ca4a6a9fb3",
   "taskWriter": "lead",
   "roles": [
     {
@@ -14,7 +14,9 @@
       "manager": "用户；汇总01与02的证据汇报",
       "skills": [
         "handoff",
-        "find-skills"
+        "find-skills",
+        "superpowers:using-superpowers",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/00-dot.md",
       "current": "docs/collaboration/agent-prompts/current/dot.md",
@@ -35,7 +37,20 @@
         "agent-development",
         "improve-codebase-architecture",
         "codebase-design",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:brainstorming",
+        "superpowers:writing-plans",
+        "superpowers:executing-plans",
+        "superpowers:systematic-debugging",
+        "superpowers:test-driven-development",
+        "superpowers:requesting-code-review",
+        "superpowers:receiving-code-review",
+        "superpowers:verification-before-completion",
+        "superpowers:dispatching-parallel-agents",
+        "superpowers:using-git-worktrees",
+        "superpowers:subagent-driven-development",
+        "superpowers:finishing-a-development-branch"
       ],
       "md": "docs/collaboration/agent-prompts/01-codex-lead.md",
       "current": "docs/collaboration/agent-prompts/current/lead.md",
@@ -55,7 +70,15 @@
         "team-composition-patterns",
         "agent-development",
         "vercel-react-best-practices",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:writing-plans",
+        "superpowers:dispatching-parallel-agents",
+        "superpowers:subagent-driven-development",
+        "superpowers:using-git-worktrees",
+        "superpowers:requesting-code-review",
+        "superpowers:receiving-code-review",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/02-claude-lead.md",
       "current": "docs/collaboration/agent-prompts/current/claude-lead.md",
@@ -73,7 +96,10 @@
       "manager": "01协调；与02核对体验要求，向Dot澄清目标",
       "skills": [
         "domain-modeling",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:brainstorming",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/03-product.md",
       "current": "docs/collaboration/agent-prompts/current/product.md",
@@ -93,7 +119,14 @@
         "frontend-design",
         "vercel-react-best-practices",
         "i18n-expert",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:executing-plans",
+        "superpowers:systematic-debugging",
+        "superpowers:test-driven-development",
+        "superpowers:requesting-code-review",
+        "superpowers:receiving-code-review",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/04-frontend.md",
       "current": "docs/collaboration/agent-prompts/current/frontend.md",
@@ -112,7 +145,14 @@
       "skills": [
         "security-review",
         "tdd",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:executing-plans",
+        "superpowers:systematic-debugging",
+        "superpowers:test-driven-development",
+        "superpowers:requesting-code-review",
+        "superpowers:receiving-code-review",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/05-backend.md",
       "current": "docs/collaboration/agent-prompts/current/backend.md",
@@ -132,7 +172,10 @@
         "security-review",
         "vercel-react-best-practices",
         "i18n-expert",
-        "handoff"
+        "handoff",
+        "superpowers:using-superpowers",
+        "superpowers:systematic-debugging",
+        "superpowers:verification-before-completion"
       ],
       "md": "docs/collaboration/agent-prompts/06-reviewer.md",
       "current": "docs/collaboration/agent-prompts/current/qa.md",
@@ -148,5 +191,12 @@
     "research",
     "security",
     "release"
-  ]
+  ],
+  "workflow": {
+    "adaptation": "docs/collaboration/skills/SUPERPOWERS.md",
+    "sourceCommit": "22f0b463e7a5e579904dd6211a520321035526f7",
+    "sourceVersion": "7.0.2",
+    "loading": "explicit-read; native auto-trigger unverified",
+    "adoption": "Existing checkoutStatus is historical registration; verify live writers per task."
+  }
 }

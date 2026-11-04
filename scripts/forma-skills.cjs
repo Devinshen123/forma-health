@@ -25,10 +25,16 @@ function check(skill, outputContent = false) {
     const target = path.join(directory, entry.path);
     if (!available || !fs.existsSync(target)) { results.push({path:entry.path, result:'missing'}); continue; }
     const bytes = fs.readFileSync(target);
-    const actual = crypto.createHash('sha256').update(bytes).digest('hex');
+    if (skill.hashMode && skill.hashMode !== 'lf') throw Error('Unsupported skill hash mode: ' + skill.hashMode);
+    const content = skill.hashMode === 'lf' ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n')) : bytes;
+    const actual = crypto.createHash('sha256').update(content).digest('hex');
     results.push({path:entry.path, result:actual===entry.sha256?'pass':'changed', sha256:actual});
   }
   if (outputContent) {
+    if (!available || results.some(r => r.result !== 'pass')) {
+      console.error(JSON.stringify({name:skill.name,path:directory,error:'Skill resources unavailable or changed; content not loaded',results},null,2));
+      return {name:skill.name,available,resources:results.length,passed:false,knownMissing:skill.knownMissing,results};
+    }
     console.log(`SKILL ${skill.name}\nPATH ${directory}\nSTATUS ${available ? skill.status : 'missing on this host; configure .forma-local/skills-paths.json'}\n`);
     if (available) console.log(fs.readFileSync(path.join(directory,'SKILL.md'),'utf8'));
     console.log('\nRESOURCES (read needed files explicitly; scripts are never executed):\n'+JSON.stringify(results,null,2));

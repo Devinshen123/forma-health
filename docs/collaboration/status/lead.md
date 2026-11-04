@@ -1,3 +1,15 @@
+## 2026-11-03 TEAM-SUPERPOWERS-20261103（配置候选待独审）
+
+01唯一lead，D:/Forma/source/codex/team-superpowers-20261103，BASE7017064；用户批准七身份方案、保留六MD并审查后上传，不改业务/main。原六MD已逐文件SHA备份；公共员工定义、13个固定Superpowers流程登记、首次/日常模板与配置工具完成。CLI8/8、Windows18/18、portable18/18、25技能160资源、七role list及13技能read、三脚本语法、生成幂等检查均通过，合计29组exit0；初次两项表述检查失败已记录并修正，不能抹去。日志D:/Forma/logs/team-superpowers-20261103；旧agent-development缺test-agent-trigger.sh警告仍保留，未声称原生触发或Mac实机验证。
+
+未修改src/server/ios/vendor/public、依赖、真实数据/配置或其他员工记忆/status；不操作视频/iPhone原任务。下一步精确本地候选提交，专项06独立审查并修复复验，通过前不push。此授权仅解禁本配置上传，不扩大旧任务或合并main/部署权限。
+
+## 2026-11-03 GITHUB-WORKFLOW-20261103（历史本地阶段，纳入当前独审）
+
+用户新增长期顺序：修改前核实GitHub对应分支，有更新先安全同步，验证并审查通过后才上传。01在D:/Forma/source核实main@7017064干净、ls-remote远端main同SHA后修改根AGENTS及FORMA/CLAUDE引用、任务板和本人交接；保留dirty/分叉/写者不明时停止整合、固定候选复验和上传前再检查。此前iPhone协调任务禁止推送/合并等边界仍保留；不据此启动代码修复、测试、部署、安装或新写者，不操作视频会话。仅本地文档，未提交/未推送，不能冒称Mac采用或审查通过。
+
+本地验证：git diff --check通过；6份文档、AGENTS目标标题与TASKS相对链接检查通过，修改范围仅本任务MD。未运行产品测试/构建；这些文档检查不等于独立审查通过。
+
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（完成）
 
 最终：正式06通过4f98d4（86专项、471全套、完整build、中英UI反馈），01精确集成原报告，未改获审产品树。main从76dcbe2正常快进至1d04c75，atomic同步main/主管分支且远端一致；D本站main同版已启，收费仅sandbox。原40表39同内容，仅签名通知摘要+16，原账户/健康/4份私有非DB文件/实际.env保持，总41表；after-main81文件备份/3SQLite快照/可读Lago归档已保留，未演练恢复。最终回执文档提交也正常同步并刷新本机标识，最终SHA随所属提交/HTTP复核，不将此SHA硬编码为未来版本。不触碰真实用户浏览器，不开真实扣费/商户或公网部署。
