@@ -130,22 +130,59 @@ final class FormaUITests: XCTestCase {
         add.tap()
         XCTAssertTrue(element("demo.form").waitForExistence(timeout: 5))
         XCTAssertTrue(element("record.demo.notice").exists)
-        for (identifier, value) in [
+        let entries = [
             ("record.name", "Synthetic UI meal"),
             ("record.grams", "150"),
             ("record.kcal", "250"),
             ("record.protein", "20"),
             ("record.carbs", "30"),
             ("record.fat", "5"),
-        ] {
+        ]
+        for (identifier, value) in entries {
             replaceText(identifier, with: value)
+        }
+        // Each field holds exactly its own value. A field that took the keyboard late would leave
+        // its digits in the field before it, which reading only the last field cannot catch.
+        for (identifier, value) in entries {
+            let field = app.textFields.matching(identifier: identifier).firstMatch
+            reveal(field, forReading: true)
+            XCTAssertEqual(field.value as? String, value, "\(identifier) must hold only what was typed into it")
         }
         let save = button("record.save")
         XCTAssertTrue(save.exists)
         XCTAssertFalse(save.isEnabled, "Even a valid demo form must not save personal account data")
+
+        // Closing with the keyboard still up.
+        let last = app.textFields.matching(identifier: "record.fat").firstMatch
+        reveal(last)
+        last.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "This close is with the keyboard up")
         let cancel = button("record.cancel")
         XCTAssertTrue(waitUntilHittable(cancel))
         cancel.tap()
+        assertScreen("nutrition")
+
+        // Coming back opens a new, empty form - nothing typed before is carried in - and closing it
+        // untouched, with no keyboard up, changes nothing either.
+        reveal(add)
+        add.tap()
+        XCTAssertTrue(element("demo.form").waitForExistence(timeout: 5))
+        for (identifier, _) in entries {
+            let field = app.textFields.matching(identifier: identifier).firstMatch
+            reveal(field, forReading: true)
+            // An empty field's value reads as "" on iOS 27.2 here and as the field's own placeholder
+            // on CI's iOS 18 (an empty record.grams read "Portion eaten (g)"). Both mean empty. A
+            // missing value, an old value or any other text does not, and nil never matches nil.
+            let shown = field.value as? String
+            XCTAssertNotNil(shown, "\(identifier) must report its text")
+            let placeholder = field.placeholderValue
+            let empty = shown == "" || (shown != nil && placeholder != nil && shown == placeholder)
+            XCTAssertTrue(empty, "\(identifier) must start empty on a new form, not \(shown ?? "nil")")
+        }
+        XCTAssertFalse(app.keyboards.firstMatch.exists, "This close is with no keyboard up")
+        let close = button("record.cancel")
+        XCTAssertTrue(waitUntilHittable(close))
+        close.tap()
         assertScreen("nutrition")
         assertMetric("nutrition.total.kcal", equals: 500)
         assertMetric("nutrition.total.protein", equals: 25)
@@ -465,7 +502,10 @@ final class FormaUITests: XCTestCase {
         add(tree)
     }
 
-    private func reveal(_ target: XCUIElement, attempts: Int = 8) {
+    /// `forReading` is for checking what a control shows, never for tapping it: reading a value
+    /// needs the control on screen and in the tree, not a prediction that a touch would land, so
+    /// that prediction is not asserted there. Every path that taps keeps the assertion.
+    private func reveal(_ target: XCUIElement, attempts: Int = 8, forReading: Bool = false) {
         let scroll = scrollContainer(for: target)
         for attempt in 0..<attempts {
             let viewport = contentViewport(scroll)
@@ -473,7 +513,10 @@ final class FormaUITests: XCTestCase {
                 let frame = target.frame
                 if validFrame(frame) && fullyVisible(frame, in: viewport) {
                     attachControlGeometry(target, viewport: viewport)
-                    XCTAssertTrue(waitUntilHittable(target), "A fully visible native control must be hittable: \(target.identifier)")
+                    if forReading { return }
+                    let hittable = waitUntilHittable(target)
+                    if !hittable { probeUnhittable(target) }
+                    XCTAssertTrue(hittable, "A fully visible native control must be hittable: \(target.identifier)")
                     return
                 }
                 // An upward-only swipe can move a top-of-page action away from
@@ -509,6 +552,32 @@ final class FormaUITests: XCTestCase {
         return usable.max(by: { $0.frame.height < $1.frame.height }) ?? app
     }
 
+    /// Evidence only, on a path that already fails. CI's iOS 18 once reported record.grams as not
+    /// hittable in the middle of the screen with nothing over it in the tree, and the run stopped
+    /// before any tap, so it could not say whether accessibility mispredicted or a real touch would
+    /// also miss. This records what a real touch at the control's centre does. The assertion that
+    /// follows still fails either way; nothing here can turn a failure into a pass.
+    ///
+    /// "Keyboard Focused" is read from `debugDescription`. It is a diagnostic string, not a stable
+    /// public focus API, so it is only ever written into this attachment, never asserted on.
+    private func probeUnhittable(_ target: XCUIElement) {
+        func focused() -> Bool {
+            target.debugDescription.components(separatedBy: "\n").first?.contains("Keyboard Focused") ?? false
+        }
+        let before = "focusedBefore=\(focused()) keyboard=\(app.keyboards.firstMatch.exists) frame=\(target.frame)"
+        attachScreenshot("Unhittable \(target.identifier) before probe tap")
+        target.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        // The keyboard is often up already, from the field before, so its presence says nothing.
+        // Wait on the focus itself; "false" then means no focus within three seconds.
+        let settled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in focused() }, object: nil)
+        let gained = XCTWaiter.wait(for: [settled], timeout: 3) == .completed
+        let after = "focusedAfterRealTap=\(gained) (waited up to 3s) hittableAfter=\(target.isHittable)"
+        let report = XCTAttachment(string: "\(target.identifier)\n\(before)\n\(after)\n\n\(app.debugDescription)")
+        report.name = "Unhittable probe \(target.identifier)"
+        report.lifetime = .keepAlways
+        add(report)
+    }
+
     private func contentViewport(_ scroll: XCUIElement) -> CGRect {
         var viewport = app.frame.intersection(scroll.frame)
         // Only the chrome in front of this container hides anything, and index
@@ -531,7 +600,11 @@ final class FormaUITests: XCTestCase {
             let top = max(viewport.minY, banner.frame.maxY)
             viewport = CGRect(x: viewport.minX, y: top, width: viewport.width, height: max(0, viewport.maxY - top))
         }
-        var covers = [app.keyboards.firstMatch]
+        // The keyboard's frame starts below the predictions bar that sits on top of it (on CI's
+        // iOS 18: SystemInputAssistantView from y 538, the keyboard from y 583). The bar covers
+        // the form as surely as the keys do, so it counts as cover too.
+        var covers = [app.keyboards.firstMatch,
+                      app.otherElements.matching(identifier: "SystemInputAssistantView").firstMatch]
         if !presented { covers.insert(app.tabBars.firstMatch, at: 0) }
         for cover in covers where cover.exists {
             let frame = cover.frame
