@@ -83,6 +83,38 @@ final class PlanStoreTests: XCTestCase {
         }
     }
 
+    @MainActor func testComparingVersionsInTheDemoOnlyReadsAndSavesNothing() throws {
+        let store = AppStore(uiTesting: true)
+        store.enterDemo()
+        let before = store.state
+        let history = PlanComparison.history(store.state)
+        XCTAssertEqual(history.map(\.number), [1], "The demo has a single starting version")
+        XCTAssertTrue(history[0].isCurrent)
+        XCTAssertNil(PlanComparison.defaultPair(store.state), "One version has nothing to compare")
+        XCTAssertEqual(store.state, before)
+        XCTAssertFalse(store.hasUnconfirmedPlanSave, "Reading history starts no save")
+
+        // A synthetic two-version history set directly on the store compares without writing.
+        var object = try XCTUnwrap(Self.planState.objectValue)
+        var versions = try XCTUnwrap(object["planVersions"]?.arrayValue)
+        var next = try XCTUnwrap(versions[0].objectValue)
+        next["id"] = .string("v2"); next["parentId"] = .string("v1")
+        next["trainingMinutes"] = .number(30); next["proteinTarget"] = .null
+        versions.append(.object(next))
+        object["planVersions"] = .array(versions)
+        object["currentPlanId"] = .string("v2")
+        store.state = .object(object)
+        let synthetic = store.state
+        let pair = try XCTUnwrap(PlanComparison.defaultPair(store.state))
+        XCTAssertEqual(pair.base, "v1")
+        XCTAssertEqual(pair.target, "v2")
+        let changes = try XCTUnwrap(PlanComparison.compare(store.state, from: pair.base, to: pair.target))
+        XCTAssertEqual(changes.map(\.field), [.trainingMinutes, .proteinTarget])
+        XCTAssertEqual(changes.map(\.kind), [.changed, .removed])
+        XCTAssertEqual(store.state, synthetic)
+        XCTAssertFalse(store.hasUnconfirmedPlanSave)
+    }
+
     // MARK: - Onboarding
 
     @MainActor func testOnlyASignedInAccountWithoutAProfileIsSentToOnboarding() {

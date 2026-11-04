@@ -9,11 +9,10 @@ import FormaCore
 struct PlanView: View {
     let store: AppStore
     @State private var editor: PlanEditorFields?
+    @State private var compareBase: String?
+    @State private var compareTarget: String?
 
     private var proposed: [SuggestionView] { store.proposedSuggestions }
-    private var sortedVersions: [PlanVersionView] {
-        store.planVersions.sorted { $0.createdAt > $1.createdAt }
-    }
 
     var body: some View {
         ScrollView {
@@ -36,6 +35,7 @@ struct PlanView: View {
                     current(plan)
                     suggestions(plan)
                     history()
+                    comparison()
                 } else {
                     FeatureEmpty(title: store.text("还没有计划", "No plan yet"),
                                  message: store.text("完成引导后，第一版计划会出现在这里。",
@@ -155,31 +155,185 @@ struct PlanView: View {
 
     private func history() -> some View {
         FeatureCard {
-            Text(store.text("版本历史", "Version history")).font(.headline)
-            ForEach(sortedVersions) { version in
+            // The website's "Plan versions" panel: newest first, numbered in storage order.
+            Text(store.text("计划版本", "Plan versions")).font(.headline)
+            ForEach(numberedVersions) { item in
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: version.id == store.currentPlan?.id ? "largecircle.fill.circle" : "circle")
+                    Image(systemName: item.isCurrent ? "largecircle.fill.circle" : "circle")
                         .font(.caption).foregroundStyle(FeatureTheme.muted).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(reasonText(version.reason)).font(.subheadline)
-                        Text(FeatureFormat.dateTime(version.createdAt, language: store.language))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(store.text("版本 \(item.number) · \(reasonText(item.version.reason))",
+                                        "Version \(item.number) · \(reasonText(item.version.reason))"))
+                            .font(.subheadline)
+                        Text(summary(item.version))
                             .font(.caption2).foregroundStyle(FeatureTheme.muted)
+                        if let parent = PlanComparison.parent(of: item.id, in: store.state) {
+                            Button(store.text("查看差异", "Review changes")) {
+                                compareBase = parent.id
+                                compareTarget = item.id
+                            }
+                            .font(.caption)
+                            .accessibilityIdentifier("plan.history.review.\(item.id)")
+                        }
                     }
                     Spacer(minLength: 0)
-                    Text(store.text("\(FeatureFormat.number(version.fields.trainingDays, language: store.language, digits: 0)) 天 · \(FeatureFormat.number(version.fields.sleepHours, language: store.language)) 小时",
-                                    "\(FeatureFormat.number(version.fields.trainingDays, language: store.language, digits: 0))d · \(FeatureFormat.number(version.fields.sleepHours, language: store.language))h"))
-                        .font(.caption).foregroundStyle(FeatureTheme.muted)
+                    if item.isCurrent {
+                        Text(store.text("正在使用", "In use"))
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(FeatureTheme.accent, in: Capsule())
+                    }
                 }
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("plan.history.row.\(item.id)")
             }
-            if sortedVersions.isEmpty {
+            if numberedVersions.isEmpty {
                 Text(store.text("还没有版本记录。", "No versions recorded yet."))
                     .font(.subheadline).foregroundStyle(FeatureTheme.muted)
             }
-            Text(store.text("版本只追加，不覆盖。共 \(sortedVersions.count) 个版本。",
-                            "Versions are only ever added, never overwritten. \(sortedVersions.count) in total."))
+            Text(store.text("版本只追加，不覆盖。共 \(numberedVersions.count) 个版本。",
+                            "Versions are only ever added, never overwritten. \(numberedVersions.count) in total."))
                 .font(.caption2).foregroundStyle(FeatureTheme.muted)
                 .accessibilityIdentifier("plan.history.count")
+            Text(store.text("计划目标与实际记录分别保存；修改目标不会改变历史摄入、训练或睡眠。",
+                            "Targets and actual records are separate. Changing a target does not change earlier meals, training or sleep."))
+                .font(.caption2).foregroundStyle(FeatureTheme.muted)
+        }
+    }
+
+    /// Two saved versions side by side. Reading only: nothing here writes, so a demo can use it too.
+    private func comparison() -> some View {
+        FeatureCard {
+            Text(store.text("比较版本", "Compare versions")).font(.headline)
+            if numberedVersions.count < 2 {
+                Text(store.text("目前只有一个版本，保存新版本后可以在这里比较差异。",
+                                "There is only one version so far. Save a new version to compare them here."))
+                    .font(.subheadline).foregroundStyle(FeatureTheme.muted)
+                    .accessibilityIdentifier("plan.compare.single")
+            } else if let pair = selectedPair {
+                Picker(store.text("调整前", "Before"), selection: baseSelection(pair)) {
+                    ForEach(numberedVersions) { item in
+                        Text(versionLabel(item)).tag(item.id)
+                    }
+                }
+                .accessibilityIdentifier("plan.compare.base")
+                Picker(store.text("调整后", "After"), selection: targetSelection(pair)) {
+                    ForEach(numberedVersions) { item in
+                        Text(versionLabel(item)).tag(item.id)
+                    }
+                }
+                .accessibilityIdentifier("plan.compare.target")
+                let changes = PlanComparison.compare(store.state, from: pair.base, to: pair.target) ?? []
+                if pair.base == pair.target {
+                    Text(store.text("请选择两个不同的版本。", "Choose two different versions."))
+                        .font(.subheadline).foregroundStyle(FeatureTheme.muted)
+                        .accessibilityIdentifier("plan.compare.same")
+                } else if changes.isEmpty {
+                    Text(store.text("这两个版本的目标完全相同。", "These two versions have the same targets."))
+                        .font(.subheadline).foregroundStyle(FeatureTheme.muted)
+                        .accessibilityIdentifier("plan.compare.none")
+                } else {
+                    ForEach(changes, id: \.field) { change in
+                        changeRow(change)
+                    }
+                }
+            }
+            Text(store.text("比较只读取已保存的版本，不会保存或改动计划。",
+                            "Comparing only reads saved versions. It saves and changes nothing."))
+                .font(.caption2).foregroundStyle(FeatureTheme.muted)
+                .accessibilityIdentifier("plan.compare.note")
+        }
+    }
+
+    private func changeRow(_ change: PlanFieldChange) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(fieldTitle(change.field)).font(.subheadline)
+                Spacer(minLength: 0)
+                Text(kindText(change.kind))
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(FeatureTheme.accent, in: Capsule())
+            }
+            HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(store.text("调整前", "Before")).font(.caption2).foregroundStyle(FeatureTheme.muted)
+                    Text(valueText(change.before, change.field)).font(.caption)
+                }
+                Image(systemName: "arrow.right").font(.caption2).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(store.text("调整后", "After")).font(.caption2).foregroundStyle(FeatureTheme.muted)
+                    Text(valueText(change.after, change.field)).font(.caption.weight(.semibold))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("plan.compare.change.\(change.field.rawValue)")
+        .accessibilityValue(change.kind.rawValue)
+    }
+
+    private var numberedVersions: [NumberedPlanVersion] { PlanComparison.history(store.state) }
+
+    /// The user's choice while both versions still exist, otherwise the current plan and its parent.
+    private var selectedPair: (base: String, target: String)? {
+        let ids = Set(numberedVersions.map(\.id))
+        if let base = compareBase, let target = compareTarget, ids.contains(base), ids.contains(target) {
+            return (base, target)
+        }
+        return PlanComparison.defaultPair(store.state)
+    }
+
+    private func baseSelection(_ pair: (base: String, target: String)) -> Binding<String> {
+        Binding(get: { pair.base }, set: { compareBase = $0; compareTarget = pair.target })
+    }
+
+    private func targetSelection(_ pair: (base: String, target: String)) -> Binding<String> {
+        Binding(get: { pair.target }, set: { compareTarget = $0; compareBase = pair.base })
+    }
+
+    private func versionLabel(_ item: NumberedPlanVersion) -> String {
+        let label = store.text("版本 \(item.number)", "Version \(item.number)")
+        return item.isCurrent ? label + store.text("（正在使用）", " (in use)") : label
+    }
+
+    private func summary(_ version: PlanVersionView) -> String {
+        let date = FeatureFormat.dateTime(version.createdAt, language: store.language)
+        let days = FeatureFormat.number(version.fields.trainingDays, language: store.language)
+        let minutes = FeatureFormat.number(version.fields.trainingMinutes, language: store.language)
+        let sleep = FeatureFormat.number(version.fields.sleepHours, language: store.language)
+        return store.text("\(date) · \(days) 天 / 周 · \(minutes) 分钟 / 次 · \(sleep) 小时 / 晚",
+                          "\(date) · \(days) days / week · \(minutes) min / session · \(sleep) hours / night")
+    }
+
+    private func fieldTitle(_ field: PlanFieldKey) -> String {
+        switch field {
+        case .trainingDays: return store.text("每周训练天数", "Training days per week")
+        case .trainingMinutes: return store.text("每次训练时间", "Time per session")
+        case .sleepHours: return store.text("计划睡眠时间", "Planned sleep time")
+        case .calorieTarget: return store.text("能量目标", "Energy target")
+        case .proteinTarget: return store.text("蛋白质目标", "Protein target")
+        }
+    }
+
+    private func kindText(_ kind: PlanChangeKind) -> String {
+        switch kind {
+        case .added: return store.text("新增", "Added")
+        case .removed: return store.text("取消", "Removed")
+        case .changed: return store.text("变化", "Changed")
+        }
+    }
+
+    /// A missing target reads as the website's "Not set", never as 0.
+    private func valueText(_ value: Double?, _ field: PlanFieldKey) -> String {
+        guard let value else { return store.text("暂未设置", "Not set") }
+        let number = FeatureFormat.number(value, language: store.language)
+        switch field {
+        case .trainingDays: return store.text("\(number) 天 / 周", "\(number) days / week")
+        case .trainingMinutes: return store.text("\(number) 分钟 / 次", "\(number) min / session")
+        case .sleepHours: return store.text("\(number) 小时 / 晚", "\(number) hours / night")
+        case .calorieTarget: return "\(number) kcal"
+        case .proteinTarget: return "\(number) g"
         }
     }
 
