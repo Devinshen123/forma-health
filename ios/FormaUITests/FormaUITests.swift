@@ -4,6 +4,8 @@ import CoreGraphics
 /// Launches an isolated, in-memory demo. No backend, saved account or Keychain is used.
 final class FormaUITests: XCTestCase {
     private var app: XCUIApplication!
+    /// What the most recent `waitUntilHittable` saw; read only when a caller has already failed.
+    private var lastHittableSample: HittableSample?
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -437,7 +439,9 @@ final class FormaUITests: XCTestCase {
         let predicate = NSPredicate(format: "identifier == %@ OR label == %@ OR label == %@", "tab.\(key)", chinese, english)
         let tab = app.tabBars.buttons.matching(predicate).firstMatch
         XCTAssertTrue(tab.waitForExistence(timeout: 5))
-        XCTAssertTrue(waitUntilHittable(tab))
+        let ready = waitUntilHittable(tab)
+        if !ready { diagnoseUnreadyTab(tab, key: key, query: predicate) }
+        XCTAssertTrue(ready)
         tab.tap()
         assertScreen(key)
         attachScreenshot("Native tab \(key)")
@@ -667,12 +671,96 @@ final class FormaUITests: XCTestCase {
     }
 
     private func waitUntilHittable(_ target: XCUIElement, timeout: TimeInterval = 5) -> Bool {
+        // The same four conditions, read in the same order with the same short-circuits, and the
+        // same return. Each value the predicate reads is also kept, so a false can be traced to the
+        // condition that gave it - existence, a usable frame, the frame inside the app, or the
+        // accessibility prediction itself - without any extra query.
+        let sample = HittableSample()
+        lastHittableSample = sample
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-            guard target.exists else { return false }
+            sample.evaluations += 1
+            let exists = target.exists
+            sample.exists = exists
+            guard exists else { sample.stoppedAt["exists", default: 0] += 1; return false }
             let frame = target.frame
-            guard self.validFrame(frame), self.app.frame.contains(frame) else { return false }
-            return target.isHittable
+            sample.frame = frame
+            let valid = self.validFrame(frame)
+            sample.validFrame = valid
+            guard valid else { sample.stoppedAt["validFrame", default: 0] += 1; return false }
+            let appFrame = self.app.frame
+            sample.appFrame = appFrame
+            let inside = appFrame.contains(frame)
+            sample.insideApp = inside
+            guard inside else { sample.stoppedAt["insideApp", default: 0] += 1; return false }
+            let hittable = target.isHittable
+            sample.isHittable = hittable
+            if !hittable { sample.stoppedAt["isHittable", default: 0] += 1 }
+            return hittable
         }, object: nil)
         return XCTWaiter.wait(for: [ready], timeout: timeout) == .completed
+    }
+
+    /// Evidence only, after `selectTab` has already found its tab not ready and kept that result.
+    /// It records what the last wait saw, the tab and the app as they are, and - only when the
+    /// tab has a usable frame whose centre lies inside the app - what one real touch at that
+    /// centre does to the screen. The assertion that follows uses the result saved before this
+    /// ran, so nothing here can turn the failure into a pass.
+    private func diagnoseUnreadyTab(_ tab: XCUIElement, key: String, query: NSPredicate) {
+        var lines = ["tab=\(key)", "wait: \(lastHittableSample?.summary ?? "no sample")"]
+        lines.append("matches=\(app.tabBars.buttons.matching(query).count) state=\(app.state.rawValue) appFrame=\(app.frame)")
+        lines.append("target: exists=\(tab.exists) label=\(tab.exists ? tab.label : "-") frame=\(tab.frame) "
+                     + "enabled=\(tab.exists && tab.isEnabled) selected=\(tab.exists && tab.isSelected)")
+        for (index, button) in app.tabBars.buttons.allElementsBoundByIndex.enumerated() where button.exists {
+            lines.append("tabbar[\(index)] label=\(button.label) frame=\(button.frame) selected=\(button.isSelected)")
+        }
+        attachScreenshot("Unready tab \(key) before probe")
+        let before = XCTAttachment(string: app.debugDescription)
+        before.name = "Unready tab \(key) hierarchy before probe"
+        before.lifetime = .keepAlways
+        add(before)
+
+        let frame = tab.frame
+        let centre = CGPoint(x: frame.midX, y: frame.midY)
+        if !validFrame(frame) {
+            lines.append("probe: not run - the tab's frame is not usable: \(frame)")
+        } else if !app.frame.contains(centre) {
+            lines.append("probe: not run - the tab's centre \(centre) lies outside the app frame \(app.frame)")
+        } else {
+            let wasSelected = tab.isSelected
+            app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: centre.x, dy: centre.y)).tap()
+            let arrived = element("screen.\(key)").waitForExistence(timeout: 5)
+            lines.append("probe: tapped centre \(centre); screen.\(key) appeared=\(arrived); "
+                         + "selected \(wasSelected) -> \(tab.exists && tab.isSelected)")
+            attachScreenshot("Unready tab \(key) after probe")
+            let after = XCTAttachment(string: app.debugDescription)
+            after.name = "Unready tab \(key) hierarchy after probe"
+            after.lifetime = .keepAlways
+            add(after)
+        }
+        let report = XCTAttachment(string: lines.joined(separator: "\n"))
+        report.name = "Unready tab \(key) diagnosis"
+        report.lifetime = .keepAlways
+        add(report)
+    }
+}
+
+/// What `waitUntilHittable` read, condition by condition, on its last evaluation, and how many
+/// evaluations stopped at each condition. Filled only from values the predicate already reads.
+private final class HittableSample: @unchecked Sendable {
+    var evaluations = 0
+    var exists: Bool?
+    var frame: CGRect?
+    var validFrame: Bool?
+    var appFrame: CGRect?
+    var insideApp: Bool?
+    var isHittable: Bool?
+    var stoppedAt: [String: Int] = [:]
+
+    var summary: String {
+        func show<T>(_ value: T?) -> String { value.map { "\($0)" } ?? "not reached" }
+        let stops = stoppedAt.sorted { $0.key < $1.key }.map { "\($0.key)×\($0.value)" }.joined(separator: " ")
+        return "evaluations=\(evaluations) last: exists=\(show(exists)) frame=\(show(frame)) "
+            + "validFrame=\(show(validFrame)) appFrame=\(show(appFrame)) insideApp=\(show(insideApp)) "
+            + "isHittable=\(show(isHittable)) stoppedAt=[\(stops)]"
     }
 }
