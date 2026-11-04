@@ -679,6 +679,9 @@ final class FormaUITests: XCTestCase {
         lastHittableSample = sample
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             sample.evaluations += 1
+            // "last" means this evaluation only: a field it never reaches reads "not reached",
+            // never a value left over from an earlier evaluation. The stop counts keep adding up.
+            sample.startEvaluation()
             let exists = target.exists
             sample.exists = exists
             guard exists else { sample.stoppedAt["exists", default: 0] += 1; return false }
@@ -719,28 +722,42 @@ final class FormaUITests: XCTestCase {
         before.lifetime = .keepAlways
         add(before)
 
+        // One reading of each, so the centre that is checked is the centre that is touched. The
+        // tab's frame is in screen coordinates; an offset from the app's corner is not, so the
+        // centre is made relative to the app's origin before use.
         let frame = tab.frame
+        let appFrame = app.frame
         let centre = CGPoint(x: frame.midX, y: frame.midY)
+        let probe: Bool
         if !validFrame(frame) {
             lines.append("probe: not run - the tab's frame is not usable: \(frame)")
-        } else if !app.frame.contains(centre) {
-            lines.append("probe: not run - the tab's centre \(centre) lies outside the app frame \(app.frame)")
+            probe = false
+        } else if !validFrame(appFrame) || !appFrame.contains(centre) {
+            lines.append("probe: not run - the tab's centre \(centre) lies outside the app frame \(appFrame)")
+            probe = false
         } else {
-            let wasSelected = tab.isSelected
-            app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: centre.x, dy: centre.y)).tap()
-            let arrived = element("screen.\(key)").waitForExistence(timeout: 5)
-            lines.append("probe: tapped centre \(centre); screen.\(key) appeared=\(arrived); "
-                         + "selected \(wasSelected) -> \(tab.exists && tab.isSelected)")
-            attachScreenshot("Unready tab \(key) after probe")
-            let after = XCTAttachment(string: app.debugDescription)
-            after.name = "Unready tab \(key) hierarchy after probe"
-            after.lifetime = .keepAlways
-            add(after)
+            lines.append("probe: will touch centre \(centre) in app frame \(appFrame)")
+            probe = true
         }
+        // Saved before any touch: if the touch itself raises an XCTest issue, what was gathered
+        // up to here is not lost with it.
         let report = XCTAttachment(string: lines.joined(separator: "\n"))
         report.name = "Unready tab \(key) diagnosis"
         report.lifetime = .keepAlways
         add(report)
+        guard probe else { return }
+
+        let wasSelected = tab.exists && tab.isSelected
+        let offset = CGVector(dx: centre.x - appFrame.minX, dy: centre.y - appFrame.minY)
+        app.coordinate(withNormalizedOffset: .zero).withOffset(offset).tap()
+        let arrived = element("screen.\(key)").waitForExistence(timeout: 5)
+        attachScreenshot("Unready tab \(key) after probe")
+        let after = XCTAttachment(string: "probe: touched centre \(centre) (offset \(offset) from the app's origin); "
+                                  + "screen.\(key) appeared=\(arrived); "
+                                  + "selected \(wasSelected) -> \(tab.exists && tab.isSelected)\n\n\(app.debugDescription)")
+        after.name = "Unready tab \(key) after probe"
+        after.lifetime = .keepAlways
+        add(after)
     }
 }
 
@@ -755,6 +772,15 @@ private final class HittableSample: @unchecked Sendable {
     var insideApp: Bool?
     var isHittable: Bool?
     var stoppedAt: [String: Int] = [:]
+
+    func startEvaluation() {
+        exists = nil
+        frame = nil
+        validFrame = nil
+        appFrame = nil
+        insideApp = nil
+        isHittable = nil
+    }
 
     var summary: String {
         func show<T>(_ value: T?) -> String { value.map { "\($0)" } ?? "not reached" }
