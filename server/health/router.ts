@@ -2,6 +2,7 @@ import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { cloudProviderSchema, cloudProviders, emptyBodySchema, HealthError, providerSchema } from './model';
 import { HealthService, oauthCookieName, oauthCookiePath } from './service';
+import { callbackOutcome, callbackPage } from '../../src/health-copy';
 
 const sessionCookie = 'forma_session';
 export function healthRouter(service: HealthService, auth: RequestHandler, secureCookies: boolean) {
@@ -44,10 +45,10 @@ export function healthCallbackRouter(service: HealthService, secureCookies: bool
       if (typeof binding !== 'string' || !/^[a-f0-9]{64}$/.test(binding) || session !== undefined && (typeof session !== 'string' || !/^[a-f0-9]{64}$/.test(session))) throw new HealthError('HEALTH_OAUTH_INVALID', 400);
       res.clearCookie(oauthCookieName(provider), { httpOnly: true, secure: secureCookies, sameSite: 'lax', path: oauthCookiePath(provider) });
       await service.callback(provider, query, binding, session);
-      res.type('html').send('<!doctype html><html lang="en"><meta charset="utf-8"><title>Forma · Health connected</title><h1>Health account connected</h1><p>Return to Forma settings to sync and review imported records.</p><a href="/">Open Forma</a></html>');
+      res.type('html').send(callbackPage('connected'));
     } catch (error) {
       const status = error instanceof HealthError ? error.status : 400;
-      res.status(status).type('html').send('<!doctype html><html lang="en"><meta charset="utf-8"><title>Forma · Connection incomplete</title><h1>Connection incomplete</h1><p>The authorization was denied, expired, or could not be verified. Return to Forma and start a new connection.</p><a href="/">Open Forma</a></html>');
+      res.status(status).type('html').send(callbackPage(callbackOutcome(error instanceof HealthError ? error.code : undefined)));
     }
   });
   return router;
