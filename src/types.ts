@@ -273,13 +273,40 @@ export const emptyState = (): AppState => ({
   schedules: [],
   activeWorkouts: [],
 });
-export const localDate = (date = new Date()) =>
-  (() => { const parts=new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+/** A machine date key; callers without a zone retain the browser's local day. */
+export const localDate = (date = new Date(), timeZone?: string) => {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone, year: "numeric", month: "2-digit", day: "2-digit",
     calendar: "gregory", numberingSystem: "latn",
-  }).formatToParts(date); const get=(key:string)=>parts.find(p=>p.type===key)?.value;return `${get('year')}-${get('month')}-${get('day')}`; })();
+  }).formatToParts(date);
+  const get = (key: string) => parts.find((part) => part.type === key)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
+};
+
+/** Resolve display context without changing the saved profile or record dates. */
+export function viewTimeZone(profileZone?: string | null,
+  browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone): string {
+  for (const zone of [profileZone, browserZone, "UTC"]) {
+    if (!zone) continue;
+    try {
+      return new Intl.DateTimeFormat("en-US", { timeZone: zone }).resolvedOptions().timeZone;
+    } catch {
+      // Old/imported profiles can contain an unsupported zone. Fall back for display only.
+    }
+  }
+  return "UTC";
+}
+
+/** Inclusive calendar window, rather than fixed 24-hour durations across DST. */
+export function viewDateWindow(timeZone: string, count: 7 | 14, now = new Date()) {
+  const today = localDate(now, timeZone);
+  const dates = Array.from({ length: count }, (_, index) => {
+    const day = new Date(`${today}T12:00:00.000Z`);
+    day.setUTCDate(day.getUTCDate() - count + 1 + index);
+    return day.toISOString().slice(0, 10);
+  });
+  return { today, dates };
+}
 export const mealTotals = (m: Meal) => {
   const factor = m.grams / m.referenceGrams;
   return {

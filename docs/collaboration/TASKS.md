@@ -1,3 +1,13 @@
+# 2026-11-04 Mac网站更新与日期一致性修复（当前候选）
+
+用户在本Mac主管对话明确要求“更新你的，然后给自己安排任务去修改”。本轮01本人从远端main/70170640b74c9067291eb2195aef17ca4a6a9fb3建立独立Mac工作区；原iOS分支4494a48及图片删除/未跟踪文件保持不动。此新任务覆盖历史日期仅静态审查的执行限定，不启动其他员工，不修改Windows运行站点或真实健康数据。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| WEB-DATE-01 | 本对话01 lead；仅本分支src/types.ts、src/features/Dashboard.tsx、src/features/Trends.tsx、tests/view-dates.test.ts、tests/browser/view-dates.mts、本任务板、本人status/HANDOFF、decisions/ADR-view-dates-20261104.md | review | 从最新main更新；有效档案时区优先、无效/缺失回退浏览器再UTC；两页同一日历窗口、日期/星期标签一致，旧记录及行动键保留；合成跨区/DST/缺失/0/行动写键回归，类型、完整测试及完整build。候选分支同步GitHub，未经独审不合main；不将本人自测称06验收 |
+
+实际工作区：`/Users/shendejun/Desktop/运动健康网站-GitHub最新版/.forma-local/worktrees/lead-web-date-20261104`；分支`codex/web-date-consistency-20261104`。用户委托本人选择修改任务，本轮采用既有日期静态报告的最小候选，与趋势页原有档案优先行为一致。已有记录date、sleep时间戳/时区及旧completedActions不迁移；不增加午夜计时器、营养规则或后台能力。旧DATE-STATIC/REPORT任务历史状态不冒充关闭。
+
 # 2026-11-03 Casdoor与开源Lago接入（最新）
 
 本轮后续：用户明确授权“安排独立审查、修好问题、通过后合并main并同步GitHub，先不开真实收费”。既有01继续唯一lead及产品修复写者，专项06由新的独立审查子会话承担，工具Codex（身份定义中Claude Code为建议，工具变化不改变职责）；不复用上一轮辅助审查者，不冒称02已接单。已核当前团队无活动06，原06记忆仍是未接手配置；只写新专项交付，不接管其旧目录/记忆。正式报告须绑定候选与复验SHA，由本人实测，不以01旧464项报告代替。
