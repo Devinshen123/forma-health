@@ -8,12 +8,56 @@ import { emptyState, type AppState, type PlanVersion, type SyncSnapshot } from '
 import { diffStates } from '../src/sync/changes';
 import { SyncEngine } from '../src/sync/engine';
 import { ApiError } from '../src/api';
+import { readCached, writeCached } from '../src/sync/storage';
 
 const now = '2026-11-04T13:00:00.000Z';
 const makePlan = (parentId: string | null, minutes = 40): PlanVersion => ({
   id: randomUUID(), parentId, createdAt: now, reason: 'Independent synthetic fixture',
   trainingMinutes: minutes, trainingDays: 3, sleepHours: 8, calorieTarget: null, proteinTarget: null,
 });
+
+// Synthetic IndexedDB event transport; production cache merge/consent code still runs.
+function reviewIdb() {
+  const tables = new Map<string, Map<string, unknown>>();
+  let initialized = false;
+  let serial = Promise.resolve();
+  return { open() {
+    const opened: any = {};
+    opened.result = {
+      close() {},
+      createObjectStore(name: string) { tables.set(name, new Map()); },
+      transaction(names: string[], mode: string) {
+        const tx: any = {};
+        const operations: Array<() => void> = [];
+        let aborted = false;
+        let working: Map<string, Map<string, unknown>>;
+        tx.abort = () => { aborted = true; };
+        tx.objectStore = (name: string) => {
+          assert.ok(names.includes(name));
+          const operation = (run: () => unknown) => {
+            const req: any = {};
+            operations.push(() => { req.result = structuredClone(run()); req.onsuccess?.(); });
+            return req;
+          };
+          return {
+            get: (key: string) => operation(() => working.get(name)!.get(key)),
+            put: (value: any, key?: string) => operation(() => { working.get(name)!.set(key ?? value.user.id, structuredClone(value)); return key; }),
+            delete: (key: string) => operation(() => working.get(name)!.delete(key)),
+          };
+        };
+        serial = serial.then(async () => {
+          working = new Map([...tables].map(([name, values]) => [name, new Map(values)]));
+          while (operations.length && !aborted) { operations.shift()!(); await Promise.resolve(); }
+          if (aborted) tx.onabort?.();
+          else { if (mode === 'readwrite') for (const name of names) tables.set(name, working.get(name)!); tx.oncomplete?.(); }
+        });
+        return tx;
+      },
+    };
+    queueMicrotask(() => { if (!initialized) { initialized = true; opened.onupgradeneeded?.(); } opened.onsuccess?.(); });
+    return opened;
+  } };
+}
 async function setup(t: TestContext) {
   const root = resolve('.forma-local/review-evidence'); mkdirSync(root, { recursive: true });
   const dir = mkdtempSync(join(root, 'pr3-'));
@@ -95,6 +139,55 @@ test('independent client: semantic conflict preserves exportable queue without r
   await engine.discardInvalid();
   assert.equal(engine.status.pending, 0);
   assert.deepEqual(engine.context().state, h.before.state);
+});
+
+test('independent client: rejected acceptance stays paused across reload, reauthentication and stale cache merge; discard restores saving', async t => {
+  const h = await setup(t), nativeFetch = globalThis.fetch;
+  const previous = new Map(['fetch', 'localStorage', 'navigator', 'indexedDB'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  const values = new Map<string, string>([['forma-language', 'en']]);
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key),
+  } });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
+  Object.defineProperty(globalThis, 'indexedDB', { configurable: true, value: reviewIdb() });
+  const posts: unknown[] = [], engines: SyncEngine[] = [];
+  globalThis.fetch = async (input, init) => {
+    if (!String(input).startsWith('/api/')) return nativeFetch(input, init);
+    if (init?.method === 'POST') posts.push(JSON.parse(String(init.body)));
+    const headers = new Headers(init?.headers); headers.set('Cookie', h.cookie); headers.set('Origin', 'http://localhost:5173');
+    return nativeFetch(h.origin + String(input), { ...init, headers });
+  };
+  t.after(async () => {
+    for (const engine of engines) await engine.stop();
+    for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);
+  });
+  const create = async () => { const engine = new SyncEngine(h.user, h.before, () => {}); engines.push(engine); await engine.restore(); return engine; };
+  const first = await create(); await first.enable(true);
+  await assert.rejects(first.save(h.accepted), error => error instanceof ApiError && error.code === 'PLAN_BASE_CONFLICT');
+  const cached = await readCached(h.user.id); assert.ok(cached); assert.equal(cached.queue.length, 1);
+  const mutationId = cached.queue[0].mutationId;
+  assert.deepEqual(Reflect.get(cached, 'planBaseBlocks'), [mutationId], 'pause must survive browser reload');
+  // A parked tab carrying an older cache copy cannot clear another tab's pause.
+  const staleCopy = { ...cached, planBaseBlocks: [] };
+  const merged = await writeCached(staleCopy);
+  assert.deepEqual(Reflect.get(merged, 'planBaseBlocks'), [mutationId]);
+  const reloaded = await create();
+  await reloaded.refresh(); await reloaded.flush();
+  await reloaded.reauthenticate(h.before, () => {}); await reloaded.refresh();
+  await first.reconcileCache(); await first.refresh();
+  assert.equal(posts.length, 1, 'reload, explicit flush and reauthentication must preserve rejected state without transport');
+  assert.equal(reloaded.status.pending, 1); assert.deepEqual(reloaded.exportPending().state, h.accepted);
+  await reloaded.discardInvalid();
+  assert.equal(reloaded.status.pending, 0);
+  const cleared = await readCached(h.user.id); assert.ok(cleared); assert.deepEqual(cleared.queue, []);
+  assert.deepEqual(Reflect.get(cleared, 'planBaseBlocks'), []);
+  await first.reconcileCache(); await first.refresh(); assert.equal(first.status.pending, 0);
+  await reloaded.save({ ...h.before.state, completedActions: { '2026-11-04': ['synthetic recovery'] } });
+  assert.equal(posts.length, 2); assert.equal(reloaded.status.pending, 0);
+  const after = await h.snapshot(); assert.equal(after.revision, h.before.revision + 1);
+  assert.deepEqual(after.state.planVersions, h.before.state.planVersions);
+  assert.equal(after.state.suggestions[0].status, 'proposed');
 });
 
 for (const endpoint of ['PUT', 'sync'] as const) {
