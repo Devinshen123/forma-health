@@ -1,3 +1,7 @@
+## 2026-11-04 PR2-PR3-FIX-INTEGRATE-01（独审进行中）
+
+用户明确要求两个PR独审、发现即修、通过后main/GitHub集成。已锁定PR2 cd50875、PR3 2dc5d1e，两个独立detached审查checkout，产品只由01修复。01使用codex/pr2-pr3-integration-20261104保存派工与集成记录，原桌面/iOS/真实数据不写。验收与独占范围见TASKS顶部；未经审查者固定SHA复验不合main。
+
 ## 2026-11-03 独立审查/修复/main集成（完成，当前）
 
 已完成：正式06独立通过4f98d4，报告已精确集成；main76dcbe2→1d04c75正常快进、main/主管分支atomic push且远端一致，D:/Forma/source现main为唯一01运行/工程目录。同版D服务/API sandbox正常，原40表39内容相同仅签名通知摘要增加16，原账户/健康/4非DB私有文件/.env相同，总41表。after-main81文件/三SQLite/可读Lago归档保留，所有旧备份不动。最终回执文档随后push并把本地源码包/发布标识/指针绑定最终HEAD。

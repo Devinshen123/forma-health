@@ -1,3 +1,15 @@
+# 2026-11-04 PR #2 / #3 独立审查、修复与main集成（当前任务）
+
+用户直接要求将PR #2及#3安排独立审查，发现问题由01修复，复验通过后合入main并同步GitHub。此授权覆盖本轮审查会话、合成测试/构建、必要候选修复及正常merge/push；不扩大到真实数据、供应商调用、付费、iOS或公网部署。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| PR2-REVIEW-06 | 独立审查子会话qa-pr2，专属detached checkout；产品只读，仅新建自有tests/pr2-independent-review.test.ts与docs/reviews/pr2-independent-20261104.md | doing | 固定cd508758a8b8f3d61b1decf40e23e0409b7c6b39相对main/7017064独立审查，自己执行专项/两页真实浏览器/全套/完整build，缺陷给反例；新固定候选复验后才通过，不把01报告当本人证据 |
+| PR3-REVIEW-06 | 另一独立审查子会话qa-pr3，专属detached checkout；产品只读，仅新建自有server/pr3-independent-review.test.ts与docs/reviews/pr3-independent-20261104.md | doing | 固定2dc5d1e320c76c6669abc7ce1fdc88f8ab20871b独立审查，自己执行HTTP/原子性/客户端控制及全套/build；补边界反例、验证400/409与保留队列。完整测试/build按01时段串行，避免资源竞争 |
+| PR2-PR3-FIX-INTEGRATE-01 | 本对话01：两PR既有产品/回归范围、必要候选修复及本任务板/本人status/HANDOFF、独立报告集成和正常GitHub合并；不代写审查员结论 | doing | 精确集成审查报告/反例，修复后交原审查者固定SHA复验；两个PR均获独立通过；文档冲突保留双方任务/历史；组合候选全套/类型/build及日期页面验证通过，按当前head SHA正常合入main，核对远端/本机SHA一致 |
+
+本人集成目录：`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支`codex/pr2-pr3-integration-20261104`。审查路径为该目录下`.forma-local/reviews/pr2`和`pr3`；原桌面iOS checkout、其他工作区及Windows站点不写。临时审查身份只承担本次验证，不新建常驻员工或改旧06个人记忆。本人自检不替代独审，审查员不自行push/merge。审查结论与合并状态以本轮后续记录为准。
+
 # 2026-11-03 Casdoor与开源Lago接入（最新）
 
 本轮后续：用户明确授权“安排独立审查、修好问题、通过后合并main并同步GitHub，先不开真实收费”。既有01继续唯一lead及产品修复写者，专项06由新的独立审查子会话承担，工具Codex（身份定义中Claude Code为建议，工具变化不改变职责）；不复用上一轮辅助审查者，不冒称02已接单。已核当前团队无活动06，原06记忆仍是未接手配置；只写新专项交付，不接管其旧目录/记忆。正式报告须绑定候选与复验SHA，由本人实测，不以01旧464项报告代替。

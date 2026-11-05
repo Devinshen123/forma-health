@@ -1,3 +1,7 @@
+## 2026-11-04 PR2-PR3-FIX-INTEGRATE-01（独审进行中）
+
+用户明确要求两个PR独审、发现即修、通过后main/GitHub集成。已锁定PR2 cd50875、PR3 2dc5d1e，两个独立detached审查checkout，产品只由01修复。01使用codex/pr2-pr3-integration-20261104保存派工与集成记录，原桌面/iOS/真实数据不写。验收与独占范围见TASKS顶部；未经审查者固定SHA复验不合main。
+
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（完成）
 
 最终：正式06通过4f98d4（86专项、471全套、完整build、中英UI反馈），01精确集成原报告，未改获审产品树。main从76dcbe2正常快进至1d04c75，atomic同步main/主管分支且远端一致；D本站main同版已启，收费仅sandbox。原40表39同内容，仅签名通知摘要+16，原账户/健康/4份私有非DB文件/实际.env保持，总41表；after-main81文件备份/3SQLite快照/可读Lago归档已保留，未演练恢复。最终回执文档提交也正常同步并刷新本机标识，最终SHA随所属提交/HTTP复核，不将此SHA硬编码为未来版本。不触碰真实用户浏览器，不开真实扣费/商户或公网部署。
