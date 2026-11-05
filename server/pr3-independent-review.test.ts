@@ -6,6 +6,8 @@ import { randomUUID } from 'node:crypto';
 import { createApp } from './app';
 import { emptyState, type AppState, type PlanVersion, type SyncSnapshot } from '../src/types';
 import { diffStates } from '../src/sync/changes';
+import { SyncEngine } from '../src/sync/engine';
+import { ApiError } from '../src/api';
 
 const now = '2026-11-04T13:00:00.000Z';
 const makePlan = (parentId: string | null, minutes = 40): PlanVersion => ({
@@ -54,8 +56,46 @@ async function setup(t: TestContext) {
   const submit = (endpoint: 'PUT' | 'sync', state: AppState, mutationId = randomUUID()) => endpoint === 'PUT'
     ? request('/state', 'PUT', { state, revision: before.revision })
     : request('/sync', 'POST', { mutationId, changes: diffStates(before.state, state, before.entityVersions) });
-  return { before, accepted, submit, snapshot, save, service, user, request };
+  return { before, accepted, submit, snapshot, save, service, user, request, cookie, origin: `http://127.0.0.1:${address.port}` };
 }
+
+test('independent client: semantic conflict preserves exportable queue without rebasing or background resubmission', async t => {
+  const h = await setup(t);
+  const nativeFetch = globalThis.fetch;
+  const previous = new Map(['fetch', 'localStorage', 'navigator'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: (key: string) => key === 'forma-language' ? 'zh' : null } });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
+  const posts: unknown[] = [];
+  globalThis.fetch = async (input, init) => {
+    if (!String(input).startsWith('/api/')) return nativeFetch(input, init);
+    if (init?.method === 'POST') posts.push(JSON.parse(String(init.body)));
+    const headers = new Headers(init?.headers);
+    headers.set('Cookie', h.cookie); headers.set('Origin', 'http://localhost:5173');
+    return nativeFetch(h.origin + String(input), { ...init, headers });
+  };
+  const engine = new SyncEngine(h.user, h.before, () => {});
+  t.after(async () => {
+    await engine.stop();
+    for (const [key, descriptor] of previous) if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key);
+  });
+  await engine.restore();
+  await assert.rejects(engine.save(h.accepted), error => error instanceof ApiError && error.status === 409 && error.code === 'PLAN_BASE_CONFLICT' && /计划已发生变化/.test(error.message));
+  assert.equal(engine.status.pending, 1);
+  assert.equal(engine.status.conflict, null, 'must not become an entity CAS rebase dialog');
+  assert.deepEqual(engine.exportPending().state, h.accepted);
+  assert.equal(engine.exportPending().pending, 1);
+  assert.deepEqual(await h.snapshot(), h.before);
+  await engine.resolve(true);
+  assert.equal(posts.length, 1, 'resolve must not silently rebase a semantic conflict');
+  // App.tsx invokes refresh on its timer and online event; simulate those callbacks.
+  await engine.refresh(); await engine.refresh();
+  assert.equal(engine.status.pending, 1);
+  assert.deepEqual(engine.exportPending().state, h.accepted);
+  assert.equal(posts.length, 1, 'background refresh must not repeat a rejected acceptance');
+  await engine.discardInvalid();
+  assert.equal(engine.status.pending, 0);
+  assert.deepEqual(engine.context().state, h.before.state);
+});
 
 for (const endpoint of ['PUT', 'sync'] as const) {
   test(`independent ${endpoint}: stale acceptance with invalid attachment remains input error`, async t => {
