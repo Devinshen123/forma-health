@@ -138,7 +138,7 @@ export class SyncEngine {
     this.conflictSnapshot=null;this.conflictMutationId=null;this.status.conflict=null;this.status.error='';this.ready=new Set(this.queue.map(x=>x.mutationId));this.emit();await this.flush();
     } finally {this.deciding=false;}
   }
-  async discardInvalid() {if(this.working||this.deciding)throw Error('Wait for the current sync to finish.');const old=this.queue,discarded=old.map(x=>x.mutationId);this.queue=[];try{await this.persist(discarded);}catch(e){this.queue=old;this.emit();throw e;}this.ready=new Set(this.queue.map(x=>x.mutationId));this.planBaseBlocks.clear();this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';this.emit();await this.refresh();}
+  async discardInvalid() {if(this.working||this.deciding)throw Error('Wait for the current sync to finish.');const old=this.queue,discarded=old.map(x=>x.mutationId);this.queue=[];try{await this.persist(discarded);}catch(e){this.queue=old;this.emit();throw e;}this.ready=new Set(this.queue.map(x=>x.mutationId));this.planBaseBlocks=new Set([...this.planBaseBlocks].filter(id=>this.queue.some(batch=>batch.mutationId===id)));this.status.conflict=null;this.conflictSnapshot=null;this.conflictMutationId=null;this.status.error='';this.emit();await this.refresh();}
   async reconcileCache() {
     if(this.stopped)return;
     await this.writeChain.catch(()=>{});
