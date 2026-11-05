@@ -173,13 +173,16 @@ test('independent client: rejected acceptance stays paused across reload, reauth
   const merged = await writeCached(staleCopy);
   assert.deepEqual(Reflect.get(merged, 'planBaseBlocks'), [mutationId]);
   const reloaded = await create();
-  await reloaded.refresh(); await reloaded.flush();
+  assert.ok(reloaded.status.error, 'restored rejection must expose SyncPanel export/discard recovery');
+  await reloaded.refresh();
+  await assert.rejects(reloaded.flush(), error => error instanceof ApiError && error.status === 409 && error.code === 'PLAN_BASE_CONFLICT');
   await reloaded.reauthenticate(h.before, () => {}); await reloaded.refresh();
   await first.reconcileCache(); await first.refresh();
   assert.equal(posts.length, 1, 'reload, explicit flush and reauthentication must preserve rejected state without transport');
   assert.equal(reloaded.status.pending, 1); assert.deepEqual(reloaded.exportPending().state, h.accepted);
   await reloaded.discardInvalid();
   assert.equal(reloaded.status.pending, 0);
+  assert.equal(reloaded.status.error, '');
   const cleared = await readCached(h.user.id); assert.ok(cleared); assert.deepEqual(cleared.queue, []);
   assert.deepEqual(Reflect.get(cleared, 'planBaseBlocks'), []);
   await first.reconcileCache(); await first.refresh(); assert.equal(first.status.pending, 0);
