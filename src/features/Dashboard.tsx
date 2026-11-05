@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import {
   currentPlan,
-  localDate,
+  viewTimeZone,
+  viewDateWindow,
   mealTotals,
   sleepHours,
   type FeatureProps,
@@ -29,7 +30,7 @@ export default function Dashboard({
   onCreate,
 }: { navigate: (p: Page) => void; onCreate: () => void } & FeatureProps) {
   const zh = lang === "zh";
-  const today = localDate();
+  const { today, dates } = viewDateWindow(viewTimeZone(state.profile?.timezone), 7);
   const plan = currentPlan(state);
   const meals = state.meals.filter((m) => m.date === today);
   const kcals = meals.reduce((sum, m) => sum + mealTotals(m).kcal, 0);
@@ -40,16 +41,12 @@ export default function Dashboard({
     ? Math.round(todaySleeps.reduce((sum, s) => sum + sleepHours(s), 0) * 60)
     : null;
   const done = state.completedActions[today] || [];
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - 6 + i);
-    return {
-      date: localDate(d),
-      label: new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
-        weekday: "short",
-      }).format(d),
-    };
-  });
+  const week = dates.map((date) => ({
+    date,
+    label: new Intl.DateTimeFormat(zh ? "zh-CN" : "en-US", {
+      timeZone: "UTC", weekday: "short",
+    }).format(new Date(`${date}T12:00:00.000Z`)),
+  }));
   const weekWorkouts = state.workouts.filter((w) =>
     week.some((d) => d.date === w.date),
   );
@@ -340,7 +337,7 @@ export default function Dashboard({
           <CompanionCard state={state} lang={lang} save={save} notify={notify} demo={demo} accountId={accountId} navigate={navigate} />
           <section className="panel week-panel">
             <div className="section-heading">
-              <h2>{zh ? "本周节奏" : "Weekly rhythm"}</h2>
+              <h2>{zh ? "最近 7 天" : "Last 7 days"}</h2>
               <span className="muted">
                 {zh ? "训练分钟" : "Training minutes"}
               </span>
@@ -380,7 +377,7 @@ export default function Dashboard({
               <div>
                 <strong>{weekWorkouts.length}</strong>
                 <span>{zh ? " 次训练" : " workouts"}</span>
-                <p>{zh ? "本周已完成" : "Logged this week"}</p>
+                <p>{zh ? "最近 7 天已记录" : "Logged in the last 7 days"}</p>
               </div>
               <div>
                 <strong>{mealDays}</strong>

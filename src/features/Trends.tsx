@@ -6,7 +6,7 @@ import {
   Moon,
   Utensils,
 } from "lucide-react";
-import { mealTotals, sleepHours } from "../types";
+import { mealTotals, sleepHours, viewTimeZone, viewDateWindow } from "../types";
 import type { FeatureProps, Meal, Sleep, Workout } from "../types";
 
 const copy = {
@@ -161,28 +161,14 @@ function sleepDuration(records: Sleep[]): number | null {
   }
   return (total + end - start) / 3600000;
 }
-function datesEndingAt(last: string, count: number) {
-  return Array.from({ length: count }, (_, index) => {
-    const d = new Date(`${last}T12:00:00.000Z`);
-    d.setUTCDate(d.getUTCDate() - count + 1 + index);
-    return d.toISOString().slice(0, 10);
-  });
-}
-
 export function Trends({ state, lang, onOpenTrainingStatistics }: FeatureProps & { onOpenTrainingStatistics?: () => void }) {
   const c = copy[lang];
   const [range, setRange] = useState<7 | 14>(7);
   const [metric, setMetric] = useState<Metric>("nutrition");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const locale = lang === "zh" ? "zh-CN" : "en-US";
-  const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone:
-      state.profile?.timezone ??
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  const timeZone = viewTimeZone(state.profile?.timezone);
+  const { today, dates } = viewDateWindow(timeZone, range);
   const data = useMemo(() => {
     const meals = new Map<string, Meal[]>(),
       workouts = new Map<string, Workout[]>(),
@@ -196,7 +182,7 @@ export function Trends({ state, lang, onOpenTrainingStatistics }: FeatureProps &
       ]);
     for (const sleep of state.sleeps)
       sleeps.set(sleep.date, [...(sleeps.get(sleep.date) ?? []), sleep]);
-    return datesEndingAt(today, range).map((date) => {
+    return dates.map((date) => {
       const m = meals.get(date) ?? [],
         w = workouts.get(date) ?? [],
         s = sleeps.get(date) ?? [];

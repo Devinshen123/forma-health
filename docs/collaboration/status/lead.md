@@ -1,3 +1,18 @@
+## 2026-11-04 WEB-DATE-01（Mac候选已验证，待独审）
+
+01本人在`/Users/shendejun/Desktop/运动健康网站-GitHub最新版/.forma-local/worktrees/lead-web-date-20261104`，分支`codex/web-date-consistency-20261104`，从最新main/70170640b74c9067291eb2195aef17ca4a6a9fb3建立隔离工作区。用户明确委托更新及自行安排修改；不沿用旧静态任务禁止实施限定。共享localDate新增兼容可选时区；两页采用有效档案→浏览器→UTC的统一视图日和连续日历窗口，首页星期用UTC日期锚点，文案明确最近7天。已有记录date/睡眠字段/旧行动键不迁移；新行动使用视图今日。
+
+本轮01实测（2026-11-04，Mac Node24.16.0，合成数据）：
+- `node --import tsx --test tests/view-dates.test.ts` exit0，4项（内含跨区、无效/缺失、UTC回退、7/14、闰年/月年、DST/午夜多组断言）。
+- `node node_modules/typescript/bin/tsc --noEmit` exit0。
+- `npm test` exit0，475/475，0失败/跳过。
+- `npm run build` exit0，主站/训练工作台/伙伴乐园/源码包/离线壳全部完成，既有大chunk警告保留。依赖按3份现有锁文件npm ci；仅链接原Mac已授权opengym媒体，不复制或提交媒体。未改依赖/锁文件。
+- `node --import tsx tests/browser/view-dates.mts` exit0，真实headless Chrome下12/12：LA↔Shanghai、同区、缺档案、无效档案和Kiritimati两种语言；两页窗口首尾/今日、已知0/未记录—、7→14→7、行动保存捕获与原事实保留。隔离挂载真实Dashboard/Trends，CompanionCard测试替身；不是完整App/API持久化、真实账户或独立06验收。
+- 初始浏览器脚本因Vite SPA fallback进入主App、Companion替身没有default导出而加载失败；先出现等待超时，加入诊断后确认错误。将测试server设appType=custom后上述12场景全通过。未改产品以迎合测试。
+- `git diff --check` exit0。日志与合成结果在本工作区`.forma-local/web-date-01/`。
+
+原Mac iOS分支4494a48、三项图片删除及未跟踪内容保持；未操作Windows运行站点/真实数据/env、Apple、模型或收费服务，未启动其他员工。任务board标review，候选同步本人分支；本轮无06独审，不合main、不宣称正在运行的线上网站已更新。未新增长驻午夜自动刷新，已有记录编辑/录入页面日期行为不在此次范围。所属提交及GitHub分支是交付版本依据。
+
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（完成）
 
 最终：正式06通过4f98d4（86专项、471全套、完整build、中英UI反馈），01精确集成原报告，未改获审产品树。main从76dcbe2正常快进至1d04c75，atomic同步main/主管分支且远端一致；D本站main同版已启，收费仅sandbox。原40表39同内容，仅签名通知摘要+16，原账户/健康/4份私有非DB文件/实际.env保持，总41表；after-main81文件备份/3SQLite快照/可读Lago归档已保留，未演练恢复。最终回执文档提交也正常同步并刷新本机标识，最终SHA随所属提交/HTTP复核，不将此SHA硬编码为未来版本。不触碰真实用户浏览器，不开真实扣费/商户或公网部署。
