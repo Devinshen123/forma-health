@@ -1,3 +1,7 @@
+## 2026-11-04 PR #3 独审修复候选
+
+用户授权两个PR独审、修复后通过再集成。qa-pr2已通过原日期候选，qa-pr3在2dc5d1e独立复现PR3-F1（无效附件/伪造草稿被提前409掩盖）及PR3-F2（后台重复提交失败接受）。01精确集成其三份反例提交，修复校验顺序及本地持久暂停标记，扩展本任务范围到sync engine/storage；保留400/409/原子性及现有账户同意epoch。新候选等待原审查者固定SHA复验，不能提前main合并。
+
 ## 2026-11-04 WEB-PLAN-CONFLICT-01（实现/本人验证完成，待独审）
 
 01本人按用户“给自己安排任务”委托登记并实施；分支`codex/plan-base-conflict-20261104`，基线main/70170640b74c9067291eb2195aef17ca4a6a9fb3，实际工作区`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`。上一日期PR #2/cd50875仍open draft、无审查回复，未合并；不混入新分支。

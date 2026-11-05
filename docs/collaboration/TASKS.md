@@ -4,7 +4,7 @@
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| WEB-PLAN-CONFLICT-01 | 本对话01 lead；本分支server/validation.ts、server/app.ts、src/api.ts、server/plan-base-conflict.test.ts、docs/API-CONTRACT.md、decisions/ADR-plan-base-conflict-20261104.md、本人TASKS/status/HANDOFF | review | 真实合成HTTP证明PUT及sync旧base问题；正确接受/撤销保持、非法patch/schema/历史改写仍400、过期revision/实体CAS仍409；失败snapshot/revision/entityVersions/receipt零变化及跨账户隔离；专项/全套/类型/build通过。新错误码中文提示，候选push本人分支，未经独审不合main |
+| WEB-PLAN-CONFLICT-01 | 本对话01 lead；本分支server/validation.ts、server/app.ts、src/api.ts、src/sync/engine.ts、src/sync/storage.ts、server/plan-base-conflict.test.ts、server/pr3-independent-review.test.ts、docs/API-CONTRACT.md、decisions/ADR-plan-base-conflict-20261104.md、本人TASKS/status/HANDOFF | review | 真实合成HTTP证明PUT及sync旧base问题；正确接受/撤销保持、非法patch/schema/历史改写仍400、过期revision/实体CAS仍409；失败snapshot/revision/entityVersions/receipt零变化及跨账户隔离；专项/全套/类型/build通过。新错误码中文提示，候选push本人分支，未经独审不合main |
 
 基线main/7017064；实际目录`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支`codex/plan-base-conflict-20261104`。上一日期任务仍在PR #2/cd50875等待独立审查，没有合入或重复实施。本任务不同时写其他工作区或Windows当前运行站点。沿用追加版本、不改事实的既有契约，仅对结构合法、patch正确且唯一问题是proposed建议base已过期的接受转换返回可识别409；其他输入错误保持400。
 

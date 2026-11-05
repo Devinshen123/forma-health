@@ -339,9 +339,7 @@ export function createApp(options: AppOptions) {
   const validateOwnedState = (ownerId: string, previous: AppState, candidate: AppState): AppState => {
     const state = parseState(candidate);
     const transitionError = validateTransition(previous, state);
-    if (transitionError && typeof transitionError !== 'string')
-      throw new PlanBaseConflictError(transitionError.message);
-    if (transitionError) throw new StateInputError(transitionError);
+    if (typeof transitionError === 'string') throw new StateInputError(transitionError);
     for (const meal of state.meals) if (meal.source === 'ai_estimate') {
       const draft = meal.aiDraftId && store.aiDraft(ownerId, meal.aiDraftId);
       if (!draft || !draft.isFood || draft.assetId !== meal.assetId || meal.aiItemIndex === undefined || !draft.items[meal.aiItemIndex]) {
@@ -354,6 +352,8 @@ export function createApp(options: AppOptions) {
         throw new StateInputError('An attachment is unavailable or invalid for this account');
       }
     }
+    // Ownership and genuine-draft failures remain input errors, even if the plan also changed.
+    if (transitionError) throw new PlanBaseConflictError(transitionError.message);
     return state;
   };
   const cleanRemovedAssets = (ownerId: string, previous: AppState, next: AppState) => {
