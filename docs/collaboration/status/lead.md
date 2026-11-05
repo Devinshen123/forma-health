@@ -1,6 +1,54 @@
+## 2026-11-04 PR2-PR3-FIX-INTEGRATE-01（独审/修复/合并完成）
+
+用户明确授权后，01安排两个独立审查子会话，分别在固定detached checkout读取源码/设计并实际运行反例、专项、全套与构建；审查者只写自己的测试/报告，产品由01修复，不替换旧06日常记忆或创建第二lead。
+
+- PR #2：qa-pr2在cd508758a8b8f3d61b1decf40e23e0409b7c6b39未发现范围内缺陷；本人7项日期专项、独立两页浏览器12组、478全套及完整build通过。原报告/3项自有测试58b46a5精确保留，head58b46a5由GitHub按期望SHA正常合main为62d8c4ca9f77dd6b69e4c060456bab77ce3ce985。
+- PR #3：qa-pr3在2dc5d1e独立确认P2 F1（无效附件/伪造草稿被提前409掩盖）与F2（后台重复发送已拒绝接受）；01修校验顺序并增加本地持久pause，审查者继续找出discard误清另一tab未知批暂停的F2延伸，01再修为只清已移除批次。所有独立红例由本人精确cherry-pick保留，没删断言/改宽预期。
+- 最终组合候选6d2114ae63c15d0e0ed67c858be9217afbeb7742：qa-pr3本人专项40/40、全套496/496、tsc及完整build退出0，F1/F2全部关闭；qa-pr2再独立7项日期/12组两页浏览器兼容复验通过。报告docs/reviews/pr3-independent-20261104.md及pr2同名报告均由原审查者本人撰写，01仅精确集成，未改结论。
+- 报告追加后head0dd95a7cc4beee5ed8ba696a168bbedf5bd183ae的产品/测试/脚本/依赖树与6d2114a无差异；GitHub正常合PR #3为2158ec6ac4a4722d313a19d00a4bb3a832bc0112。期间合入PR2的冲突仅TASKS/status/HANDOFF新增前缀，保留双方完整历史；独立测试仅修1个EOF空行。
+- 本轮最后把派工分支24109ee记录并入已合main，更新本人任务/状态/交接为完成；只有3份文档冲突及收尾，无后续产品变化。按AGENTS正常同步main与集成分支，远端最终SHA按本文件所属提交核对；不硬编码未来运行版本。
+
+边界：HTTP/SyncEngine使用合成账户、随机本地端口与独立SQLite；IDB为合成事件transport，未做真实浏览器IDB跨tab或完整App点击流程；日期browser为真实两组件/CompanionCard替身/save捕获。没有真实数据/env/AI/设备/计费调用或公网部署，既有大chunk构建警告保留。没有将本人自检冒充独审、GitHub合并冒充正在运行的Windows站点更新。当前Mac主工作区保持本目录；原桌面iOS分支、未提交图片删除及其他工作区不改。完整证据保存在两个review checkout的.forma-local/review-evidence/。
+
 ## 2026-11-04 PR2-PR3-FIX-INTEGRATE-01（独审进行中）
 
 用户明确要求两个PR独审、发现即修、通过后main/GitHub集成。已锁定PR2 cd50875、PR3 2dc5d1e，两个独立detached审查checkout，产品只由01修复。01使用codex/pr2-pr3-integration-20261104保存派工与集成记录，原桌面/iOS/真实数据不写。验收与独占范围见TASKS顶部；未经审查者固定SHA复验不合main。
+
+## 2026-11-04 PR #3 独审修复候选
+
+用户授权两个PR独审、修复后通过再集成。qa-pr2已通过原日期候选，qa-pr3在2dc5d1e独立复现PR3-F1（无效附件/伪造草稿被提前409掩盖）及PR3-F2（后台重复提交失败接受）。01精确集成其三份反例提交，修复校验顺序及本地持久暂停标记，扩展本任务范围到sync engine/storage；保留400/409/原子性及现有账户同意epoch。新候选等待原审查者固定SHA复验，不能提前main合并。
+
+## 2026-11-04 WEB-PLAN-CONFLICT-01（实现/本人验证完成，待独审）
+
+01本人按用户“给自己安排任务”委托登记并实施；分支`codex/plan-base-conflict-20261104`，基线main/70170640b74c9067291eb2195aef17ca4a6a9fb3，实际工作区`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`。上一日期PR #2/cd50875仍open draft、无审查回复，未合并；不混入新分支。
+
+真实合成HTTP复现：最新revision/实体版本下接受旧建议base，PUT/sync修复前均400。原始6项测试中3失败（两状态+中文提示）；其余控制组通过。仅调整转移校验顺序和结构化分类：schema/不可变历史/唯一新增子版本/指针/patch均正确后检查旧base，返回409/PLAN_BASE_CONFLICT；异常输入和普通手动父版本仍400。拒绝旧建议保持可用；正常接受/补偿撤销不变。中文提示明确本次调整未保存。
+
+本轮本人实测（Mac Node24.16.0，随机loopback端口/独立临时SQLite/合成账户，未加载真实.env）：
+- `node --import tsx --test server/plan-base-conflict.test.ts` exit0，最终8/8。两个接口覆盖重复拒绝、批次事实与revision/entityVersions不变、无成功receipt、另一账户状态不变及错误身份401；正常接受/撤销、坏patch/改写历史/schema400、过期revision/实体CAS409、手动父版本400、拒绝旧建议200。客户端中英提示使用mock Response，不冒称完整App浏览器验证。
+- `node node_modules/typescript/bin/tsc --noEmit` exit0。
+- `npm test` 最终exit0，479/479、0失败/跳过；补控制组前477/477为中间结果，最终以后者479为准。
+- `npm run build` exit0，完整主站/工作台/伙伴乐园/源码包/离线壳完成，保留既有大chunk警告。后补2项测试不改产品，最终类型与全套重新通过；不重复相同产品构建。复用同锁文件依赖/已授权媒体链接，不改依赖或锁文件，不提交素材。
+- `git diff --check` exit0；原始红例、最终专项/全套/build日志位于`.forma-local/plan-base-01/`。
+
+ADR与API契约已记录新409形状。不含snapshot，因此不会触发现有实体冲突自动重基；失败队列仍走既有保留/导出/明确放弃流程，未改变同步引擎。没有UI浏览器/真实账户/设备/AI/计费调用，也没有06独审或main合并。候选按AGENTS推本人分支并核对远端；版本以所属提交为准。
+
+## 2026-11-04 WEB-DATE-01（Mac候选已验证，待独审）
+
+当前本对话主工作区已切至`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支仍为`codex/web-date-consistency-20261104`。应用托管创建较慢，先前在项目内独立worktree完成实施与全部验证；托管工作区就绪后将同一已提交候选切到本对话主工作区，后续只从此处写入。先前验证区改为detached/051a8fb保留日志与依赖，不另启动写入者。产品提交051a8fbab1843ef9fa51ce41fd884a59599a5aa4已push并ls-remote核对一致；本次仅补路径交接，无产品差异，不重复测试/build。原桌面iOS分支及dirty保持不动。
+
+01本人在`/Users/shendejun/Desktop/运动健康网站-GitHub最新版/.forma-local/worktrees/lead-web-date-20261104`，分支`codex/web-date-consistency-20261104`，从最新main/70170640b74c9067291eb2195aef17ca4a6a9fb3建立隔离工作区。用户明确委托更新及自行安排修改；不沿用旧静态任务禁止实施限定。共享localDate新增兼容可选时区；两页采用有效档案→浏览器→UTC的统一视图日和连续日历窗口，首页星期用UTC日期锚点，文案明确最近7天。已有记录date/睡眠字段/旧行动键不迁移；新行动使用视图今日。
+
+本轮01实测（2026-11-04，Mac Node24.16.0，合成数据）：
+- `node --import tsx --test tests/view-dates.test.ts` exit0，4项（内含跨区、无效/缺失、UTC回退、7/14、闰年/月年、DST/午夜多组断言）。
+- `node node_modules/typescript/bin/tsc --noEmit` exit0。
+- `npm test` exit0，475/475，0失败/跳过。
+- `npm run build` exit0，主站/训练工作台/伙伴乐园/源码包/离线壳全部完成，既有大chunk警告保留。依赖按3份现有锁文件npm ci；仅链接原Mac已授权opengym媒体，不复制或提交媒体。未改依赖/锁文件。
+- `node --import tsx tests/browser/view-dates.mts` exit0，真实headless Chrome下12/12：LA↔Shanghai、同区、缺档案、无效档案和Kiritimati两种语言；两页窗口首尾/今日、已知0/未记录—、7→14→7、行动保存捕获与原事实保留。隔离挂载真实Dashboard/Trends，CompanionCard测试替身；不是完整App/API持久化、真实账户或独立06验收。
+- 初始浏览器脚本因Vite SPA fallback进入主App、Companion替身没有default导出而加载失败；先出现等待超时，加入诊断后确认错误。将测试server设appType=custom后上述12场景全通过。未改产品以迎合测试。
+- `git diff --check` exit0。日志与合成结果在本工作区`.forma-local/web-date-01/`。
+
+原Mac iOS分支4494a48、三项图片删除及未跟踪内容保持；未操作Windows运行站点/真实数据/env、Apple、模型或收费服务，未启动其他员工。任务board标review，候选同步本人分支；本轮无06独审，不合main、不宣称正在运行的线上网站已更新。未新增长驻午夜自动刷新，已有记录编辑/录入页面日期行为不在此次范围。所属提交及GitHub分支是交付版本依据。
 
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（完成）
 

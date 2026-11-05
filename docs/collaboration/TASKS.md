@@ -1,14 +1,36 @@
-# 2026-11-04 PR #2 / #3 独立审查、修复与main集成（当前任务）
+# 2026-11-04 PR #2 / #3 独立审查、修复与main集成（已完成）
+
+收尾：PR #2已按独立通过的报告/测试head58b46a5正常合main（merge62d8c4c）；PR #3在F1/F2及跨tab延伸修复后，对最终组合6d2114a获独立40/496/类型/完整build与日期7/浏览器12通过，报告集成后产品不变，head0dd95a7正常合main（merge2158ec6）。双方报告见docs/reviews/pr2-independent-20261104.md与pr3-independent-20261104.md。该收尾仅同步派工/状态，不改变获审产品树；最终main SHA以所属提交和远端核对为准。
 
 用户直接要求将PR #2及#3安排独立审查，发现问题由01修复，复验通过后合入main并同步GitHub。此授权覆盖本轮审查会话、合成测试/构建、必要候选修复及正常merge/push；不扩大到真实数据、供应商调用、付费、iOS或公网部署。
 
 | ID | owner / 独占范围 | 状态 | 验收 |
 |---|---|---|---|
-| PR2-REVIEW-06 | 独立审查子会话qa-pr2，专属detached checkout；产品只读，仅新建自有tests/pr2-independent-review.test.ts与docs/reviews/pr2-independent-20261104.md | doing | 固定cd508758a8b8f3d61b1decf40e23e0409b7c6b39相对main/7017064独立审查，自己执行专项/两页真实浏览器/全套/完整build，缺陷给反例；新固定候选复验后才通过，不把01报告当本人证据 |
-| PR3-REVIEW-06 | 另一独立审查子会话qa-pr3，专属detached checkout；产品只读，仅新建自有server/pr3-independent-review.test.ts与docs/reviews/pr3-independent-20261104.md | doing | 固定2dc5d1e320c76c6669abc7ce1fdc88f8ab20871b独立审查，自己执行HTTP/原子性/客户端控制及全套/build；补边界反例、验证400/409与保留队列。完整测试/build按01时段串行，避免资源竞争 |
-| PR2-PR3-FIX-INTEGRATE-01 | 本对话01：两PR既有产品/回归范围、必要候选修复及本任务板/本人status/HANDOFF、独立报告集成和正常GitHub合并；不代写审查员结论 | doing | 精确集成审查报告/反例，修复后交原审查者固定SHA复验；两个PR均获独立通过；文档冲突保留双方任务/历史；组合候选全套/类型/build及日期页面验证通过，按当前head SHA正常合入main，核对远端/本机SHA一致 |
+| PR2-REVIEW-06 | 独立审查子会话qa-pr2，专属detached checkout；产品只读，仅新建自有tests/pr2-independent-review.test.ts与docs/reviews/pr2-independent-20261104.md | done | 固定cd508758a8b8f3d61b1decf40e23e0409b7c6b39相对main/7017064独立审查，自己执行专项/两页真实浏览器/全套/完整build，缺陷给反例；新固定候选复验后才通过，不把01报告当本人证据 |
+| PR3-REVIEW-06 | 另一独立审查子会话qa-pr3，专属detached checkout；产品只读，仅新建自有server/pr3-independent-review.test.ts与docs/reviews/pr3-independent-20261104.md | done | 固定2dc5d1e320c76c6669abc7ce1fdc88f8ab20871b独立审查，自己执行HTTP/原子性/客户端控制及全套/build；补边界反例、验证400/409与保留队列。完整测试/build按01时段串行，避免资源竞争 |
+| PR2-PR3-FIX-INTEGRATE-01 | 本对话01：两PR既有产品/回归范围、必要候选修复及本任务板/本人status/HANDOFF、独立报告集成和正常GitHub合并；不代写审查员结论 | done | 精确集成审查报告/反例，修复后交原审查者固定SHA复验；两个PR均获独立通过；文档冲突保留双方任务/历史；组合候选全套/类型/build及日期页面验证通过，按当前head SHA正常合入main，核对远端/本机SHA一致 |
 
 本人集成目录：`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支`codex/pr2-pr3-integration-20261104`。审查路径为该目录下`.forma-local/reviews/pr2`和`pr3`；原桌面iOS checkout、其他工作区及Windows站点不写。临时审查身份只承担本次验证，不新建常驻员工或改旧06个人记忆。本人自检不替代独审，审查员不自行push/merge。审查结论与合并状态以本轮后续记录为准。
+
+# 2026-11-04 WEB-PLAN-CONFLICT-01（当前Mac任务）
+
+用户要求本对话01继续给自己安排任务。本人选取既有20261017旧base请求：复核最新revision/实体版本下接受旧base建议的HTTP分类，能复现则最小修复；不改变建议生成规则、不接入真实AI/数据、不启动其他员工。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| WEB-PLAN-CONFLICT-01 | 本对话01 lead；本分支server/validation.ts、server/app.ts、src/api.ts、src/sync/engine.ts、src/sync/storage.ts、server/plan-base-conflict.test.ts、server/pr3-independent-review.test.ts、docs/API-CONTRACT.md、decisions/ADR-plan-base-conflict-20261104.md、本人TASKS/status/HANDOFF | done | 真实合成HTTP证明PUT及sync旧base问题；正确接受/撤销保持、非法patch/schema/历史改写仍400、过期revision/实体CAS仍409；失败snapshot/revision/entityVersions/receipt零变化及跨账户隔离；专项/全套/类型/build通过。新错误码中文提示，候选push本人分支，未经独审不合main |
+
+基线main/7017064；实际目录`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支`codex/plan-base-conflict-20261104`。上一日期任务仍在PR #2/cd50875等待独立审查，没有合入或重复实施。本任务不同时写其他工作区或Windows当前运行站点。沿用追加版本、不改事实的既有契约，仅对结构合法、patch正确且唯一问题是proposed建议base已过期的接受转换返回可识别409；其他输入错误保持400。
+
+# 2026-11-04 Mac网站更新与日期一致性修复（当前候选）
+
+用户在本Mac主管对话明确要求“更新你的，然后给自己安排任务去修改”。本轮01本人从远端main/70170640b74c9067291eb2195aef17ca4a6a9fb3建立独立Mac工作区；原iOS分支4494a48及图片删除/未跟踪文件保持不动。此新任务覆盖历史日期仅静态审查的执行限定，不启动其他员工，不修改Windows运行站点或真实健康数据。
+
+| ID | owner / 独占范围 | 状态 | 依赖与验收 |
+|---|---|---|---|
+| WEB-DATE-01 | 本对话01 lead；仅本分支src/types.ts、src/features/Dashboard.tsx、src/features/Trends.tsx、tests/view-dates.test.ts、tests/browser/view-dates.mts、本任务板、本人status/HANDOFF、decisions/ADR-view-dates-20261104.md | done | 从最新main更新；有效档案时区优先、无效/缺失回退浏览器再UTC；两页同一日历窗口、日期/星期标签一致，旧记录及行动键保留；合成跨区/DST/缺失/0/行动写键回归，类型、完整测试及完整build。候选分支同步GitHub，未经独审不合main；不将本人自测称06验收 |
+
+实际工作区：`/Users/shendejun/Desktop/运动健康网站-GitHub最新版/.forma-local/worktrees/lead-web-date-20261104`；分支`codex/web-date-consistency-20261104`。用户委托本人选择修改任务，本轮采用既有日期静态报告的最小候选，与趋势页原有档案优先行为一致。已有记录date、sleep时间戳/时区及旧completedActions不迁移；不增加午夜计时器、营养规则或后台能力。旧DATE-STATIC/REPORT任务历史状态不冒充关闭。
 
 # 2026-11-03 Casdoor与开源Lago接入（最新）
 
