@@ -191,6 +191,20 @@ test('independent client: rejected acceptance stays paused across reload, reauth
   const after = await h.snapshot(); assert.equal(after.revision, h.before.revision + 1);
   assert.deepEqual(after.state.planVersions, h.before.state.planVersions);
   assert.equal(after.state.suggestions[0].status, 'proposed');
+  // Another tab can persist an already rejected batch while this tab's discard
+  // confirmation is open. Discarding observed IDs must preserve its pause.
+  await assert.rejects(reloaded.save({ ...h.accepted, completedActions: after.state.completedActions }), error => error instanceof ApiError && error.code === 'PLAN_BASE_CONFLICT');
+  const rejected = await readCached(h.user.id); assert.ok(rejected);
+  const unseenId = randomUUID();
+  const otherTab = { ...rejected, queue: [...rejected.queue, { ...rejected.queue[0], mutationId: unseenId }], planBaseBlocks: [...(rejected.planBaseBlocks ?? []), unseenId] };
+  await writeCached(otherTab);
+  const sentBeforeDiscard = posts.length;
+  await reloaded.discardInvalid();
+  assert.equal(posts.length, sentBeforeDiscard, 'discard must not automatically send an unseen rejected batch merged from another tab');
+  assert.equal(reloaded.status.pending, 1);
+  await assert.rejects(reloaded.flush(), error => error instanceof ApiError && error.code === 'PLAN_BASE_CONFLICT');
+  await reloaded.discardInvalid();
+  assert.equal(reloaded.status.pending, 0);
 });
 
 for (const endpoint of ['PUT', 'sync'] as const) {
