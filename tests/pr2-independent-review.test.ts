@@ -50,4 +50,3 @@ test('QA independent: helper captures only one current clock instant', () => {
     assert.equal(result.dates.at(-1),result.today);
   } finally { globalThis.Date = NativeDate; }
 });
-
