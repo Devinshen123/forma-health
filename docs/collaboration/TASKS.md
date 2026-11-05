@@ -1,3 +1,13 @@
+# 2026-11-04 WEB-PLAN-CONFLICT-01（当前Mac任务）
+
+用户要求本对话01继续给自己安排任务。本人选取既有20261017旧base请求：复核最新revision/实体版本下接受旧base建议的HTTP分类，能复现则最小修复；不改变建议生成规则、不接入真实AI/数据、不启动其他员工。
+
+| ID | owner / 独占范围 | 状态 | 验收 |
+|---|---|---|---|
+| WEB-PLAN-CONFLICT-01 | 本对话01 lead；本分支server/validation.ts、server/app.ts、src/api.ts、server/plan-base-conflict.test.ts、docs/API-CONTRACT.md、decisions/ADR-plan-base-conflict-20261104.md、本人TASKS/status/HANDOFF | review | 真实合成HTTP证明PUT及sync旧base问题；正确接受/撤销保持、非法patch/schema/历史改写仍400、过期revision/实体CAS仍409；失败snapshot/revision/entityVersions/receipt零变化及跨账户隔离；专项/全套/类型/build通过。新错误码中文提示，候选push本人分支，未经独审不合main |
+
+基线main/7017064；实际目录`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支`codex/plan-base-conflict-20261104`。上一日期任务仍在PR #2/cd50875等待独立审查，没有合入或重复实施。本任务不同时写其他工作区或Windows当前运行站点。沿用追加版本、不改事实的既有契约，仅对结构合法、patch正确且唯一问题是proposed建议base已过期的接受转换返回可识别409；其他输入错误保持400。
+
 # 2026-11-03 Casdoor与开源Lago接入（最新）
 
 本轮后续：用户明确授权“安排独立审查、修好问题、通过后合并main并同步GitHub，先不开真实收费”。既有01继续唯一lead及产品修复写者，专项06由新的独立审查子会话承担，工具Codex（身份定义中Claude Code为建议，工具变化不改变职责）；不复用上一轮辅助审查者，不冒称02已接单。已核当前团队无活动06，原06记忆仍是未接手配置；只写新专项交付，不接管其旧目录/记忆。正式报告须绑定候选与复验SHA，由本人实测，不以01旧464项报告代替。

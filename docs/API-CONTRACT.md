@@ -181,3 +181,8 @@ Workout保留旧summary兼容，新setLogs包含UUID、work/warmup/drop、nullab
 安全错误码及资源限制见 [ADR-AI-food-photo](collaboration/decisions/ADR-AI-food-photo.md)。超时/网络/429/5xx最多重试一次，最多2000输出token。每次调用前SQLite原子检查账户/项目预算，失败不退，重启不重置。一账户一次在途、5次/分钟、10次/UTC日；账户US$0.40/日、项目US$2/日、每尝试US$0.02。全局只有匿名日聚合，删除账户不退款；不是供应商实际账单。客户端中止不保证供应商停止计费。
 
 JSON导出新增独立`aiDrafts`、AI预算预留记录；不含凭据。取消未保存照片可DELETE assets清理其草稿；被Meal引用的附件不删除。账户删除级联清理草稿和预算。
+
+
+## 2026-11-04 计划建议base已过期
+
+`PUT /api/state` 和 `POST /api/sync` 中，结构合法、patch与新子版本一致的建议接受转换，如果原建议base已不再是当前计划，返回HTTP409及`code: PLAN_BASE_CONFLICT`、可读`error`。不接受旧base、不自动重基、不追加版本；失败批次不改状态/revision/实体版本或记录成功receipt。响应不含snapshot；不能将其作为实体版本冲突自动合并。普通输入/非法patch/历史改写仍400，现有revision/实体CAS409保持原形状。客户端应显示“计划已发生变化，本次调整未保存。请查看最新计划后重新审核。”，保留待审核更改，不静默丢弃或自动重发接受。

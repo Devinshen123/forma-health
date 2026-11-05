@@ -355,11 +355,16 @@ const targetFields = [
   "proteinTarget",
 ] as const;
 
+export interface PlanBaseConflict {
+  code: "PLAN_BASE_CONFLICT";
+  message: string;
+}
+
 /** Both accept and undo append versions; an undo is a compensating child, never a history rewrite. */
 export function validateTransition(
   previous: AppState,
   next: AppState,
-): string | null {
+): string | PlanBaseConflict | null {
   const oldWorkouts = new Map(previous.workouts.map(workout => [workout.id, workout]));
   for (const workout of next.workouts) {
     const old = oldWorkouts.get(workout.id);
@@ -386,8 +391,6 @@ export function validateTransition(
       return "Existing plan versions cannot be edited or reordered";
   const appended = next.planVersions.slice(previous.planVersions.length);
   if (appended.length > 1) return "Save one plan version at a time";
-  if (appended.length && appended[0].parentId !== previous.currentPlanId)
-    return "A new plan must descend from the current plan";
   const oldSuggestions = new Map(
     previous.suggestions.map((item) => [item.id, item]),
   );
@@ -431,9 +434,9 @@ export function validateTransition(
     );
     if (
       !parent ||
-      previous.currentPlanId !== item.baseVersionId ||
       appended.length !== 1 ||
       !version ||
+      version.parentId !== item.baseVersionId ||
       version.id !== item.acceptedVersionId ||
       next.currentPlanId !== version.id
     )
@@ -446,6 +449,11 @@ export function validateTransition(
       if (version[field] !== expected)
         return "Accepted plan must match the proposed adjustment";
     }
+    if (previous.currentPlanId !== item.baseVersionId)
+      return {
+        code: "PLAN_BASE_CONFLICT",
+        message: "The plan changed. Review the latest plan before accepting this adjustment.",
+      };
   } else if (undone.length) {
     const item = undone[0];
     const version = previous.planVersions.find(
@@ -468,12 +476,14 @@ export function validateTransition(
     for (const field of targetFields)
       if (compensation[field] !== base[field])
         return "The undo version must restore every target from the adjustment base";
-  } else if (
-    appended.length
+  } else {
+    if (appended.length && appended[0].parentId !== previous.currentPlanId)
+      return "A new plan must descend from the current plan";
+    if (appended.length
       ? next.currentPlanId !== appended[0].id
-      : next.currentPlanId !== previous.currentPlanId
-  )
-    return "Current plan can change only by appending a version or undoing an accepted adjustment";
+      : next.currentPlanId !== previous.currentPlanId)
+      return "Current plan can change only by appending a version or undoing an accepted adjustment";
+  }
   return null;
 }
 

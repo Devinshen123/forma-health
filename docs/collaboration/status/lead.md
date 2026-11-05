@@ -1,3 +1,18 @@
+## 2026-11-04 WEB-PLAN-CONFLICT-01（实现/本人验证完成，待独审）
+
+01本人按用户“给自己安排任务”委托登记并实施；分支`codex/plan-base-conflict-20261104`，基线main/70170640b74c9067291eb2195aef17ca4a6a9fb3，实际工作区`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`。上一日期PR #2/cd50875仍open draft、无审查回复，未合并；不混入新分支。
+
+真实合成HTTP复现：最新revision/实体版本下接受旧建议base，PUT/sync修复前均400。原始6项测试中3失败（两状态+中文提示）；其余控制组通过。仅调整转移校验顺序和结构化分类：schema/不可变历史/唯一新增子版本/指针/patch均正确后检查旧base，返回409/PLAN_BASE_CONFLICT；异常输入和普通手动父版本仍400。拒绝旧建议保持可用；正常接受/补偿撤销不变。中文提示明确本次调整未保存。
+
+本轮本人实测（Mac Node24.16.0，随机loopback端口/独立临时SQLite/合成账户，未加载真实.env）：
+- `node --import tsx --test server/plan-base-conflict.test.ts` exit0，最终8/8。两个接口覆盖重复拒绝、批次事实与revision/entityVersions不变、无成功receipt、另一账户状态不变及错误身份401；正常接受/撤销、坏patch/改写历史/schema400、过期revision/实体CAS409、手动父版本400、拒绝旧建议200。客户端中英提示使用mock Response，不冒称完整App浏览器验证。
+- `node node_modules/typescript/bin/tsc --noEmit` exit0。
+- `npm test` 最终exit0，479/479、0失败/跳过；补控制组前477/477为中间结果，最终以后者479为准。
+- `npm run build` exit0，完整主站/工作台/伙伴乐园/源码包/离线壳完成，保留既有大chunk警告。后补2项测试不改产品，最终类型与全套重新通过；不重复相同产品构建。复用同锁文件依赖/已授权媒体链接，不改依赖或锁文件，不提交素材。
+- `git diff --check` exit0；原始红例、最终专项/全套/build日志位于`.forma-local/plan-base-01/`。
+
+ADR与API契约已记录新409形状。不含snapshot，因此不会触发现有实体冲突自动重基；失败队列仍走既有保留/导出/明确放弃流程，未改变同步引擎。没有UI浏览器/真实账户/设备/AI/计费调用，也没有06独审或main合并。候选按AGENTS推本人分支并核对远端；版本以所属提交为准。
+
 ## 2026-11-03 AUTH-BILLING-REVIEW-06 / FIX-INTEGRATE-01（完成）
 
 最终：正式06通过4f98d4（86专项、471全套、完整build、中英UI反馈），01精确集成原报告，未改获审产品树。main从76dcbe2正常快进至1d04c75，atomic同步main/主管分支且远端一致；D本站main同版已启，收费仅sandbox。原40表39同内容，仅签名通知摘要+16，原账户/健康/4份私有非DB文件/实际.env保持，总41表；after-main81文件备份/3SQLite快照/可读Lago归档已保留，未演练恢复。最终回执文档提交也正常同步并刷新本机标识，最终SHA随所属提交/HTTP复核，不将此SHA硬编码为未来版本。不触碰真实用户浏览器，不开真实扣费/商户或公网部署。

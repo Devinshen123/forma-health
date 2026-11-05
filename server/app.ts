@@ -118,6 +118,7 @@ const referencedAssets = (state: AppState) =>
     ),
   );
 class StateInputError extends Error {}
+class PlanBaseConflictError extends Error {}
 
 export interface AppOptions {
   dataDir: string;
@@ -338,6 +339,8 @@ export function createApp(options: AppOptions) {
   const validateOwnedState = (ownerId: string, previous: AppState, candidate: AppState): AppState => {
     const state = parseState(candidate);
     const transitionError = validateTransition(previous, state);
+    if (transitionError && typeof transitionError !== 'string')
+      throw new PlanBaseConflictError(transitionError.message);
     if (transitionError) throw new StateInputError(transitionError);
     for (const meal of state.meals) if (meal.source === 'ai_estimate') {
       const draft = meal.aiDraftId && store.aiDraft(ownerId, meal.aiDraftId);
@@ -528,6 +531,8 @@ export function createApp(options: AppOptions) {
       if (error instanceof WorkbenchConflict) return res.status(409).json({ error: 'conflict', code: error.code, ...error.snapshot });
       if (error instanceof WorkbenchError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof SyncConflict) return res.status(409).json({ error: error.message, code: 'SYNC_CONFLICT', snapshot: error.snapshot, conflicts: error.conflicts });
+      if (error instanceof PlanBaseConflictError)
+        return res.status(409).json({ error: error.message, code: 'PLAN_BASE_CONFLICT' });
       if (error instanceof StateInputError) return res.status(400).json({ error: error.message });
       if (error instanceof AiError) return res.status(error.status).json({ error: error.message, code: error.code });
       if (error instanceof ZodError)

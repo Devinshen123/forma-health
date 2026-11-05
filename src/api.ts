@@ -43,6 +43,7 @@ function errorMessage(message: string, status: number, code?: string) {
     ITEM_NOT_OWNED: "请先开启对应宝箱，再佩戴这款外观。",
     CHALLENGE_ACTIVE: "你已有进行中的挑战，请先退出，再加入其他挑战。",
     CHALLENGE_RATE_LIMIT: "邀请操作较频繁，请稍后再试；仍可退出挑战。",
+    PLAN_BASE_CONFLICT: "计划已发生变化，本次调整未保存。请查看最新计划后重新审核。",
     SYNC_CONFLICT: "这条记录在两个设备上都发生了变化，请选择要保留的版本。",
     SYNC_MUTATION_REUSED: "同步请求编号不一致，请重新审核待同步记录。",
     AI_NOT_CONFIGURED: "识图服务尚未配置密钥，可先手动记录。",
