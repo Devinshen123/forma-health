@@ -7,6 +7,8 @@ export interface CachedAccount {
   updatedAt: string;
   settled?: string[];
   generation?: string;
+  /** Local-only rejected plan decisions; never part of the wire mutation. */
+  planBaseBlocks?: string[];
 }
 interface Consent { enabled: boolean; generation: string }
 const consentKey = (id: string) => `consent:${id}`;
@@ -99,6 +101,8 @@ export async function writeCached(data: CachedAccount, settleIds: string[] = [],
         generation,
         snapshot: prior && prior.snapshot.revision > data.snapshot.revision ? prior.snapshot : data.snapshot,
         queue: [...queue.values()], settled: [...settled],
+        planBaseBlocks: [...new Set([...(prior?.planBaseBlocks ?? []), ...(data.planBaseBlocks ?? [])])]
+          .filter(id => queue.has(id) && !settled.has(id)),
       };
       accounts.put(result);
       meta.put(data.user.id, 'lastAccount');

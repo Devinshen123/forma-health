@@ -1,3 +1,22 @@
+## 2026-11-04 PR #3 独审修复候选
+
+用户授权两个PR独审、修复后通过再集成。qa-pr2已通过原日期候选，qa-pr3在2dc5d1e独立复现PR3-F1（无效附件/伪造草稿被提前409掩盖）及PR3-F2（后台重复提交失败接受）。01精确集成其三份反例提交，修复校验顺序及本地持久暂停标记，扩展本任务范围到sync engine/storage；保留400/409/原子性及现有账户同意epoch。新候选等待原审查者固定SHA复验，不能提前main合并。
+
+## 2026-11-04 WEB-PLAN-CONFLICT-01（实现/本人验证完成，待独审）
+
+01本人按用户“给自己安排任务”委托登记并实施；分支`codex/plan-base-conflict-20261104`，基线main/70170640b74c9067291eb2195aef17ca4a6a9fb3，实际工作区`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`。上一日期PR #2/cd50875仍open draft、无审查回复，未合并；不混入新分支。
+
+真实合成HTTP复现：最新revision/实体版本下接受旧建议base，PUT/sync修复前均400。原始6项测试中3失败（两状态+中文提示）；其余控制组通过。仅调整转移校验顺序和结构化分类：schema/不可变历史/唯一新增子版本/指针/patch均正确后检查旧base，返回409/PLAN_BASE_CONFLICT；异常输入和普通手动父版本仍400。拒绝旧建议保持可用；正常接受/补偿撤销不变。中文提示明确本次调整未保存。
+
+本轮本人实测（Mac Node24.16.0，随机loopback端口/独立临时SQLite/合成账户，未加载真实.env）：
+- `node --import tsx --test server/plan-base-conflict.test.ts` exit0，最终8/8。两个接口覆盖重复拒绝、批次事实与revision/entityVersions不变、无成功receipt、另一账户状态不变及错误身份401；正常接受/撤销、坏patch/改写历史/schema400、过期revision/实体CAS409、手动父版本400、拒绝旧建议200。客户端中英提示使用mock Response，不冒称完整App浏览器验证。
+- `node node_modules/typescript/bin/tsc --noEmit` exit0。
+- `npm test` 最终exit0，479/479、0失败/跳过；补控制组前477/477为中间结果，最终以后者479为准。
+- `npm run build` exit0，完整主站/工作台/伙伴乐园/源码包/离线壳完成，保留既有大chunk警告。后补2项测试不改产品，最终类型与全套重新通过；不重复相同产品构建。复用同锁文件依赖/已授权媒体链接，不改依赖或锁文件，不提交素材。
+- `git diff --check` exit0；原始红例、最终专项/全套/build日志位于`.forma-local/plan-base-01/`。
+
+ADR与API契约已记录新409形状。不含snapshot，因此不会触发现有实体冲突自动重基；失败队列仍走既有保留/导出/明确放弃流程，未改变同步引擎。没有UI浏览器/真实账户/设备/AI/计费调用，也没有06独审或main合并。候选按AGENTS推本人分支并核对远端；版本以所属提交为准。
+
 ## 2026-11-04 WEB-DATE-01（Mac候选已验证，待独审）
 
 当前本对话主工作区已切至`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支仍为`codex/web-date-consistency-20261104`。应用托管创建较慢，先前在项目内独立worktree完成实施与全部验证；托管工作区就绪后将同一已提交候选切到本对话主工作区，后续只从此处写入。先前验证区改为detached/051a8fb保留日志与依赖，不另启动写入者。产品提交051a8fbab1843ef9fa51ce41fd884a59599a5aa4已push并ls-remote核对一致；本次仅补路径交接，无产品差异，不重复测试/build。原桌面iOS分支及dirty保持不动。

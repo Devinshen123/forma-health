@@ -41,3 +41,14 @@
 ## 残余边界
 
 未运行真实账户登录、数据库写入、真实健康数据、设备接入、收费服务、移动设备或所有浏览器；保存仅验证组件提交状态，不代表服务端全流程。长驻页面跨午夜自动刷新按ADR明确不在此次范围。非日期聚合算法、其他页面记录日期语义均没有因本次通过而获得新的全面验收。提交仅含报告/独立测试，01应保持候选与证据变更的区分。
+
+## 最终组合候选日期兼容复验（本人执行，2026-11-04）
+
+01完成PR #2集成并叠加PR #3及同步修复后，本人以干净工作树安全切换至固定候选 `6d2114ae63c15d0e0ed67c858be9217afbeb7742`，再次独立验证，结论：**本次日期兼容复验通过**。
+
+- `git diff cd508758a8b8f3d61b1decf40e23e0409b7c6b39 6d2114ae63c15d0e0ed67c858be9217afbeb7742 -- src/types.ts src/features/Dashboard.tsx src/features/Trends.tsx` 无差异；三个日期产品文件与原验收候选一致。组合的其他产品差异位于PR #3客户端/服务端及sync文件，另有测试与文档证据。
+- 核对本人原报告/测试提交 `58b46a537fcd076e4bd884ee51105ddcf006b656` 至组合候选的 `tests/pr2-independent-review.test.ts` 差异，仅删除EOF多余空行，全部断言保持。
+- 本人重新执行 `node --import tsx --test tests/view-dates.test.ts tests/pr2-independent-review.test.ts`：7/7，0失败/跳过；日志 `.forma-local/review-evidence/combined-date-tests.log`。
+- 本人重新执行 `node --import tsx .forma-local/review-evidence/browser-independent.mts`：12/12，真实Dashboard/Trends的中英跨区、UTC+14星期、跨年窗口、行动保存键、历史记录保留及缺失/0断言通过；日志 `.forma-local/review-evidence/combined-browser.log`，结果 `browser-independent-results.json` 已更新至本次执行（同目录）。
+
+本节只证明固定组合候选在上述日期范围兼容。浏览器仍仅以合成状态运行两组件、CompanionCard stub与save捕获，未覆盖App/后台真实保存；本次按派工未重复全套测试或build，不引用其他审查者的测试结果作为本人实测。本次提交仅追加本报告，不改产品或测试，不推送或合并。
