@@ -1,5 +1,7 @@
 ## 2026-11-04 WEB-DATE-01（Mac候选已验证，待独审）
 
+当前本对话主工作区已切至`/Users/shendejun/.codex/worktrees/forma-web-date-fix/运动健康网站-GitHub最新版`，分支仍为`codex/web-date-consistency-20261104`。应用托管创建较慢，先前在项目内独立worktree完成实施与全部验证；托管工作区就绪后将同一已提交候选切到本对话主工作区，后续只从此处写入。先前验证区改为detached/051a8fb保留日志与依赖，不另启动写入者。产品提交051a8fbab1843ef9fa51ce41fd884a59599a5aa4已push并ls-remote核对一致；本次仅补路径交接，无产品差异，不重复测试/build。原桌面iOS分支及dirty保持不动。
+
 01本人在`/Users/shendejun/Desktop/运动健康网站-GitHub最新版/.forma-local/worktrees/lead-web-date-20261104`，分支`codex/web-date-consistency-20261104`，从最新main/70170640b74c9067291eb2195aef17ca4a6a9fb3建立隔离工作区。用户明确委托更新及自行安排修改；不沿用旧静态任务禁止实施限定。共享localDate新增兼容可选时区；两页采用有效档案→浏览器→UTC的统一视图日和连续日历窗口，首页星期用UTC日期锚点，文案明确最近7天。已有记录date/睡眠字段/旧行动键不迁移；新行动使用视图今日。
 
 本轮01实测（2026-11-04，Mac Node24.16.0，合成数据）：
